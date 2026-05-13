@@ -1,0 +1,90 @@
+#!/usr/bin/python3
+"""
+Change refs to newlines
+python3 core8/pwb.py md_core/mdpy/fixref
+"""
+
+import logging
+import os
+import sys
+
+# result_table = CatDepth(title, sitecode="www", family="mdwiki", depth=0, ns="0")
+from pathlib import Path
+
+from md_core.mdpy.fixref.fixref_text_new import fix_ref_template
+from md_core_helps.apis import mdwiki_api_call
+from mdwiki_api.mdwiki_page import CatDepth
+
+logger = logging.getLogger(__name__)
+
+# ---
+
+# ---
+if os.getenv("HOME"):
+    public_html_dir = os.getenv("HOME") + "/public_html"
+else:
+    public_html_dir = "I:/MD_TOOLS/MDWIKI_MAIN_REPO/public_html"
+# ---
+thenumbers = {1: 20000, "done": 0}
+
+
+def work(title):
+    Ask = "ask" in sys.argv
+    # ---
+    text = mdwiki_api_call.GetPageText(title)
+    # ---
+    summary = "Normalize references"
+    # ---
+    new_text, summary = fix_ref_template(text, returnsummary=True)
+    # ---
+    if new_text != text:
+        thenumbers["done"] += 1
+        # ---
+        mdwiki_api_call.page_put(
+            oldtext=text, newtext=new_text, summary=summary, title=title, returntrue=False, diff=True
+        )
+    else:
+        logger.info("no changes.")
+
+
+def main():
+    # ---
+    List = []
+    # ---
+    for arg in sys.argv:
+        arg, _, value = arg.partition(":")
+        # ---
+        if arg == "-number" and value.isdigit():
+            thenumbers[1] = int(value)
+        # ---
+        if arg == "-file":
+            text = open(f"{public_html_dir}/find/{value.strip()}", "r", "utf8").read()
+            List = [x.strip() for x in text.split("\n") if x.strip() != ""]
+        # ---
+        if arg == "allpages":
+            List = mdwiki_api_call.Get_All_pages("")
+        # ---
+        # python pwb.py md_core/mdpy/fixref/start -cat:CS1_errors:_deprecated_parameters ask
+        if arg == "-cat":
+            List = CatDepth(f"Category:{value}", sitecode="www", family="mdwiki", depth=0, ns="0")
+        # ---
+        # python pwb.py md_core/mdpy/fixref/start -page:Histrelin ask
+        if arg in ["-page", "-title"]:
+            List = [value]
+            # ---
+    # ---
+    num = 0
+    for title in List:
+        num += 1
+        # ---
+        if thenumbers["done"] >= thenumbers[1] and len(List) > 1:
+            break
+        work(title)
+
+    # ---
+
+
+# ---
+if __name__ == "__main__":
+    main()
+# ---

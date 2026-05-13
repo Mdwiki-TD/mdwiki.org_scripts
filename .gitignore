@@ -3,3 +3,4 @@
 .pylintrc
 /php/tools/bots/sh
 **/old/**
+*.pyc

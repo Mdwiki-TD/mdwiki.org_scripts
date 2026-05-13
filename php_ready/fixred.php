@@ -1,9 +1,4 @@
 <?php
-if (isset($_GET['test']) || isset($_COOKIE['test'])) {
-	ini_set('display_errors', 1);
-	ini_set('display_startup_errors', 1);
-	error_reporting(E_ALL);
-}
 
 include_once __DIR__ . '/bots/tfj.php';
 
@@ -67,7 +62,7 @@ function get_results($title)
 	$title2 = str_replace("'", "\\'", $title2);
 	$title2 = rawurlencode($title2);
 	//---
-	$ccc = " mdpy/fixred -page2:$title2 save";
+	$ccc = " fixred.py -page2:$title2 save";
 	//---
 	$params = array(
 		'dir' => "c9",

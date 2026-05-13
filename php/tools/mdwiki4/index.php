@@ -1,9 +1,4 @@
 <?php
-if (isset($_GET['test']) || isset($_COOKIE['test'])) {
-    ini_set('display_errors', 1);
-    ini_set('display_startup_errors', 1);
-    error_reporting(E_ALL);
-}
 
 function endsWith($string, $endString)
 {
@@ -61,8 +56,8 @@ function get_results($title, $save)
     $ccc = "-page:$titlex from_toolforge $sa";
     //---
     $params = array(
-        'dir' => $root_path . "/pybot/newupdater",
-        'localdir' => $root_path . "/pybot/newupdater",
+        'dir' => $root_path . "/newupdater",
+        'localdir' => $root_path . "/newupdater",
         'pyfile' => 'med.py',
         'other' => $ccc
     );

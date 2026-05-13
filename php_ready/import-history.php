@@ -1,9 +1,4 @@
 <?php
-if (isset($_GET['test']) || isset($_COOKIE['test'])) {
-    ini_set('display_errors', 1);
-    ini_set('display_startup_errors', 1);
-    error_reporting(E_ALL);
-}
 
 include_once __DIR__ . '/bots/tfj.php';
 include_once __DIR__ . '/bots/file_bots.php';
@@ -26,7 +21,7 @@ function get_results($aargs)
     //---
     global $test;
     //---
-    $ccc = " mdpy/imp $aargs save";
+    $ccc = " imp.py $aargs save";
     //---
     $params = array(
         'dir' => "c9",

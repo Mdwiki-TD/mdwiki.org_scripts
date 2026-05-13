@@ -1,43 +1,9 @@
 <?php
 
 namespace BOTS\Python;
-/*
-usage:
-include_once __DIR__ . '/bots/python.php';
 
-use function BOTS\Python\do_py;
-
-*/
-
-if (isset($_GET['test']) || isset($_COOKIE['test'])) {
-    ini_set('display_errors', 1);
-    ini_set('display_startup_errors', 1);
-    error_reporting(E_ALL);
-}
-//---
-/*
-include_once __DIR__ . '/bots/python.php';
-$result = do_py($params);
-
-/////////
-$params = array(
-    'dir' => '',
-    'localdir' => '',
-    'pyfile' => '',
-    'other' => '',
-    'test' => $_GET['test']
-);
-$params['other'] .= '';
-$url = "bots/python.php?" . http_build_query( $params );
-//---
-$output = file_get_contents($url);
-*/
-//---
-// $root_path = trim(getenv('HOME') ?? '') ?: 'I:/mdwiki';
 $root_path = getenv("HOME") ?: 'I:/mdwiki';
-//---
-// include_once __DIR__ . '/tfj.php';
-//---
+
 
 function do_py($params, $do_test = true, $return_commaand = false)
 {
