@@ -2,7 +2,7 @@
 
 include_once __DIR__ . '/bots/tfj.php';
 
-use function BOTS\TFJ\do_tfj_sh;
+use function BOTS\TFJ\do_py_sh;
 
 echo <<<HTML
     <div class="card">
@@ -72,7 +72,7 @@ function get_results($title)
 		'test' => $test
 	);
 	//---
-	$result = do_tfj_sh($params, 'fixred0');
+	$result = do_py_sh($params, 'fixred0');
 	//---
 	return $result;
 }

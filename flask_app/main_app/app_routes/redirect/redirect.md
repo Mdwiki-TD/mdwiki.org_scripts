@@ -1,71 +1,71 @@
-# تحليل: redirect (إنشاء التحويلات)
+# Analysis: redirect (Create Redirects)
 
 ## PHP: `php/redirect.php`
 
-### المدخلات (Parameters)
+### Parameters
 
-| المتغير     | المصدر              | النوع    | الوصف                        |
-| ----------- | ------------------- | -------- | ---------------------------- |
-| `test`      | `$_GET` أو `$_POST` | hidden   | وضع الاختبار (value="1")     |
-| `title`     | `$_GET` أو `$_POST` | text     | عنوان صفحة واحدة             |
-| `titlelist` | `$_GET` أو `$_POST` | textarea | قائمة عناوين (بديل عن title) |
+| Variable    | Source              | Type     | Description                             |
+| ----------- | ------------------- | -------- | --------------------------------------- |
+| `test`      | `$_GET` or `$_POST` | hidden   | Test mode flag (value="1")              |
+| `title`     | `$_GET` or `$_POST` | text     | Single page title                       |
+| `titlelist` | `$_GET` or `$_POST` | textarea | List of titles (alternative to `title`) |
 
-### سير العمل
+### Flow
 
-1. يعرض نموذج POST مع:
-    - حقل `title` (نص)
-    - أو `titlelist` (textarea)
-2. عند الإرسال والمستخدم مسجل:
-    - **إذا كان title غير فارغ:**
-        - يبني الأمر: `red.py -page2:urlencoded_title save`
-    - **إذا كان titlelist غير فارغ:**
-        - يكتب القائمة لملف `redirectlist.txt`
-        - يبني الأمر: `red.py -file:path save`
-    - ينفذ عبر `do_tfj_sh()`
+1. Renders a POST form with:
+    - `title` field (text)
+    - OR `titlelist` textarea
+2. On submit with logged-in user:
+    - **If `title` is populated:**
+        - Builds command: `red.py -page2:urlencoded_title save`
+    - **If `titlelist` is populated:**
+        - Writes list to `redirectlist.txt`
+        - Builds command: `red.py -file:path save`
+    - Executes via `do_py_sh()`
 
 ## Python: `python/red.py`
 
-### آلية العمل
+### How it works
 
-1. لكل صفحة يستدعي `work(title, num, length)`:
-    - يتحقق من وجود الصفحة في mdwiki
-    - يستدعي `get_red(title)` لجلب التحويلات من enwiki
-    - لكل تحويلة غير موجودة في mdwiki:
-        - يتحقق من صلاحية العنوان (`valid_title`)
-        - ينشئ صفحة تحويل `#redirect [[title]]`
+1. For each page calls `work(title, num, length)`:
+    - Checks if the page exists on mdwiki
+    - Calls `get_red(title)` to fetch redirects from enwiki
+    - For each redirect not already on mdwiki:
+        - Validates the title (`valid_title`)
+        - Creates redirect page `#redirect [[title]]`
 2. `get_red(title)`:
-    - يستعلم API الإنجليزية لجلب قائمة التحويلات لصفحة معينة
-    - يرجع العناوين التي في namespace 0 فقط
+    - Queries enwiki API for redirects of a given page
+    - Returns titles in namespace 0 only
 
-### وسائط CLI المدعومة
+### Supported CLI args
 
--   `-page2:title`, `-page:title` — عنوان مفرد
--   `-file:path` — ملف قائمة
+-   `-page2:title`, `-page:title` — single title
+-   `-file:path` — title list file
 -   `-newpages:N`, `-user:NAME`, `-start:X`, `-ns:N`, `search:TERM`
 
-### المعادلات
+### Mapping
 
-| PHP                       | Python CLI                   |
-| ------------------------- | ---------------------------- |
-| `$_GET/POST['title']`     | `-page2:urlencoded_title`    |
-| `$_GET/POST['titlelist']` | `-file:redirectlist.txt`     |
-| `test=1`                  | `test` في `do_tfj_sh` params |
+| PHP                       | Python CLI                  |
+| ------------------------- | --------------------------- |
+| `$_GET/POST['title']`     | `-page2:urlencoded_title`   |
+| `$_GET/POST['titlelist']` | `-file:redirectlist.txt`    |
+| `test=1`                  | `test` in `do_py_sh` params |
 
 ---
 
-## رؤية النقل إلى Flask
+## Flask Migration Vision
 
-### ملف route الحالي: `flask_app/main_app/app_routes/redirect.py`
+### Current route: `flask_app/main_app/app_routes/redirect/__init__.py`
 
 ```
-GET  /redirect/  → عرض النموذج
-POST /redirect/  → استقبال ومعالجة
+GET  /redirect/  → render form
+POST /redirect/  → accept and process
 ```
 
-### ما يحتاج تكملة
+### Remaining work
 
-1. **استدعاء `red.py` مباشرة**
-    - استيراد `work()` و `get_red()` من `red.py`
-    - تمرير العنوان مباشرة دون CLI
-2. **التعامل مع الملفات** — استبدال `redirectlist.txt` بتمرير القائمة مباشرة
-3. **إضافة دعم الصفحات الجديدة** — `-newpages` و `-usercontribs`
+1. **Direct `red.py` call**
+    - Import `work()` and `get_red()` from `red.py`
+    - Pass title directly without CLI
+2. **File handling** — replace `redirectlist.txt` with direct list passing
+3. **Add support for new pages** — `-newpages` and `-usercontribs`

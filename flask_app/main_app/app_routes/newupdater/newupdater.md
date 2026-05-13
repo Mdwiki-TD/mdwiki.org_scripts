@@ -1,83 +1,83 @@
-# تحليل: newupdater (مُحدِّث المحتوى الطبي)
+# Analysis: newupdater (Medical Content Updater)
 
 ## PHP: `php/newupdater.php`
 
-### المدخلات (Parameters)
+### Parameters
 
-| المتغير | المصدر  | النوع           | الوصف                    |
-| ------- | ------- | --------------- | ------------------------ |
-| `test`  | `$_GET` | hidden          | وضع الاختبار (value="1") |
-| `title` | `$_GET` | text (required) | عنوان الصفحة             |
-| `save`  | `$_GET` | checkbox        | حفظ تلقائي (value="1")   |
+| Variable | Source  | Type            | Description                  |
+| -------- | ------- | --------------- | ---------------------------- |
+| `test`   | `$_GET` | hidden          | Test mode flag (value="1")   |
+| `title`  | `$_GET` | text (required) | Page title                   |
+| `save`   | `$_GET` | checkbox        | Auto-save toggle (value="1") |
 
-### سير العمل
+### Flow
 
-1. يعرض نموذج GET مع:
-    - حقل `title` (نص، مطلوب)
-    - checkbox `save` (حفظ تلقائي)
-2. عند الإرسال والمستخدم مسجل:
-    - يعالج العنوان (يستبدل المسافات والـ +)
-    - يستدعي `do_py_new()` لتشغيل `newupdater/med.py -page:title from_toolforge [save]`
-    - يعالج النتيجة:
-        - `"no changes"` → رسالة "no changes" + رابط التحرير
-        - `"save ok"` → رسالة نجاح
-        - `"notext"` → النص فارغ
-        - `.txt` → يعرض نموذج تحرير محمّي مسبقاً بالنص الجديد
-        - غير ذلك → يعرض النتيجة كما هي
+1. Renders a GET form with:
+    - `title` field (text, required)
+    - `save` checkbox (auto-save)
+2. On submit with logged-in user:
+    - Sanitizes title (replaces spaces and `+`)
+    - Calls `do_py_new()` to run `newupdater/med.py -page:title from_toolforge [save]`
+    - Processes result:
+        - `"no changes"` → "no changes" message + edit link
+        - `"save ok"` → success message
+        - `"notext"` → empty text
+        - `.txt` filename → renders a pre-filled edit form with the new text
+        - Other → displays result as-is
 
-### دالة `generateEditForm()`
+### `generateEditForm()` function
 
--   تنشئ نموذج POST إلى `mdwiki.org/w/index.php` (تحرير مباشر على الويكي)
--   تعرض النص القديم والجديد للمقارنة
+-   Creates a POST form targeting `mdwiki.org/w/index.php` (direct wiki editing)
+-   Shows old and new text for comparison
 
-### دالة `do_py_new()`
+### `do_py_new()` function
 
--   تنفذ أمر Python محلياً بدلاً من Toolforge:
+-   Runs Python locally instead of Toolforge:
     ```
     python3 path/to/newupdater/med.py -page:title from_toolforge [save]
     ```
 
 ## Python: `python/newupdater/med.py`
 
-### آلية العمل
+### How it works
 
 1. `work_on_title(title)`:
-    - يجلب النص الحالي للصفحة
-    - يستدعي `work_on_text(title, text)` من `new_updater` module
-    - يقارن النص القديم بالجديد
-    - يرجع: `"notext"`, `"no changes"`, أو النص الجديد
+    - Fetches the current page text
+    - Calls `work_on_text(title, text)` from `new_updater` module
+    - Compares old vs new text
+    - Returns: `"notext"`, `"no changes"`, or new text
 2. `work(title)`:
-    - إذا كان `save` في `sys.argv` → يحفظ الصفحة مباشرة ويرجع `"save ok"`
-    - وإلا → يخزن النص الجديد في ملف cash ويرجع اسم الملف
+    - If `save` in `sys.argv` → saves page directly, returns `"save ok"`
+    - Otherwise → caches new text to file, returns filename
 3. `save_cash(title, new_text)`:
-    - يكتب النص الجديد لملف في مجلد `updatercash/`
+    - Writes new text to a file in `updatercash/` directory
 
-### المعادلات
+### Mapping
 
-| PHP              | Python CLI                            |
-| ---------------- | ------------------------------------- |
-| `$_GET['title']` | `-page:title` (مع استبدال `_` بمسافة) |
-| `$_GET['save']`  | `save` في `sys.argv`                  |
-| `test=1`         | يظهر الأمر فقط                        |
+| PHP              | Python CLI                                 |
+| ---------------- | ------------------------------------------ |
+| `$_GET['title']` | `-page:title` (with `_` replaced by space) |
+| `$_GET['save']`  | `save` in `sys.argv`                       |
+| `test=1`         | only displays command                      |
 
 ---
 
-## رؤية النقل إلى Flask
+## Flask Migration Vision
 
-### ملف route الحالي: `flask_app/main_app/app_routes/newupdater.py`
+### Current route: `flask_app/main_app/app_routes/newupdater/__init__.py`
 
 ```
-GET /newupdater/?title=X&save=1  → معالجة وعرض نتيجة
-GET /newupdater/                 → عرض النموذج فارغاً
+GET /newupdater/?title=X&save=1  → process and display result
+GET /newupdater/                 → render empty form
 ```
 
-### ما يحتاج تكملة
+### Remaining work
 
-1. **استدعاء `med.py` مباشرة**
-    - استيراد `get_new_text()` و `work()` من `med.py`
-    - تمرير `title` و `save` مباشرة
-2. **عرض نموذج التحرير المسبق** — بدلاً من Form action إلى mdwiki.org
-    - عرض مقارنة diff بين القديم والجديد
-    - زر حفظ داخل التطبيق
-3. **الاستغناء عن نظام cash بالملفات** — تخزين النتائج في الذاكرة أو قاعدة بيانات
-4. **دعم المعاينة** — Preview قبل الحفظ
+1. **Direct `med.py` call**
+    - Import `get_new_text()` and `work()` from `med.py`
+    - Pass `title` and `save` directly
+2. **Pre-filled edit form** — instead of POSTing to mdwiki.org
+    - Display diff between old and new text
+    - In-app save button
+3. **Remove file-based cache** — store results in memory or database
+4. **Preview support** — preview before saving

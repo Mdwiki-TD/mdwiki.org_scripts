@@ -3,7 +3,7 @@
 include_once __DIR__ . '/bots/tfj.php';
 include_once __DIR__ . '/bots/file_bots.php';
 
-use function BOTS\TFJ\do_tfj_sh;
+use function BOTS\TFJ\do_py_sh;
 use function BOTS\FILE_BOTS\dump_to_file;
 
 // the root path is the first part of the split file path
@@ -75,7 +75,7 @@ function get_results($aargs)
 		'test' => $test
 	);
 	//---
-	$result = do_tfj_sh($params, "fixref0");
+	$result = do_py_sh($params, "fixref0");
 	//---
 	return $result;
 }
