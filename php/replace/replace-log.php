@@ -256,11 +256,6 @@ if ($id == '') {
     //---
     // if ($nodone == 0) $rows .= "<li class='filterDiv nodone'>a</li>";
     //---
-    if (!empty($_GET['test'] ?? '')) {
-        $rows .= "
-        <li>$log</li>";
-    };
-    //---
     echo "
     <div id='myBtnContainer'>
       <button class='btne active' id='all' onclick=filterSelection('all')>All ($all)</button>

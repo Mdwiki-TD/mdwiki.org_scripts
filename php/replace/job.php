@@ -1,7 +1,6 @@
 <?php
 include_once __DIR__ . '/../header.php';
 
-$test = isset($_GET['test']) ? htmlspecialchars($_GET['test']) : '';
 $id = isset($_GET['id']) ? filter_var($_GET['id']) : '';
 $to = isset($_GET['to']) ? filter_var($_GET['to']) : '';
 

@@ -43,9 +43,6 @@ def work(title, num, length, From=""):
     # ---
     ing = page.import_page(family="wikipedia")
     # ---
-    if "test" in sys.argv:
-        logger.info(ing)
-    # ---
     done = ing.get("import", [{}])[0].get("revisions", 0)
     # ---
     logger.info(f"<<green>> imported {done} revisions")

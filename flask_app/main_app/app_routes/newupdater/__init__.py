@@ -16,7 +16,7 @@ logger = logging.getLogger(__name__)
 
 @bp_newupdater.route("/", methods=["GET"])
 def newupdater():
-    test = request.values.get("test", "")
+
     title = request.values.get("title", "")
     save = request.values.get("save", "")
     save_checked = "checked" if save else ""
@@ -28,12 +28,9 @@ def newupdater():
         result = f"Med updater started for: {title}"
         if save:
             result += " (auto-save enabled)"
-        if test:
-            result = f"[TEST] {result}"
 
     return render_template(
         "newupdater.html",
-        test=test,
         title=title,
         save=save,
         save_checked=save_checked,

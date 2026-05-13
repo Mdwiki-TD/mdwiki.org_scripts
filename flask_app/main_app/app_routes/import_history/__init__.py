@@ -18,7 +18,7 @@ AUTHORIZED_USERS = ["Doc James", "Mr. Ibrahem"]
 
 @bp_import_history.route("/", methods=["GET", "POST"])
 def import_history():
-    test = request.values.get("test", "")
+
     from_ = request.values.get("from", "")
     title = request.values.get("title", "")
     titlelist = request.values.get("titlelist", "")
@@ -35,12 +35,9 @@ def import_history():
             elif titlelist:
                 lines_count = len([x for x in titlelist.strip().split("\n") if x.strip()])
                 result = f"Import history for {lines_count} title(s)"
-            if test:
-                result = f"[TEST] {result}"
 
     return render_template(
         "import-history.html",
-        test=test,
         from_=from_,
         title=title,
         titlelist=titlelist,

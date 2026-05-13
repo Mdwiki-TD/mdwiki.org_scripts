@@ -7,7 +7,6 @@
 | Variable   | Source              | Type                | Description                                     |
 | ---------- | ------------------- | ------------------- | ----------------------------------------------- |
 | `listtype` | `$_GET` or `$_POST` | radio               | `newlist` (API search) or `oldlist` (all pages) |
-| `test`     | `$_GET` or `$_POST` | radio               | Test mode flag (value="1")                      |
 | `find`     | `$_GET` or `$_POST` | textarea (required) | Text to find                                    |
 | `replace`  | `$_GET` or `$_POST` | textarea (required) | Replacement text                                |
 | `number`   | `$_GET` or `$_POST` | number              | Max number of replacements                      |

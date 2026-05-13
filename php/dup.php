@@ -11,9 +11,8 @@ HTML;
 
 // Process request parameters
 $start = $_POST['start'] ?? '';
-$test  = $_GET['test'] ?? $_POST['test'] ?? '';
 
-$testinput = (!empty($test)) ? '<input type="hidden" name="test" value="1" />' : '';
+
 //---
 $start_icon = "<input class='btn btn-outline-primary' type='submit' name='start' value='start'>";
 // ---
@@ -23,7 +22,7 @@ if (empty($GLOBALS['global_username'])) $start_icon = '<a role="button" class="b
 if (empty($start) || empty($GLOBALS['global_username'])) {
     echo <<<HTML
     <form action='dup.php' method='POST'>
-        $testinput
+
         <div class='col-lg-12'>
             <h4 class='aligncenter'>
                 $start_icon
@@ -36,10 +35,6 @@ if (empty($start) || empty($GLOBALS['global_username'])) {
     echo "starting....";
 
     $faf = 'toolforge jobs run fixduplict --image python3.9 --command "python3 fix_duplicate.py save"';
-
-    if (!empty($test)) {
-        echo $faf;
-    }
 
     // Execute command and output result
     $result = shell_exec($faf);

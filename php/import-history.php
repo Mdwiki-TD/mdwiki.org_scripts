@@ -8,7 +8,6 @@ use function BOTS\FILE_BOTS\dump_to_file;
 
 $ROOT_PATH = getenv("HOME") ?: 'I:/MD_TOOLS/MDWIKI_MAIN_REPO';
 //---
-$test       = $_GET['test'] ?? $_POST['test'] ?? '';
 $from       = $_GET['from'] ?? $_POST['from'] ?? '';
 $title      = $_GET['title'] ?? $_POST['title'] ?? '';
 $titlelist  = $_GET['titlelist'] ?? $_POST['titlelist'] ?? '';
@@ -19,8 +18,6 @@ $valid_user = in_array($GLOBALS['global_username'] ?? '', $authorized_users);
 function get_results($aargs)
 {
     //---
-    global $test;
-    //---
     $ccc = " imp.py $aargs save";
     //---
     $params = array(
@@ -28,7 +25,6 @@ function get_results($aargs)
         'localdir' => "c9",
         'pyfile' => 'pwb.py',
         'other' => $ccc,
-        'test' => $test
     );
     //---
     $result = do_py($params, "import0");
@@ -37,7 +33,7 @@ function get_results($aargs)
 }
 
 //---
-function make_form($test, $title, $titlelist)
+function make_form($title, $titlelist)
 {
     global $valid_user;
     // ---
@@ -49,11 +45,11 @@ function make_form($test, $title, $titlelist)
         $start_icon = "<input class='btn btn-outline-primary' type='submit' value='send'>";
     }
     // ---
-    $testinput = (!empty($test)) ? '<input type="hidden" name="test" value="1" />' : '';
+
     // ---
     return <<<HTML
         <form action='import-history.php' method='POST'>
-            $testinput
+
             <div class='container'>
                 <div class='container'>
                     <div class='row'>
@@ -109,7 +105,7 @@ HTML;
 //---
 if ((empty($titlelist) && empty($title)) || !$valid_user) {
     //---
-    echo make_form($test, $title, $titlelist);
+    echo make_form($title, $titlelist);
     //---
 } else {
     //---

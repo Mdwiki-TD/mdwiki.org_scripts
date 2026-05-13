@@ -6,20 +6,19 @@ include_once __DIR__ . '/bots/file_bots.php';
 use function BOTS\Python\do_py;
 use function BOTS\FILE_BOTS\dump_to_file;
 
-$test       = $_GET['test'] ?? $_POST['test'] ?? '';
 $title      = $_GET['title'] ?? $_POST['title'] ?? '';
 $titlelist  = $_GET['titlelist'] ?? $_POST['titlelist'] ?? '';
 //---
 // the root path is the first part of the split file path
 $ROOT_PATH = getenv("HOME") ?: 'I:/MD_TOOLS/MDWIKI_MAIN_REPO';
 
-function printForm($title, $titlelist, $test)
+function printForm($title, $titlelist)
 {
     $start_icon = "<input class='btn btn-outline-primary' type='submit' value='send'>";
     // ---
     if (empty($GLOBALS['global_username'])) $start_icon = '<a role="button" class="btn btn-primary" href="/auth/login.php">Log in</a>';
     // ---
-    $testinput = (!empty($test)) ? '<input type="hidden" name="test" value="1" />' : '';
+
     //---
     $rows = <<<HTML
         <div class='col-lg-12'>
@@ -54,7 +53,7 @@ function printForm($title, $titlelist, $test)
 
     echo <<<HTML
         <form action='redirect.php' method='POST'>
-            $testinput
+
             <div class='container'>
                 <div class='container'>
                     <div class='row'>
@@ -68,8 +67,6 @@ function printForm($title, $titlelist, $test)
 function get_results($aargs)
 {
     //---
-    global $test;
-    //---
     $ccc = " red.py $aargs save";
     //---
     $params = array(
@@ -77,7 +74,6 @@ function get_results($aargs)
         'localdir' => "c9",
         'pyfile' => 'pwb.py',
         'other' => $ccc,
-        'test' => $test
     );
     //---
     $result = do_py($params, "redirect0");
@@ -124,7 +120,7 @@ echo <<<HTML
 HTML;
 //---
 if ((empty($title) && empty($titlelist)) || empty($GLOBALS['global_username'])) {
-    printForm($title, $titlelist, $test);
+    printForm($title, $titlelist);
 } else {
     createRedirects($title, $titlelist);
 }

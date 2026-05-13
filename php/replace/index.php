@@ -2,7 +2,6 @@
 include_once __DIR__ . '/../header.php';
 //---
 $listtype   = $_GET['listtype'] ?? $_POST['listtype'] ?? '';
-$test       = $_GET['test'] ?? $_POST['test'] ?? '';
 $find       = $_GET['find'] ?? $_POST['find'] ?? '';
 $replace    = $_GET['replace'] ?? $_POST['replace'] ?? '';
 $number     = $_GET['number'] ?? $_POST['number'] ?? '';
@@ -25,7 +24,7 @@ function generateRadioButton($id, $name, $value, $label, $checked = '')
 }
 
 // Function to generate the form
-function generateForm($find, $replace, $number, $test)
+function generateForm($find, $replace, $number)
 {
     global $username, $valid_user;
     $codeNote = (!$valid_user && !empty($username)) ? "<span style='font-size:12pt;color:red'>! ($username) Access denied.</span>" : '';
@@ -59,12 +58,10 @@ function generateForm($find, $replace, $number, $test)
         </div>
     HTML;
 
-    $test_1 = (!empty($test)) ? generateRadioButton('c1', 'test', '1', 'Test', '') : '';
 
     $input_2 =
         generateRadioButton('customRadio2', 'listtype', 'newlist', 'Use API search', 'checked') .
-        generateRadioButton('customRadio', 'listtype', 'oldlist', 'Work in all pages') .
-        $test_1;
+        generateRadioButton('customRadio', 'listtype', 'oldlist', 'Work in all pages');
 
     // ---
     $start_icon = (empty($username)) ? '<a role="button" class="btn btn-primary" href="/auth/login.php">Log in</a>' : "";
@@ -163,7 +160,7 @@ echo <<<HTML
 HTML;
 //---
 if (empty($find) || empty($replace) || !$valid_user) {
-    generateForm($find, $replace, $number, $test);
+    generateForm($find, $replace, $number);
 } else {
     performReplacement($find, $replace, $number, $listtype);
 }

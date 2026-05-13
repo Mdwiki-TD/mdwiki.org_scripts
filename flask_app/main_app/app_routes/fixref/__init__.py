@@ -18,7 +18,6 @@ logger = logging.getLogger(__name__)
 def fixref():
     titlelist = request.values.get("titlelist", "")
     number = request.values.get("number", "")
-    test = request.values.get("test", "")
 
     result = None
     if request.method == "POST":
@@ -30,14 +29,11 @@ def fixref():
                 result = f"Fix refs started for {lines_count} title(s)"
             elif number:
                 result = f"Fix refs started for {number} pages"
-            if test:
-                result = f"[TEST] {result}"
 
     return render_template(
         "fixref.html",
         titlelist=titlelist,
         number=number,
-        test=test,
         result=result,
     )
 

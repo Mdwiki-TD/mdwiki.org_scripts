@@ -21,11 +21,6 @@ from_to = {}
 normalized = {}
 
 
-def printtest(s):
-    if "test" in sys.argv:
-        logger.info(s)
-
-
 @functools.lru_cache(maxsize=1)
 def load_nonredirects() -> list[str]:
     api_new = NewApi("www", family="mdwiki")
@@ -216,9 +211,9 @@ def main():
     ttab = []
     # ---
     # python3 fixred.py
-    # python  fixred.py test -page:WikiProjectMed:List ask
-    # python  fixred.py test -page:User:Mr._Ibrahem/sandbox
-    # python3 fixred.py test -page:Tetracycline_antibiotics
+    # python  fixred.py -page:WikiProjectMed:List ask
+    # python  fixred.py -page:User:Mr._Ibrahem/sandbox
+    # python3 fixred.py -page:Tetracycline_antibiotics
     # ---
     for arg in sys.argv:
         arg, _, value = arg.partition(":")

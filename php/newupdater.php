@@ -104,7 +104,7 @@ function generateEditForm($title, $newtext = '')
     return $form;
 }
 
-function make_title_form($test, $title, $save_checked)
+function make_title_form($title, $save_checked)
 {
     $title3 = htmlspecialchars($title, ENT_QUOTES, 'UTF-8');
     // ---
@@ -112,11 +112,11 @@ function make_title_form($test, $title, $save_checked)
     // ---
     if (empty($GLOBALS['global_username'])) $start_icon = '<a role="button" class="btn btn-primary" href="/auth/login.php">Log in</a>';
     // ---
-    $testinput = (!empty($test)) ? '<input type="hidden" name="test" value="1" />' : '';
+
     //---
     return <<<HTML
         <form action='newupdater.php' method='GET'>
-            $testinput
+
             <div class='container'>
                 <div class='row'>
                     <div class='col-md-4'>
@@ -144,24 +144,19 @@ function make_title_form($test, $title, $save_checked)
     HTML;
 }
 
-function worknew($title, $test, $save)
+function worknew($title, $save)
 {
     [$resultb, $command] = get_results($title, $save) ?? '';
     //---
     $resultHtml = '';
     //---
-    if ($_SERVER['SERVER_NAME'] == 'localhost' || $test != '') {
+    if ($_SERVER['SERVER_NAME'] == 'localhost') {
         $resultHtml .= "<h6>$command</h6>";
     };
     //---
     $resultb = trim($resultb);
     //---
     $t3 = endsWith($resultb, '.txt');
-    //---
-    if ($test) {
-        $resultHtml .= "results:<br>";
-        $resultHtml .= "<pre>" . htmlspecialchars($resultb, ENT_QUOTES, 'UTF-8') . "</pre>";
-    }
     //---
     $site = "mdwiki.org";
     //---
@@ -194,7 +189,7 @@ function worknew($title, $test, $save)
         $resultHtml .= $edt_link_row;
     }
     // ---
-    if ($t3 || $test) {
+    if ($t3) {
         //---
         $newtext = $t3 ? file_get_contents($resultb) : '';
         //---
@@ -210,12 +205,11 @@ function worknew($title, $test, $save)
     return $resultHtml;
 }
 
-$test         = $_GET['test'] ?? '';
 $title        = $_GET['title'] ?? '';
 $save         = isset($_GET['save']) ? 'save' : '';
 $save_checked = isset($_GET['save']) ? 'checked' : '';
 //---
-$title_form = make_title_form($test, $title, $save_checked);
+$title_form = make_title_form($title, $save_checked);
 // ---
 echo <<<HTML
     <div class="card">
@@ -236,7 +230,7 @@ if (empty($GLOBALS['global_username'])) {
 };
 // ---
 if (!empty($title) && !empty($GLOBALS['global_username'])) {
-    $result = worknew($title, $test, $save);
+    $result = worknew($title, $save);
 };
 // ---
 echo <<<HTML

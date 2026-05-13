@@ -16,7 +16,6 @@ logger = logging.getLogger(__name__)
 
 @bp_dup.route("/", methods=["GET", "POST"])
 def dup():
-    test = request.values.get("test", "")
     start = request.values.get("start", "")
 
     result = None
@@ -24,12 +23,9 @@ def dup():
         logger.info("fix_duplicate job triggered")
         # TODO: integrate fix_duplicate.py backend call directly
         result = "Fix duplicate job queued"
-        if test:
-            result = f"[TEST] {result}"
 
     return render_template(
         "dup.html",
-        test=test,
         start=start,
         result=result,
     )

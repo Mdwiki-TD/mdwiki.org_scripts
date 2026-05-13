@@ -11,20 +11,19 @@ $ROOT_PATH = getenv("HOME") ?: 'I:/MD_TOOLS/MDWIKI_MAIN_REPO';
 //---
 $titlelist  = $_GET['titlelist'] ?? $_POST['titlelist'] ?? '';
 $number     = $_GET['number'] ?? $_POST['number'] ?? '';
-$test       = $_GET['test'] ?? $_POST['test'] ?? '';
 //---
 
-function make_form($titlelist, $number, $test)
+function make_form($titlelist, $number)
 {
 	$start_icon = "<input class='btn btn-outline-primary' type='submit' value='send'>";
 	// ---
 	if (empty($GLOBALS['global_username'])) $start_icon = '<a role="button" class="btn btn-primary" href="/auth/login.php">Log in</a>';
 	// ---
-	$testinput = (!empty($test)) ? '<input type="hidden" name="test" value="1" />' : '';
+
 	//---
 	echo <<<HTML
 	<form action='fixref.php' method='POST'>
-		$testinput
+
 		<div class='container'>
 			<div class='container'>
 				<div class='row'>
@@ -62,9 +61,7 @@ HTML;
 
 function get_results($aargs)
 {
-	//---
-	global $test;
-	//---
+	//---x
 	$ccc = " fixref/start.py $aargs save";
 	//---
 	$params = array(
@@ -72,7 +69,6 @@ function get_results($aargs)
 		'localdir' => "c9",
 		'pyfile' => 'pwb.py',
 		'other' => $ccc,
-		'test' => $test
 	);
 	//---
 	$result = do_py($params, "fixref0");
@@ -90,7 +86,7 @@ HTML;
 //---
 
 if ((empty($number) && empty($titlelist)) || empty($GLOBALS['global_username'])) {
-	make_form($titlelist, $number, $test);
+	make_form($titlelist, $number);
 } else {
 	//---
 	$command = "";
@@ -121,8 +117,6 @@ if ((empty($number) && empty($titlelist)) || empty($GLOBALS['global_username']))
 	}
 	//---
 	echo "<h4 style='color:green'>The bot will start in seconds.</h4>";
-	//---
-	if (!empty($test)) echo $command;
 	//---
 	$result = get_results($command);
 	//---

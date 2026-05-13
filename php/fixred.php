@@ -13,13 +13,12 @@ echo <<<HTML
 HTML;
 //---
 $title = $_GET['title'] ?? '';
-$test  = $_GET['test'] ?? '';
 //---
 echo <<<HTML
 	<div class='container'>
 HTML;
 //---
-$testinput = (!empty($test)) ? '<input type="hidden" name="test" value="1" />' : '';
+
 //---
 $start_icon = "<input class='btn btn-outline-primary' type='submit' value='send'>";
 // ---
@@ -27,7 +26,7 @@ if (empty($GLOBALS['global_username'])) $start_icon = '<a role="button" class="b
 // ---
 echo <<<HTML
 	<form action='fixred.php' method='GET'>
-		$testinput
+
 		<div class='container'>
 			<div class='row'>
 				<div class='col-lg-12'>
@@ -54,7 +53,6 @@ HTML;
 function get_results($title)
 {
 	//---
-	global $test;
 	//---
 	$title2 = str_replace('+', '_', $title);
 	$title2 = str_replace(' ', '_', $title2);
@@ -69,7 +67,6 @@ function get_results($title)
 		'localdir' => "c9",
 		'pyfile' => 'pwb.py',
 		'other' => $ccc,
-		'test' => $test
 	);
 	//---
 	$result = do_py($params, 'fixred0');
