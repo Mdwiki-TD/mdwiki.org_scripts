@@ -184,7 +184,7 @@ def main():
         arg, _, value = arg.partition(":")
         # ---
         if arg in ["-page2", "page2"]:
-            value = py_tools.ec_de_code(value.strip(), "decode")
+            value = value.strip()
             ttab.append(value.strip())
         # ---
         if arg == "-page":

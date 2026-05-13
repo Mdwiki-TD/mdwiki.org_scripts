@@ -4,8 +4,8 @@ python3 I:/MD_TOOLS/mdwiki.toolforge.org/PYTHON_REPOS/pybot/src/newupdater/med.p
 """
 import sys
 
-from new_updater import ec_de_code, work_on_text
-from python.mdapi import GetPageText, page_put
+from new_updater import work_on_text
+from mdapi import GetPageText, page_put
 
 
 def get_new_text(title):
@@ -60,8 +60,6 @@ def work(title):
     # ---
     if title == "":
         return "no page"
-    # ---
-    title = ec_de_code(title, "decode")
     # ---
     err, new_text = work_on_title(title)
     # ---

@@ -136,10 +136,10 @@ def main():
         arg = arg.lower()
         # ---
         if arg == "-from":
-            From = py_tools.ec_de_code(value, "decode")
+            From = value
         # ---
         if arg in ["-page2", "page2"]:
-            page2 = py_tools.ec_de_code(value, "decode")
+            page2 = value
     # ---
     if page2 != "" and From != "":
         work(page2, 0, 1, From=From)
@@ -174,7 +174,7 @@ def main():
             pages.append(value)
         # ---
         if arg in ["-page2", "page2"]:
-            value = py_tools.ec_de_code(value, "decode")
+            value = value
             pages.append(value)
         # ---
         if arg in ["newpages", "-newpages"]:
