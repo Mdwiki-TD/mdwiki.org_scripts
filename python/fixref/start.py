@@ -9,7 +9,7 @@ import os
 import sys
 
 from fixref_text_new import fix_ref_template
-from mdwiki_api.mdwiki_page import CatDepth, NewApi, load_main_api
+from python.mdwiki_page import CatDepth, NewApi, load_main_api
 
 logger = logging.getLogger(__name__)
 

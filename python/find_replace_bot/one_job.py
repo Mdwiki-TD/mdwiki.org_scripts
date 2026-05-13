@@ -10,7 +10,7 @@ import sys
 from pathlib import Path
 
 import tqdm
-from mdwiki_api.mdwiki_page import MainPage, NewApi
+from python.mdwiki_page import MainPage, NewApi
 
 logger = logging.getLogger(__name__)
 

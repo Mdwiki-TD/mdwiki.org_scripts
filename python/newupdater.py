@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 """
-python3 I:/MD_TOOLS/mdwiki.toolforge.org/PYTHON_REPOS/pybot/src/newupdater/med.py -page:Aspirin from_toolforge
+python3 I:/MD_TOOLS/mdwiki.toolforge.org/PYTHON_REPOS/pybot/src/newupdater.py -page:Aspirin from_toolforge
 """
 import sys
 

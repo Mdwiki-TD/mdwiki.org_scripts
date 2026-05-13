@@ -16,7 +16,7 @@
     - `save` checkbox (auto-save)
 2. On submit with logged-in user:
     - Sanitizes title (replaces spaces and `+`)
-    - Calls `do_py_new()` to run `newupdater/med.py -page:title from_toolforge [save]`
+    - Calls `do_py_new()` to run `newupdater.py -page:title from_toolforge [save]`
     - Processes result:
         - `"no changes"` → "no changes" message + edit link
         - `"save ok"` → success message
@@ -33,10 +33,10 @@
 
 -   Runs Python locally instead of Toolforge:
     ```
-    python3 path/to/newupdater/med.py -page:title from_toolforge [save]
+    python3 path/to/newupdater.py -page:title from_toolforge [save]
     ```
 
-## Python: `python/newupdater/med.py`
+## Python: `python/newupdater.py`
 
 ### How it works
 
@@ -71,8 +71,8 @@ GET /newupdater/                 → render empty form
 
 ### Remaining work
 
-1. **Direct `med.py` call**
-    - Import `get_new_text()` and `work()` from `med.py`
+1. **Direct `newupdater.py` call**
+    - Import `get_new_text()` and `work()` from `newupdater.py`
     - Pass `title` and `save` directly
 2. **Pre-filled edit form** — instead of POSTing to mdwiki.org
     - Display diff between old and new text

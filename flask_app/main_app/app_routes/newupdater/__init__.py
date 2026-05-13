@@ -24,7 +24,7 @@ def newupdater():
     result = None
     if title:
         logger.info(f"newupdater triggered for title: {title}, save={bool(save)}")
-        # TODO: integrate newupdater/med.py backend call directly
+        # TODO: integrate newupdater.py backend call directly
         result = f"Med updater started for: {title}"
         if save:
             result += " (auto-save enabled)"

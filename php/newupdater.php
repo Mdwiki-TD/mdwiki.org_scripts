@@ -58,7 +58,7 @@ function get_results($title, $save)
     $params = array(
         'dir' => $root_path . "/newupdater",
         'localdir' => $root_path . "/newupdater",
-        'pyfile' => 'med.py',
+        'pyfile' => 'newupdater.py',
         'other' => $ccc
     );
     //---

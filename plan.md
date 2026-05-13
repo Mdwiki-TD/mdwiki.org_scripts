@@ -8,7 +8,7 @@
 -   `php/replace/index.php` > `python/find_replace_bot/*.py`
 -   `php/import-history.php` > `python/imp.py`
 -   `php/redirect.php` > `python/red.py`
--   `php/newupdater.php` > `python/newupdater/med.py`
+-   `php/newupdater.php` > `python/newupdater.py`
 
 يوجد لدينا أيضًا قوالب `templates` تعكس حالة ملفات php قبل التعامل مع اي بيانات وهي بحاجة لتطوير وتحديث:
 

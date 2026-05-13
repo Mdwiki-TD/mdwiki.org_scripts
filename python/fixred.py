@@ -11,7 +11,7 @@ import logging
 import re
 import sys
 
-from mdwiki_api.mdwiki_page import NewApi, md_MainPage
+from python.mdwiki_page import NewApi, md_MainPage
 
 from .mdapi import post_s
 

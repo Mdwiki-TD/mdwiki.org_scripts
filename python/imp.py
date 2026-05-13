@@ -10,7 +10,7 @@ python3 core8/pwb.py md_core/mdpy/imp -page:Infertility
 import logging
 import sys
 
-from mdwiki_api.mdwiki_page import MainPage, NewApi
+from python.mdwiki_page import MainPage, NewApi
 
 logger = logging.getLogger(__name__)
 
