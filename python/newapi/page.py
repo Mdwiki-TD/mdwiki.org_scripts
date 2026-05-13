@@ -5,7 +5,7 @@ import os
 
 from .all_apis import AllAPIS
 from .config import settings
-from .super import bot_api
+from .client_wiki import bot_api
 
 MainPage_DEPRECATION_WARNING = """
     NewApi is deprecated. Please use:

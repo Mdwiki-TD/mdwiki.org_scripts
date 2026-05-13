@@ -9,8 +9,8 @@ from datetime import timedelta
 import tqdm
 
 from ..api_client import WikiLoginClient
-from ..client_wiki.api_utils.handel_errors import HandleErrors
-from ..client_wiki.api_utils.lang_codes import change_codes
+from .api_utils.handel_errors import HandleErrors
+from .api_utils.lang_codes import change_codes
 
 logger = logging.getLogger(__name__)
 
@@ -1014,19 +1014,6 @@ class NewApi(HandleErrors):
         # ---
         logger.debug(f"** .. [[{title}]] ")
         # ---
-        user = self.username
-        # ---
-        ask = self.ask_put(
-            newtext=text,
-            message=f"** Add_To {poss} .. [[{title}]] ",
-            job="Add_To_Bottom",
-            username=user,
-            summary=summary,
-        )
-        # ---
-        if ask is False:
-            return False
-        # ---
         params = {
             "action": "edit",
             "format": "json",
@@ -1095,13 +1082,6 @@ class NewApi(HandleErrors):
         # ---
         if old_title == to:
             logger.debug(f"<<lightred>>** old_title == to {to} ")
-            return {}
-        # ---
-        message = f"Do you want to move page:[[{old_title}]] to [[{to}]]?"
-        # ---
-        user = self.username
-        # ---
-        if not self.ask_put(message=message, job="move", username=user):
             return {}
         # ---
         data = self.login_bot.client_request_safe(params)

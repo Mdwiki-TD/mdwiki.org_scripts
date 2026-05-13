@@ -3,7 +3,7 @@
 import logging
 
 from ..api_client import WikiLoginClient
-from ..super import bot_api
+from . import bot_api
 from .categories import catdepth_new
 from .pages import super_page
 

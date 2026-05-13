@@ -7,7 +7,6 @@ import wikitextparser as wtp
 
 from ...api_client import WikiLoginClient
 from ...client_wiki.api_utils.handel_errors import HandleErrors
-from ...config import settings
 from ..api_utils import txtlib
 from ..api_utils.botEdit import bot_May_Edit
 from ..api_utils.lang_codes import change_codes
@@ -97,9 +96,6 @@ class MainPage(HandleErrors):
         Returns True if the edit is likely to be a false or destructive edit, such as removing over 90% of the page content or matching language-specific error conditions (e.g., for Arabic pages). Returns False if the edit is allowed or if the page is not in the main namespace.
         """
         if self.ns is False or self.ns != 0:
-            return False
-
-        if settings.bot.no_fa:
             return False
 
         if not self.text:
@@ -650,8 +646,6 @@ class MainPage(HandleErrors):
         nocreate=1,
         minor="0",
         tags="",
-        nodiff=False,
-        ask=False,
     ) -> bool | str:
         """
         Saves new text to the page, updating its content and metadata.
@@ -664,8 +658,6 @@ class MainPage(HandleErrors):
                 nocreate: If 1 (default), prevents creating the page if it does not exist.
                 minor: Indicates if the edit should be marked as minor.
                 tags: Optional tags to associate with the edit.
-                nodiff: If True, skips showing a diff before saving.
-                ask: If True, prompts the user for confirmation before saving.
 
         Returns:
                 True if the edit was successful, False otherwise.
@@ -676,24 +668,6 @@ class MainPage(HandleErrors):
             self.content.summary = summary
 
         if self.false_edit():
-            return False
-
-        message = f"Do you want to save this page? ({self.lang}:{self.title})"
-
-        user = self.meta.username
-
-        if (
-            self.ask_put(
-                nodiff=nodiff,
-                newtext=newtext,
-                text=self.text,
-                message=message,
-                job="save",
-                username=user,
-                summary=self.content.summary,
-            )
-            is False
-        ):
             return False
 
         params = {
@@ -788,8 +762,6 @@ class MainPage(HandleErrors):
         self,
         text="",
         summary="",
-        nodiff="",
-        noask=False,
     ) -> bool:
         """
         Creates a new page with the specified text and summary.
@@ -799,31 +771,11 @@ class MainPage(HandleErrors):
         Args:
             text: The wikitext content to use for the new page.
             summary: Edit summary for the page creation.
-            nodiff: If set, disables showing a diff before confirmation.
-            noask: If True, skips the user confirmation prompt.
 
         Returns:
             True if the page was created successfully, False otherwise or if the user aborts.
         """
         self.newtext = text
-
-        if not noask:
-            message = f"Do you want to create this page? ({self.lang}:{self.title})"
-
-            user = self.meta.username
-
-            if (
-                self.ask_put(
-                    nodiff=nodiff,
-                    newtext=text,
-                    message=message,
-                    job="create",
-                    username=user,
-                    summary=summary,
-                )
-                is False
-            ):
-                return False
 
         params = {
             "action": "edit",
@@ -870,10 +822,8 @@ class MainPage(HandleErrors):
         self,
         text="",
         summary="",
-        nodiff="",
-        noask=False,
     ) -> bool:
-        return self.create(text=text, summary=summary, nodiff=nodiff, noask=noask)
+        return self.create(text=text, summary=summary)
 
     def page_backlinks(self, ns=0):
         params = {

@@ -111,22 +111,11 @@ class BotConfig:
     """Configuration for bot behavior.
 
     Attributes:
-        ask: Ask for confirmation before making changes
-        no_diff: Don't show diff when asking for confirmation
-        show_diff: Force show diff when asking for confirmation
-        no_print: Don't show diff when asking for confirmation
-        no_fa: Dont check if the edit is false edit
         workibrahem:
         force_edit: Force bot edit (bypass nobots check)
         no_login: Disable login assertion
         no_cookies: Disable cookie storage
     """
-
-    ask: bool = False
-    no_diff: bool = False
-    show_diff: bool = False
-    no_print: bool = False
-    no_fa: bool = False
     workibrahem: bool = False
     force_edit: bool = False
     no_login: bool = False
@@ -321,21 +310,6 @@ class Settings:
                 self.debug_config.print_url = True
             if arg_name == "dopost":
                 self.debug_config.do_post = True
-
-            # Bot config
-            if arg_name == "ask":
-                self.bot.ask = True
-
-            if arg_name == "nodiff":
-                self.bot.no_diff = True
-            if arg_name == "diff":
-                self.bot.show_diff = True
-
-            if arg_name == "noprint":
-                self.bot.no_print = True
-
-            if arg_name == "nofa":
-                self.bot.no_fa = True
 
             if arg_name == "workibrahem":
                 self.bot.workibrahem = True
