@@ -1,9 +1,5 @@
 """
 
-from .data import Content, Meta, RevisionsData, LinksData, CategoriesData, TemplateData
-
-(Exists|all_categories_with_hidden|back_links|can_be_edit|categories|create_data|extlinks|flagged|hidden_categories|info|is_disambig|is_redirect|iwlinks|length|links_here|links|newrevid|pageid|revid|revisions|summary|templates|templates_api|text_html|timestamp|touched|userinfo|username|wikibase_item|words)
-
 """
 
 from dataclasses import dataclass, field
@@ -22,7 +18,6 @@ class Content:
 @dataclass
 class Meta:
     is_disambig: bool = False
-    can_be_edit: bool = False
     # ns: int = 0
     userinfo: dict = field(default_factory=dict)
     create_data: dict = field(default_factory=dict)

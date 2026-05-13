@@ -8,8 +8,6 @@ import wikitextparser as wtp
 from ...api_client import WikiLoginClient
 from ...client_wiki.api_utils.handel_errors import HandleErrors
 from ..api_utils import txtlib
-from ..api_utils.botEdit import bot_May_Edit
-from ..api_utils.lang_codes import change_codes
 from .data import CategoriesData, Content, LinksData, Meta, RevisionsData, TemplateData
 
 logger = logging.getLogger(__name__)
@@ -52,7 +50,7 @@ class MainPage(HandleErrors):
         self.login_bot = login_bot
 
         self.title: str = title
-        self.lang: str = change_codes.get(lang) or lang
+        self.lang: str = lang
         self.family: str = family
         self.endpoint: str = f"https://{self.lang}.{self.family}.org/w/api.php"
 
@@ -554,17 +552,7 @@ class MainPage(HandleErrors):
         return new_tags
 
     def can_edit(self, script="", delay=0):
-        if self.family != "wikipedia":
-            return True
-
-        if not self.text:
-            self.text = self.get_text()
-
-        self.meta.can_be_edit = bot_May_Edit(
-            text=self.text, title_page=self.title, botjob=script, page=self, delay=delay
-        )
-
-        return self.meta.can_be_edit
+        return True
 
     def is_flagged(self):
         """

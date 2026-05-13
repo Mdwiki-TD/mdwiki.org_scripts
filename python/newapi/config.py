@@ -111,13 +111,9 @@ class BotConfig:
     """Configuration for bot behavior.
 
     Attributes:
-        workibrahem:
-        force_edit: Force bot edit (bypass nobots check)
         no_login: Disable login assertion
         no_cookies: Disable cookie storage
     """
-    workibrahem: bool = False
-    force_edit: bool = False
     no_login: bool = False
     no_cookies: bool = False
 
@@ -311,11 +307,6 @@ class Settings:
             if arg_name == "dopost":
                 self.debug_config.do_post = True
 
-            if arg_name == "workibrahem":
-                self.bot.workibrahem = True
-
-            if arg_name in ("botedit", "editbot"):
-                self.bot.force_edit = True
             if arg_name == "nologin":
                 self.bot.no_login = True
             if arg_name == "nocookies":

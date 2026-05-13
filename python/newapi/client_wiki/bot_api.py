@@ -10,7 +10,6 @@ import tqdm
 
 from ..api_client import WikiLoginClient
 from .api_utils.handel_errors import HandleErrors
-from .api_utils.lang_codes import change_codes
 
 logger = logging.getLogger(__name__)
 
@@ -22,7 +21,7 @@ class NewApi(HandleErrors):
         # ---
         self.username = getattr(self, "username", "")
         # self.family = family
-        self.lang = change_codes.get(lang) or lang
+        self.lang = lang
         # ---
         # self.family = family
         # self.endpoint = f"https://{lang}.{family}.org/w/api.php"
