@@ -7,7 +7,6 @@
 | Variable | Source  | Type            | Description                    |
 | -------- | ------- | --------------- | ------------------------------ |
 | `title`  | `$_GET` | text (required) | Page title to fix redirects in |
-| `test`   | `$_GET` | hidden          | Test mode flag (value="1")     |
 
 ### Flow
 
@@ -16,14 +15,14 @@
 3. On submit with logged-in user:
     - Sanitizes title: replaces `+` and spaces with `_`, then `rawurlencode`
     - Builds command: `fixred.py -page2:title save`
-    - Executes via `do_py()` (Toolforge job runner)
+    - Executes via `do_py()`
 4. Displays the result
 
 ### `get_results($title)` function
 
 -   Calls `do_py()` with params:
     ```
-    dir="c9", localdir="c9", pyfile="pwb.py", other="fixred.py -page2:title save", test=test
+    dir="c9", localdir="c9", pyfile="pwb.py", other="fixred.py -page2:title save"
     ```
 
 ## Python: `python/fixred.py`
@@ -45,7 +44,6 @@
 | PHP              | Python CLI                |
 | ---------------- | ------------------------- |
 | `$_GET['title']` | `-page2:urlencoded_title` |
-| `test=1`         | `test` in `sys.argv`      |
 
 ---
 
@@ -54,8 +52,8 @@
 ### Current route: `flask_app/main_app/app_routes/fixred/__init__.py`
 
 ```
-GET /fixred/?title=X&test=1  → process and display result
-GET /fixred/                 → render empty form
+GET /fixred/?title=X  → process and display result
+GET /fixred/          → render empty form
 ```
 
 ### Remaining work

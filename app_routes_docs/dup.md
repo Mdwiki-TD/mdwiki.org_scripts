@@ -4,10 +4,9 @@
 
 ### Parameters
 
-| Variable | Source              | Type          | Description                                    |
-| -------- | ------------------- | ------------- | ---------------------------------------------- |
-| `start`  | `$_POST`            | submit button | Triggers the job (name="start", value="start") |
-| `test`   | `$_GET` or `$_POST` | hidden        | Test mode flag (value="1")                     |
+| Variable | Source   | Type          | Description                                    |
+| -------- | -------- | ------------- | ---------------------------------------------- |
+| `start`  | `$_POST` | submit button | Triggers the job (name="start", value="start") |
 
 ### Flow
 
@@ -15,7 +14,6 @@
 2. If user is not logged in → login link instead of button
 3. On POST with `start` and logged-in user:
     - Executes shell: `toolforge jobs run fixduplict --image python3.9 --command "python3 fix_duplicate.py save"`
-    - If `test=1`: displays the command without actual execution
 
 ## Python: `python/fix_duplicate.py`
 
@@ -33,10 +31,9 @@
 
 ### Mapping
 
-| PHP                        | Python CLI                         |
-| -------------------------- | ---------------------------------- |
-| `$_POST['start']` (button) | triggers `fix_duplicate.py save`   |
-| `test=1`                   | Not passed — only displays command |
+| PHP                        | Python CLI                       |
+| -------------------------- | -------------------------------- |
+| `$_POST['start']` (button) | triggers `fix_duplicate.py save` |
 
 ---
 
@@ -46,7 +43,7 @@
 
 ```
 GET  /dup/  → render form
-POST /dup/  → accept start + test
+POST /dup/  → accept start
 ```
 
 ### Remaining work

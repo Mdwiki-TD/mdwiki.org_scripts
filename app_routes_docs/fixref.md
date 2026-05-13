@@ -8,7 +8,6 @@
 | ----------- | ------------------- | -------- | ----------------------------------------- |
 | `titlelist` | `$_GET` or `$_POST` | textarea | List of titles (one per line)             |
 | `number`    | `$_GET` or `$_POST` | number   | Number of pages to process (for allpages) |
-| `test`      | `$_GET` or `$_POST` | hidden   | Test mode flag (value="1")                |
 
 ### Flow
 
@@ -40,12 +39,11 @@
 
 ### Mapping
 
-| PHP                                     | Python CLI               |
-| --------------------------------------- | ------------------------ |
-| `$_GET/POST['titlelist']` (single line) | `-title:escaped_title`   |
-| `$_GET/POST['titlelist']` (multiple)    | `-file:temp_file_path`   |
-| `$_GET/POST['number']`                  | `allpages -number:N`     |
-| `test=1`                                | `test` in `do_py` params |
+| PHP                                     | Python CLI             |
+| --------------------------------------- | ---------------------- |
+| `$_GET/POST['titlelist']` (single line) | `-title:escaped_title` |
+| `$_GET/POST['titlelist']` (multiple)    | `-file:temp_file_path` |
+| `$_GET/POST['number']`                  | `allpages -number:N`   |
 
 ---
 

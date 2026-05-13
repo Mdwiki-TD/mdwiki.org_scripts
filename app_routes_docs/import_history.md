@@ -6,7 +6,6 @@
 
 | Variable    | Source              | Type     | Description                                   |
 | ----------- | ------------------- | -------- | --------------------------------------------- |
-| `test`      | `$_GET` or `$_POST` | hidden   | Test mode flag (value="1")                    |
 | `from`      | `$_GET` or `$_POST` | text     | Source language (optional, only with `title`) |
 | `title`     | `$_GET` or `$_POST` | text     | Single page title                             |
 | `titlelist` | `$_GET` or `$_POST` | textarea | List of titles (alternative to `title`)       |
@@ -51,7 +50,6 @@
 | `$_GET/POST['title']`     | `-page:urlencoded_title` |
 | `$_GET/POST['from']`      | `-from:urlencoded_value` |
 | `$_GET/POST['titlelist']` | `-file:importlist.txt`   |
-| `test=1`                  | `test` in `do_py` params |
 
 ---
 

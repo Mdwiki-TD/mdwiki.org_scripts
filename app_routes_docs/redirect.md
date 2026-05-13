@@ -6,7 +6,6 @@
 
 | Variable    | Source              | Type     | Description                             |
 | ----------- | ------------------- | -------- | --------------------------------------- |
-| `test`      | `$_GET` or `$_POST` | hidden   | Test mode flag (value="1")              |
 | `title`     | `$_GET` or `$_POST` | text     | Single page title                       |
 | `titlelist` | `$_GET` or `$_POST` | textarea | List of titles (alternative to `title`) |
 
@@ -49,7 +48,6 @@
 | ------------------------- | ------------------------- |
 | `$_GET/POST['title']`     | `-page2:urlencoded_title` |
 | `$_GET/POST['titlelist']` | `-file:redirectlist.txt`  |
-| `test=1`                  | `test` in `do_py` params  |
 
 ---
 

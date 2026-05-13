@@ -6,7 +6,6 @@
 
 | Variable | Source  | Type            | Description                  |
 | -------- | ------- | --------------- | ---------------------------- |
-| `test`   | `$_GET` | hidden          | Test mode flag (value="1")   |
 | `title`  | `$_GET` | text (required) | Page title                   |
 | `save`   | `$_GET` | checkbox        | Auto-save toggle (value="1") |
 
@@ -58,7 +57,6 @@
 | ---------------- | ------------------------------------------ |
 | `$_GET['title']` | `-page:title` (with `_` replaced by space) |
 | `$_GET['save']`  | `save` in `sys.argv`                       |
-| `test=1`         | only displays command                      |
 
 ---
 
