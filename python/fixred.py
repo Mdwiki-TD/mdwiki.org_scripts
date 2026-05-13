@@ -11,9 +11,7 @@ import logging
 import re
 import sys
 
-from md_core.mdpy.bots import py_tools
-from md_core_helps.apis import mdwiki_api_call
-from mdwiki_api.mdwiki_page import md_MainPage
+from mdwiki_api.mdwiki_page import NewApi, md_MainPage
 
 from .mdapi import post_s
 
@@ -30,7 +28,8 @@ def printtest(s):
 
 @functools.lru_cache(maxsize=1)
 def load_nonredirects() -> list[str]:
-    nonredirects = mdwiki_api_call.Get_All_pages("!", namespace="0", apfilterredir="nonredirects")
+    api_new = NewApi("www", family="mdwiki")
+    nonredirects = api_new.Get_All_pages("!", namespace="0", apfilterredir="nonredirects")
     logger.info(f"len of nonredirects {len(nonredirects)} ")
     return nonredirects
 
@@ -130,6 +129,47 @@ def replace_links2(text, oldlink, newlink):
     return text
 
 
+def Get_page_links(title, namespace="0", limit="max"):
+    # ---
+    logger.info(f' for title:"{title}", limit:"{limit}",namespace:"{namespace}"')
+    # ---
+    params = {
+        "action": "query",
+        "prop": "links",
+        "titles": title,
+        "plnamespace": namespace,
+        "pllimit": limit,
+        "converttitles": 1,
+    }
+    # ---
+    json1 = post_s(params) or {}
+    # ---
+    Main_table = {
+        "links": {},
+        "normalized": [],
+        "redirects": [],
+    }
+    # ---
+    if json1:
+        # ---
+        query = json1.get("query", {})
+        Main_table["normalized"] = query.get("normalized", [])
+        Main_table["redirects"] = query.get("redirects", [])
+        # ---
+        pages = query.get("pages", {})
+        # ---
+        for page in pages:
+            tab = pages[page]
+            for pa in tab.get("links", []):
+                Main_table["links"][pa["title"]] = {"ns": pa["ns"], "title": pa["title"]}
+    else:
+        logger.info("mdwiki_api.py no json1")
+    # ---
+    logger.info(f"mdwiki_api.py : find {len(Main_table['links'])} pages.")
+    # ---
+    return Main_table
+
+
 def treat_page(title):
     """
     Change all redirects from the current page to actual links.
@@ -141,7 +181,7 @@ def treat_page(title):
     text = page.get_text()
     # ---
     # links = page.page_links_query(plnamespace="0")
-    links = mdwiki_api_call.Get_page_links(title, namespace="0", limit="max")
+    links = Get_page_links(title, namespace="0", limit="max")
     # ---
     normal = links.get("normalized", [])
     logger.info(f"find {len(normal)} normalized..")

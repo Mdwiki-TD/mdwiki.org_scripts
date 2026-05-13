@@ -10,9 +10,6 @@ import logging
 import sys
 
 import requests
-from md_core.mdpy.bots import py_tools
-from md_core.mdpy.bots.check_title import valid_title
-from md_core_helps.apis import mdwiki_api_call
 from mdwiki_api.mdwiki_page import MainPage, NewApi
 
 logger = logging.getLogger(__name__)
@@ -29,6 +26,26 @@ for arg in sys.argv:
     # ---
     if arg.lower() in ["offset", "-offset"] and value.isdigit():
         offset[1] = int(value)
+
+falses = [
+    "category:",
+    "file:",
+    "template:",
+    "user:",
+    # "video:",
+    "wikipedia:",
+]
+
+
+def valid_title(title: str) -> bool:
+    # ---
+    title = title.lower().strip()
+    # ---
+    if title.find("(disambiguation)") != -1:
+        return False
+    # ---
+    # if title.startswith('category:') or title.startswith('file:') or title.startswith('template:') or title.startswith('user:'):
+    return not any(title.startswith(prefix) for prefix in falses)
 
 
 @functools.lru_cache(maxsize=1)
@@ -113,7 +130,10 @@ def work(title, num, length, From=""):
         if not valid_title(tit):
             continue
         # ---
-        mdwiki_api_call.create_Page(text, sus, tit, False, family="mdwiki", sleep=1)
+        new_page = MainPage(tit, "www", family="mdwiki")
+        exists = new_page.exists()
+        if not exists:
+            new_page.create(text, sus)
 
 
 def main():
@@ -243,7 +263,7 @@ def main():
     if newpages != "":
         list = api_new.Get_Newpages(limit=newpages, namespace=namespaces)
     elif user != "":
-        list = mdwiki_api_call.Get_UserContribs(user, limit=user_limit, namespace=namespaces, ucshow="new")
+        list = api_new.UserContribs(user, limit=user_limit, namespace=namespaces, ucshow="new")
     elif pages != []:
         list = pages
     for num, page in enumerate(list, start=1):

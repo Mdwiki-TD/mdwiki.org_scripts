@@ -8,18 +8,11 @@ import logging
 import os
 import sys
 
-# result_table = CatDepth(title, sitecode="www", family="mdwiki", depth=0, ns="0")
-from pathlib import Path
-
-from md_core.mdpy.fixref.fixref_text_new import fix_ref_template
-from md_core_helps.apis import mdwiki_api_call
-from mdwiki_api.mdwiki_page import CatDepth
+from fixref_text_new import fix_ref_template
+from mdwiki_api.mdwiki_page import CatDepth, NewApi, load_main_api
 
 logger = logging.getLogger(__name__)
 
-# ---
-
-# ---
 if os.getenv("HOME"):
     public_html_dir = os.getenv("HOME") + "/public_html"
 else:
@@ -29,9 +22,13 @@ thenumbers = {1: 20000, "done": 0}
 
 
 def work(title):
-    Ask = "ask" in sys.argv
     # ---
-    text = mdwiki_api_call.GetPageText(title)
+    main_api = load_main_api()
+    # ---s
+    page = main_api.MainPage(title, "www", family="mdwiki")
+    _exists = page.exists()
+    # ---
+    text = page.get_text()
     # ---
     summary = "Normalize references"
     # ---
@@ -40,15 +37,15 @@ def work(title):
     if new_text != text:
         thenumbers["done"] += 1
         # ---
-        mdwiki_api_call.page_put(
-            oldtext=text, newtext=new_text, summary=summary, title=title, returntrue=False, diff=True
-        )
+        page.save(newtext=new_text, summary=summary)
+        # ---
     else:
         logger.info("no changes.")
 
 
 def main():
     # ---
+    api_new = NewApi("www", family="mdwiki")
     List = []
     # ---
     for arg in sys.argv:
@@ -62,7 +59,7 @@ def main():
             List = [x.strip() for x in text.split("\n") if x.strip() != ""]
         # ---
         if arg == "allpages":
-            List = mdwiki_api_call.Get_All_pages("")
+            List = api_new.Get_All_pages("")
         # ---
         # python pwb.py md_core/mdpy/fixref/start -cat:CS1_errors:_deprecated_parameters ask
         if arg == "-cat":
@@ -81,10 +78,6 @@ def main():
             break
         work(title)
 
-    # ---
 
-
-# ---
 if __name__ == "__main__":
     main()
-# ---

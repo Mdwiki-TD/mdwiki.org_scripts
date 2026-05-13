@@ -2,9 +2,7 @@ import re
 import sys
 
 import wikitextparser as wtp
-from md_core.mdpy.bots import make_title_bot
-
-# _title1_ = make_title_bot.make_title(url)
+from make_title_bot import make_title
 
 
 def change_lay_source(temp):
@@ -36,7 +34,7 @@ def change_lay_source(temp):
     source = new_tab["source"]
     # ---
     if title == "" and url != "":
-        title = make_title_bot.make_title(url)
+        title = make_title(url)
     # ---
     lay_temp = ""
     # ---
@@ -59,7 +57,7 @@ def add_title(temp):
     if title != "" or url == "":
         return temp
     # ---
-    title = make_title_bot.make_title(url)
+    title = make_title(url)
     # ---
     if not title:
         return temp

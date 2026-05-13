@@ -8,7 +8,7 @@ import logging
 import os
 import sys
 
-from md_core.mdpy.find_replace_bot.one_job import do_one_job
+from one_job import do_one_job
 
 logger = logging.getLogger(__name__)
 home_dir = os.getenv("HOME")
