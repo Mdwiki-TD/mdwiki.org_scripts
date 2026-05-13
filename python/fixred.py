@@ -14,6 +14,7 @@ import sys
 from md_core.mdpy.bots import py_tools
 from md_core_helps.apis import mdwiki_api_call
 from mdwiki_api.mdwiki_page import md_MainPage
+from .mdapi import post_s
 
 logger = logging.getLogger(__name__)
 
@@ -66,7 +67,7 @@ def find_redirects(links):
             "utf8": 1,
             "rdlimit": "max",
         }
-        if jsone := mdwiki_api_call.post_s(params):
+        if jsone := post_s(params):
             # ---
             query = jsone.get("query", {})
             # ---
@@ -134,7 +135,7 @@ def treat_page(title):
     """
     # ---
     page = md_MainPage(title, "www", family="mdwiki")
-    exists = page.exists()
+    _exists = page.exists()
     # ---
     text = page.get_text()
     # ---
@@ -166,7 +167,7 @@ def treat_page(title):
             if tit2 != tit:
                 logger.info(f'<<red>> tit:["{tit}"] and tit:["{tit2}"] not in from_to')
     # ---
-    save_page = page.save(newtext=newtext, summary="Fix redirects")
+    _save_page = page.save(newtext=newtext, summary="Fix redirects")
 
 
 def main():

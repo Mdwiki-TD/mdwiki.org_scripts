@@ -12,7 +12,8 @@ from .bots import expend_new  # expend_infoboxs(text)
 from .bots import old_params
 from .chembox import fix_Chembox
 from .drugbox import TextProcessor
-from .helps import echo_debug
+import logging
+logger = logging.getLogger(__name__)
 from .mv_section import move_External_links_section
 from .resources_new import move_resources
 
@@ -24,7 +25,7 @@ lkj2 = r"(<!--\s*(?:Monoclonal antibody data|External links|Names*|Clinical data
 
 def drugbox_work(new_text, text):
     # ---
-    echo_debug("drugbox_work")
+    logger.debug("drugbox_work")
     # ---
     # new_text = re.sub(r'<!--\s*\|\s*type\s*=\s*mab\s*\/\s*vaccine\s*\/\s*combo\s*-->', '<!-- type = mab / vaccine / combo -->', new_text, flags=re.IGNORECASE)
     # ---
@@ -34,11 +35,11 @@ def drugbox_work(new_text, text):
     drug_box_new = bot.get_new_temp()
     # ---
     if not drugbox_text:
-        echo_debug("drugbox_work", "no drugbox_text")
+        logger.debug("drugbox_work", "no drugbox_text")
         return new_text
     # ---
     if not drug_box_new:
-        echo_debug("drugbox_work", "no drug_box_new")
+        logger.debug("drugbox_work", "no drug_box_new")
         return new_text
     # ---
     drug_box_new = re.sub(rf"\s*{lkj2}\s*", r"\n\n\g<1>\n", drug_box_new, flags=re.DOTALL)
@@ -50,7 +51,7 @@ def drugbox_work(new_text, text):
     )
     # ---
     if new_text.find(drugbox_text) == -1 and new_text.find(drugbox_text.strip()) == -1:
-        echo_debug("drugbox_work", "can't find old (drugbox_text) in new_text, return original text")
+        logger.debug("drugbox_work", "can't find old (drugbox_text) in new_text, return original text")
         return new_text
     # ---
     # replace the old drugbox by newdrugbox
@@ -65,7 +66,7 @@ def drugbox_work(new_text, text):
 
 def work_on_text_md(title, text):
     # ---
-    echo_debug("work_on_text_md")
+    logger.debug("work_on_text_md")
     # ---
     new_text = text
     # ---
@@ -86,7 +87,7 @@ def work_on_text_md(title, text):
 
 def work_on_text(title, text):
     # ---
-    echo_debug("work_on_text")
+    logger.debug("work_on_text")
     # ---
     newtext = text
     # ---

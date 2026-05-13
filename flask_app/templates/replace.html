@@ -1,0 +1,67 @@
+<!-- header.html -->
+<main id="body">
+    <!-- <div id="maindiv" class="container-fluid"> -->
+    <div id="maindiv" class="container">
+        <div class="card">
+            <div class="card-header aligncenter" style="font-weight:bold;">
+                <h3>Find and replace.</h3>
+            </div>
+            <div class="card-body">
+                <form action='index.php' method='POST'>
+                    <div class='container-fluid'>
+                        <div class='row'>
+                            <div class='col-sm'>
+                                <div class='form-group'>
+                                    <label for='find'>Find:</label>
+                                    <textarea class='form-control' cols='40' rows='6' id='find' name='find'
+                                        required></textarea>
+                                </div>
+                            </div>
+                            <div class='col-sm'>
+                                <div class='form-group'>
+                                    <label for='replace'>Replace with:</label>
+                                    <textarea class='form-control' cols='40' rows='6' id='replace' name='replace'
+                                        placeholder='(write empty to replace it with empty value.)' required></textarea>
+                                </div>
+                            </div>
+                        </div>
+                        <div class='row'>
+                            <div class='col-sm'>
+                                <div class='input-group mb-3'>
+                                    <div class='input-group-prepend'>
+                                        <span class='input-group-text'>Number of replacements</span>
+                                    </div>
+                                    <input class='form-control' type='number' name='number' value=''
+                                        placeholder='max' />
+                                </div>
+                                <div class='input-group mb-3'>
+                                    <div class='input-group-prepend'>
+
+                                    </div>
+
+                                </div>
+                            </div>
+                            <div class='col-sm'>
+                                <div class='custom-control custom-radio custom-control-inline'>
+                                    <input type='radio' class='custom-control-input' id='customRadio2' name='listtype'
+                                        value='newlist' checked>
+                                    <label class='custom-control-label' for='customRadio2'>Use API search</label>
+                                </div>
+                                <div class='custom-control custom-radio custom-control-inline'>
+                                    <input type='radio' class='custom-control-input' id='customRadio' name='listtype'
+                                        value='oldlist'>
+                                    <label class='custom-control-label' for='customRadio'>Work in all pages</label>
+                                </div>
+                            </div>
+                        </div>
+                        <div class='col-lg-12'>
+                            <h4 class='aligncenter'>
+                                <input class='btn btn-outline-primary' type='submit' value='send'>
+                            </h4>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div> <!-- <div id="maindiv" class="container"> -->
+</main>
+<!-- footer.html -->

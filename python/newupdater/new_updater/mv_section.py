@@ -2,7 +2,8 @@ import re
 
 import wikitextparser
 
-from .helps import echo_debug
+import logging
+logger = logging.getLogger(__name__)
 
 
 class move_External_links_section:
@@ -24,7 +25,7 @@ class move_External_links_section:
 
     def run(self):
         # ---
-        echo_debug("move_External_links_section: run")
+        logger.debug("move_External_links_section: run")
         # ---
         self.get_sects()
         # ---
@@ -38,7 +39,7 @@ class move_External_links_section:
 
     def add_ext_section(self):
         # ---
-        echo_debug("add_ext_section")
+        logger.debug("add_ext_section")
         # ---
         categoryPattern = r"\[\[\s*(Category)\s*:[^\n]*\]\]\s*"
         interwikiPattern = r"\[\[([a-zA-Z\-]+)\s?:([^\[\]\n]*)\]\]\s*"
@@ -68,7 +69,7 @@ class move_External_links_section:
 
     def get_sects(self):
         # ---
-        echo_debug("get_sects")
+        logger.debug("get_sects")
         # ---
         last = ""
         # ---
@@ -95,8 +96,8 @@ class move_External_links_section:
         if self.last_sec.title.lower().strip() == "references":
             l_c = self.last_sec.contents
             # ---
-            echo_debug("get_sects", f"title: {self.last_sec.title}")
-            echo_debug("get_sects", f"contents: {l_c}")
+            logger.debug("get_sects", f"title: {self.last_sec.title}")
+            logger.debug("get_sects", f"contents: {l_c}")
             # ---
             mata = re.search(r"^{{reflist(?:[^{]|{[^{]|{{[^{}]+}}|)+}}", l_c, flags=re.IGNORECASE)
             # ---
@@ -107,13 +108,13 @@ class move_External_links_section:
                 # ---
                 l_c2 = l_c[index:]
                 # ---
-                # echo_debug("get_sects", f'index : {index}')
-                # echo_debug("get_sects", f'l_c2 : {l_c2}')
+                # logger.debug("get_sects", f'index : {index}')
+                # logger.debug("get_sects", f'l_c2 : {l_c2}')
                 # ---
                 g = mata.group()
                 g_to = f"== {self.last_sec.title.strip()} ==\n{g}\n"
                 # ---
-                echo_debug("get_sects", f"g_to: {g_to}")
+                logger.debug("get_sects", f"g_to: {g_to}")
                 # ---
                 self.ext_sec = f"{g_to}\n{self.ext_sec}"
                 self.new_ext_sec = self.ext_sec
@@ -122,7 +123,7 @@ class move_External_links_section:
 
     def make_new_txt(self):
         # ---
-        echo_debug("make_new_txt")
+        logger.debug("make_new_txt")
         # ---
         self.new_text = re.sub(r"\n\s*\[\[Category", "\n[[Category", self.new_text, flags=re.DOTALL | re.MULTILINE)
         # ---

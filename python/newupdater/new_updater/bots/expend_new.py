@@ -4,13 +4,15 @@ from .bots.expend_new import expend_infoboxs
 
 import wikitextparser as wtp
 
-from ..helps import echo_debug
+import logging
 from ..lists.expend_lists import main_temps_list
+
+logger = logging.getLogger(__name__)
 
 
 def expend_new(template, min_len=1):
     # ---
-    echo_debug("expend_new")
+    logger.debug("expend_new")
     # ---
     if not template:
         return template
@@ -36,7 +38,7 @@ def expend_new(template, min_len=1):
 
 def expend_infoboxs(new_text):
     # ---
-    echo_debug("expend_infoboxs")
+    logger.debug("expend_infoboxs")
     # ---
     parsed = wtp.parse(new_text)
     for temp in parsed.templates:

@@ -2,8 +2,10 @@
 """ """
 import wikitextparser as wtp
 
-from .helps import echo_debug
+import logging
 from .lists.chem_params import rename_chem_params
+
+logger = logging.getLogger(__name__)
 
 
 class fix_Chembox:
@@ -17,7 +19,7 @@ class fix_Chembox:
 
     def run(self):
         # ---
-        echo_debug("fix_Chembox: run")
+        logger.debug("fix_Chembox: run")
         # ---
         self.get_params()
         # ---

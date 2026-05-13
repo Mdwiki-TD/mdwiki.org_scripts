@@ -115,7 +115,7 @@ function make_title_form($test, $title, $save_checked)
     $testinput = (!empty($test)) ? '<input type="hidden" name="test" value="1" />' : '';
     //---
     return <<<HTML
-        <form action='mdwiki4.php' method='GET'>
+        <form action='newupdater.php' method='GET'>
             $testinput
             <div class='container'>
                 <div class='row'>

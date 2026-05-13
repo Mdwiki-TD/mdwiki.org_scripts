@@ -15,23 +15,13 @@ from mdwiki_api.mdwiki_page import MainPage, NewApi
 
 logger = logging.getLogger(__name__)
 
-# ---
 offset = {1: 0}
-# ---
 to_make = {}
-# ---
 for arg in sys.argv:
     arg, _, value = arg.partition(":")
     # ---
     if arg.lower() in ["offset", "-offset"] and value.isdigit():
         offset[1] = int(value)
-# ---
-# from export import * # export_en_history( title )
-# ---
-api_new = NewApi("www", family="mdwiki")
-
-# pages   = api_new.Find_pages_exists_or_not(liste)
-# pages   = api_new.Get_All_pages(start='', namespace="0", limit="max", apfilterredir='', limit_all=0)
 
 
 def work(title, num, length, From=""):
@@ -69,12 +59,13 @@ def work(title, num, length, From=""):
             title2 = f"User:Mr._Ibrahem/{title}"
             # ---
             page2 = MainPage(title2, "www", family="mdwiki")
-            save = page2.save(newtext=text, summary="Returns the article text after importing the history", nocreate=0)
+            _save = page2.save(newtext=text, summary="Returns the article text after importing the history", nocreate=0)
 
 
 def main():
     logger.info("*<<red>> > :")
     # ---
+    api_new = NewApi("www", family="mdwiki")
     # python3 imp.py -page:Crohn's_disease
     # python imp.py -newpages:1000
     # python imp.py -newpages:20000

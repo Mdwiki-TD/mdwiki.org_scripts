@@ -9,14 +9,9 @@ from flask import Flask, flash, render_template
 from flask_wtf.csrf import CSRFError, CSRFProtect
 
 from . import settings
-from .app_routes import (
-    bp_main,
-)
+from .app_routes import register_blueprints
+
 logger = logging.getLogger(__name__)
-
-
-def register_blueprints(app: Flask) -> None:
-    app.register_blueprint(bp_main)
 
 
 def register_error_pages(app: Flask):

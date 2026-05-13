@@ -890,46 +890,6 @@ class MainPage(HandleErrors):
 
         return self.links_data.links
 
-    def get_revisions(self, rvprops=None) -> list:
-
-        rvprop = [
-            "comment",
-            "timestamp",
-            "user",
-            # "content",
-            "ids",
-        ]
-
-        if rvprops:
-            for x in rvprops:
-                if x not in rvprop:
-                    rvprop.append(x)
-
-        params = {
-            "action": "query",
-            "format": "json",
-            "prop": "revisions",
-            "titles": self.title,
-            "utf8": 1,
-            "formatversion": "2",
-            "rvdir": "newer",
-            "rvslots": "*",
-            "rvlimit": "max",
-            # "rvprop": "comment|timestamp|user|content|ids",
-            "rvprop": "|".join(rvprop),
-        }
-
-        _revisions = self.post_continue(params, "query", _p_="pages", p_empty=[])
-
-        revisions = []
-
-        for x in _revisions:
-            revisions.extend(x["revisions"])
-
-        self.revisions_data.revisions = revisions
-
-        return revisions
-
     def post_continue(
         self,
         params,

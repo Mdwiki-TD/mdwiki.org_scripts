@@ -8,7 +8,8 @@ import re
 import wikitextparser as wtp
 
 from .bots.Remove import portal_remove, remove_cite_web
-from .helps import echo_debug
+import logging
+logger = logging.getLogger(__name__)
 from .lists.identifier_params import identifiers_params
 
 # ---
@@ -21,7 +22,7 @@ _lkj2_ = r"(<!--\s*(?:Monoclonal antibody data|External links|Names*|Clinical da
 
 def add_resources(new_text, drug_resources):
     # ---
-    echo_debug("add_resources")
+    logger.debug("add_resources")
     # ---
     if not page_identifier_params:
         return new_text, ""
@@ -87,7 +88,7 @@ def add_resources(new_text, drug_resources):
 
 def move_resources(text, title, lkj=_lkj_, lkj2=_lkj2_):
     # ---
-    echo_debug("move_resources")
+    logger.debug("move_resources")
     # ---
     new_text = text
     # ---
@@ -127,10 +128,10 @@ def move_resources(text, title, lkj=_lkj_, lkj2=_lkj2_):
             fa = re.search(lkj2, value)
             # ---
             if fa:
-                echo_debug("move_resources", f"fa = {fa}")
-                echo_debug("move_resources", dir(fa))
+                logger.debug("move_resources", f"fa = {fa}")
+                logger.debug("move_resources", dir(fa))
                 tt = fa.group()
-                echo_debug("move_resources", f"tt = {tt}")
+                logger.debug("move_resources", f"tt = {tt}")
                 value = value.replace(tt, "").strip()
             # ---
             page_identifier_params[param] = value
@@ -156,18 +157,18 @@ def move_resources(text, title, lkj=_lkj_, lkj2=_lkj2_):
         # ---
         resources_old = resources_temp.string
         # ---
-        echo_debug("move_resources", f"resources_temp = {resources_temp}")
+        logger.debug("move_resources", f"resources_temp = {resources_temp}")
         # ---
         resources_params = resources_temp.arguments
         # ---
-        echo_debug("move_resources", f"resources_params = {resources_params}")
+        logger.debug("move_resources", f"resources_params = {resources_params}")
         # ---
         for param, value in page_identifier_params.items():
             value = value.strip()
             # ---
             if resources_temp.has_arg(param):
                 # ---
-                echo_debug("move_resources", f"resources_temp.has_arg({param}) = {resources_temp.has_arg(param)}")
+                logger.debug("move_resources", f"resources_temp.has_arg({param}) = {resources_temp.has_arg(param)}")
                 # ---
                 old_value = resources_temp.get_arg(param).value
                 # ---
@@ -180,7 +181,7 @@ def move_resources(text, title, lkj=_lkj_, lkj2=_lkj2_):
         resources_new = resources_temp.string
         # resources_new = resources_temp.pformat()
         # ---
-        echo_debug("move_resources", f"resources_new = {resources_new}")
+        logger.debug("move_resources", f"resources_new = {resources_new}")
         # ---
         resources_new = re.sub(r"\n\n\n+<", "\n\n<", resources_new, flags=re.DOTALL | re.MULTILINE)
         # ---

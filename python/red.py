@@ -30,8 +30,6 @@ for arg in sys.argv:
     if arg.lower() in ["offset", "-offset"] and value.isdigit():
         offset[1] = int(value)
 
-api_new = NewApi("www", family="mdwiki")
-
 
 @functools.lru_cache(maxsize=1)
 def _load_session() -> requests.Session:
@@ -84,6 +82,8 @@ def work(title, num, length, From=""):
     # ---
     logger.info(f'-------------------------------------------\n*<<yellow>> >{num}/{length} title:"{title}".')
     # ---
+    api_new = NewApi("www", family="mdwiki")
+    # ---
     if num < offset[1]:
         return ""
     # ---
@@ -118,6 +118,8 @@ def work(title, num, length, From=""):
 
 def main():
     logger.info("*<<red>> > :")
+    # ---
+    api_new = NewApi("www", family="mdwiki")
     # ---
     # python3 red.py -page:Allopurinol
     # python3 red.py -page:Activated_charcoal_\(medication\)

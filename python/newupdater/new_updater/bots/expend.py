@@ -4,14 +4,16 @@ from .bots.expend import expend_infoboxs_and_fix
 
 import wikitextparser as wtp
 
-from ..helps import echo_debug
+import logging
 from ..lists.expend_lists import IMC_params, dup_params
+
+logger = logging.getLogger(__name__)
 
 
 def expend_infoboxs_and_fix(new_text):
     parseds = wtp.parse(new_text)
     # ---
-    echo_debug("expend_infoboxs_and_fix")
+    logger.debug("expend_infoboxs_and_fix")
     # ---
     for template in parseds.templates:
         # ---
@@ -24,7 +26,7 @@ def expend_infoboxs_and_fix(new_text):
                 # ---
                 dups = dup_params.get(name.lower(), {})
                 # ---
-                echo_debug("expend_infoboxs_and_fix", f"expend_and_fix: name: {name}")
+                logger.debug("expend_infoboxs_and_fix", f"expend_and_fix: name: {name}")
                 # ---
                 new_temp = "{{" + name + "\n"
                 # ---

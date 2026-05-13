@@ -1,16 +1,15 @@
 """
 from .bots.old_params import rename_params
 """
-
-# ---
+import logging
 import wikitextparser as wtp
 
-from ..helps import echo_debug
+logger = logging.getLogger(__name__)
 
 
 def rename_params(temptext):
     # ---
-    echo_debug("rename_params")
+    logger.debug("rename_params")
     # ---
     to_replace = {
         "side effects": "side_effects",
@@ -39,24 +38,24 @@ def rename_params(temptext):
         if str(name).lower() in temps_okay:
             _temps_.append(temp)
         else:
-            echo_debug("rename_params", f"*+name ({[name]}) not in temps_okay .")
+            logger.debug("rename_params", f"*+name ({[name]}) not in temps_okay .")
     # ---
     if not _temps_:
-        echo_debug("rename_params", "*+_temps_ == 0 .")
+        logger.debug("rename_params", "*+_temps_ == 0 .")
         return new_temptext
     # ---
     for temp in _temps_:
         old_temp = temp.string
         # ---
         if new_temptext.find(old_temp) == -1:
-            echo_debug("rename_params", f"*+new_temptext find ({[old_temp]}) == -1 .")
+            logger.debug("rename_params", f"*+new_temptext find ({[old_temp]}) == -1 .")
             continue
         # ---
         # Replace the old parameter with the new parameter
         for old, new in to_replace.items():
             if temp.has_arg(old):
                 value = temp.get_arg(old).value
-                echo_debug("rename_params", f"value: {value}")
+                logger.debug("rename_params", f"value: {value}")
                 temp.set_arg(new, value, before=old)
                 temp.del_arg(old)
         # ---
