@@ -10,7 +10,7 @@ from flask import (
     request,
 )
 
-bp_newupdater = Blueprint("main", __name__, url_prefix="/newupdater")
+bp_newupdater = Blueprint("newupdater", __name__, url_prefix="/newupdater")
 logger = logging.getLogger(__name__)
 
 

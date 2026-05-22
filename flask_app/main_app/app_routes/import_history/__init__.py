@@ -10,7 +10,7 @@ from flask import (
     request,
 )
 
-bp_import_history = Blueprint("main", __name__, url_prefix="/import-history")
+bp_import_history = Blueprint("import_history", __name__, url_prefix="/import-history")
 logger = logging.getLogger(__name__)
 
 AUTHORIZED_USERS = ["Doc James", "Mr. Ibrahem"]
