@@ -36,71 +36,75 @@ def _split_titles(raw_title: str, raw_titlelist: str) -> list[str]:
     return out
 
 
-@bp_import_history.route("/", methods=["GET", "POST"])
+@bp_import_history.get("/")
 @login_required
 @authorized_only
 def import_history():
-    user = current_user()
-
-    raw_title = request.values.get("title", "")
-    raw_titlelist = request.values.get("titlelist", "")
-    raw_from = (request.values.get("from", "") or "en").strip() or "en"
-
-    if request.method == "POST":
-        titles = _split_titles(raw_title, raw_titlelist)
-        if not titles:
-            flash("Provide at least one title.", "warning")
-            return render_template(
-                "import-history.html",
-                title="Import history from enwiki",
-                form_title=raw_title,
-                form_titlelist=raw_titlelist,
-                form_from=raw_from,
-            )
-        if len(titles) > MAX_IMPORT_TITLES:
-            flash(
-                f"Too many titles ({len(titles)}); cap is {MAX_IMPORT_TITLES}.",
-                "warning",
-            )
-            return render_template(
-                "import-history.html",
-                title="Import history from enwiki",
-                form_title=raw_title,
-                form_titlelist=raw_titlelist,
-                form_from=raw_from,
-            )
-
-        active = get_store().find_active("import_history")
-        if active is not None:
-            flash(f"An import-history job is already running ({active.id}).", "info")
-            return redirect(url_for("jobs.status", job_id=active.id))
-
-        job = runner.submit(
-            "import_history",
-            svc.run,
-            submitted_by=user.username,
-            params={"title_count": len(titles), "from_lang": raw_from, "save": True},
-            titles=titles,
-            from_lang=raw_from,
-            save=True,
-        )
-        flash(f"Started import-history job {job.id} for {len(titles)} title(s)", "success")
-        logger.info(
-            "import_history job %s submitted by %s for %d titles (from=%s)",
-            job.id,
-            user.username,
-            len(titles),
-            raw_from,
-        )
-        return redirect(url_for("jobs.status", job_id=job.id))
-
     return render_template(
         "import-history.html",
         title="Import history from enwiki",
-        form_title=raw_title,
-        form_titlelist=raw_titlelist,
-        form_from=raw_from,
+        form_title="",
+        form_titlelist="",
+        form_from="en",
     )
+
+
+@bp_import_history.post("/")
+@login_required
+@authorized_only
+def import_history_post():
+    user = current_user()
+
+    raw_title = request.form.get("title", "")
+    raw_titlelist = request.form.get("titlelist", "")
+    raw_from = (request.form.get("from", "") or "en").strip() or "en"
+
+    titles = _split_titles(raw_title, raw_titlelist)
+    if not titles:
+        flash("Provide at least one title.", "warning")
+        return render_template(
+            "import-history.html",
+            title="Import history from enwiki",
+            form_title=raw_title,
+            form_titlelist=raw_titlelist,
+            form_from=raw_from,
+        )
+    if len(titles) > MAX_IMPORT_TITLES:
+        flash(
+            f"Too many titles ({len(titles)}); cap is {MAX_IMPORT_TITLES}.",
+            "warning",
+        )
+        return render_template(
+            "import-history.html",
+            title="Import history from enwiki",
+            form_title=raw_title,
+            form_titlelist=raw_titlelist,
+            form_from=raw_from,
+        )
+
+    active = get_store().find_active("import_history")
+    if active is not None:
+        flash(f"An import-history job is already running ({active.id}).", "info")
+        return redirect(url_for("jobs.status", job_id=active.id))
+
+    job = runner.submit(
+        "import_history",
+        svc.run,
+        submitted_by=user.username,
+        params={"title_count": len(titles), "from_lang": raw_from, "save": True},
+        titles=titles,
+        from_lang=raw_from,
+        save=True,
+    )
+    flash(f"Started import-history job {job.id} for {len(titles)} title(s)", "success")
+    logger.info(
+        "import_history job %s submitted by %s for %d titles (from=%s)",
+        job.id,
+        user.username,
+        len(titles),
+        raw_from,
+    )
+    return redirect(url_for("jobs.status", job_id=job.id))
 
 
 __all__ = ["bp_import_history"]

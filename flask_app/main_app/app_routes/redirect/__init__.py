@@ -38,56 +38,59 @@ def _split_titles(raw_title: str, raw_titlelist: str) -> list[str]:
     return out
 
 
-@bp_redirect.route("/", methods=["GET", "POST"], endpoint="redirect")
+@bp_redirect.get("/", endpoint="redirect")
 @login_required
 def redirect_view():
-    user = current_user()
-
-    raw_title = request.values.get("title", "")
-    raw_titlelist = request.values.get("titlelist", "")
-
-    if request.method == "POST":
-        titles = _split_titles(raw_title, raw_titlelist)
-        if not titles:
-            flash("Provide at least one title.", "warning")
-            return render_template(
-                "redirect.html",
-                title="Copy redirects from enwiki",
-                form_title=raw_title,
-                form_titlelist=raw_titlelist,
-            )
-        if len(titles) > _MAX_TITLES:
-            flash(f"Too many titles ({len(titles)}); cap is {_MAX_TITLES}.", "warning")
-            return render_template(
-                "redirect.html",
-                title="Copy redirects from enwiki",
-                form_title=raw_title,
-                form_titlelist=raw_titlelist,
-            )
-
-        active = get_store().find_active("redirect")
-        if active is not None:
-            flash(f"A redirect job is already running ({active.id}).", "info")
-            return redirect(url_for("jobs.status", job_id=active.id))
-
-        job = runner.submit(
-            "redirect",
-            svc.run,
-            submitted_by=user.username,
-            params={"title_count": len(titles), "save": True},
-            titles=titles,
-            save=True,
-        )
-        flash(f"Started redirect job {job.id} for {len(titles)} title(s)", "success")
-        logger.info("redirect job %s submitted by %s for %d titles", job.id, user.username, len(titles))
-        return redirect(url_for("jobs.status", job_id=job.id))
-
     return render_template(
         "redirect.html",
         title="Copy redirects from enwiki",
-        form_title=raw_title,
-        form_titlelist=raw_titlelist,
+        form_title="",
+        form_titlelist="",
     )
+
+
+@bp_redirect.post("/", endpoint="redirect_post")
+@login_required
+def redirect_post():
+    user = current_user()
+
+    raw_title = request.form.get("title", "")
+    raw_titlelist = request.form.get("titlelist", "")
+
+    titles = _split_titles(raw_title, raw_titlelist)
+    if not titles:
+        flash("Provide at least one title.", "warning")
+        return render_template(
+            "redirect.html",
+            title="Copy redirects from enwiki",
+            form_title=raw_title,
+            form_titlelist=raw_titlelist,
+        )
+    if len(titles) > _MAX_TITLES:
+        flash(f"Too many titles ({len(titles)}); cap is {_MAX_TITLES}.", "warning")
+        return render_template(
+            "redirect.html",
+            title="Copy redirects from enwiki",
+            form_title=raw_title,
+            form_titlelist=raw_titlelist,
+        )
+
+    active = get_store().find_active("redirect")
+    if active is not None:
+        flash(f"A redirect job is already running ({active.id}).", "info")
+        return redirect(url_for("jobs.status", job_id=active.id))
+
+    job = runner.submit(
+        "redirect",
+        svc.run,
+        submitted_by=user.username,
+        params={"title_count": len(titles), "save": True},
+        titles=titles,
+        save=True,
+    )
+    flash(f"Started redirect job {job.id} for {len(titles)} title(s)", "success")
+    logger.info("redirect job %s submitted by %s for %d titles", job.id, user.username, len(titles))
+    return redirect(url_for("jobs.status", job_id=job.id))
 
 
 __all__ = ["bp_redirect"]

@@ -27,34 +27,11 @@ def _make_diff(title: str, old: str, new: str) -> str:
     return "".join(diff)
 
 
-@bp_newupdater.route("/", methods=["GET", "POST"])
+@bp_newupdater.get("/")
 @login_required
 def newupdater():
-    title = (request.values.get("title") or "").replace("_", " ").strip()
+    title = (request.args.get("title") or "").replace("_", " ").strip()
 
-    # POST → save flow
-    if request.method == "POST":
-        if not title:
-            flash("Provide a title to save.", "warning")
-            return redirect(url_for("newupdater.newupdater"))
-        try:
-            ok, status = svc.save_page(title)
-        except Exception as exc:  # noqa: BLE001
-            logger.exception("save_page failed for %s", title)
-            flash(f"Save failed: {exc!r}", "danger")
-            return redirect(url_for("newupdater.newupdater", title=title))
-
-        if ok:
-            flash(f"Saved {title!r}.", "success")
-        elif status == "no_changes":
-            flash(f"{title!r}: no changes to save.", "info")
-        elif status == "notext":
-            flash(f"{title!r}: page is empty or rewriter produced no text.", "warning")
-        else:
-            flash(f"{title!r}: save failed ({status}).", "danger")
-        return redirect(url_for("newupdater.newupdater", title=title))
-
-    # GET with no title → form only
     if not title:
         return render_template(
             "newupdater.html",
@@ -64,7 +41,6 @@ def newupdater():
             diff="",
         )
 
-    # GET with title → preview
     try:
         outcome = svc.work_on_title(title)
     except Exception as exc:  # noqa: BLE001
@@ -86,6 +62,32 @@ def newupdater():
         outcome=outcome,
         diff=diff,
     )
+
+
+@bp_newupdater.post("/")
+@login_required
+def newupdater_post():
+    title = (request.form.get("title") or "").replace("_", " ").strip()
+
+    if not title:
+        flash("Provide a title to save.", "warning")
+        return redirect(url_for("newupdater.newupdater"))
+    try:
+        ok, status = svc.save_page(title)
+    except Exception as exc:  # noqa: BLE001
+        logger.exception("save_page failed for %s", title)
+        flash(f"Save failed: {exc!r}", "danger")
+        return redirect(url_for("newupdater.newupdater", title=title))
+
+    if ok:
+        flash(f"Saved {title!r}.", "success")
+    elif status == "no_changes":
+        flash(f"{title!r}: no changes to save.", "info")
+    elif status == "notext":
+        flash(f"{title!r}: page is empty or rewriter produced no text.", "warning")
+    else:
+        flash(f"{title!r}: save failed ({status}).", "danger")
+    return redirect(url_for("newupdater.newupdater", title=title))
 
 
 __all__ = ["bp_newupdater"]

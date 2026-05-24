@@ -13,7 +13,7 @@
 			original display text). Use the literal value <code>all</code> to
 			process every mainspace page.
 		</p>
-		<form method="POST" action="{{ url_for('fixred.fixred') }}" class="row g-2">
+		<form method="POST" action="{{ url_for('fixred.fixred_post') }}" class="row g-2">
 			{{ csrf() }}
 			<div class="col-md-9">
 				<label for="fixred-title" class="form-label">Page title</label>

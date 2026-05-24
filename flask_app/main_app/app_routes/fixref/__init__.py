@@ -31,74 +31,76 @@ def _parse_int(raw: str) -> int | None:
     return max(0, n) or None
 
 
-@bp_fixref.route("/", methods=["GET", "POST"])
+@bp_fixref.get("/")
 @login_required
 def fixref():
-    user = current_user()
-
-    raw_titlelist = request.values.get("titlelist", "")
-    raw_number = request.values.get("number", "")
-    raw_cat = request.values.get("cat", "")
-
-    if request.method == "POST":
-        titles = _split_titlelist(raw_titlelist)
-        number = _parse_int(raw_number)
-        category = (raw_cat or "").strip() or None
-
-        if not (titles or number or category):
-            flash(
-                "Provide at least one of: a title list, a number of pages, or a category.",
-                "warning",
-            )
-            return render_template(
-                "fixref.html",
-                title="Normalize references",
-                form_titlelist=raw_titlelist,
-                form_number=raw_number,
-                form_cat=raw_cat,
-            )
-
-        active = get_store().find_active("fixref")
-        if active is not None:
-            flash(f"A fixref job is already running ({active.id}).", "info")
-            return redirect(url_for("jobs.status", job_id=active.id))
-
-        params: dict = {"save": True}
-        if titles:
-            params["title_count"] = len(titles)
-        if category:
-            params["category"] = category
-        if number:
-            params["number"] = number
-
-        job = runner.submit(
-            "fixref",
-            svc.run,
-            submitted_by=user.username,
-            params=params,
-            titles=titles or None,
-            category=category,
-            number=number,
-            save=True,
-        )
-        flash(f"Started fixref job {job.id}", "success")
-        logger.info(
-            "fixref job %s submitted by %s (titles=%d, number=%s, cat=%s)",
-            job.id,
-            user.username,
-            len(titles),
-            number,
-            category,
-        )
-        return redirect(url_for("jobs.status", job_id=job.id))
-
     return render_template(
         "fixref.html",
         title="Normalize references",
-        form_titlelist=raw_titlelist,
-        form_number=raw_number,
-        form_cat=raw_cat,
+        form_titlelist="",
+        form_number="",
+        form_cat="",
     )
+
+
+@bp_fixref.post("/")
+@login_required
+def fixref_post():
+    user = current_user()
+
+    raw_titlelist = request.form.get("titlelist", "")
+    raw_number = request.form.get("number", "")
+    raw_cat = request.form.get("cat", "")
+    titles = _split_titlelist(raw_titlelist)
+    number = _parse_int(raw_number)
+    category = (raw_cat or "").strip() or None
+
+    if not (titles or number or category):
+        flash(
+            "Provide at least one of: a title list, a number of pages, or a category.",
+            "warning",
+        )
+        return render_template(
+            "fixref.html",
+            title="Normalize references",
+            form_titlelist=raw_titlelist,
+            form_number=raw_number,
+            form_cat=raw_cat,
+        )
+
+    active = get_store().find_active("fixref")
+    if active is not None:
+        flash(f"A fixref job is already running ({active.id}).", "info")
+        return redirect(url_for("jobs.status", job_id=active.id))
+
+    params: dict = {"save": True}
+    if titles:
+        params["title_count"] = len(titles)
+    if category:
+        params["category"] = category
+    if number:
+        params["number"] = number
+
+    job = runner.submit(
+        "fixref",
+        svc.run,
+        submitted_by=user.username,
+        params=params,
+        titles=titles or None,
+        category=category,
+        number=number,
+        save=True,
+    )
+    flash(f"Started fixref job {job.id}", "success")
+    logger.info(
+        "fixref job %s submitted by %s (titles=%d, number=%s, cat=%s)",
+        job.id,
+        user.username,
+        len(titles),
+        number,
+        category,
+    )
+    return redirect(url_for("jobs.status", job_id=job.id))
 
 
 __all__ = ["bp_fixref"]

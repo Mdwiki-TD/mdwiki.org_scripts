@@ -12,7 +12,7 @@
       English Wikipedia, then re-saves the current mdwiki body on top so
       the visible content is unchanged. Restricted to allow-listed users.
     </p>
-    <form method="POST" action="{{ url_for('import_history.import_history') }}">
+    <form method="POST" action="{{ url_for('import_history.import_history_post') }}">
       {{ csrf() }}
       <div class="row g-3 mb-3">
         <div class="col-md-9">

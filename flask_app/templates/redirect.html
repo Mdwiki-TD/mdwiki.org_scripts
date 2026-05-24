@@ -14,7 +14,7 @@
       <code>User:</code>, <code>Wikipedia:</code>) and disambiguation pages
       are skipped.
     </p>
-    <form method="POST" action="{{ url_for('redirect.redirect') }}">
+    <form method="POST" action="{{ url_for('redirect.redirect_post') }}">
       {{ csrf() }}
       <div class="mb-3">
         <label for="redirect-title" class="form-label">Single title</label>
