@@ -1,0 +1,21 @@
+{# Shared Jinja macros. #}
+
+{%- macro csrf() -%}
+<input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+{%- endmacro -%}
+
+{%- macro flash_messages() -%}
+{% with messages = get_flashed_messages(with_categories=true) %}
+  {% if messages %}
+    <div class="flash-messages mt-2 mb-2">
+      {% for category, msg in messages %}
+        {% set bs = {'message':'info','warning':'warning','danger':'danger','error':'danger','success':'success','info':'info'}.get(category, 'info') %}
+        <div class="alert alert-{{ bs }} alert-dismissible fade show" role="alert">
+          {{ msg }}
+          <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+      {% endfor %}
+    </div>
+  {% endif %}
+{% endwith %}
+{%- endmacro -%}
