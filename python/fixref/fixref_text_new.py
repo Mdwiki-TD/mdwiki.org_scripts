@@ -2,7 +2,7 @@ import re
 import sys
 
 import wikitextparser as wtp
-from make_title_bot import make_title
+from .make_title_bot import make_title
 
 
 def change_lay_source(temp):
