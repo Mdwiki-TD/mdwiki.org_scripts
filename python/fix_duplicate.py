@@ -29,11 +29,11 @@ from_to = {}
 
 @functools.lru_cache(maxsize=1)
 def load_main_api() -> AllAPIS:
-    username = os.getenv("WIKIPEDIA_HIMO_USERNAME")
-    password = os.getenv("MDWIKI_HIMO_PASSWORD")
+    username = os.getenv("WIKI_USERNAME")
+    password = os.getenv("WIKI_PASSWORD")
 
     if not username or not password:
-        raise RuntimeError("Missing credentials: WIKIPEDIA_HIMO_USERNAME / MDWIKI_HIMO_PASSWORD")
+        raise RuntimeError("Missing credentials: WIKI_USERNAME / WIKI_PASSWORD")
 
     return AllAPIS(
         lang="www",

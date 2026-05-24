@@ -13,13 +13,17 @@ from ..newapi import AllAPIS
 
 
 @functools.lru_cache(maxsize=8)
-def get_api(*, lang: str = "www", family: str = "mdwiki") -> AllAPIS:
+def get_api(*, lang: str = "", family: str = "") -> AllAPIS:
     """Return a credentialed `AllAPIS` client, cached per (lang, family)."""
 
-    username = os.getenv("WIKIPEDIA_HIMO_USERNAME")
-    password = os.getenv("MDWIKI_HIMO_PASSWORD")
+    lang = lang or os.getenv("WIKI_LANG") or "www"
+    family = family or os.getenv("WIKI_FAMILY") or "mdwiki"
+    username = os.getenv("WIKI_USERNAME")
+    password = os.getenv("WIKI_PASSWORD")
+
     if not username or not password:
-        raise RuntimeError("Missing credentials: set WIKIPEDIA_HIMO_USERNAME and MDWIKI_HIMO_PASSWORD")
+        raise RuntimeError("Missing credentials: set WIKI_USERNAME and WIKI_PASSWORD")
+
     return AllAPIS(
         lang=lang,
         family=family,
