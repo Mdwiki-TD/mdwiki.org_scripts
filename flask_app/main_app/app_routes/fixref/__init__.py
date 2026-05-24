@@ -10,7 +10,7 @@ from flask import (
     request,
 )
 
-bp_fixref = Blueprint("main", __name__, url_prefix="/fixref")
+bp_fixref = Blueprint("fixref", __name__, url_prefix="/fixref")
 logger = logging.getLogger(__name__)
 
 

@@ -10,7 +10,7 @@ from flask import (
     request,
 )
 
-bp_redirect = Blueprint("main", __name__, url_prefix="/redirect")
+bp_redirect = Blueprint("redirect", __name__, url_prefix="/redirect")
 logger = logging.getLogger(__name__)
 
 

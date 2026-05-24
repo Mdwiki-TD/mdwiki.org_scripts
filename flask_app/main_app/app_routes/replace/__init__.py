@@ -10,7 +10,7 @@ from flask import (
     request,
 )
 
-bp_replace = Blueprint("main", __name__, url_prefix="/replace")
+bp_replace = Blueprint("replace", __name__, url_prefix="/replace")
 logger = logging.getLogger(__name__)
 
 AUTHORIZED_USERS = ["Doc James", "Mr. Ibrahem"]
