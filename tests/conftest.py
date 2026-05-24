@@ -14,6 +14,7 @@ import sys
 from pathlib import Path
 
 import pytest
+from pytest_socket import disable_socket
 
 # Make the flask_app/ directory importable as `main_app`. The repo's prod
 # entrypoint flask_app/app.py does the same trick.
@@ -25,6 +26,11 @@ os.environ.setdefault("FLASK_SECRET_KEY", "test-secret")
 os.environ.setdefault("ENABLE_OAUTH", "false")
 # Pin allowlist for tests so we don't depend on the prod default drifting.
 os.environ.setdefault("ALLOWLIST_USERS", "Doc James,Mr. Ibrahem")
+
+
+@pytest.fixture(autouse=True)
+def stop_nets():
+    disable_socket(allow_unix_socket=True)
 
 
 @pytest.fixture(scope="session")
