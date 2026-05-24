@@ -31,7 +31,7 @@ def _parse_int(raw: str) -> int | None:
     return max(0, n) or None
 
 
-@bp_fixref.get("/")
+@bp_fixref.route("/", methods=["GET"])
 @login_required
 def fixref():
     return render_template(
@@ -43,7 +43,7 @@ def fixref():
     )
 
 
-@bp_fixref.post("/")
+@bp_fixref.route("/", methods=["POST"])
 @login_required
 def fixref_post():
     user = current_user()

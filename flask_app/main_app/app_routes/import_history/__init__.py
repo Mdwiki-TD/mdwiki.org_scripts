@@ -36,7 +36,7 @@ def _split_titles(raw_title: str, raw_titlelist: str) -> list[str]:
     return out
 
 
-@bp_import_history.get("/")
+@bp_import_history.route("/", methods=["GET"])
 @login_required
 @authorized_only
 def import_history():
@@ -49,7 +49,7 @@ def import_history():
     )
 
 
-@bp_import_history.post("/")
+@bp_import_history.route("/", methods=["POST"])
 @login_required
 @authorized_only
 def import_history_post():

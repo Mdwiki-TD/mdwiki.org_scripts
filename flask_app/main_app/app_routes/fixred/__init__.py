@@ -20,14 +20,14 @@ def _normalize_title(raw: str) -> str:
     return (raw or "").replace("_", " ").strip()
 
 
-@bp_fixred.get("/")
+@bp_fixred.route("/", methods=["GET"])
 @login_required
 def fixred():
     title = _normalize_title(request.args.get("title", ""))
     return render_template("fixred.html", title="Fix redirects in page text", form_title=title)
 
 
-@bp_fixred.post("/")
+@bp_fixred.route("/", methods=["POST"])
 @login_required
 def fixred_post():
     user = current_user()

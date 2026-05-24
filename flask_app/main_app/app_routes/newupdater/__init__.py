@@ -27,7 +27,7 @@ def _make_diff(title: str, old: str, new: str) -> str:
     return "".join(diff)
 
 
-@bp_newupdater.get("/")
+@bp_newupdater.route("/", methods=["GET"])
 @login_required
 def newupdater():
     title = (request.args.get("title") or "").replace("_", " ").strip()
@@ -64,7 +64,7 @@ def newupdater():
     )
 
 
-@bp_newupdater.post("/")
+@bp_newupdater.route("/", methods=["POST"])
 @login_required
 def newupdater_post():
     title = (request.form.get("title") or "").replace("_", " ").strip()

@@ -27,7 +27,7 @@ def _parse_int(raw: str) -> int | None:
     return max(0, n) or None
 
 
-@bp_replace.get("/")
+@bp_replace.route("/", methods=["GET"])
 @login_required
 @authorized_only
 def replace():
@@ -41,7 +41,7 @@ def replace():
     )
 
 
-@bp_replace.post("/")
+@bp_replace.route("/", methods=["POST"])
 @login_required
 @authorized_only
 def replace_post():

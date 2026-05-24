@@ -38,7 +38,7 @@ def _split_titles(raw_title: str, raw_titlelist: str) -> list[str]:
     return out
 
 
-@bp_redirect.get("/", endpoint="redirect")
+@bp_redirect.route("/", methods=["GET"], endpoint="redirect")
 @login_required
 def redirect_view():
     return render_template(
@@ -49,7 +49,7 @@ def redirect_view():
     )
 
 
-@bp_redirect.post("/", endpoint="redirect_post")
+@bp_redirect.route("/", methods=["POST"], endpoint="redirect_post")
 @login_required
 def redirect_post():
     user = current_user()
