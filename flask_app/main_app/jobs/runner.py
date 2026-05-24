@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import logging
 from concurrent.futures import ThreadPoolExecutor
-from datetime import datetime, timezone
+from datetime import UTC, datetime, timezone
 from typing import Any, Callable, Optional
 
 from ..config import settings
@@ -27,7 +27,7 @@ def _get_executor() -> ThreadPoolExecutor:
 
 
 def _bump(job: Job, status: Optional[str] = None) -> None:
-    job.updated_at = datetime.now(timezone.utc)
+    job.updated_at = datetime.now(UTC)
     if status is not None:
         job.status = status
 
