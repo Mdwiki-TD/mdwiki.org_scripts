@@ -1,5 +1,8 @@
+{% extends "_base.html" %}
+{% from "_macros.html" import csrf %}
 <!-- header.html -->
-<main id="body">
+{% block content %}
+<div class="card">
 	<!-- <div id="maindiv" class="container-fluid"> -->
 	<div id="maindiv" class="container">
 		<div class="card">
@@ -49,5 +52,7 @@
 				</form>
 			</div>
 		</div> <!-- <div id="maindiv" class="container"> -->
-</main>
+
+</div>
+{% endblock %}
 <!-- footer.html -->
