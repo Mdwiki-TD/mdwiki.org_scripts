@@ -8,9 +8,9 @@ from typing import Tuple
 from flask import Flask, flash, render_template
 from flask_wtf.csrf import CSRFError, CSRFProtect
 
-from .config import settings  # re-exported as `main_app.settings` below
-from .auth import current_user, is_authorized
 from .app_routes import register_blueprints
+from .auth import current_user, is_authorized
+from .config import settings  # re-exported as `main_app.settings` below
 
 logger = logging.getLogger(__name__)
 

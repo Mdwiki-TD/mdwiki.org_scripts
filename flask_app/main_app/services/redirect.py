@@ -69,9 +69,7 @@ def _enwiki_redirects_for(title: str, *, timeout: int = 10) -> list[str]:
         "rdprop": "title",
         "rdlimit": "max",
     }
-    response = session.post(
-        "https://en.wikipedia.org/w/api.php", data=params, timeout=timeout
-    )
+    response = session.post("https://en.wikipedia.org/w/api.php", data=params, timeout=timeout)
     response.raise_for_status()
     payload = response.json() or {}
     pages = (payload.get("query") or {}).get("pages") or {}

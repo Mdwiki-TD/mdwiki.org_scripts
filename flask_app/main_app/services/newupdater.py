@@ -16,8 +16,8 @@ import logging
 from dataclasses import dataclass
 from typing import Literal
 
-from ._api import get_api
 from . import _legacy
+from ._api import get_api
 
 logger = logging.getLogger(__name__)
 

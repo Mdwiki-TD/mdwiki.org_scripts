@@ -132,12 +132,7 @@ def _replace_links(text: str, oldlink: str, newlink: str, state: _RunState) -> s
 
     oldlink2 = state.normalized.get(oldlink, oldlink)
 
-    while (
-        f"[[{oldlink}]]" in text
-        or f"[[{oldlink}|" in text
-        or f"[[{oldlink2}]]" in text
-        or f"[[{oldlink2}|" in text
-    ):
+    while f"[[{oldlink}]]" in text or f"[[{oldlink}|" in text or f"[[{oldlink2}]]" in text or f"[[{oldlink2}|" in text:
         text = text.replace(f"[[{oldlink}]]", f"[[{newlink}|{oldlink}]]")
         text = text.replace(f"[[{oldlink}|", f"[[{newlink}|")
 

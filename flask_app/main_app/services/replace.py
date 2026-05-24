@@ -34,13 +34,16 @@ def _resolve_titles(api, *, find: str, listtype: ListType) -> list[str]:
 
     if listtype == "newlist":
         # Use search so we only visit pages that actually contain `find`.
-        return api.NewApi().Search(
-            value=find,
-            ns="0",
-            srlimit="max",
-            return_dict=False,
-            addparams={"srsort": "just_match", "srwhat": "text"},
-        ) or []
+        return (
+            api.NewApi().Search(
+                value=find,
+                ns="0",
+                srlimit="max",
+                return_dict=False,
+                addparams={"srsort": "just_match", "srwhat": "text"},
+            )
+            or []
+        )
     # oldlist: walk every mainspace page.
     return api.NewApi().Get_All_pages() or []
 

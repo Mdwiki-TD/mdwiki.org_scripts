@@ -79,9 +79,7 @@ def redirect_view():
             save=True,
         )
         flash(f"Started redirect job {job.id} for {len(titles)} title(s)", "success")
-        logger.info(
-            "redirect job %s submitted by %s for %d titles", job.id, user.username, len(titles)
-        )
+        logger.info("redirect job %s submitted by %s for %d titles", job.id, user.username, len(titles))
         return redirect(url_for("jobs.status", job_id=job.id))
 
     return render_template(

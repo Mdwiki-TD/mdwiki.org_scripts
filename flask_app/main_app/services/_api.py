@@ -19,9 +19,7 @@ def get_api(*, lang: str = "www", family: str = "mdwiki") -> AllAPIS:
     username = os.getenv("WIKIPEDIA_HIMO_USERNAME")
     password = os.getenv("MDWIKI_HIMO_PASSWORD")
     if not username or not password:
-        raise RuntimeError(
-            "Missing credentials: set WIKIPEDIA_HIMO_USERNAME and MDWIKI_HIMO_PASSWORD"
-        )
+        raise RuntimeError("Missing credentials: set WIKIPEDIA_HIMO_USERNAME and MDWIKI_HIMO_PASSWORD")
     return AllAPIS(
         lang=lang,
         family=family,
