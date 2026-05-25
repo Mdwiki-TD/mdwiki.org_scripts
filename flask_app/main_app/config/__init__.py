@@ -14,6 +14,13 @@ from .classes import (
 
 from .main_settings import settings
 
+from .flask_config import (
+    Config,
+    DevelopmentConfig,
+    ProductionConfig,
+    TestingConfig,
+)
+
 __all__ = [
     "DbConfig",
     "Paths",
@@ -22,5 +29,11 @@ __all__ = [
     "OAuthConfig",
     "SecurityConfig",
     "Settings",
+
+    "Config",
+    "DevelopmentConfig",
+    "ProductionConfig",
+    "TestingConfig",
+
     "settings",
 ]

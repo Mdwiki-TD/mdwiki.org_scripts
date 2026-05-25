@@ -59,20 +59,7 @@ def register_error_pages(app: Flask):
         return render_template("index.html", title="Session Expired"), 400
 
 
-def update_app_config(app: Flask) -> None:
-    app.config.update(
-        SESSION_COOKIE_HTTPONLY=settings.cookie.httponly,
-        SESSION_COOKIE_SECURE=settings.cookie.secure,
-        SESSION_COOKIE_SAMESITE=settings.cookie.samesite,
-        # Flask 3.1+ security configurations
-        MAX_CONTENT_LENGTH=settings.security.max_content_length,
-        MAX_FORM_MEMORY_SIZE=settings.security.max_form_memory_size,
-        MAX_FORM_PARTS=settings.security.max_form_parts,
-        SECRET_KEY_FALLBACKS=list(settings.security.secret_key_fallbacks),
-    )
-
-
-def create_app() -> Flask:
+def create_app(config_class) -> Flask:
     """
     Create and configure and return the Flask application used by the project.
 
@@ -94,10 +81,8 @@ def create_app() -> Flask:
     app.url_map.strict_slashes = False
     app.secret_key = settings.secret_key
 
-    update_app_config(app)
-
     # Configure CSRF token lifetime
-    app.config["WTF_CSRF_TIME_LIMIT"] = settings.csrf_time_limit
+    app.config.from_object(config_class())
 
     # Initialize CSRF protection
     csrf = CSRFProtect(app)  # noqa: F841

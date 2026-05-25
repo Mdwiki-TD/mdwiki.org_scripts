@@ -26,9 +26,10 @@ from logger_config import configure_logging  # noqa: E402
 
 configure_logging(logging.DEBUG)
 
-from main_app import create_app  # noqa: E402
+from flask_app.main_app.config import DevelopmentConfig  # noqa: E402
+from flask_app.main_app import create_app  # noqa: E402
 
-app = create_app()
+app = create_app(DevelopmentConfig())
 
 if __name__ == "__main__":
     app.run(debug=True)
