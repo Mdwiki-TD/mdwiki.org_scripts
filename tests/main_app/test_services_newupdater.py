@@ -38,7 +38,7 @@ def patched_api(monkeypatch):
 
     def _build(*, page: FakePage, rewriter):
         monkeypatch.setattr(svc, "get_api", lambda: FakeApi(page))
-        monkeypatch.setattr(svc, "_legacy_work_on_text", rewriter)
+        monkeypatch.setattr(svc, "work_on_text", rewriter)
         return page
 
     return _build

@@ -30,7 +30,7 @@ def newupdater():
 
     try:
         outcome = svc.work_on_title(title, save)
-    except Exception as exc:  # noqa: BLE001
+    except Exception as exc:
         logger.exception("work_on_title failed for %s", title)
         flash(f"Error processing {title!r}: {exc!r}", "danger")
         return render_template(

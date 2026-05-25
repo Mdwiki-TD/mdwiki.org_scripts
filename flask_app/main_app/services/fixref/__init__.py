@@ -21,8 +21,9 @@ import logging
 from threading import Event
 from typing import Any, Callable, Iterable, Optional
 
-from . import _legacy
-from ._api import get_api
+from .._api import get_api
+
+from .fixref_text_new import fix_ref_template
 
 logger = logging.getLogger(__name__)
 
@@ -36,9 +37,6 @@ def _legacy_fix_ref_template(text: str) -> tuple[str, str]:
     Returns ``(new_text, summary)``. Imported lazily so the wikitextparser
     cost is paid only when the tool is actually used.
     """
-
-    _legacy.install()
-    from fixref_text_new import fix_ref_template  # type: ignore[import-not-found]
 
     new_text, summary = fix_ref_template(text, returnsummary=True)
     return new_text, summary
@@ -148,7 +146,7 @@ def run(
             else:
                 counts["fixed"] += 1
                 _emit(i, len(pages), f"[{i}/{len(pages)}] {title}: would-fix (dry run)")
-        except Exception as exc:  # noqa: BLE001
+        except Exception as exc:
             logger.exception("fixref failed for %s", title)
             counts["errors"] += 1
             _emit(i, len(pages), f"[{i}/{len(pages)}] {title}: error {exc!r}")

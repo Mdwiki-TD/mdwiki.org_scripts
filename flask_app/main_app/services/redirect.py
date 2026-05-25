@@ -126,7 +126,7 @@ def _process_one(api, title: str, *, save: bool, log: Callable[[str], None]) -> 
                 counts["created"] += 1
                 continue
             new_page.create(redirect_text, summary)
-        except Exception as exc:  # noqa: BLE001
+        except Exception as exc:
             logger.exception("create redirect failed: %s -> %s", r_title, title)
             counts["errors"] += 1
             log(f"  {r_title!r}: error {exc!r}")
@@ -178,7 +178,7 @@ def run(
                 save=save,
                 log=lambda m, _i=i, _n=len(titles_list): _emit(_i, _n, m),
             )
-        except Exception as exc:  # noqa: BLE001
+        except Exception as exc:
             logger.exception("redirect run failed for %s", title)
             totals["errors"] += 1
             _emit(i, len(titles_list), f"[{i}/{len(titles_list)}] {title}: error {exc!r}")

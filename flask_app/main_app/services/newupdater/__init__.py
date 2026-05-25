@@ -16,8 +16,8 @@ import logging
 from dataclasses import dataclass
 from typing import Literal
 
-from . import _legacy
-from ._api import get_api
+from .._api import get_api
+from .new_updater import work_on_text
 
 logger = logging.getLogger(__name__)
 
@@ -36,20 +36,6 @@ class UpdaterOutcome:
     @property
     def has_changes(self) -> bool:
         return self.kind == "changes"
-
-
-def _legacy_work_on_text(title: str, text: str) -> str:
-    """Call the legacy text-rewriting orchestrator.
-
-    Imported lazily so the heavy ``wikitextparser`` import only happens when
-    the tool is actually used, and so a missing legacy directory doesn't
-    break Flask boot.
-    """
-
-    _legacy.install()
-    from new_updater import work_on_text  # type: ignore[import-not-found]
-
-    return work_on_text(title, text)
 
 
 def work_on_title(
@@ -80,8 +66,9 @@ def work_on_title(
         return UpdaterOutcome(kind="notext", old_text=old_text)
 
     try:
-        new_text = _legacy_work_on_text(title, old_text)
-    except Exception:  # noqa: BLE001 - the legacy code can raise widely
+        new_text = work_on_text(title, old_text)
+    except Exception:
+        - the legacy code can raise widely
         logger.exception("work_on_text failed for %s", title)
         raise
 

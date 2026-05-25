@@ -143,7 +143,7 @@ def run(
                 save=save,
                 log=lambda m, _i=i, _n=len(titles): _emit(_i, _n, m),
             )
-        except Exception as exc:  # noqa: BLE001
+        except Exception as exc:
             logger.exception("replace failed for %s", title)
             counts["errors"] += 1
             _emit(i, len(titles), f"[{i}/{len(titles)}] {title}: error {exc!r}")

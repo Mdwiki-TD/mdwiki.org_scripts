@@ -119,7 +119,7 @@ def run(
 
         try:
             outcome = _fix_one(api, from_title, final_target, save=save)
-        except Exception as exc:  # noqa: BLE001
+        except Exception as exc:
             logger.exception("fix_dup failed for %s -> %s", from_title, final_target)
             counts["errors"] += 1
             _emit(i, total, f"[{i}/{total}] {from_title}: error {exc!r}")

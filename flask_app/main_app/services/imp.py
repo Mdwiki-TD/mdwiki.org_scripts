@@ -37,7 +37,7 @@ def _process_one(api, title: str, *, save: bool, log: Callable[[str], None]) -> 
 
     try:
         result = page.import_page(family="wikipedia") or {}
-    except Exception as exc:  # noqa: BLE001
+    except Exception as exc:
         logger.exception("import_page failed for %s", title)
         log(f"{title!r}: import error {exc!r}")
         return "error"
@@ -116,7 +116,7 @@ def run(
                 save=save,
                 log=lambda m, _i=i, _n=len(titles_list): _emit(_i, _n, m),
             )
-        except Exception as exc:  # noqa: BLE001
+        except Exception as exc:
             logger.exception("imp run failed for %s", title)
             counts["errors"] += 1
             _emit(i, len(titles_list), f"[{i}/{len(titles_list)}] {title}: error {exc!r}")
