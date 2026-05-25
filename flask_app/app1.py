@@ -29,7 +29,7 @@ configure_logging(logging.DEBUG)
 from main_app.config import DevelopmentConfig  # noqa: E402
 from main_app import create_app  # noqa: E402
 
-app = create_app(DevelopmentConfig())
+app = create_app(DevelopmentConfig)
 
 if __name__ == "__main__":
     app.run(debug=True)

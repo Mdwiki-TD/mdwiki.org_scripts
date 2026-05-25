@@ -17,7 +17,7 @@ from logger_config import configure_logging  # noqa: E402
 
 configure_logging(logging.WARNING)
 
-app = create_app(ProductionConfig())
+app = create_app(ProductionConfig)
 
 if __name__ == "__main__":
     app.run(debug=False, port=5000)

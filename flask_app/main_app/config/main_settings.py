@@ -82,20 +82,20 @@ def _load_database_config() -> DbConfig:
     """
     Construct a DbConfig populated from environment variables.
 
-    Reads DB_NAME and DB_HOST (defaulting to empty string) and TOOL_REPLICA_USER and TOOL_REPLICA_PASSWORD (defaulting to None) and returns a DbConfig with those values.
+    Reads TOOL_TOOLSDB_DBNAME and TOOL_TOOLSDB_HOST (defaulting to empty string) and TOOL_TOOLSDB_USER and TOOL_TOOLSDB_PASSWORD (defaulting to None) and returns a DbConfig with those values.
 
     Returns:
         DbConfig: Configuration with fields:
-            - db_name: from DB_NAME (default "").
-            - db_host: from DB_HOST (default "").
-            - db_user: from TOOL_REPLICA_USER (or None).
-            - db_password: from TOOL_REPLICA_PASSWORD (or None).
+            - db_name: from TOOL_TOOLSDB_DBNAME (default "").
+            - db_host: from TOOL_TOOLSDB_HOST (default "").
+            - db_user: from TOOL_TOOLSDB_USER (or None).
+            - db_password: from TOOL_TOOLSDB_PASSWORD (or None).
     """
     return DbConfig(
-        db_name=os.getenv("DB_NAME", ""),
-        db_host=os.getenv("DB_HOST", ""),
-        db_user=os.getenv("TOOL_REPLICA_USER", None),
-        db_password=os.getenv("TOOL_REPLICA_PASSWORD", None),
+        db_name=os.getenv("TOOL_TOOLSDB_DBNAME", ""),
+        db_host=os.getenv("TOOL_TOOLSDB_HOST", ""),
+        db_user=os.getenv("TOOL_TOOLSDB_USER", None),
+        db_password=os.getenv("TOOL_TOOLSDB_PASSWORD", None),
     )
 
 
@@ -153,16 +153,6 @@ def _get_paths() -> Paths:
         jobs_path=jobs_path,
         main_files_path=main_files_path,
     )
-
-
-def is_localhost(host: str) -> bool:
-    local_hosts = [
-        "localhost",
-        "127.0.0.1",
-    ]
-
-    return any(x in host for x in local_hosts)
-
 
 def load_cookie_config() -> CookieConfig:
     session_cookie_secure = _env_bool("SESSION_COOKIE_SECURE", default=True)
@@ -238,7 +228,6 @@ def get_settings() -> Settings:
     database_data = _load_database_config()
 
     return Settings(
-        is_localhost=is_localhost,
         paths=_get_paths(),
         database_data=database_data,
         cookie=cookie_config,

@@ -72,7 +72,6 @@ class SecurityConfig:
 
 @dataclass(frozen=True)
 class Settings:
-    is_localhost: callable
     database_data: DbConfig
     cookie: CookieConfig
     sessions: SessionConfig

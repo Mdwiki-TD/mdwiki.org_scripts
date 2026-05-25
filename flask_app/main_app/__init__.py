@@ -8,11 +8,17 @@ from typing import Tuple, Type
 from flask import Flask, flash, render_template
 from flask_wtf.csrf import CSRFError, CSRFProtect
 
-from .su_services.users_service import current_user, settings
+from .app_routes.auth.routes import bp_auth
+
+from .su_services.users_service import current_user
+from .config import settings
 
 from .app_routes import register_blueprints
 from .jobs_routes import register_jobs_blueprints
 from .core.cookies import CookieHeaderClient
+from .db import init_db
+from .extensions import db as _db
+from .extensions import migrate
 
 logger = logging.getLogger(__name__)
 
@@ -97,10 +103,18 @@ def create_app(config_class: Type) -> Flask:
 
     app.url_map.strict_slashes = False
     app.test_client_class = CookieHeaderClient
-    app.config.from_object(config_class)
+    app.config.from_object(config_class())
 
     # Initialize CSRF protection
     csrf = CSRFProtect(app)  # noqa: F841
+
+    # Initialize Flask-SQLAlchemy and Flask-Migrate
+    # if akpp.config.get("SQLALCHEMY_DATABASE_URI"):
+    _db.init_app(app)
+    migrate.init_app(app, _db)
+
+    # Create database tables and views if they don't exist
+    init_db(app, _db)
 
     @app.context_processor
     def _inject_user() -> dict:
@@ -112,6 +126,7 @@ def create_app(config_class: Type) -> Flask:
 
     register_error_pages(app)
     register_blueprints(app)
+    app.register_blueprint(bp_auth)
     register_jobs_blueprints(app)
 
     return app

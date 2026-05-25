@@ -30,7 +30,7 @@ class TestDup:
         assert b"csrf_token" in r.data
 
     def test_post_starts_job_and_redirects(self, client, login, csrf_token, monkeypatch):
-        from flask_app.main_app.app_routes.dup import bp_dup  # noqa: F401  ensure import
+        # from flask_app.main_app.app_routes.dup import bp_dup  # noqa: F401  ensure import
         from flask_app.main_app.public_jobs_workers import fix_duplicate
 
         seen: dict = {}

@@ -40,7 +40,7 @@ def app():
     from flask_app.main_app import create_app
     from flask_app.main_app.config import TestingConfig
 
-    application = create_app(TestingConfig())
+    application = create_app(TestingConfig)
     application.config.update(TESTING=True)
     return application
 

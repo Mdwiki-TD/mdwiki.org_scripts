@@ -98,18 +98,18 @@ flask_app/
 │       ├── redirect/__init__.py
 │       └── replace/__init__.py
 └── templates/
-    ├── _base.html              # NEW: shared layout that includes header+footer
+    ├── base.html              # NEW: shared layout that includes header+footer
     ├── _macros.html            # NEW: form helpers (input, textarea, csrf, flash)
     ├── header.html             # existing (light edits to use url_for)
     ├── footer.html             # existing
     ├── jobs/status.html        # NEW: generic job status page
-    ├── dup.html                # rewritten to extend _base.html
-    ├── fixred.html             # rewritten to extend _base.html
-    ├── fixref.html             # rewritten to extend _base.html
-    ├── import-history.html     # rewritten to extend _base.html
-    ├── newupdater.html         # rewritten to extend _base.html
-    ├── redirect.html           # rewritten to extend _base.html
-    └── replace.html            # rewritten to extend _base.html
+    ├── dup.html                # rewritten to extend base.html
+    ├── fixred.html             # rewritten to extend base.html
+    ├── fixref.html             # rewritten to extend base.html
+    ├── import-history.html     # rewritten to extend base.html
+    ├── newupdater.html         # rewritten to extend base.html
+    ├── redirect.html           # rewritten to extend base.html
+    └── replace.html            # rewritten to extend base.html
 ```
 
 ### 3.1 Layering rules
@@ -299,7 +299,7 @@ stop_event=None) -> JobResult`. Logic from `find_replace_bot/one_job.py`
 
 ## 5. Templates
 
-### 5.1 New `_base.html`
+### 5.1 New `base.html`
 
 Wraps the existing `header.html` and `footer.html` and exposes Jinja blocks:
 
@@ -403,7 +403,7 @@ A minimal `conftest.py` builds the app via `create_app()` with
 -   Add `auth/`, `jobs/` (in-memory), `services/` skeletons.
 -   Fix the duplicate `Blueprint("main", ...)` name collision (each blueprint
     must use a unique name like `bp_dup = Blueprint("dup", …)`).
--   Add `_base.html`, `_macros.html`, `jobs/status.html`.
+-   Add `base.html`, `_macros.html`, `jobs/status.html`.
 -   End-to-end migrate **one** route — `/dup/` — as the reference
     implementation (it is the simplest: one button, one job).
 -   Soften OAuth requirement behind `ENABLE_OAUTH`.
@@ -453,7 +453,7 @@ wins after the auth + service pattern is set).
 -   `flask_app/main_app/services/__init__.py`
 -   `flask_app/main_app/services/fix_duplicate.py`
 -   `flask_app/main_app/app_routes/jobs/__init__.py` (status + json endpoints)
--   `flask_app/templates/_base.html`
+-   `flask_app/templates/base.html`
 -   `flask_app/templates/_macros.html`
 -   `flask_app/templates/jobs/status.html`
 
@@ -467,7 +467,7 @@ wins after the auth + service pattern is set).
 -   `flask_app/main_app/app_routes/dup/__init__.py` — wire to service + jobs.
 -   `flask_app/main_app/app_routes/<other>/__init__.py` — rename Blueprint
     name from `"main"` to something unique (no behaviour change yet).
--   `flask_app/templates/dup.html` — extend `_base.html`, use `url_for`, csrf,
+-   `flask_app/templates/dup.html` — extend `base.html`, use `url_for`, csrf,
     flash.
 
 **Untouched (Phase 1)**
