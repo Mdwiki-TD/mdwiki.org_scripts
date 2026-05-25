@@ -10,7 +10,7 @@ from ..auth import current_user
 from ..auth.decorators import login_required
 from ...jobs import runner
 from ...jobs.store import get_store
-from ...services import fixred as svc
+from ...public_jobs_workers import fixred as svc
 
 bp_fixred = Blueprint("fixred", __name__, url_prefix="/fixred")
 logger = logging.getLogger(__name__)

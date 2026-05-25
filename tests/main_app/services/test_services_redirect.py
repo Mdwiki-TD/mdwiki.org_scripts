@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import pytest
-from flask_app.main_app.services.redirect import _valid_title
+from flask_app.main_app.public_jobs_workers.redirect import _valid_title
 
 
 class TestValidTitle:

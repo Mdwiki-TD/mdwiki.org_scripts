@@ -7,10 +7,10 @@ import logging
 from flask import Blueprint, flash, redirect, render_template, request, url_for
 
 from ..auth import current_user
-from ..auth.decorators import login_required
+from ..auth import login_required
 from ...jobs import runner
 from ...jobs.store import get_store
-from ...services import fix_duplicate as svc
+from ...public_jobs_workers import fix_duplicate as svc
 
 bp_dup = Blueprint("dup", __name__, url_prefix="/dup")
 logger = logging.getLogger(__name__)

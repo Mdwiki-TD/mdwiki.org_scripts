@@ -10,7 +10,7 @@ from ..auth import current_user
 from ..auth.decorators import authorized_only, login_required
 from ...jobs import runner
 from ...jobs.store import get_store
-from ...services import replace as svc
+from ...public_jobs_workers import replace as svc
 
 bp_replace = Blueprint("replace", __name__, url_prefix="/replace")
 logger = logging.getLogger(__name__)

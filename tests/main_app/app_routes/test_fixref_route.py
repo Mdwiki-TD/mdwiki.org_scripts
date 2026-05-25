@@ -32,7 +32,7 @@ class TestFixref:
         assert b'name="number"' in r.data
 
     def test_post_titlelist_submits_job(self, client, login, csrf_token, monkeypatch):
-        from flask_app.main_app.services import fixref as fsvc
+        from flask_app.main_app.public_jobs_workers import fixref as fsvc
 
         captured: dict = {}
 
@@ -53,7 +53,7 @@ class TestFixref:
         assert captured["number"] is None
 
     def test_post_category_submits_job(self, client, login, csrf_token, monkeypatch):
-        from flask_app.main_app.services import fixref as fsvc
+        from flask_app.main_app.public_jobs_workers import fixref as fsvc
 
         captured: dict = {}
 
@@ -73,7 +73,7 @@ class TestFixref:
         assert captured["titles"] in (None, [])
 
     def test_post_number_submits_job(self, client, login, csrf_token, monkeypatch):
-        from flask_app.main_app.services import fixref as fsvc
+        from flask_app.main_app.public_jobs_workers import fixref as fsvc
 
         captured: dict = {}
 

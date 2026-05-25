@@ -17,7 +17,7 @@ class TestNewupdater:
 
     def test_get_with_title_changes_renders_diff(self, client, login, monkeypatch):
         import main_app.services.newupdater as nu
-        from flask_app.main_app.services.newupdater import UpdaterOutcome
+        from flask_app.main_app.public_jobs_workers.newupdater import UpdaterOutcome
 
         monkeypatch.setattr(
             nu,
@@ -33,7 +33,7 @@ class TestNewupdater:
 
     def test_get_with_title_no_changes_renders_info(self, client, login, monkeypatch):
         import main_app.services.newupdater as nu
-        from flask_app.main_app.services.newupdater import UpdaterOutcome
+        from flask_app.main_app.public_jobs_workers.newupdater import UpdaterOutcome
 
         monkeypatch.setattr(
             nu,
@@ -47,7 +47,7 @@ class TestNewupdater:
 
     def test_get_with_title_notext_renders_warning(self, client, login, monkeypatch):
         import main_app.services.newupdater as nu
-        from flask_app.main_app.services.newupdater import UpdaterOutcome
+        from flask_app.main_app.public_jobs_workers.newupdater import UpdaterOutcome
 
         monkeypatch.setattr(
             nu, "work_on_title", lambda title, save=0, summary="Med updater.": UpdaterOutcome(kind="notext")
@@ -59,7 +59,7 @@ class TestNewupdater:
 
     def test_get_with_save_calls_work_on_title_with_save(self, client, login, monkeypatch):
         import main_app.services.newupdater as nu
-        from flask_app.main_app.services.newupdater import UpdaterOutcome
+        from flask_app.main_app.public_jobs_workers.newupdater import UpdaterOutcome
 
         calls: list[dict] = []
 
@@ -77,7 +77,7 @@ class TestNewupdater:
 
     def test_get_without_title_shows_empty_form(self, client, login, monkeypatch):
         import main_app.services.newupdater as nu
-        from flask_app.main_app.services.newupdater import UpdaterOutcome
+        from flask_app.main_app.public_jobs_workers.newupdater import UpdaterOutcome
 
         monkeypatch.setattr(
             nu,

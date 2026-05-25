@@ -10,7 +10,7 @@ from ..auth import current_user
 from ..auth.decorators import login_required
 from ...jobs import runner
 from ...jobs.store import get_store
-from ...services import redirect as svc
+from ...public_jobs_workers import redirect as svc
 
 bp_redirect = Blueprint("redirect", __name__, url_prefix="/redirect")
 logger = logging.getLogger(__name__)

@@ -10,7 +10,7 @@ from ..auth import current_user
 from ..auth.decorators import authorized_only, login_required
 from ...jobs import runner
 from ...jobs.store import get_store
-from ...services import imp as svc
+from ...public_jobs_workers import imp as svc
 
 bp_import_history = Blueprint("import_history", __name__, url_prefix="/import-history")
 logger = logging.getLogger(__name__)
