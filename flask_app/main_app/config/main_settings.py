@@ -154,6 +154,7 @@ def _get_paths() -> Paths:
         main_files_path=main_files_path,
     )
 
+
 def load_cookie_config() -> CookieConfig:
     session_cookie_secure = _env_bool("SESSION_COOKIE_SECURE", default=True)
     session_cookie_httponly = _env_bool("SESSION_COOKIE_HTTPONLY", default=True)

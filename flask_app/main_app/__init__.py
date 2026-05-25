@@ -8,17 +8,15 @@ from typing import Tuple, Type
 from flask import Flask, flash, render_template
 from flask_wtf.csrf import CSRFError, CSRFProtect
 
-from .app_routes.auth.routes import bp_auth
-
-from .su_services.users_service import current_user
-from .config import settings
-
 from .app_routes import register_blueprints
-from .jobs_routes import register_jobs_blueprints
+from .app_routes.auth.routes import bp_auth
+from .config import settings
 from .core.cookies import CookieHeaderClient
 from .db import init_db
 from .extensions import db as _db
 from .extensions import migrate
+from .jobs_routes import register_jobs_blueprints
+from .su_services.users_service import current_user
 
 logger = logging.getLogger(__name__)
 
