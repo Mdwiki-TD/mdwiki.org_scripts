@@ -3,8 +3,7 @@
 from __future__ import annotations
 
 import pytest
-from flask_app.main_app.app_routes.auth import ANONYMOUS, User, is_authorized
-from flask_app.main_app.app_routes.auth import current_user
+from flask_app.main_app.app_routes.auth import ANONYMOUS, User, current_user, is_authorized
 
 
 class TestUserDataclass:

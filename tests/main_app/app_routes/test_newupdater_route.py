@@ -16,7 +16,7 @@ class TestNewupdater:
         assert b"Save with edit summary" not in r.data
 
     def test_get_with_title_changes_renders_diff(self, client, login, monkeypatch):
-        import main_app.services.newupdater as nu
+        import flask_app.main_app.public_jobs_workers.newupdater as nu
         from flask_app.main_app.public_jobs_workers.newupdater import UpdaterOutcome
 
         monkeypatch.setattr(
@@ -32,7 +32,7 @@ class TestNewupdater:
         assert b"Proposed changes" in r.data
 
     def test_get_with_title_no_changes_renders_info(self, client, login, monkeypatch):
-        import main_app.services.newupdater as nu
+        import flask_app.main_app.public_jobs_workers.newupdater as nu
         from flask_app.main_app.public_jobs_workers.newupdater import UpdaterOutcome
 
         monkeypatch.setattr(
@@ -46,7 +46,7 @@ class TestNewupdater:
         assert b"no changes" in r.data
 
     def test_get_with_title_notext_renders_warning(self, client, login, monkeypatch):
-        import main_app.services.newupdater as nu
+        import flask_app.main_app.public_jobs_workers.newupdater as nu
         from flask_app.main_app.public_jobs_workers.newupdater import UpdaterOutcome
 
         monkeypatch.setattr(
@@ -58,7 +58,7 @@ class TestNewupdater:
         assert b"empty" in r.data.lower()
 
     def test_get_with_save_calls_work_on_title_with_save(self, client, login, monkeypatch):
-        import main_app.services.newupdater as nu
+        import flask_app.main_app.public_jobs_workers.newupdater as nu
         from flask_app.main_app.public_jobs_workers.newupdater import UpdaterOutcome
 
         calls: list[dict] = []
@@ -76,7 +76,7 @@ class TestNewupdater:
         assert calls[0]["save"] == 1
 
     def test_get_without_title_shows_empty_form(self, client, login, monkeypatch):
-        import main_app.services.newupdater as nu
+        import flask_app.main_app.public_jobs_workers.newupdater as nu
         from flask_app.main_app.public_jobs_workers.newupdater import UpdaterOutcome
 
         monkeypatch.setattr(

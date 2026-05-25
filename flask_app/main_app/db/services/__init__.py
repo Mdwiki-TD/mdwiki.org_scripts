@@ -1,4 +1,3 @@
-
 from .jobs_service import (
     cancel_job,
     create_job,

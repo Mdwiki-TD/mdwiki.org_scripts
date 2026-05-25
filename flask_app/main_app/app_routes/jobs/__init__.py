@@ -6,8 +6,8 @@ import logging
 
 from flask import Blueprint, abort, flash, jsonify, redirect, render_template, url_for
 
-from ..auth.decorators import login_required
 from ...jobs.store import get_store
+from ..auth import login_required
 
 bp_jobs = Blueprint("jobs", __name__, url_prefix="/jobs")
 logger = logging.getLogger(__name__)

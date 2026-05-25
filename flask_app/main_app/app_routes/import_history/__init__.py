@@ -6,11 +6,10 @@ import logging
 
 from flask import Blueprint, flash, redirect, render_template, request, url_for
 
-from ..auth import current_user
-from ..auth.decorators import authorized_only, login_required
 from ...jobs import runner
 from ...jobs.store import get_store
 from ...public_jobs_workers import imp as svc
+from ..auth import authorized_only, current_user, login_required
 
 bp_import_history = Blueprint("import_history", __name__, url_prefix="/import-history")
 logger = logging.getLogger(__name__)
