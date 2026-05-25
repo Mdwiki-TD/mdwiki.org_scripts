@@ -2,13 +2,20 @@
 
 from __future__ import annotations
 
+import logging
+import json
 from collections import deque
 from dataclasses import dataclass, field
 from datetime import UTC, datetime
+from pathlib import Path
 from threading import Event
 from typing import Any
 
 from ..config import settings
+
+logger = logging.getLogger(__name__)
+
+JOBS_PATH: Path = Path(settings.paths.jobs_path)
 
 
 def _now() -> datetime:
@@ -53,6 +60,16 @@ class Job:
             "created_at": self.created_at.isoformat(),
             "updated_at": self.updated_at.isoformat(),
         }
+
+    def dump(self) -> None:
+        """
+        save job to_dict to json file
+        """
+        try:
+            with open(JOBS_PATH / f"{self.id}.json", "w") as f:
+                json.dump(self.to_dict(), f)
+        except Exception:
+            logger.exception(f"Error saving job {self.id} to file.")
 
 
 __all__ = ["Job"]

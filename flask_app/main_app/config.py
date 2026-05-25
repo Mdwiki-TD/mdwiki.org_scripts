@@ -108,7 +108,7 @@ def _get_paths() -> Paths:
     main_dir = os.getenv("MAIN_DIR", "~/data")
     main_dir = Path(os.path.expandvars(main_dir)).expanduser()
     log_dir = f"{main_dir}/logs"
-    jobs_path = f"{main_dir}/svg_jobs"
+    jobs_path = f"{main_dir}/jobs"
     main_files_path = f"{main_dir}/main_files"
 
     # Ensure directories exist

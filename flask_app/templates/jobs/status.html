@@ -61,39 +61,38 @@
 {% if job.status in ("pending", "running") %}
 <script>
     (function () {
-        const jobId = {{ job.id| tojson
-    }};
-    const POLL_MS = 2000;
+        const jobId = "{{ job.id| tojson }}";
+        const POLL_MS = 2000;
 
-    async function poll() {
-        try {
-            const r = await fetch("/jobs/" + jobId + ".json", { cache: "no-store" });
-            if (!r.ok) return;
-            const data = await r.json();
+        async function poll() {
+            try {
+                const r = await fetch("/jobs/" + jobId + ".json", { cache: "no-store" });
+                if (!r.ok) return;
+                const data = await r.json();
 
-            if (data.status === "done" || data.status === "error") {
-                location.reload();
-                return;
+                if (data.status === "done" || data.status === "error") {
+                    location.reload();
+                    return;
+                }
+
+                const log = document.getElementById("job-log");
+                if (log && Array.isArray(data.log)) {
+                    log.textContent = data.log.join("\n");
+                    log.scrollTop = log.scrollHeight;
+                }
+
+                const prog = document.getElementById("job-progress");
+                if (prog && data.progress) {
+                    const total = data.progress.total ? data.progress.total : "?";
+                    prog.textContent = data.progress.done + "/" + total;
+                }
+            } catch (e) {
+                /* swallow; we'll retry */
             }
-
-            const log = document.getElementById("job-log");
-            if (log && Array.isArray(data.log)) {
-                log.textContent = data.log.join("\n");
-                log.scrollTop = log.scrollHeight;
-            }
-
-            const prog = document.getElementById("job-progress");
-            if (prog && data.progress) {
-                const total = data.progress.total ? data.progress.total : "?";
-                prog.textContent = data.progress.done + "/" + total;
-            }
-        } catch (e) {
-            /* swallow; we'll retry */
         }
-    }
 
-    setInterval(poll, POLL_MS);
-}) ();
+        setInterval(poll, POLL_MS);
+    })();
 </script>
 {% endif %}
 {% endblock %}

@@ -6,11 +6,17 @@ in without touching blueprints.
 
 from __future__ import annotations
 
+from pathlib import Path
+import json
 import threading
 import uuid
 from typing import Optional
 
+from ..config import settings
+
 from .models import Job
+
+JOBS_PATH: Path = Path(settings.paths.jobs_path)
 
 
 class JobStore:
@@ -19,6 +25,18 @@ class JobStore:
     def __init__(self) -> None:
         self._lock = threading.RLock()
         self._jobs: dict[str, Job] = {}
+        self._load_all_from_dump()
+
+    def _load_all_from_dump(self) -> None:
+        json_files = list(JOBS_PATH.glob("*.json"))
+        for json_file in json_files:
+            try:
+                job_data = json.loads(json_file.read_text(encoding="utf-8"))
+            except Exception:
+                continue
+            job = Job(**job_data, stop_event=None)
+            with self._lock:
+                self._jobs[job.id] = job
 
     def create(self, tool: str, *, submitted_by: str = "", params: Optional[dict] = None) -> Job:
         job = Job(
