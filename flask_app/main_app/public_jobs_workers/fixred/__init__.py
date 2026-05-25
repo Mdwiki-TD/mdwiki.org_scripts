@@ -147,27 +147,25 @@ def _replace_links(text: str, oldlink: str, oldlink2: str, newlink: str) -> str:
     normalized-title alias if present in ``state.normalized``.
     """
 
-    while f"[[{oldlink}]]" in text or f"[[{oldlink}|" in text or f"[[{oldlink2}]]" in text or f"[[{oldlink2}|" in text:
-        text = text.replace(f"[[{oldlink}]]", f"[[{newlink}|{oldlink}]]")
-        text = text.replace(f"[[{oldlink}|", f"[[{newlink}|")
+    text = text.replace(f"[[{oldlink}]]", f"[[{newlink}|{oldlink}]]")
+    text = text.replace(f"[[{oldlink}|", f"[[{newlink}|")
 
+    text = re.sub(
+        rf"\[\[{re.escape(oldlink)}(\|\]\])",
+        rf"[[{newlink}\g<1>",
+        text,
+        flags=re.IGNORECASE,
+    )
+
+    if oldlink != oldlink2:
         text = re.sub(
-            rf"\[\[{re.escape(oldlink)}(\|\]\])",
+            rf"\[\[{re.escape(oldlink2)}(\|\]\])",
             rf"[[{newlink}\g<1>",
             text,
             flags=re.IGNORECASE,
         )
-
-        if oldlink != oldlink2:
-            text = re.sub(
-                rf"\[\[{re.escape(oldlink2)}(\|\]\])",
-                rf"[[{newlink}\g<1>",
-                text,
-                flags=re.IGNORECASE,
-            )
-            text = text.replace(f"[[{oldlink2}]]", f"[[{newlink}|{oldlink2}]]")
-            text = text.replace(f"[[{oldlink2}|", f"[[{newlink}|")
-
+        text = text.replace(f"[[{oldlink2}]]", f"[[{newlink}|{oldlink2}]]")
+        text = text.replace(f"[[{oldlink2}|", f"[[{newlink}|")
     return text
 
 
