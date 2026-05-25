@@ -8,10 +8,11 @@ from typing import Any, Callable
 
 from flask import (
     flash,
-    g,
     redirect,
     url_for,
 )
+
+from ..su_services.users_service import current_user
 
 
 def login_required(fn: Callable[..., Any]) -> Callable[..., Any]:
@@ -19,7 +20,7 @@ def login_required(fn: Callable[..., Any]) -> Callable[..., Any]:
 
     @wraps(fn)
     def wrapper(*args, **kwargs):
-        if not getattr(g, "is_authenticated", False):
+        if current_user() is None:
             flash("You must be logged in to view this page", "warning")
             return redirect(url_for("main.index"))
         return fn(*args, **kwargs)
