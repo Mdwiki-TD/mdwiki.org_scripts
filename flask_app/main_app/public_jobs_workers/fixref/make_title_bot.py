@@ -67,6 +67,7 @@ def get_url(url):
             timeout=10,
             headers={"User-Agent": "mdwiki.org tools/1.0 (https://mdwiki.toolforge.org/; tools.mdwiki@toolforge.org)"},
         )
+        req.raise_for_status()
         # ---
         if 500 <= req.status_code < 600:
             logger.info(f"received {req.status_code} status from {req.url}")
