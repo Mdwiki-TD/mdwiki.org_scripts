@@ -39,14 +39,15 @@ class TestReplace:
         r = client.get("/replace/")
         assert r.status_code == 403
 
-    def test_allowlisted_get_renders_form(self, client):
+    def test_allowlisted_get_renders_form(self, client, login):
+        login("Doc James")
         r = client.get("/replace/")
         assert r.status_code == 200
         assert b'name="find"' in r.data
         assert b'name="replace"' in r.data
         assert b'name="listtype"' in r.data
 
-    def test_post_submits_job_with_find_replace_listtype(self, client, csrf_token, monkeypatch):
+    def test_post_submits_job_with_find_replace_listtype(self, client, login, csrf_token, monkeypatch):
         from flask_app.main_app.services import replace as repsvc
 
         captured: dict = {}
@@ -56,6 +57,7 @@ class TestReplace:
             return {}
 
         monkeypatch.setattr(repsvc, "run", stub)
+        login("Doc James")
         r = client.post(
             "/replace/",
             data={
@@ -78,7 +80,8 @@ class TestReplace:
         assert data["params"]["find_len"] == 3
         assert data["params"]["replace_len"] == 3
 
-    def test_post_empty_find_re_renders_with_flash(self, client, csrf_token):
+    def test_post_empty_find_re_renders_with_flash(self, client, login, csrf_token):
+        login("Doc James")
         r = client.post(
             "/replace/",
             data={"find": "", "replace": "x", "csrf_token": csrf_token("/replace/")},

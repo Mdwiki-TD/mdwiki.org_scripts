@@ -26,13 +26,14 @@ class TestImportHistory:
         r = client.get("/import-history/")
         assert r.status_code == 403
 
-    def test_allowlisted_get_renders_form(self, client):
+    def test_allowlisted_get_renders_form(self, client, login):
+        login("Doc James")
         r = client.get("/import-history/")
         assert r.status_code == 200
         assert b'name="title"' in r.data
         assert b'name="titlelist"' in r.data
 
-    def test_post_submits_job_with_titles_and_from(self, client, csrf_token, monkeypatch):
+    def test_post_submits_job_with_titles_and_from(self, client, login, csrf_token, monkeypatch):
         from flask_app.main_app.services import imp
 
         captured: dict = {}
@@ -42,6 +43,7 @@ class TestImportHistory:
             return {}
 
         monkeypatch.setattr(imp, "run", stub)
+        login("Doc James")
         r = client.post(
             "/import-history/",
             data={
@@ -55,7 +57,8 @@ class TestImportHistory:
         assert captured["titles"] == ["A", "B"]
         assert captured["from_lang"] == "en"
 
-    def test_post_empty_re_renders_with_flash(self, client, csrf_token):
+    def test_post_empty_re_renders_with_flash(self, client, login, csrf_token):
+        login("Doc James")
         r = client.post(
             "/import-history/",
             data={"csrf_token": csrf_token("/import-history/")},

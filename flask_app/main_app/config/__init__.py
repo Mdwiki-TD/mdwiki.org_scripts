@@ -3,74 +3,21 @@
 from __future__ import annotations
 
 import os
-from dataclasses import dataclass
 from functools import lru_cache
 from pathlib import Path
 from typing import Optional
 
-
-@dataclass(frozen=True)
-class DbConfig:
-    db_name: str
-    db_host: str
-    db_user: str | None
-    db_password: str | None
-
-
-@dataclass(frozen=True)
-class Paths:
-    log_dir: str
-    jobs_path: str
-    main_files_path: str
-
-
-@dataclass(frozen=True)
-class CookieConfig:
-    name: str
-    max_age: int
-    secure: bool
-    httponly: bool
-    samesite: str
-
-
-@dataclass(frozen=True)
-class OAuthConfig:
-    mw_uri: str
-    consumer_key: str
-    consumer_secret: str
-    user_agent: str
-    upload_host: str
-
-
-@dataclass(frozen=True)
-class SecurityConfig:
-    """Security configuration for Flask 3.1+ features."""
-
-    max_content_length: int  # Maximum request size in bytes
-    max_form_memory_size: int  # Maximum form data in memory in bytes
-    max_form_parts: int  # Maximum number of form fields
-    secret_key_fallbacks: tuple[str, ...]  # Fallback secret keys for rotation
-
-
-@dataclass(frozen=True)
-class Settings:
-    is_localhost: callable
-    database_data: DbConfig
-    STATE_SESSION_KEY: str
-    REQUEST_TOKEN_SESSION_KEY: str
-    secret_key: str
-    oauth_encryption_key: str
-    cookie: CookieConfig
-    oauth: Optional[OAuthConfig]
-    paths: Paths
-    security: SecurityConfig
-    csrf_time_limit: Optional[int]  # None means never expire
-    # Phase-1 additions (see docs/merge-plan.md §7)
-    allowlist_users: tuple[str, ...]
-    enable_oauth: bool
-    jobs_max_workers: int
-    jobs_log_lines: int
-    wiki_domain: str
+from .classes import (
+    CookieConfig,
+    # CorsConfig,
+    # JobsConfig,
+    # SessionConfig,
+    DbConfig,
+    OAuthConfig,
+    Paths,
+    SecurityConfig,
+    Settings,
+)
 
 
 def _load_db_data_new() -> DbConfig:
