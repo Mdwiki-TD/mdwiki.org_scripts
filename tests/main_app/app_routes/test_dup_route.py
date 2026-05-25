@@ -29,7 +29,7 @@ class TestDup:
         assert b'name="start"' in r.data
         assert b"csrf_token" in r.data
 
-    def test_post_starts_job_and_redirects(self, client, csrf_token, monkeypatch):
+    def test_post_starts_job_and_redirects(self, client, login, csrf_token, monkeypatch):
         from flask_app.main_app.app_routes.dup import bp_dup  # noqa: F401  ensure import
         from flask_app.main_app.services import fix_duplicate
 
@@ -43,6 +43,7 @@ class TestDup:
 
         monkeypatch.setattr(fix_duplicate, "run", stub)
 
+        login("Doc James")
         r = client.post("/dup/", data={"start": "start", "csrf_token": csrf_token("/dup/")})
         assert r.status_code == 302
         job_id = r.headers["Location"].rsplit("/", 1)[-1]
@@ -50,7 +51,7 @@ class TestDup:
         assert data["status"] == "done"
         assert seen == {"called": True, "save": True}
 
-    def test_concurrent_post_returns_existing_job(self, client, csrf_token, monkeypatch):
+    def test_concurrent_post_returns_existing_job(self, client, login, csrf_token, monkeypatch):
         from flask_app.main_app.services import fix_duplicate
 
         # Slow stub so the first job is still running when the second POST lands.
@@ -60,6 +61,7 @@ class TestDup:
 
         monkeypatch.setattr(fix_duplicate, "run", stub)
 
+        login("Doc James")
         r1 = client.post("/dup/", data={"start": "start", "csrf_token": csrf_token("/dup/")})
         r2 = client.post("/dup/", data={"start": "start", "csrf_token": csrf_token("/dup/")})
         assert r1.headers["Location"] == r2.headers["Location"]
