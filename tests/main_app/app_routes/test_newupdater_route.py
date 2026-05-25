@@ -22,7 +22,9 @@ class TestNewupdater:
         monkeypatch.setattr(
             nu,
             "work_on_title",
-            lambda title, save=0, summary="Med updater.": UpdaterOutcome(kind="changes", old_text="a\n", new_text="b\n"),
+            lambda title, save=0, summary="Med updater.": UpdaterOutcome(
+                kind="changes", old_text="a\n", new_text="b\n"
+            ),
         )
         login("Doc James")
         r = client.get("/newupdater/?title=Aspirin")
@@ -47,7 +49,9 @@ class TestNewupdater:
         import main_app.services.newupdater as nu
         from flask_app.main_app.services.newupdater import UpdaterOutcome
 
-        monkeypatch.setattr(nu, "work_on_title", lambda title, save=0, summary="Med updater.": UpdaterOutcome(kind="notext"))
+        monkeypatch.setattr(
+            nu, "work_on_title", lambda title, save=0, summary="Med updater.": UpdaterOutcome(kind="notext")
+        )
         login("Doc James")
         r = client.get("/newupdater/?title=Empty")
         assert r.status_code == 200

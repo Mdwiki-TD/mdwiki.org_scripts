@@ -28,7 +28,6 @@ __all__ = [
     "OAuthConfig",
     "SecurityConfig",
     "Settings",
-
     "Config",
     "DevelopmentConfig",
     "ProductionConfig",

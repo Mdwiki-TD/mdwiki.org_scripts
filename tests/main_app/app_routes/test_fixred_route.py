@@ -72,4 +72,4 @@ class TestFixred:
         login("Doc James")
         r = client.post("/fixred/", data={"csrf_token": csrf_token("/fixred/")})
         assert r.status_code == 200
-        assert b"name=\"title\"" in r.data
+        assert b'name="title"' in r.data
