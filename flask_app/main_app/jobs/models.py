@@ -61,7 +61,8 @@ class Job:
             "updated_at": self.updated_at.isoformat(),
         }
 
-    def from_json(self, json_data: dict[str, any]):
+    @staticmethod
+    def from_json(json_data: dict[str, any]):
         """
         """
         json_data["created_at"] = datetime.fromisoformat(json_data.get("created_at")) if json_data.get("created_at") else _now()
