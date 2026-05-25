@@ -2,8 +2,8 @@
 
 from __future__ import annotations
 
-import logging
 import json
+import logging
 from collections import deque
 from dataclasses import dataclass, field
 from datetime import UTC, datetime
@@ -63,10 +63,13 @@ class Job:
 
     @staticmethod
     def from_json(json_data: dict[str, any]):
-        """
-        """
-        json_data["created_at"] = datetime.fromisoformat(json_data.get("created_at")) if json_data.get("created_at") else _now()
-        json_data["updated_at"] = datetime.fromisoformat(json_data.get("updated_at")) if json_data.get("updated_at") else _now()
+        """ """
+        json_data["created_at"] = (
+            datetime.fromisoformat(json_data.get("created_at")) if json_data.get("created_at") else _now()
+        )
+        json_data["updated_at"] = (
+            datetime.fromisoformat(json_data.get("updated_at")) if json_data.get("updated_at") else _now()
+        )
 
         return Job(**json_data, stop_event=None)
 

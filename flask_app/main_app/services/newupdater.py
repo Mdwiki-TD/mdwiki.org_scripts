@@ -21,7 +21,7 @@ from ._api import get_api
 
 logger = logging.getLogger(__name__)
 
-OutcomeKind = Literal["notext", "no_changes", "changes"]
+OutcomeKind = Literal["notext", "no_changes", "changes", "saved"]
 
 
 @dataclass(frozen=True)
@@ -51,7 +51,11 @@ def _legacy_work_on_text(title: str, text: str) -> str:
     return work_on_text(title, text)
 
 
-def work_on_title(title: str) -> UpdaterOutcome:
+def work_on_title(
+    title: str,
+    save: bool = False,
+    summary: str = "Med updater.",
+) -> UpdaterOutcome:
     """Fetch the page, run the updater, and report what the diff would be.
 
     Returns one of:
@@ -82,8 +86,16 @@ def work_on_title(title: str) -> UpdaterOutcome:
 
     if not new_text or not new_text.strip():
         return UpdaterOutcome(kind="notext", old_text=old_text)
+
     if new_text == old_text:
         return UpdaterOutcome(kind="no_changes", old_text=old_text, new_text=new_text)
+
+    if save:
+        ok = page.save(newtext=new_text, summary=summary)
+
+        if ok is True:
+            return UpdaterOutcome(kind="saved")
+
     return UpdaterOutcome(kind="changes", old_text=old_text, new_text=new_text)
 
 

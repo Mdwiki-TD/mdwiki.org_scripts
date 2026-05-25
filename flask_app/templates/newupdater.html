@@ -33,9 +33,6 @@
         {% if outcome %}
         {% if outcome.kind == "changes" %}
         <h5>Proposed changes for <code>{{ form_title }}</code></h5>
-        <pre class="mb-3"
-            style="max-height: 480px; overflow:auto; background:#f8f9fa; padding:10px; border:1px solid #dee2e6;">{{ diff }}</pre>
-
         <form method="POST" action="{{ url_for('newupdater.newupdater_post') }}">
             {{ csrf() }}
             <input type="hidden" name="title" value="{{ form_title }}">
@@ -48,11 +45,14 @@
         <div class="alert alert-info">
             <code>{{ form_title }}</code>: the rewriter produced no changes.
         </div>
-        {{ edit_form(form_title, wiki_domain, outcome.new_text) }}
         {% elif outcome.kind == "notext" %}
         <div class="alert alert-warning">
             <code>{{ form_title }}</code>: the page is empty, missing, or the
             rewriter produced empty output.
+        </div>
+        {% elif outcome.kind == "saved" %}
+        <div class="alert alert-success">
+            <code>{{ form_title }}</code>: the page has been saved.
         </div>
         {% endif %}
         {% endif %}

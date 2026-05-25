@@ -83,7 +83,7 @@ def work_on_text_md(title, text):
     # ---
     new_text = re.sub(r"\n\s*\[\[Category", "\n[[Category", new_text, flags=re.DOTALL | re.MULTILINE)
     # ---
-    return new_text
+    return new_text + "test!!!"
 
 
 def work_on_text(title, text):

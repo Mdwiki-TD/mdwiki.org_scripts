@@ -288,8 +288,8 @@ def run_all(
     on_progress: Optional[Callable[..., None]] = None,
     stop_event: Optional[Event] = None,
 ) -> dict[str, Any]:
-    """
-    """
+    """ """
+
     def _emit(done: int, total: int, msg: str) -> None:
         if on_progress is not None:
             on_progress(done, total, message=msg)

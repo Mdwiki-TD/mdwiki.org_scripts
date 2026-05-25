@@ -6,14 +6,13 @@ in without touching blueprints.
 
 from __future__ import annotations
 
-from pathlib import Path
 import json
 import threading
 import uuid
+from pathlib import Path
 from typing import Optional
 
 from ..config import settings
-
 from .models import Job
 
 JOBS_PATH: Path = Path(settings.paths.jobs_path)

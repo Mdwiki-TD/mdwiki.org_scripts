@@ -23,6 +23,7 @@ except Exception:
 
 # import app here
 from logger_config import configure_logging  # noqa: E402
+
 configure_logging(logging.DEBUG)
 
 from main_app import create_app  # noqa: E402
