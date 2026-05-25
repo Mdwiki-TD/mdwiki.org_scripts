@@ -94,6 +94,6 @@ __all__ = [
     "CookieConfig",
     "SessionConfig",
     "OAuthConfig",
-    "CorsConfig",
+    "SecurityConfig",
     "Settings",
 ]
