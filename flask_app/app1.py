@@ -22,10 +22,10 @@ except Exception:
     logging.warning(f"Failed to load .env file from {str(_env_file_path)}")
 
 # import app here
-from main_app import create_app  # noqa: E402
 from logger_config import configure_logging  # noqa: E402
-
 configure_logging(logging.DEBUG)
+
+from main_app import create_app  # noqa: E402
 
 app = create_app()
 
