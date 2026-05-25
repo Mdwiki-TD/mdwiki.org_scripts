@@ -6,12 +6,12 @@ import logging
 from typing import Tuple, Type
 
 from flask import Flask, flash, render_template
-from flask_app.main_app.app_routes.auth import is_authorized
 from flask_wtf.csrf import CSRFError, CSRFProtect
 
+from .su_services.users_service import context_user
+
 from .app_routes import register_blueprints
-from .app_routes.auth import current_user
-from .config import settings
+from .jobs_routes import register_jobs_blueprints
 from .core.cookies import CookieHeaderClient
 
 logger = logging.getLogger(__name__)
@@ -92,16 +92,13 @@ def create_app(config_class: Type) -> Flask:
     @app.context_processor
     def _inject_user() -> dict:
         """Make `current_user` and `is_authorized` available in all templates."""
-        return {
-            "current_user": current_user(),
-            "is_authorized": is_authorized,
-            "wiki_domain": settings.wiki_domain,
-        }
+        return context_user()
 
     # app.jinja_env.filters["format_stage_timestamp"] = format_stage_timestamp
     # app.jinja_env.filters["short_url"] = short_url
 
     register_error_pages(app)
     register_blueprints(app)
+    register_jobs_blueprints(app)
 
     return app

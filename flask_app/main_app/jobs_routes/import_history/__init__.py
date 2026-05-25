@@ -9,7 +9,8 @@ from flask import Blueprint, flash, redirect, render_template, request, url_for
 from ...jobs import runner
 from ...jobs.store import get_store
 from ...public_jobs_workers import imp as svc
-from ..auth import authorized_only, current_user, login_required
+from ..decorators import login_required
+from ...su_services.users_service import current_user
 
 bp_import_history = Blueprint("import_history", __name__, url_prefix="/import-history")
 logger = logging.getLogger(__name__)
@@ -37,7 +38,6 @@ def _split_titles(raw_title: str, raw_titlelist: str) -> list[str]:
 
 @bp_import_history.route("/", methods=["GET"])
 @login_required
-@authorized_only
 def import_history():
     return render_template(
         "import-history.html",
@@ -47,10 +47,8 @@ def import_history():
         form_from="en",
     )
 
-
 @bp_import_history.route("/", methods=["POST"])
 @login_required
-@authorized_only
 def import_history_post():
     user = current_user()
 

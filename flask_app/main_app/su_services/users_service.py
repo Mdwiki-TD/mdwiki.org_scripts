@@ -11,7 +11,7 @@ from flask import g, redirect, request, session, url_for
 from ..app_routes.auth.cookie import extract_user_id
 from ..config import settings
 from ..db.models import UserTokenRecord
-from ..db.services import active_coordinators, get_user_token
+from ..db.services import get_user_token
 
 F = TypeVar("F", bound=Callable[..., Any])
 
@@ -75,6 +75,6 @@ def context_user() -> dict[str, Any]:
     return {
         "current_user": user,
         "is_authenticated": user is not None,
-        "is_admin": bool(user and user.username in active_coordinators()),
         "username": user.username if user else None,
+        "wiki_domain": settings.wiki_domain,
     }

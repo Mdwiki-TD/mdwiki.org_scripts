@@ -9,7 +9,8 @@ from flask import Blueprint, flash, redirect, render_template, request, url_for
 from ...jobs import runner
 from ...jobs.store import get_store
 from ...public_jobs_workers import redirect as svc
-from ..auth import current_user, login_required
+from ..decorators import login_required
+from ...su_services.users_service import current_user
 
 bp_redirect = Blueprint("redirect", __name__, url_prefix="/redirect")
 logger = logging.getLogger(__name__)
