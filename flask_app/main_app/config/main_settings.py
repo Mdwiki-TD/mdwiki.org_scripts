@@ -231,13 +231,11 @@ def get_settings() -> Settings:
 
     oauth_config = _load_oauth_config()
 
-    enable_oauth = _env_bool("ENABLE_OAUTH", default=False)
-
-    if enable_oauth and oauth_config is None:
+    if oauth_config is None:
         raise RuntimeError(
             "MediaWiki OAuth configuration is incomplete. Set OAUTH_MWURI, OAUTH_CONSUMER_KEY, and OAUTH_CONSUMER_SECRET."
         )
-    if enable_oauth and not oauth_config.encryption_key:
+    if oauth_config.encryption_key:
         raise RuntimeError("OAUTH_ENCRYPTION_KEY environment variable is required when ENABLE_OAUTH=true")
 
     cookie_config = load_cookie_config()
@@ -253,9 +251,7 @@ def get_settings() -> Settings:
         oauth=oauth_config,
         security=security_config,
         sessions=sessions,
-        enable_oauth=enable_oauth,
-
-        other_config=other_config,
+        other=other_config,
     )
 
 

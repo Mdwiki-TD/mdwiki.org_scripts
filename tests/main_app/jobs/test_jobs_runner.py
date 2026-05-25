@@ -111,7 +111,7 @@ class TestSubmit:
         assert captured == {"foo": 1, "bar": "two"}
 
     def test_log_buffer_is_capped(self):
-        # The buffer respects settings.jobs_log_lines (default 200).
+        # The buffer respects settings.other.jobs_log_lines (default 200).
         # We don't assert the exact cap here, just that it's a deque
         # with a maxlen so a runaway service can't OOM us.
         def fn(*, on_progress, stop_event):

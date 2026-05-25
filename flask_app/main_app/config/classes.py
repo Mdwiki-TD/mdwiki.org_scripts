@@ -91,8 +91,7 @@ class Settings:
     oauth: Optional[OAuthConfig]
     paths: Paths
     security: SecurityConfig
-    other_config: OtherConfig
-    enable_oauth: bool
+    other: OtherConfig
 
 
 __all__ = [

@@ -23,7 +23,6 @@ sys.path.insert(0, str(_REPO / "flask_app"))
 
 # Settings that must be present before main_app is imported.
 os.environ.setdefault("FLASK_SECRET_KEY", "test-secret")
-os.environ.setdefault("ENABLE_OAUTH", "false")
 # Pin allowlist for tests so we don't depend on the prod default drifting.
 os.environ.setdefault("ALLOWLIST_USERS", "Doc James,Mr. Ibrahem")
 
