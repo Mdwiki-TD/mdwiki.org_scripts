@@ -50,9 +50,12 @@ class SessionConfig:
 
 @dataclass(frozen=True)
 class OAuthConfig:
+    """MediaWiki OAuth specific configuration."""
+
     mw_uri: str
     consumer_key: str
     consumer_secret: str
+    encryption_key: str | None
     user_agent: str
     upload_host: str
 
@@ -74,7 +77,6 @@ class Settings:
     database_data: DbConfig
     STATE_SESSION_KEY: str
     REQUEST_TOKEN_SESSION_KEY: str
-    oauth_encryption_key: str
     cookie: CookieConfig
     oauth: Optional[OAuthConfig]
     paths: Paths

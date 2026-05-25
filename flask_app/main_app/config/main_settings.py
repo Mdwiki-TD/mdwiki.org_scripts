@@ -95,6 +95,8 @@ def _load_oauth_config() -> Optional[OAuthConfig]:
     if not (mw_uri and consumer_key and consumer_secret):
         return None
 
+    oauth_encryption_key = os.getenv("OAUTH_ENCRYPTION_KEY", "")
+
     return OAuthConfig(
         mw_uri=mw_uri,
         consumer_key=consumer_key,
@@ -103,6 +105,7 @@ def _load_oauth_config() -> Optional[OAuthConfig]:
             "USER_AGENT",
             "Copy SVG Translations/1.0 (https://copy-svg-langs.toolforge.org; tools.copy-svg-langs@toolforge.org)",
         ),
+        encryption_key=oauth_encryption_key,
         upload_host=os.getenv("UPLOAD_END_POINT", "commons.wikimedia.org"),
     )
 
@@ -149,9 +152,7 @@ def get_settings() -> Settings:
         raise RuntimeError(
             "MediaWiki OAuth configuration is incomplete. Set OAUTH_MWURI, OAUTH_CONSUMER_KEY, and OAUTH_CONSUMER_SECRET."
         )
-
-    oauth_encryption_key = os.getenv("OAUTH_ENCRYPTION_KEY", "")
-    if enable_oauth and not oauth_encryption_key:
+    if enable_oauth and not oauth_config.encryption_key:
         raise RuntimeError("OAUTH_ENCRYPTION_KEY environment variable is required when ENABLE_OAUTH=true")
 
     cookie = CookieConfig(
@@ -205,7 +206,6 @@ def get_settings() -> Settings:
         database_data=_load_db_data_new(),
         STATE_SESSION_KEY=STATE_SESSION_KEY,
         REQUEST_TOKEN_SESSION_KEY=REQUEST_TOKEN_SESSION_KEY,
-        oauth_encryption_key=oauth_encryption_key,
         cookie=cookie,
         oauth=oauth_config,
         security=security,
