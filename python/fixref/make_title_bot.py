@@ -14,9 +14,7 @@ import requests
 logger = logging.getLogger(__name__)
 
 # ---
-Title_cash = {
-    "https://www.volksgezondheidenzorg.info/onderwerp/infectieziekten/regionaal-internationaal/coronavirus-covid-19": "Infectieziekten | Regionaal & Internationaal | Coronavirus (COVID-19) | Volksgezondheidenzorg.info"
-}
+Title_cash = {}
 # ---
 globalbadtitles = r"""
 # is
