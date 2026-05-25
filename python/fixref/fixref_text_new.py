@@ -2,6 +2,7 @@ import re
 import sys
 
 import wikitextparser as wtp
+
 from .make_title_bot import make_title
 
 
