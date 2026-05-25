@@ -19,6 +19,7 @@ class OtherConfig:
     jobs_log_lines: int
     wiki_domain: str
     static_server: str
+    user_agent: str
 
 
 @dataclass(frozen=True)
@@ -69,7 +70,6 @@ class OAuthConfig:
     consumer_key: str
     consumer_secret: str
     encryption_key: str | None
-    user_agent: str
 
 
 @dataclass(frozen=True)

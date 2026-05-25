@@ -23,7 +23,7 @@ for arg in sys.argv:
         offset[1] = int(value)
 
 
-def work(title, num, length, From=""):
+def work(title, num, length, title_from=""):
     # ---
     logger.info(f'-------------------------------------------\n*<<yellow>> >{num}/{length} title:"{title}".')
     # ---
@@ -67,7 +67,7 @@ def main():
     # python imp.py -newpages:20000
     # ---
     page2 = ""
-    From = "0"
+    title_from = "0"
     # ---
     for arg in sys.argv:
         arg, _, value = arg.partition(":")
@@ -75,13 +75,13 @@ def main():
         arg = arg.lower()
         # ---
         if arg == "-from":
-            From = value
+            title_from = value
         # ---
         if arg in ["-page2", "page2"]:
             page2 = value
     # ---
-    if page2 != "" and From != "":
-        work(page2, 0, 1, From=From)
+    if page2 != "" and title_from != "":
+        work(page2, 0, 1, title_from=title_from)
     # ---
     user = ""
     user_limit = "3000"

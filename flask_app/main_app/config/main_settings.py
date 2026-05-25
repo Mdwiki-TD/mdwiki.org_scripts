@@ -118,10 +118,6 @@ def _load_oauth_config() -> Optional[OAuthConfig]:
         mw_uri=mw_uri,
         consumer_key=consumer_key,
         consumer_secret=consumer_secret,
-        user_agent=os.getenv(
-            "USER_AGENT",
-            "Copy SVG Translations/1.0 (https://copy-svg-langs.toolforge.org; tools.copy-svg-langs@toolforge.org)",
-        ),
         encryption_key=encryption_key,
     )
 
@@ -184,6 +180,10 @@ def load_other_config() -> OtherConfig:
         jobs_log_lines=jobs_log_lines,
         wiki_domain=wiki_domain,
         static_server=static_server,
+        user_agent=os.getenv(
+            "USER_AGENT",
+            "Copy SVG Translations/1.0 (https://copy-svg-langs.toolforge.org; tools.copy-svg-langs@toolforge.org)",
+        ),
     )
 
     return _config
