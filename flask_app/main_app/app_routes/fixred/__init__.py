@@ -22,7 +22,7 @@ def _normalize_title(raw: str) -> str:
 
 @bp_fixred.route("/", methods=["GET"])
 @login_required
-def fixred():
+def index():
     title = _normalize_title(request.args.get("title", ""))
     return render_template("fixred.html", title="Fix redirects in page text", form_title=title)
 
@@ -59,7 +59,7 @@ def fixred_post():
 
     if not title:
         flash("Please provide a title (use 'all' to process every mainspace page).", "warning")
-        return redirect(url_for("fixred.fixred"))
+        return redirect(url_for("fixred.index"))
 
     active = get_store().find_active("fixred")
     if active is not None:

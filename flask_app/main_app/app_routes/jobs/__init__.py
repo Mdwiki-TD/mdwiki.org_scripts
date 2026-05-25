@@ -13,6 +13,12 @@ bp_jobs = Blueprint("jobs", __name__, url_prefix="/jobs")
 logger = logging.getLogger(__name__)
 
 
+@bp_jobs.get("/list")
+def jobs_list() -> str:
+    jobs = get_store().all()
+    return render_template("jobs/list.html", jobs=jobs)
+
+
 @bp_jobs.get("/<job_id>")
 def status(job_id: str):
     job = get_store().get(job_id)
