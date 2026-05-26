@@ -209,7 +209,7 @@ def search_pages(
     if not data:
         return titles
     query = data.get("query") or {}
-    for item in (query.get("search") or []):
+    for item in query.get("search") or []:
         titles.append(item["title"])
     return titles
 
