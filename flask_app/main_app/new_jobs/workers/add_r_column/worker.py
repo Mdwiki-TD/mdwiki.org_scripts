@@ -53,7 +53,7 @@ class AddRColumnWorker(BaseJobWorker):
         """
         Placeholder process method.
         """
-        titles_raw = self.args.get("titles", [])
+        titles_raw = self.args.get("titles") or []
         if isinstance(titles_raw, str):
             titles = [t.strip() for t in titles_raw.splitlines() if t.strip()]
         else:
