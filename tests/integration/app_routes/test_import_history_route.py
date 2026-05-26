@@ -34,7 +34,7 @@ class TestImportHistory:
         assert b'name="titlelist"' in r.data
 
     def test_post_submits_job_with_titles_and_from(self, mock_client, login, csrf_token, monkeypatch):
-        from flask_app.main_app.public_jobs_workers import imp
+        from flask_app.main_app.jobs.workers import imp
 
         captured: dict = {}
 

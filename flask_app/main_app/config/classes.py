@@ -48,6 +48,7 @@ class DbConfig:
 class Paths:
     log_dir: str
     jobs_path: str
+    new_jobs_path: str
     main_files_path: str
 
 

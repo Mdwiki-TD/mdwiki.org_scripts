@@ -31,7 +31,7 @@ class TestDup:
 
     def test_post_starts_job_and_redirects(self, mock_client, login, csrf_token, monkeypatch):
         # from flask_app.main_app.app_routes.dup import bp_dup  # noqa: F401  ensure import
-        from flask_app.main_app.public_jobs_workers import fix_duplicate
+        from flask_app.main_app.jobs.workers import fix_duplicate
 
         seen: dict = {}
 
@@ -52,7 +52,7 @@ class TestDup:
         assert seen == {"called": True, "save": True}
 
     def test_concurrent_post_returns_existing_job(self, mock_client, login, csrf_token, monkeypatch):
-        from flask_app.main_app.public_jobs_workers import fix_duplicate
+        from flask_app.main_app.jobs.workers import fix_duplicate
 
         # Slow stub so the first job is still running when the second POST lands.
         def stub(*, on_progress, stop_event, **kw):

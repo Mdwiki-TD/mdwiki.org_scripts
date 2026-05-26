@@ -13,7 +13,7 @@ from __future__ import annotations
 import threading
 
 import pytest
-from flask_app.main_app.public_jobs_workers import replace as svc
+from flask_app.main_app.jobs.workers import replace as svc
 
 # ---------------------------------------------------------------------------
 # Fakes

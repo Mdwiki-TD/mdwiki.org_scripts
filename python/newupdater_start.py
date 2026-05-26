@@ -4,7 +4,7 @@ python3 I:/MD_TOOLS/mdwiki.toolforge.org/PYTHON_REPOS/pybot/src/newupdater.py -p
 """
 import sys
 
-from flask_app.main_app.public_jobs_workers.newupdater.new_updater import work_on_text
+from flask_app.main_app.shared.new_updater import work_on_text
 from mdapi import GetPageText, page_put
 
 
