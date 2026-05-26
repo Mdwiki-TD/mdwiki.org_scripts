@@ -23,8 +23,8 @@ from ..db.services import (  # active_coordinators,
     get_job,
     list_jobs,
 )
-from ..jobs_workers import jobs_worker
-from ..jobs_workers.workers_list import JOB_TYPE_LIST_TEMPLATES_PUBLIC, JOB_TYPE_TEMPLATES_PUBLIC
+from ..new_jobs import jobs_worker
+from ..new_jobs.workers_list import JOB_TYPE_LIST_TEMPLATES_PUBLIC, JOB_TYPE_TEMPLATES_PUBLIC
 from ..su_services import load_job_result
 from ..su_services.users_service import current_user
 from .utils.routes_utils import load_auth_payload

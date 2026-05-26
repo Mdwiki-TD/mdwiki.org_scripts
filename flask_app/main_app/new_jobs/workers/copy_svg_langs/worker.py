@@ -13,9 +13,9 @@ from typing import Any, Dict, Iterable
 
 import mwclient
 
-from ...api_services.clients import get_user_site
-from ...api_services.pages_api import edit_page, is_page_exists, is_redirect, move_page
-from ...jobs_workers.base_worker import BaseJobWorker
+from ....api_services.clients import get_user_site
+from ....api_services.pages_api import edit_page, is_page_exists, is_redirect, move_page
+from ....new_jobs.base_worker import BaseJobWorker
 
 # (namespace_id, prefix_after_namespace, full_prefix_label_for_display)
 PREFIXES: tuple[tuple[int, str, str], ...] = (

@@ -1,4 +1,4 @@
-from ..new_jobs_workers.copy_svg_langs.worker import copy_svg_langs_worker_entry
+from .workers.copy_svg_langs.worker import copy_svg_langs_worker_entry
 
 jobs_targets_public = {
     "copy_svg_langs": copy_svg_langs_worker_entry,

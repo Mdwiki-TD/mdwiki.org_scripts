@@ -7,7 +7,7 @@ from typing import Any, Dict, Optional
 from flask import url_for
 
 from ...db.models import UserTokenRecord
-from ...jobs_workers.workers_list import JOB_TYPE_TEMPLATES_PUBLIC
+from ...new_jobs.workers_list import JOB_TYPE_TEMPLATES_PUBLIC
 
 logger = logging.getLogger(__name__)
 
