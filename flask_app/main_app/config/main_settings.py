@@ -167,9 +167,12 @@ def load_other_config() -> OtherConfig:
     _allowlist_raw = os.getenv("ALLOWLIST_USERS", "Doc James,Mr. Ibrahem")
     allowlist_users = tuple(name.strip() for name in _allowlist_raw.split(",") if name.strip())
 
-    _lang = os.getenv("WIKI_LANG") or "www"
-    _family = os.getenv("WIKI_FAMILY") or "mdwiki"
-    wiki_domain = f"{_lang}.{_family}.org"
+    _lang = os.getenv("WIKI_LANG") or ""
+    _family = os.getenv("WIKI_FAMILY") or ""
+    if _lang and _family:
+        wiki_domain = f"{_lang}.{_family}.org"
+    else:
+        wiki_domain = "mdwiki.org"
     static_server = os.getenv("STATIC_SERVER") or "https://tools-static.wmflabs.org/cdnjs"
 
     user_agent = os.getenv(
