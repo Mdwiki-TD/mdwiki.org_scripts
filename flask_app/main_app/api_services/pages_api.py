@@ -180,12 +180,37 @@ def resolve_redirects(
     return result
 
 
-def get_page_text(page_title: str, site: mwclient.Site) -> str | None:
-    """Return the wikitext of *page_title*, or None if the page is missing."""
-    page = site.pages[page_title]
-    if not page.exists:
-        return None
-    return page.text()
+def get_page_text(
+    page_title: str,
+    site: mwclient.Site | None,
+) -> str:
+    """
+    Get the wikitext of any page on Wikimedia Commons.
+
+    Args:
+        page_name: The name of the page (e.g., "Template:OWID/Barley yields").
+        site: Authenticated mwclient.Site object for Commons.
+
+    Returns:
+        The wikitext of the page, or an empty string if it cannot be retrieved.
+    """
+    missing_fields = verify_required_fields(
+        {
+            "page_name": page_name,
+            "site": site,
+        }
+    )
+    if missing_fields:
+        list_str = ", ".join(missing_fields)
+        logger.error(f"Missing required fields for get_page_text: {list_str}")
+        return ""
+
+    try:
+        page = site.pages[page_title]
+        return page.text()
+    except Exception as exc:
+        logger.exception(f"Failed to retrieve wikitext for {page_title}", exc_info=exc)
+        return ""
 
 
 def search_pages(
