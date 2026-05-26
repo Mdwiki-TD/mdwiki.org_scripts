@@ -22,12 +22,12 @@ class AddRColumnWorker(BaseJobWorker):
     def __init__(
         self,
         job_id: int,
-        args: Any,
+        args: dict[str, Any] | None,
         user: dict[str, Any] | None,
         cancel_event: threading.Event | None = None,
     ) -> None:
         self.job_id = job_id
-        self.args = args
+        self.args = args or {}
         super().__init__(job_id, user, cancel_event)
 
     def get_job_type(self) -> str:
