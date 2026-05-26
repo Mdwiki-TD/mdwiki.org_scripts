@@ -6,8 +6,8 @@ import logging
 
 from flask import Blueprint, flash, redirect, render_template, request, url_for
 
-from ...jobs import runner
-from ...jobs.store import get_store
+from .. import runner
+from ..store import get_store
 from ...public_jobs_workers import replace as svc
 from ...su_services.users_service import current_user, oauth_required
 
