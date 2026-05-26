@@ -197,7 +197,6 @@ def search_pages(
     """Return page titles matching *query* via the MediaWiki search API."""
     titles: list[str] = []
     params = {
-        "action": "query",
         "list": "search",
         "srsearch": query,
         "srnamespace": str(namespace),
@@ -217,7 +216,6 @@ def search_pages(
 def get_double_redirects(site: mwclient.Site) -> list[dict[str, str]]:
     """Return resolved double-redirect pairs ``[{"from", "to"}, ...]``."""
     params = {
-        "action": "query",
         "prop": "info",
         "generator": "querypage",
         "redirects": 1,
@@ -266,7 +264,6 @@ def get_page_links(
     Returns ``{"links": {title: {"ns", "title"}}, "normalized": [...], "redirects": [...]}``.
     """
     params = {
-        "action": "query",
         "prop": "links",
         "titles": title,
         "plnamespace": str(namespace),
