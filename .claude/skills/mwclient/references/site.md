@@ -291,12 +291,29 @@ site.email('TargetUser', subject='Hello', text='Message body')
 
 ## Common Patterns
 
-### Connect and authenticate
+### Read-only access (no authentication needed)
+
+When you only need to read pages, set `force_login=False` to prevent mwclient
+from requiring login credentials.  This avoids `AssertUserFailedError` if
+you haven't set up auth.
 
 ```python
 import mwclient
 
-site = mwclient.Site('en.wikipedia.org')
+# Read-only — no login required
+site = mwclient.Site('en.wikipedia.org', force_login=False)
+page = site.pages['Python (programming language)']
+text = page.text()
+print(f"Page exists: {page.exists}")
+print(f"Page ID: {page.pageid}")
+```
+
+### Connect and authenticate (for editing)
+
+```python
+import mwclient
+
+site = mwclient.Site('ar.wikipedia.org')  # force_login=True by default
 site.login('Username', 'password')
 print(f"Logged in as {site.username}")
 print(f"Rights: {site.rights}")

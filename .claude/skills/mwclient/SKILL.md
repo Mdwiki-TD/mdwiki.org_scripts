@@ -28,17 +28,22 @@ pip install mwclient
 ```python
 import mwclient
 
-# Connect to a wiki
-site = mwclient.Site('en.wikipedia.org')
-
-# Read a page
+# Read-only access (no login needed)
+site = mwclient.Site('en.wikipedia.org', force_login=False)
 page = site.pages['Python (programming language)']
 print(page.text())
 
 # Edit a page (requires login)
+site = mwclient.Site('ar.wikipedia.org')
 site.login('username', 'password')
 page.edit('New content', summary='Updated via mwclient')
 ```
+
+> **Important:** Use `force_login=False` when you only need to READ pages.
+> Without it, mwclient will attempt to log in when you call `page.edit()`,
+> raising `AssertUserFailedError` if no credentials are set.  Reading
+> (`page.text()`, `page.exists`, `page.pageprops`) does NOT require login.
+> Editing (`page.edit()`, `page.move()`, `site.upload()`) DOES require login.
 
 ## References
 
@@ -70,7 +75,19 @@ All listing methods return lazy iterators that fetch data in chunks. Use `max_it
 
 ## Common Patterns
 
-### Connect with authentication
+### Read-only access (no login)
+
+```python
+# force_login=False prevents mwclient from requiring auth
+site = mwclient.Site('en.wikipedia.org', force_login=False)
+page = site.pages['Some Page']
+text = page.text()
+exists = page.exists
+page_id = page.pageid
+qid = page.pageprops.get('wikibase_item')
+```
+
+### Connect with authentication (for editing)
 
 ```python
 site = mwclient.Site('mywiki.org')
