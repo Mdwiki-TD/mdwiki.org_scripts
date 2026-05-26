@@ -192,7 +192,7 @@ def search_pages(
     query: str,
     site: mwclient.Site,
     namespace: int = 0,
-    limit: int = "max",
+    limit: int | str = "max",
 ) -> list[str]:
     """Return page titles matching *query* via the MediaWiki search API."""
     titles: list[str] = []
