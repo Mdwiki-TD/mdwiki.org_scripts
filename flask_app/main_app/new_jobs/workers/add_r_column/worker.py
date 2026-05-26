@@ -97,6 +97,7 @@ class AddRColumnWorker(BaseJobWorker):
         return "add_r_column"
 
     def get_initial_result(self) -> Dict[str, Any]:
+        _status = ["pending", "running", "completed", "failed", "skipped"]
         return {
             "status": "pending",
             "started_at": datetime.now().isoformat(),
@@ -108,8 +109,25 @@ class AddRColumnWorker(BaseJobWorker):
                 "errors": 0,
                 "total": 0,
             },
+            "steps": {
+                "load_page": {"status": "pending", "message": ""},
+                "load_text": {"status": "pending", "message": ""},
+                "add_empty_r_column": {"status": "pending", "message": ""},
+                "first_save": {"status": "pending", "message": ""},
+                "add_r_column": {"status": "pending", "message": ""},
+                "final_save": {"status": "pending", "message": ""},
+            },
             "new_text": "",
         }
+
+    def _set_step_status(self, step: str, status: str, message: str) -> None:
+        self.result["steps"][step]["status"] = status
+        self.result["steps"][step]["message"] = message
+
+    def _set_steps_skipped(self) -> None:
+        for key, step in self.result["steps"].items():
+            if step["status"] == "pending":
+                self.result["steps"][key]["status"] = "skipped"
 
     def _set_status_failed(self, error) -> None:
         self.result["status"] = "failed"
@@ -124,6 +142,7 @@ class AddRColumnWorker(BaseJobWorker):
         if not self.site:
             logger.warning(f"Job {self.job_id}: No site authentication available")
             self._set_status_failed("No authenticated user site available. Please log in via OAuth.")
+            self._set_steps_skipped()
             return self.result
 
         logger.info(f"Job {self.job_id}: for Add R column.")
@@ -131,11 +150,10 @@ class AddRColumnWorker(BaseJobWorker):
         if self.is_cancelled():
             return self.result
 
-        # ----
         self._start()
-        # ----
-        self.result["summary"]["scanned"] += 1
-        self.result["summary"]["skipped"] += 1
+
+        # set any pending steps to skipped
+        self._set_steps_skipped()
 
         if self.result.get("status") in ("pending", "running"):
             self.result["status"] = "completed"
@@ -148,43 +166,77 @@ class AddRColumnWorker(BaseJobWorker):
 
         title = "WikiProjectMed:WikiProject Medicine/Popular pages"
 
-        # step 2 load page
+        # step 1 load page
         self.page = MwClientPage(title, self.site)
-        self._page = self.page.load_page()
+        self._page: mwclient.page.Page = self.page.load_page()
 
         if not self._page:
+            self._set_step_status("load_page", "failed", "Failed to load page")
             self._set_status_failed("Failed to load page")
             return False
 
         if not self._page.check_exists():
+            self._set_step_status("load_page", "failed", "Page does not exist")
             self._set_status_failed("Page does not exist")
             return False
 
+        self._set_step_status("load_page", "completed", "")
+
         # step 2 load text
+        text = ""
         try:
             text = self._page.text()
+            if not text:
+                raise Exception("No text")
         except Exception as exc:
             logger.exception(f"Failed to retrieve wikitext for {title}", exc_info=exc)
+
+            self._set_step_status("load_text", "failed", "Failed to retrieve wikitext")
             self._set_status_failed("Failed to retrieve wikitext")
             return False
 
+        self._set_step_status("load_text", "completed", "")
+
         # step 3 add empty R column
-        new_text = add_to_tables(text, redirects={}, pages=[])
+        try:
+            new_text = add_to_tables(text, redirects={}, pages=[])
+            if not new_text:
+                raise Exception("No text")
+        except Exception as exc:
+            _err = "Failed to add empty R column to wikitext"
+            logger.exception(_err, exc_info=exc)
+            self._set_step_status("add_empty_r_column", "failed", _err)
+            self._set_status_failed(_err)
+            return False
+
+        self._set_step_status("add_empty_r_column", "completed", "")
 
         if new_text != text:
-            if not self.save_text(new_text):
+            if not self._save_text(new_text):
+                self._set_step_status("first_save", "failed", "Failed to save text")
                 self._set_status_failed("Failed to save text")
                 return False
+
             text = new_text
             self.result["new_text"] = new_text
+
+        self._set_step_status("first_save", "completed", "")
 
         # step 4 add R column
         old_counts = text.count(R_NEW_ROW.strip())
 
-        newtext = self._newtext_step(text)
+        newtext = None
+        try:
+            newtext = self._newtext_step(text)
+        except Exception as exc:
+            logger.exception(f"Failed to add R column to {self.page.title}", exc_info=exc)
+
         if not newtext:
-            self._set_status_failed("Failed to render new text")
+            self._set_step_status("add_r_column", "failed", "failed to render new text")
+            self._set_status_failed("failed to render new text")
             return False
+
+        self._set_step_status("add_r_column", "completed", "")
 
         if newtext == text:
             self.result["status"] = "skipped"
@@ -200,18 +252,25 @@ class AddRColumnWorker(BaseJobWorker):
 
         # step 6 save new texg to page
         summary = f"Added R column to {counts} titles."
-        if not self.save_text(newtext, summary):
-            self._set_status_failed("Failed to save final text")
+
+        if not self._save_text(newtext, summary):
+            self._set_step_status("final_save", "failed", "Failed to save final text")
+            self._set_status_failed("failed to save final text")
             return False
 
-    def save_text(self, new_text: str, summary: str = "Add R column") -> bool:
+        self._set_step_status("final_save", "completed", "")
+        return True
+
+    def _save_text(self, new_text: str, summary: str = "Add R column") -> bool:
         try:
-            self.page.edit_page(text=new_text, summary=summary, nocreate=1)
+            saved = self.page.edit_page(text=new_text, summary=summary, nocreate=1)
+            if not saved.get("success"):
+                raise Exception("Failed to save text")
         except Exception as exc:
             logger.exception(f"Failed to save text for {self.page.title}", exc_info=exc)
             return False
 
-    def get_text_wikilinks(self, text):
+    def _get_text_wikilinks(self, text):
 
         to_f = "== List =="
 
@@ -235,11 +294,10 @@ class AddRColumnWorker(BaseJobWorker):
             site=self.site,
         )
 
-        links = self.get_text_wikilinks(text)
+        links = self._get_text_wikilinks(text)
         links = [fix_title(x.strip()) for x in links if x.find("|") == -1 and x not in template_pages]
 
         redirects = get_titles_redirects(titles=links, site=self.site)
-
         newtext = add_to_tables(text, redirects, template_pages)
 
         return newtext
