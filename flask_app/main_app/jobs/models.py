@@ -37,7 +37,7 @@ class Job:
     params: dict = field(default_factory=dict)
     status: str = "pending"
     progress: dict = field(default_factory=lambda: {"done": 0, "total": 0})
-    log: deque = field(default_factory=lambda: deque(maxlen=settings.other.jobs_log_lines))
+    log: deque = field(default_factory=lambda: deque(maxlen=settings.jobs.jobs_log_lines))
     result: Any = None
     error: str = ""
     created_at: datetime = field(default_factory=_now)

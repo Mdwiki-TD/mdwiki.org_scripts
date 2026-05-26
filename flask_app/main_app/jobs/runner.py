@@ -20,7 +20,7 @@ def _get_executor() -> ThreadPoolExecutor:
     global _executor
     if _executor is None:
         _executor = ThreadPoolExecutor(
-            max_workers=settings.other.jobs_max_workers,
+            max_workers=settings.jobs.jobs_max_workers,
             thread_name_prefix="job",
         )
     return _executor

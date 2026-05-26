@@ -7,7 +7,8 @@ from functools import lru_cache
 from pathlib import Path
 from typing import Optional
 
-from .classes import (  # JobsConfig,
+from .classes import (
+    JobsConfig,
     OtherConfig,
     CookieConfig,
     DbConfig,
@@ -163,10 +164,6 @@ def load_other_config() -> OtherConfig:
     _allowlist_raw = os.getenv("ALLOWLIST_USERS", "Doc James,Mr. Ibrahem")
     allowlist_users = tuple(name.strip() for name in _allowlist_raw.split(",") if name.strip())
 
-    # Background job runner sizing.
-    jobs_max_workers = max(1, _env_int("JOBS_MAX_WORKERS", 2))
-    jobs_log_lines = max(10, _env_int("JOBS_LOG_LINES", 200))
-
     _lang = os.getenv("WIKI_LANG") or "www"
     _family = os.getenv("WIKI_FAMILY") or "mdwiki"
     wiki_domain = f"{_lang}.{_family}.org"
@@ -176,8 +173,6 @@ def load_other_config() -> OtherConfig:
         csrf_time_limit=csrf_time_limit,
         allowlist_users=allowlist_users,
 
-        jobs_max_workers=jobs_max_workers,
-        jobs_log_lines=jobs_log_lines,
         wiki_domain=wiki_domain,
         static_server=static_server,
         user_agent=os.getenv(
@@ -203,6 +198,19 @@ def load_cookie_config() -> CookieConfig:
     )
 
     return cookie
+
+
+def _load_jobs_config() -> JobsConfig:
+    # Background job runner sizing.
+    jobs_max_workers = max(1, _env_int("JOBS_MAX_WORKERS", 2))
+    jobs_log_lines = max(10, _env_int("JOBS_LOG_LINES", 200))
+
+    _config = JobsConfig(
+        jobs_max_workers=jobs_max_workers,
+        jobs_log_lines=jobs_log_lines,
+    )
+
+    return _config
 
 
 @lru_cache(maxsize=1)
@@ -243,6 +251,7 @@ def get_settings() -> Settings:
     other_config = load_other_config()
 
     database_data = _load_database_config()
+    jobs_config = _load_jobs_config()
 
     return Settings(
         paths=_get_paths(),
@@ -252,6 +261,7 @@ def get_settings() -> Settings:
         security=security_config,
         sessions=sessions,
         other=other_config,
+        jobs=jobs_config,
     )
 
 

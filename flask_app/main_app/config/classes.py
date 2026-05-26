@@ -11,15 +11,19 @@ from typing import Any, Optional
 @dataclass(frozen=True)
 class OtherConfig:
     """configs not in specific sections"""
-
     csrf_time_limit: Optional[int]  # None means never expire
     # Phase-1 additions (see docs/merge-plan.md §7)
     allowlist_users: tuple[str, ...]
-    jobs_max_workers: int
-    jobs_log_lines: int
     wiki_domain: str
     static_server: str
     user_agent: str
+
+
+@dataclass(frozen=True)
+class JobsConfig:
+    """Configuration for jobs."""
+    jobs_max_workers: int
+    jobs_log_lines: int
 
 
 @dataclass(frozen=True)
@@ -92,15 +96,17 @@ class Settings:
     paths: Paths
     security: SecurityConfig
     other: OtherConfig
+    jobs: JobsConfig
 
 
 __all__ = [
-    "OtherConfig",
     "DbConfig",
     "Paths",
     "CookieConfig",
     "SessionConfig",
     "OAuthConfig",
-    "SecurityConfig",
+    "JobsConfig",
     "Settings",
+    "OtherConfig",
+    "SecurityConfig",
 ]
