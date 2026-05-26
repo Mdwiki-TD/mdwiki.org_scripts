@@ -26,6 +26,9 @@ from logger_config import configure_logging  # noqa: E402
 
 configure_logging(logging.DEBUG)
 
+logging.getLogger("sqlalchemy").setLevel(logging.WARNING)
+logging.getLogger("sqlalchemy.engine.Engine").setLevel(logging.WARNING)
+
 from main_app.config import DevelopmentConfig  # noqa: E402
 from main_app import create_app  # noqa: E402
 
