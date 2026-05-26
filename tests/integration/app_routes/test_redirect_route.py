@@ -18,20 +18,20 @@ def _wait_done(mock_client, job_id, timeout=2.0):
 
 
 # ---------------------------------------------------------------------------
-# /redirect/
+# /create_redirects/
 # ---------------------------------------------------------------------------
 
 
 class TestRedirect:
     def test_get_renders_form(self, mock_client, login):
         login("Doc James")
-        r = mock_client.get("/redirect/")
+        r = mock_client.get("/create_redirects/")
         assert r.status_code == 200
         assert b'name="title"' in r.data
         assert b'name="titlelist"' in r.data
 
     def test_post_single_title_submits_job(self, mock_client, login, csrf_token, monkeypatch):
-        from flask_app.main_app.jobs.workers import redirect as redsvc
+        from flask_app.main_app.jobs.workers import create_redirects as redsvc
 
         captured: dict = {}
 
@@ -42,15 +42,15 @@ class TestRedirect:
         monkeypatch.setattr(redsvc, "run", stub)
         login("Doc James")
         r = mock_client.post(
-            "/redirect/",
-            data={"title": "Aspirin", "csrf_token": csrf_token("/redirect/")},
+            "/create_redirects/",
+            data={"title": "Aspirin", "csrf_token": csrf_token("/create_redirects/")},
         )
         assert r.status_code == 302
         _wait_done(mock_client, r.headers["Location"].rsplit("/", 1)[-1])
         assert captured["titles"] == ["Aspirin"]
 
     def test_post_titlelist_dedupes_and_strips(self, mock_client, login, csrf_token, monkeypatch):
-        from flask_app.main_app.jobs.workers import redirect as redsvc
+        from flask_app.main_app.jobs.workers import create_redirects as redsvc
 
         captured: dict = {}
 
@@ -61,10 +61,10 @@ class TestRedirect:
         monkeypatch.setattr(redsvc, "run", stub)
         login("Doc James")
         r = mock_client.post(
-            "/redirect/",
+            "/create_redirects/",
             data={
                 "titlelist": "A\nB\n\n  A  \nC\n",
-                "csrf_token": csrf_token("/redirect/"),
+                "csrf_token": csrf_token("/create_redirects/"),
             },
         )
         assert r.status_code == 302
@@ -75,8 +75,8 @@ class TestRedirect:
     def test_post_empty_re_renders_with_flash(self, mock_client, login, csrf_token):
         login("Doc James")
         r = mock_client.post(
-            "/redirect/",
-            data={"csrf_token": csrf_token("/redirect/")},
+            "/create_redirects/",
+            data={"csrf_token": csrf_token("/create_redirects/")},
         )
         assert r.status_code == 200
         assert b"Provide at least one title" in r.data

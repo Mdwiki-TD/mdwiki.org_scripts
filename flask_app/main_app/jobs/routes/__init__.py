@@ -2,12 +2,12 @@
 
 from flask import Flask
 
-from .dup import bp_dup
+from .duplicate_redirect import bp_dup
 from .fixred_all import bp_fixred_all
 from .fixref import bp_fixref
 from .import_history import bp_import_history
-from .redirect import bp_redirect
-from .replace import bp_replace
+from .create_redirects import bp_redirect
+from .find_and_replace import bp_replace
 
 
 

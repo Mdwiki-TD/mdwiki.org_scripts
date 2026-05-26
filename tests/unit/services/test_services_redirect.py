@@ -1,9 +1,9 @@
-"""Tests for services.redirect helpers."""
+"""Tests for services.create_redirects helpers."""
 
 from __future__ import annotations
 
 import pytest
-from flask_app.main_app.jobs.workers.redirect import _valid_title
+from flask_app.main_app.jobs.workers.create_redirects import _valid_title
 
 
 class TestValidTitle:

@@ -1,4 +1,4 @@
-"""Blueprint for `/replace/` — find-and-replace bot (allow-list only)."""
+"""Blueprint for `/find_and_replace/` — find-and-replace bot (allow-list only)."""
 
 from __future__ import annotations
 
@@ -9,9 +9,9 @@ from flask import Blueprint, flash, redirect, render_template, request, url_for
 from ...su_services.users_service import current_user, oauth_required
 from .. import runner
 from ..store import get_store
-from ..workers import replace as svc
+from ..workers import find_and_replace as svc
 
-bp_replace = Blueprint("replace", __name__, url_prefix="/replace")
+bp_replace = Blueprint("find_and_replace", __name__, url_prefix="/find_and_replace")
 logger = logging.getLogger(__name__)
 
 
@@ -30,7 +30,7 @@ def _parse_int(raw: str) -> int | None:
 @oauth_required
 def replace():
     return render_template(
-        "jobs_templates/replace.html",
+        "jobs_templates/find_and_replace.html",
         title="Find and replace",
         form_find="",
         form_replace="",
@@ -54,7 +54,7 @@ def replace_post():
     if not raw_find:
         flash("`find` cannot be empty.", "warning")
         return render_template(
-            "jobs_templates/replace.html",
+            "jobs_templates/find_and_replace.html",
             title="Find and replace",
             form_find=raw_find,
             form_replace=raw_replace,
@@ -62,9 +62,9 @@ def replace_post():
             form_listtype=listtype,
         )
 
-    active = get_store().find_active("replace")
+    active = get_store().find_active("find_and_replace")
     if active is not None:
-        flash(f"A replace job is already running ({active.id}).", "info")
+        flash(f"A find_and_replace job is already running ({active.id}).", "info")
         return redirect(url_for("jobs.status", job_id=active.id))
 
     number = _parse_int(raw_number)
@@ -78,7 +78,7 @@ def replace_post():
     }
 
     job = runner.submit(
-        "replace",
+        "find_and_replace",
         svc.run,
         submitted_by=user.username,
         params=params,
@@ -88,9 +88,9 @@ def replace_post():
         number=number,
         save=True,
     )
-    flash(f"Started replace job {job.id} (listtype={listtype})", "success")
+    flash(f"Started find_and_replace job {job.id} (listtype={listtype})", "success")
     logger.info(
-        "replace job %s submitted by %s (listtype=%s, find_len=%d)",
+        "find_and_replace job %s submitted by %s (listtype=%s, find_len=%d)",
         job.id,
         user.username,
         listtype,
@@ -105,7 +105,7 @@ def replace_post():
 def replace_log_compat():
     job_id = request.args.get("id", "").strip()
     if not job_id:
-        return redirect(url_for("replace.replace"))
+        return redirect(url_for("find_and_replace.replace"))
     return redirect(url_for("jobs.status", job_id=job_id))
 
 
