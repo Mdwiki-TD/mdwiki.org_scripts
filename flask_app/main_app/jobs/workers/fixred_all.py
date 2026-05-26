@@ -26,7 +26,7 @@ import mwclient
 from ...api_services.clients.wiki_client import get_user_site
 from ...newapi import AllAPIS
 from ...su_services.users_service import current_user
-from ._api import get_api
+from .._api import get_api
 
 from ...shared.fixref_shared.fixred_worker import work_on_text
 

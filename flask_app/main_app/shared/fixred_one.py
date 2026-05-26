@@ -8,10 +8,10 @@ import logging
 from dataclasses import dataclass
 from typing import Literal
 
-from ...api_services.clients.wiki_client import get_user_site
-from ...su_services.users_service import current_user
-from ._api import get_api
-from ...shared.fixref_shared.fixred_worker import work_on_text, RunState
+from ..api_services.clients.wiki_client import get_user_site
+from ..su_services.users_service import current_user
+from ..jobs._api import get_api
+from .fixref_shared.fixred_worker import work_on_text, RunState
 
 logger = logging.getLogger(__name__)
 

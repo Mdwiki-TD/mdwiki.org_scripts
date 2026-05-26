@@ -9,7 +9,7 @@ from flask import Blueprint, flash, redirect, render_template, request, url_for
 from ...su_services.users_service import current_user, oauth_required
 from .. import runner
 from ..store import get_store
-from ..workers import imp as svc
+from ..workers import import_history as svc
 
 bp_import_history = Blueprint("import_history", __name__, url_prefix="/import-history")
 logger = logging.getLogger(__name__)
