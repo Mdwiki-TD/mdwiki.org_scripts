@@ -11,48 +11,32 @@ In-process replacement for ``python/fixred.py``. For one or more pages we:
 5. Save the result with a "Fix redirects" edit summary.
 
 The legacy script kept ``from_to`` and ``normalized`` as module globals; here
-they live in :class:`_RunState` so concurrent jobs can't collide.
+they live in :class:`RunState` so concurrent jobs can't collide.
 """
 
 from __future__ import annotations
 
 import logging
-import re
 from dataclasses import dataclass, field
 from threading import Event
-from typing import Any, Callable, Literal, Optional
+from typing import Any, Callable, Optional
 
 import mwclient
 
 from ...api_services.clients.wiki_client import get_user_site
-from ...api_services.pages_api import resolve_redirects
 from ...newapi import AllAPIS
 from ...su_services.users_service import current_user
 from ._api import get_api
+
+from ...shared.fixref_shared.fixred_worker import work_on_text
 
 logger = logging.getLogger(__name__)
 
 _NS_MAIN = "0"
 
-OutcomeKind = Literal["notext", "no_changes", "changes", "saved"]
-
-
-@dataclass(frozen=True)
-class UpdaterOutcome:
-    """Result of running the updater on one page."""
-
-    kind: OutcomeKind
-    old_text: str = ""
-    new_text: str = ""
-    newrevid: int = 0
-
-    @property
-    def has_changes(self) -> bool:
-        return self.kind == "changes"
-
 
 @dataclass
-class _RunState:
+class RunState:
     """Per-run mutable state.
 
     ``from_to``    maps redirect source -> resolved target.
@@ -65,73 +49,7 @@ class _RunState:
     normalized: dict[str, str] = field(default_factory=dict)
 
 
-def _post(api: AllAPIS, params: dict) -> dict:
-    """Thin wrapper around the configured client. Returns ``{}`` on failure."""
-
-    return api.NewApi().post_params(params, method="post") or {}
-
-
-def _get_page_links(api: AllAPIS, title: str) -> dict[str, Any]:
-    """Mirror of legacy ``Get_page_links`` using the new API client."""
-
-    params = {
-        "action": "query",
-        "prop": "links",
-        "titles": title,
-        "plnamespace": _NS_MAIN,
-        "pllimit": "max",
-        "converttitles": 1,
-    }
-    data = _post(api, params)
-    out: dict[str, Any] = {"links": {}, "normalized": [], "redirects": []}
-    if not data:
-        return out
-
-    query = data.get("query", {}) or {}
-    out["normalized"] = query.get("normalized", []) or []
-    out["redirects"] = query.get("redirects", []) or []
-    for page in (query.get("pages", {}) or {}).values():
-        for link in page.get("links", []) or []:
-            out["links"][link["title"]] = {"ns": link["ns"], "title": link["title"]}
-    return out
-
-
-def _replace_links(
-    text: str,
-    oldlink: str,
-    oldlink2: str,
-    newlink: str,
-) -> str:
-    """Mirror of legacy ``replace_links2``.
-
-    Each wikilink ``[[old]]`` becomes ``[[new|old]]`` (preserve the original
-    display text); ``[[old|...]]`` becomes ``[[new|...]]``. Also handles the
-    normalized-title alias if present in ``state.normalized``.
-    """
-
-    text = text.replace(f"[[{oldlink}]]", f"[[{newlink}|{oldlink}]]")
-    text = text.replace(f"[[{oldlink}|", f"[[{newlink}|")
-
-    text = re.sub(
-        rf"\[\[{re.escape(oldlink)}(\|\]\])",
-        rf"[[{newlink}\g<1>",
-        text,
-        flags=re.IGNORECASE,
-    )
-
-    if oldlink != oldlink2:
-        text = re.sub(
-            rf"\[\[{re.escape(oldlink2)}(\|\]\])",
-            rf"[[{newlink}\g<1>",
-            text,
-            flags=re.IGNORECASE,
-        )
-        text = text.replace(f"[[{oldlink2}]]", f"[[{newlink}|{oldlink2}]]")
-        text = text.replace(f"[[{oldlink2}|", f"[[{newlink}|")
-    return text
-
-
-def _treat_page(api: AllAPIS, title: str, state: _RunState, *, save: bool, site: mwclient.Site) -> tuple[str, str]:
+def _treat_page(api: AllAPIS, title: str, state: RunState, *, save: bool, site: mwclient.Site) -> tuple[str, str]:
     """Return one of: ``missing``, ``no-changes``, ``would-fix``, ``fixed``, ``error``."""
 
     page = api.MainPage(title)
@@ -139,32 +57,8 @@ def _treat_page(api: AllAPIS, title: str, state: _RunState, *, save: bool, site:
         return "missing", ""
 
     text = page.get_text()
-    links = _get_page_links(api, title)
 
-    for nor in links.get("normalized", []) or []:
-        state.normalized[nor["to"]] = nor["from"]
-
-    link_titles = list(links["links"].keys())
-    if not link_titles:
-        return "no-changes", text
-
-    data = resolve_redirects(link_titles, site)
-
-    new_targets = {}
-    for _, info in links["links"].items():
-        oldlink = info["title"]
-        # ---
-        # oldlink2 = state.normalized.get(oldlink, oldlink)
-        # target = state.from_to.get(oldlink) or state.from_to.get(oldlink2)
-        # ---
-        oldlink2 = data.get("normalized", {}).get(oldlink, oldlink)
-        target = data.get("from_to", {}).get(oldlink) or data.get("from_to", {}).get(oldlink2)
-        # ---
-        if target:
-            new_targets[oldlink2] = target
-            new_targets[oldlink] = target
-
-    newtext = replace_in_text(text, new_targets)
+    newtext = work_on_text(api, title, text, site=site, state=state)
 
     if newtext == text:
         return "no-changes", text
@@ -177,49 +71,6 @@ def _treat_page(api: AllAPIS, title: str, state: _RunState, *, save: bool, site:
         return "fixed", newtext
 
     return "error", text
-
-
-def replace_in_text(text, new_targets):
-    newtext = text
-
-    for oldlink2, target in new_targets.items():
-        newtext = _replace_links(newtext, oldlink2, oldlink2, target)
-
-    return newtext
-
-
-def _work_on_text(api, title, text, site: mwclient.Site) -> str:
-    """ """
-    state = _RunState()
-
-    links = _get_page_links(api, title)
-
-    for nor in links.get("normalized", []) or []:
-        state.normalized[nor["to"]] = nor["from"]
-
-    link_titles = list(links["links"].keys())
-    if not link_titles:
-        return text
-
-    data = resolve_redirects(link_titles, site)
-
-    new_targets = {}
-    for _, info in links["links"].items():
-        oldlink = info["title"]
-        # ---
-        # oldlink2 = state.normalized.get(oldlink, oldlink)
-        # target = state.from_to.get(oldlink) or state.from_to.get(oldlink2)
-        # ---
-        oldlink2 = data.get("normalized", {}).get(oldlink, oldlink)
-        target = data.get("from_to", {}).get(oldlink) or data.get("from_to", {}).get(oldlink2)
-        # ---
-        if target:
-            new_targets[oldlink2] = target
-            new_targets[oldlink] = target
-
-    newtext = replace_in_text(text, new_targets)
-
-    return newtext
 
 
 def run_all(
@@ -237,7 +88,7 @@ def run_all(
             on_progress(done, total, message=msg)
 
     api = get_api()
-    state = _RunState()
+    state = RunState()
 
     # titles = api.NewApi().Get_All_pages( start="!", namespace=_NS_MAIN, apfilterredir="nonredirects")
     titles = site.allpages(
@@ -297,63 +148,11 @@ def run_all(
     return counts
 
 
-def work_on_title(
-    title: str,
-    save: bool = False,
-    summary: str = "Fix redirects.",
-) -> UpdaterOutcome:
-    """
-
-    Returns one of:
-
-    * ``notext``     — the page was empty or the rewriter wiped it out.
-    * ``no_changes`` — the rewriter is satisfied with the current text.
-    * ``changes``    — there is a diff to review/save.
-    """
-
-    user = current_user()
-    site = get_user_site(user)
-
-    title = (title or "").strip()
-    if not title:
-        return UpdaterOutcome(kind="notext")
-
-    api = get_api()
-    page = api.MainPage(title)
-    if not page.exists():
-        return UpdaterOutcome(kind="notext")
-
-    old_text = page.get_text() or ""
-    if not old_text.strip():
-        return UpdaterOutcome(kind="notext", old_text=old_text)
-
-    try:
-        new_text = _work_on_text(api, title, old_text, site=site)
-    except Exception:
-        logger.exception("work_on_text failed for %s", title)
-        raise
-
-    if not new_text or not new_text.strip():
-        return UpdaterOutcome(kind="notext", old_text=old_text)
-
-    if new_text == old_text:
-        return UpdaterOutcome(kind="no_changes", old_text=old_text, new_text=new_text)
-
-    if save:
-        ok = page.save(newtext=new_text, summary=summary)
-
-        if ok is True:
-            return UpdaterOutcome(kind="saved", newrevid=page.get_newrevid())
-
-    return UpdaterOutcome(kind="changes", old_text=old_text, new_text=new_text)
-
-
 def fix_text(text):
     return text
 
 
 __all__ = [
     "run_all",
-    "work_on_title",
     "fix_text",
 ]

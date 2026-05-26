@@ -11,7 +11,7 @@ from .. import runner
 from ..store import get_store
 from ..workers import fixred as svc
 
-bp_fixred = Blueprint("fixred", __name__, url_prefix="/fixred")
+bp_fixred_all = Blueprint("fixred_all", __name__, url_prefix="/fixred_all")
 logger = logging.getLogger(__name__)
 
 
@@ -19,7 +19,7 @@ def _normalize_title(raw: str) -> str:
     return (raw or "").replace("_", " ").strip()
 
 
-@bp_fixred.route("/", methods=["GET"])
+@bp_fixred_all.route("/", methods=["GET"])
 @oauth_required
 def index():
     title = _normalize_title(request.args.get("title", ""))
@@ -33,7 +33,7 @@ def index():
     )
 
 
-@bp_fixred.route("/all", methods=["POST"])
+@bp_fixred_all.route("/all", methods=["POST"])
 @oauth_required
 def fixred_post_all():
     user = current_user()
@@ -56,41 +56,4 @@ def fixred_post_all():
     return redirect(url_for("jobs.status", job_id=job.id))
 
 
-@bp_fixred.route("/", methods=["POST"])
-@oauth_required
-def fixred_post():
-    title = _normalize_title(request.form.get("title", ""))
-    save = int(request.form.get("save", "0")) or 0
-
-    if not title:
-        return render_template(
-            "jobs_templates/fixred.html",
-            title="Fix redirects in page text",
-            form_title="",
-            outcome=None,
-            save=save,
-        )
-
-    try:
-        outcome = svc.work_on_title(title, save)
-    except Exception as exc:
-        logger.exception("work_on_title failed for %s", title)
-        flash(f"Error processing {title!r}: {exc!r}", "danger")
-        return render_template(
-            "jobs_templates/fixred.html",
-            title="Fix redirects in page text",
-            form_title=title,
-            outcome=None,
-            save=save,
-        )
-
-    return render_template(
-        "jobs_templates/fixred.html",
-        title=f"Fix redirects in page text — {title}",
-        form_title=title,
-        outcome=outcome,
-        save=save,
-    )
-
-
-__all__ = ["bp_fixred"]
+__all__ = ["bp_fixred_all"]

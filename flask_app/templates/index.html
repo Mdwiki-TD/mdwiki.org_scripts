@@ -22,9 +22,10 @@
                 </a> <i class="bi bi-x-lg"></i>
             </li>
             <li class="list-group-item ">
-                <a href="{{ url_for('fixred.index') }}">
-                    Fix redirects in page text
-                </a> <i class="bi bi-check-lg"></i>
+                Fix redirects: (<a href="{{ url_for('fixred.index') }}"> one page </a>, <a
+                    href="{{ url_for('fixred_all.index') }}">
+                    all pages
+                </a>)
             </li>
             <li class="list-group-item">
                 <a href="{{ url_for('fixref.fixref') }}">
