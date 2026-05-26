@@ -177,7 +177,7 @@ def load_other_config() -> OtherConfig:
 
     user_agent = os.getenv(
         "USER_AGENT",
-        "Copy SVG Translations/1.0 (https://copy-svg-langs.toolforge.org; tools.copy-svg-langs@toolforge.org)",
+        "Translation Dashboard/1.0 (https://mdwiki.toolforge.org/; tools.mdwiki@toolforge.org)",
     )
     _config = OtherConfig(
         csrf_time_limit=csrf_time_limit,

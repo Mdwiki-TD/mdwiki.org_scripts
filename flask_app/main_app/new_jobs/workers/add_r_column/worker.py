@@ -97,7 +97,7 @@ class AddRColumnWorker(BaseJobWorker):
         return "add_r_column"
 
     def get_initial_result(self) -> Dict[str, Any]:
-        _status = ["pending", "running", "completed", "failed", "skipped"]
+        _status = ["pending", "running", "completed", "failed", "skipped", "cancelled"]
         return {
             "status": "pending",
             "started_at": datetime.now().isoformat(),
