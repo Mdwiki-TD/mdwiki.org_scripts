@@ -189,10 +189,7 @@ def is_job_cancelled(job_id: int, job_type: str) -> bool:
         return record.status == "cancelled"
     return False
     """
-    status = db.session.query(JobRecord.status).filter(
-        JobRecord.id == job_id,
-        JobRecord.job_type == job_type
-    ).scalar()
+    status = db.session.query(JobRecord.status).filter(JobRecord.id == job_id, JobRecord.job_type == job_type).scalar()
     return status == "cancelled"
 
 
