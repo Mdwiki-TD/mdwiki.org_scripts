@@ -134,4 +134,7 @@ __all__ = [
 ]
 ```
 
+-   job html templates at `flask_app/templates/new_jobs_templates/`
+-   register templates in `flask_app/main_app/new_jobs/workers_list.py` (`JOB_TYPE_TEMPLATES_PUBLIC`, `JOB_TYPE_LIST_TEMPLATES_PUBLIC`)
+-   register `job_worker_entry` in `flask_app/main_app/new_jobs/workers_list.py` (`jobs_targets_public`)
 -   copy logic from `flask_app/main_app/new_jobs/workers/copy_svg_langs`
