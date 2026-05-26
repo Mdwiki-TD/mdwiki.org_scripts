@@ -1,23 +1,25 @@
 ---
 name: mwclient
-description: |
-    Python client for the MediaWiki API. Provides a high-level interface for
-    interacting with wikis (like Wikipedia). Core abstractions: Site (connection),
-    Page (wiki pages), and Image (files).
-
-    Covers: connecting to wikis, reading/editing pages, uploading files, querying
-    lists, authentication (OAuth, login), and error handling.
-
-    Use when: automating wiki edits, scraping wiki content, uploading files,
-    or building bots for MediaWiki instances.
-user-invocable: true
+description: >-
+    Use the mwclient Python library to interact with MediaWiki sites via the API.
+    Covers reading/writing pages, authentication (OAuth, bot passwords, clientlogin),
+    file uploads, category and template operations, pagination, and error handling.
+    Trigger this skill when the user mentions mwclient, MediaWiki API, wiki bot,
+    wiki automation, editing wiki pages, uploading to a wiki, querying wiki data,
+    wiki categories, wiki templates, wiki page deletion, wiki page moves,
+    or any task that involves programmatically reading or modifying a MediaWiki site.
+    Also trigger when code imports mwclient, uses Site(), site.pages, site.login,
+    site.upload, page.edit, page.text, page.save, page.delete, page.move,
+    or references MediaWiki's api.php. Covers mwclient 0.11.0.
 ---
 
 # mwclient
 
-Python client for the MediaWiki API.
+A Python library for interacting with MediaWiki sites through the MediaWiki API. It provides a clean object-oriented interface around `api.php`, handling authentication, pagination, retries, and edit conflict detection automatically.
 
-## Installation
+**Version**: 0.11.0 · **License**: MIT · **Requires**: Python 3.8+, `requests`
+
+## Install
 
 ```bash
 pip install mwclient
@@ -28,110 +30,65 @@ pip install mwclient
 ```python
 import mwclient
 
-# Read-only access (no login needed)
-site = mwclient.Site('en.wikipedia.org', force_login=False)
+# Read a page
+site = mwclient.Site('en.wikipedia.org')
 page = site.pages['Python (programming language)']
-print(page.text())
+print(page.text()[:200])
 
-# Edit a page (requires login)
-site = mwclient.Site('ar.wikipedia.org')
-site.login('username', 'password')
-page.edit('New content', summary='Updated via mwclient')
+# Edit a page (requires authentication)
+site = mwclient.Site('en.wikipedia.org')
+site.login('MyBot', 'bot_password')
+page = site.pages['Sandbox']
+page.save('New content', summary='Test edit via mwclient')
 ```
-
-> **Important:** Use `force_login=False` when you only need to READ pages.
-> Without it, mwclient will attempt to log in when you call `page.edit()`,
-> raising `AssertUserFailedError` if no credentials are set.  Reading
-> (`page.text()`, `page.exists`, `page.pageprops`) does NOT require login.
-> Editing (`page.edit()`, `page.move()`, `site.upload()`) DOES require login.
-
-## References
-
-| Reference                        | Description                                             |
-| -------------------------------- | ------------------------------------------------------- |
-| [site](references/site.md)       | Site connection, authentication, and site-level queries |
-| [page](references/page.md)       | Page operations: read, edit, move, delete, listings     |
-| [images](references/images.md)   | File/image operations: download, upload, metadata       |
-| [listing](references/listing.md) | Pagination and iteration over API results               |
-| [errors](references/errors.md)   | Exception handling and error types                      |
 
 ## Core Concepts
 
-### Site
+**Entry point**: `mwclient.Site(host, path='/w/', ...)` — connects to a MediaWiki wiki. All operations flow through the Site object.
 
-The `Site` class is the entry point. It manages the HTTP session, handles authentication, and provides access to pages.
+**Pages**: `site.pages['Title']` returns a `Page` object (no API call yet). `page.text()` fetches wikitext; `page.edit()` / `page.save()` writes it.
 
-### Page
+**Lazy iteration**: Methods like `site.allpages()`, `page.backlinks()`, `page.revisions()` return lazy iterators that fetch data in chunks from the API. No request is made until you consume items.
 
-The `Page` class represents a wiki page. Use it to read content, make edits, and query page relationships (links, categories, backlinks).
+**Namespace dispatch**: `site.categories['Name']` returns a `Category`, `site.images['Name.jpg']` returns an `Image`. Both extend `Page` with extra methods.
 
-### Image
+## Routing Table
 
-The `Image` class (subclass of `Page`) handles file operations. Use it to download files or check file usage.
+| Goal                                | Read                                                                   |
+| ----------------------------------- | ---------------------------------------------------------------------- |
+| Connect to a wiki, authenticate     | [skills/01-connection-auth.md](skills/01-connection-auth.md)           |
+| Read, edit, move, delete pages      | [skills/02-page-operations.md](skills/02-page-operations.md)           |
+| List pages, search, iterate results | [skills/03-querying-pagination.md](skills/03-querying-pagination.md)   |
+| Upload/download files and images    | [skills/04-file-operations.md](skills/04-file-operations.md)           |
+| Work with categories and templates  | [skills/05-categories-templates.md](skills/05-categories-templates.md) |
+| Handle errors, retries, edge cases  | [skills/06-error-handling.md](skills/06-error-handling.md)             |
+| Full API signature reference        | [references/reference.md](references/reference.md)                     |
+| End-to-end example scripts          | [references/examples.md](references/examples.md)                       |
 
-### Listings
+## Object Model
 
-All listing methods return lazy iterators that fetch data in chunks. Use `max_items` to limit results and `api_chunk_size` to control chunk size.
+```
+Site                          — Entry point, session, auth, API calls
+  .pages / .categories / .images  — PageList (namespace-scoped)
+  .allpages() / .search() / ...   — Lazy listing methods
 
-## Common Patterns
-
-### Read-only access (no login)
-
-```python
-# force_login=False prevents mwclient from requiring auth
-site = mwclient.Site('en.wikipedia.org', force_login=False)
-page = site.pages['Some Page']
-text = page.text()
-exists = page.exists
-page_id = page.pageid
-qid = page.pageprops.get('wikibase_item')
+Page                          — Single wiki page
+  .text() / .edit() / .save()     — Read/write wikitext
+  .backlinks() / .links() / ...   — Lazy property iterators
+  ├── Image                       — File pages (ns 6), adds .download(), .imageinfo
+  └── Category                    — Category pages (ns 14), iterable of members
 ```
 
-### Connect with authentication (for editing)
+## Anti-Patterns to Avoid
 
-```python
-site = mwclient.Site('mywiki.org')
-site.clientlogin(username='bot', password='secret')
-```
+-   **`mwclient.Site('https://en.wikipedia.org/w/')`** — Don't include scheme or path in host. Use `Site('en.wikipedia.org')`.
+-   **`site = mwclient.Site('wiki.org'); site.login(...)`** on private wikis — Use `do_init=False` first.
+-   **`page.revisions(max_items=1)`** when you need one revision — Use `api_chunk_size=1` instead (avoids fetching 50).
+-   **`image.download()` without a destination** for large files — Use `image.download(file_handle)` to stream.
+-   **Using deprecated `limit` parameter** — Use `api_chunk_size` + `max_items` instead.
 
-### Read and edit
+## See Also
 
-```python
-page = site.pages['Target Page']
-text = page.text()
-page.edit(text + '\nNew line', summary='Added line')
-```
-
-### Iterate search results
-
-```python
-for page in site.search('python', namespace=0, max_items=10):
-    print(page.name)
-```
-
-### Upload a file
-
-```python
-with open('image.png', 'rb') as f:
-    site.upload(f, filename='image.png', description='My image')
-```
-
-## Error Handling
-
-Catch `mwclient.errors.MwClientError` for all library errors, or specific exceptions:
-
-```python
-from mwclient import errors
-
-try:
-    page.edit('content')
-except errors.ProtectedPageError:
-    print('Page is protected')
-except errors.AssertUserFailedError:
-    print('Not logged in')
-```
-
-## Resources
-
--   Documentation: [ mwclient.readthedocs.io ](https://mwclient.readthedocs.io)
--   Source: [github.com/mwclient/mwclient](https://github.com/mwclient/mwclient)
+-   [references/reference.md](references/reference.md) — Full API signatures for all classes
+-   [references/examples.md](references/examples.md) — Copy-paste example scripts
+-   Subskills in [skills/](skills/) for focused topic guides
