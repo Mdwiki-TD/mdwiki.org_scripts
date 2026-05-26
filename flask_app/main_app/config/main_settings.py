@@ -139,16 +139,19 @@ def _get_paths() -> Paths:
     main_dir = Path(os.path.expandvars(main_dir)).expanduser()
     log_dir = f"{main_dir}/logs"
     jobs_path = f"{main_dir}/jobs"
+    new_jobs_path = f"{main_dir}/new_jobs"
     main_files_path = f"{main_dir}/main_files"
 
     # Ensure directories exist
     Path(log_dir).mkdir(parents=True, exist_ok=True)
     Path(jobs_path).mkdir(parents=True, exist_ok=True)
+    Path(new_jobs_path).mkdir(parents=True, exist_ok=True)
     Path(main_files_path).mkdir(parents=True, exist_ok=True)
 
     return Paths(
         log_dir=log_dir,
         jobs_path=jobs_path,
+        new_jobs_path=new_jobs_path,
         main_files_path=main_files_path,
     )
 
