@@ -1,7 +1,5 @@
-
-
-from .mwclient_page import MwClientPage
 from .clients import get_user_site
+from .mwclient_page import MwClientPage
 
 __all__ = [
     "MwClientPage",

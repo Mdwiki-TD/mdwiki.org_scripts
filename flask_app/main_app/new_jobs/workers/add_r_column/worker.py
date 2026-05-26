@@ -6,80 +6,76 @@ Worker module for Add R column.
 
 from __future__ import annotations
 
-import sys
-import re
 import logging
+import re
 import threading
 from datetime import datetime
 from typing import Any, Dict
 
 import mwclient
+import wikitextparser as wtp
 
 from ....api_services import MwClientPage, get_user_site
-from ....api_services.pages_api import (
-    edit_page,
-    get_double_redirects,
-    get_page_text,
-    is_page_exists,
-)
-
+from ....api_services.query_api import get_template_pages
 from ....new_jobs.base_worker import BaseJobWorker
-from .add_rtt import R_NEW_ROW, add_to_tables, fix_title
+from .add_rtt import R_NEW_ROW, add_header_r, fix_title, header_has_r, work_one_table
 
 logger = logging.getLogger(__name__)
 
 
-def get_titles_redirects(titles):
-    # ---
-    redirects = {}
-    # ---
-    # for i in range(0, len(titles), 50): group = titles[i : i + 50]
-    for title_chunk in self.chunk_titles(titles, chunk_size=50):
-        params = {
-            "action": "query",
-            "format": "json",
-            "titles": "|".join(title_chunk),
-            "redirects": 1,
-            # "prop": "templates|langlinks",
-            "utf8": 1,
-            # "normalize": 1,
-        }
-        # ---
-        json1 = self.post_continue(params, "query", _p_="redirects", p_empty=[])
-        # ---
-        lists = {x["from"]: x["to"] for x in json1}
-        # ---
-        if lists:
-            redirects.update(lists)
-    # ---
-    return redirects
+def add_to_tables(
+    text: str,
+    redirects: dict,
+    pages: list,
+) -> str:
+
+    parsed = wtp.parse(text)
+
+    table = parsed.tables[0]
+
+    new_text = text
+
+    if not header_has_r(text, table):
+        new_text = add_header_r(text, table)
+
+        if new_text == text:
+            logger.info("<<red>> Can't add R column to table!")
+            return text
+
+    if redirects or pages:
+        new_text = work_one_table(new_text, redirects, pages)
+
+    table.string = new_text
+
+    _text = parsed.string
+
+    return _text
 
 
-def find_redirects(pages, text):
+def get_titles_redirects(
+    titles: list[str],
+    site: mwclient.Site,
+) -> dict[str, bool]:
+    from_to = {}
 
-    to_f = "== List =="
+    params = {
+        # "action": "query",
+        "format": "json",
+        "redirects": 1,
+        "utf8": 1,
+        "rdlimit": "max",
+    }
 
-    mdwiki_pages = []
+    for i in range(0, len(titles), 50):
+        group = titles[i : i + 50]
+        data = site.get("query", titles="|".join(group), **params)
+        query = data.get("query", {}) or {}
 
-    if text.find(to_f) != -1:
-        text = text.split(to_f)[1]
-        # match all links like [[.*?]]
-        pattern = r"\[\[(.*?)\]\]"
-        links = re.findall(pattern, text)
-        mdwiki_pages = links
+        # Top-level redirects array: page is a redirect TO some target.
+        for red in query.get("redirects", []) or []:
+            from_to[red["from"]] = red["to"]
 
-    mdwiki_pages = list(set(mdwiki_pages))
-
-    mdwiki_pages = [fix_title(x.strip()) for x in mdwiki_pages if x.find("|") == -1 and x not in pages]
-
-    logger.info(f" pages: {len(mdwiki_pages)}")
-
-    titles = get_titles_redirects(mdwiki_pages)
-
-    # titles = get_titles_redirects(["Ehlers–Danlos syndrome"]) # {'Ehlers–Danlos syndrome': 'Ehlers–Danlos syndromes'}
-    redirects = dict(titles.items())
-
-    return redirects
+    return from_to
 
 
 class AddRColumnWorker(BaseJobWorker):
@@ -115,6 +111,11 @@ class AddRColumnWorker(BaseJobWorker):
             "new_text": "",
         }
 
+    def _set_status_failed(self, error) -> None:
+        self.result["status"] = "failed"
+        self.result["error"] = error
+        self.result["failed_at"] = datetime.now().isoformat()
+
     def process(self) -> Dict[str, Any]:
         """
         process method.
@@ -122,9 +123,7 @@ class AddRColumnWorker(BaseJobWorker):
         self.site = get_user_site(self.user)
         if not self.site:
             logger.warning(f"Job {self.job_id}: No site authentication available")
-            self.result["status"] = "failed"
-            self.result["error"] = "No authenticated user site available. Please log in via OAuth."
-            self.result["failed_at"] = datetime.now().isoformat()
+            self._set_status_failed("No authenticated user site available. Please log in via OAuth.")
             return self.result
 
         logger.info(f"Job {self.job_id}: for Add R column.")
@@ -149,46 +148,101 @@ class AddRColumnWorker(BaseJobWorker):
 
         title = "WikiProjectMed:WikiProject Medicine/Popular pages"
 
+        # step 2 load page
         self.page = MwClientPage(title, self.site)
+        self._page = self.page.load_page()
 
-        if not self.page.check_exists():
+        if not self._page:
+            self._set_status_failed("Failed to load page")
             return False
 
-        text = page.get_text()
+        if not self._page.check_exists():
+            self._set_status_failed("Page does not exist")
+            return False
 
+        # step 2 load text
+        try:
+            text = self._page.text()
+        except Exception as exc:
+            logger.exception(f"Failed to retrieve wikitext for {title}", exc_info=exc)
+            self._set_status_failed("Failed to retrieve wikitext")
+            return False
+
+        # step 3 add empty R column
         new_text = add_to_tables(text, redirects={}, pages=[])
 
         if new_text != text:
-            page.save(newtext=new_text, summary="Add R column")
+            if not self.save_text(new_text):
+                self._set_status_failed("Failed to save text")
+                return False
             text = new_text
+            self.result["new_text"] = new_text
 
-        if "only_column" in sys.argv:
-            return None
-
+        # step 4 add R column
         old_counts = text.count(R_NEW_ROW.strip())
 
-        # pages = CatDepth("Category:RTT", sitecode="www", family="mdwiki", depth=0, ns=0)
-        pages = api_new.Get_template_pages("Template:RTT", namespace=0)
-
-        redirects = find_redirects(pages, text)
-
-        newtext = add_to_tables(text, redirects, pages)
-
-        with open(Dir / "page_text.txt", "w", encoding="utf-8") as f:
-            f.write(newtext)
+        newtext = self._newtext_step(text)
+        if not newtext:
+            self._set_status_failed("Failed to render new text")
+            return False
 
         if newtext == text:
+            self.result["status"] = "skipped"
+            self.result["error"] = "No changes"
             logger.info("no changes")
-            return None
+            return False
+
+        # step 5 save new text to files
+        self.result["new_text"] = newtext
 
         # count R_NEW_ROW in newtext
-        counts = newtext.count(R_NEW_ROW.strip())
+        counts = newtext.count(R_NEW_ROW.strip()) - old_counts
 
-        counts = counts - old_counts
-
+        # step 6 save new texg to page
         summary = f"Added R column to {counts} titles."
+        if not self.save_text(newtext, summary):
+            self._set_status_failed("Failed to save final text")
+            return False
 
-        page.save(newtext=newtext, summary=summary, nocreate=1, minor="")
+    def save_text(self, new_text: str, summary: str = "Add R column") -> bool:
+        try:
+            self.page.edit_page(text=new_text, summary=summary, nocreate=1)
+        except Exception as exc:
+            logger.exception(f"Failed to save text for {self.page.title}", exc_info=exc)
+            return False
+
+    def get_text_wikilinks(self, text):
+
+        to_f = "== List =="
+
+        mdwiki_pages = []
+
+        if text.find(to_f) != -1:
+            text = text.split(to_f)[1]
+            # match all links like [[.*?]]
+            pattern = r"\[\[(.*?)\]\]"
+            links = re.findall(pattern, text)
+            mdwiki_pages = links
+
+        mdwiki_pages = list(set(mdwiki_pages))
+        return mdwiki_pages
+
+    def _newtext_step(self, text) -> str:
+        # pages = CatDepth("Category:RTT", sitecode="www", family="mdwiki", depth=0, ns=0)
+        template_pages = get_template_pages(
+            "Template:RTT",
+            namespace=0,
+            site=self.site,
+        )
+
+        links = self.get_text_wikilinks(text)
+        links = [fix_title(x.strip()) for x in links if x.find("|") == -1 and x not in template_pages]
+
+        redirects = get_titles_redirects(titles=links, site=self.site)
+
+        newtext = add_to_tables(text, redirects, template_pages)
+
+        return newtext
 
 
 def add_r_column_worker_entry(
