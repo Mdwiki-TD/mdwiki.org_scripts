@@ -17,6 +17,12 @@ from ...api_services.clients import get_user_site
 from ...api_services.pages_api import edit_page, is_page_exists, is_redirect, move_page
 from ..base_worker import BaseJobWorker
 
+# (namespace_id, prefix_after_namespace, full_prefix_label_for_display)
+PREFIXES: tuple[tuple[int, str, str], ...] = (
+    (10, "OWID/", "Template:OWID/"),  # Template namespace
+    (0, "OWID/", "OWID/"),  # Main namespace
+)
+
 logger = logging.getLogger(__name__)
 
 
@@ -93,7 +99,7 @@ class RenameOwidPagesWorker(BaseJobWorker):
         # First pass: collect candidates so progress is bounded and we can
         # compute a sane save-progress interval.
         candidates: list[tuple[int, str, str, str]] = []
-        for namespace, prefix, full_prefix in "PREFIXES":
+        for namespace, prefix, full_prefix in PREFIXES:
             if self.is_cancelled():
                 return self.result
 
