@@ -96,12 +96,14 @@ class DuplicateRedirectWorker(BaseJobWorker):
 
             if not from_title or not final_target:
                 self.result["summary"]["skipped"] += 1
-                self.result["pages_processed"].append({
-                    "from_title": from_title,
-                    "to_title": final_target,
-                    "status": "skipped",
-                    "msg": "not a double redirect",
-                })
+                self.result["pages_processed"].append(
+                    {
+                        "from_title": from_title,
+                        "to_title": final_target,
+                        "status": "skipped",
+                        "msg": "not a double redirect",
+                    }
+                )
                 continue
 
             try:
@@ -109,21 +111,25 @@ class DuplicateRedirectWorker(BaseJobWorker):
             except Exception as exc:
                 logger.exception("failed for %s -> %s", from_title, final_target)
                 self.result["summary"]["errors"] += 1
-                self.result["pages_processed"].append({
-                    "from_title": from_title,
-                    "to_title": final_target,
-                    "status": "error",
-                    "msg": str(exc),
-                })
+                self.result["pages_processed"].append(
+                    {
+                        "from_title": from_title,
+                        "to_title": final_target,
+                        "status": "error",
+                        "msg": str(exc),
+                    }
+                )
                 continue
 
             self.result["summary"][outcome] = self.result["summary"].get(outcome, 0) + 1
-            self.result["pages_processed"].append({
-                "from_title": from_title,
-                "to_title": final_target,
-                "status": outcome,
-                "msg": f"{from_title} -> {final_target}",
-            })
+            self.result["pages_processed"].append(
+                {
+                    "from_title": from_title,
+                    "to_title": final_target,
+                    "status": outcome,
+                    "msg": f"{from_title} -> {final_target}",
+                }
+            )
 
             if i == 1 or i % per_item == 0:
                 self._save_progress()

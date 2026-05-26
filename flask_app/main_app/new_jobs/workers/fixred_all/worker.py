@@ -72,13 +72,15 @@ class FixredAllWorker(BaseJobWorker):
             return self.result
 
         state = RunState()
-        titles = list(self.site.allpages(
-            start="!",
-            namespace=_NS_MAIN,
-            filterredir="all",
-            dir="ascending",
-            generator=True,
-        ))
+        titles = list(
+            self.site.allpages(
+                start="!",
+                namespace=_NS_MAIN,
+                filterredir="all",
+                dir="ascending",
+                generator=True,
+            )
+        )
 
         total = len(titles)
         self.result["summary"]["total"] = total
@@ -98,11 +100,13 @@ class FixredAllWorker(BaseJobWorker):
             except Exception as exc:
                 logger.exception("treat_page failed for %s", title)
                 self.result["summary"]["errors"] += 1
-                self.result["pages_processed"].append({
-                    "title": title,
-                    "status": "error",
-                    "msg": str(exc),
-                })
+                self.result["pages_processed"].append(
+                    {
+                        "title": title,
+                        "status": "error",
+                        "msg": str(exc),
+                    }
+                )
                 continue
 
             if outcome == "fixed":
@@ -112,11 +116,13 @@ class FixredAllWorker(BaseJobWorker):
             elif outcome == "missing":
                 self.result["summary"]["missing"] += 1
 
-            self.result["pages_processed"].append({
-                "title": title,
-                "status": outcome,
-                "msg": "",
-            })
+            self.result["pages_processed"].append(
+                {
+                    "title": title,
+                    "status": outcome,
+                    "msg": "",
+                }
+            )
 
             if i == 1 or i % per_item == 0:
                 self._save_progress()

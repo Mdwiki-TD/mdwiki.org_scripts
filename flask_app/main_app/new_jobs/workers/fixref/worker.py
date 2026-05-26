@@ -100,11 +100,13 @@ class FixrefWorker(BaseJobWorker):
             except Exception as exc:
                 logger.exception("fixref failed for %s", title)
                 self.result["summary"]["errors"] += 1
-                self.result["pages_processed"].append({
-                    "title": title,
-                    "status": "error",
-                    "msg": str(exc),
-                })
+                self.result["pages_processed"].append(
+                    {
+                        "title": title,
+                        "status": "error",
+                        "msg": str(exc),
+                    }
+                )
                 continue
 
             if outcome == "fixed":
@@ -116,11 +118,13 @@ class FixrefWorker(BaseJobWorker):
             elif outcome == "error":
                 self.result["summary"]["errors"] += 1
 
-            self.result["pages_processed"].append({
-                "title": title,
-                "status": outcome,
-                "msg": "",
-            })
+            self.result["pages_processed"].append(
+                {
+                    "title": title,
+                    "status": outcome,
+                    "msg": "",
+                }
+            )
 
             if i == 1 or i % per_item == 0:
                 self._save_progress()

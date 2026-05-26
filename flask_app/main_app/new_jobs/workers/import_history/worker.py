@@ -102,19 +102,23 @@ class ImportHistoryWorker(BaseJobWorker):
             except Exception as exc:
                 logger.exception("import run failed for %s", title)
                 self.result["summary"]["errors"] += 1
-                self.result["pages_processed"].append({
-                    "title": title,
-                    "status": "error",
-                    "msg": str(exc),
-                })
+                self.result["pages_processed"].append(
+                    {
+                        "title": title,
+                        "status": "error",
+                        "msg": str(exc),
+                    }
+                )
                 continue
 
             self.result["summary"][outcome] = self.result["summary"].get(outcome, 0) + 1
-            self.result["pages_processed"].append({
-                "title": title,
-                "status": outcome,
-                "msg": "",
-            })
+            self.result["pages_processed"].append(
+                {
+                    "title": title,
+                    "status": outcome,
+                    "msg": "",
+                }
+            )
 
             if i == 1 or i % per_item == 0:
                 self._save_progress()
@@ -157,7 +161,9 @@ class ImportHistoryWorker(BaseJobWorker):
 
             fallback_title = f"User:Mr._Ibrahem/{title}"
             logger.info(f"Job {self.job_id}: {title!r}: top-level save failed; writing to {fallback_title!r}")
-            fallback_result = edit_page(self.site, fallback_title, text, "Returns the article text after importing the history")
+            fallback_result = edit_page(
+                self.site, fallback_title, text, "Returns the article text after importing the history"
+            )
             if fallback_result.get("success"):
                 return "imported_fallback"
             logger.warning(f"Job {self.job_id}: fallback save failed too for {fallback_title}")

@@ -154,22 +154,26 @@ class CreateRedirectsWorker(BaseJobWorker):
             except Exception as exc:
                 logger.exception("redirect run failed for %s", title)
                 self.result["summary"]["errors"] += 1
-                self.result["pages_processed"].append({
-                    "title": title,
-                    "status": "error",
-                    "msg": str(exc),
-                })
+                self.result["pages_processed"].append(
+                    {
+                        "title": title,
+                        "status": "error",
+                        "msg": str(exc),
+                    }
+                )
                 continue
 
             for key, val in counts.items():
                 self.result["summary"][key] = self.result["summary"].get(key, 0) + val
 
             status = "created" if counts.get("created") else "skipped"
-            self.result["pages_processed"].append({
-                "title": title,
-                "status": status,
-                "msg": f"created={counts.get('created', 0)} exists={counts.get('already_exists', 0)}",
-            })
+            self.result["pages_processed"].append(
+                {
+                    "title": title,
+                    "status": status,
+                    "msg": f"created={counts.get('created', 0)} exists={counts.get('already_exists', 0)}",
+                }
+            )
 
             if i == 1 or i % per_item == 0:
                 self._save_progress()
