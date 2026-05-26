@@ -13,10 +13,46 @@ import threading
 from datetime import datetime
 from typing import Any, Dict
 
+import mwclient
+
+from ....api_services import MwClientPage, get_user_site
+from ....api_services.pages_api import (
+    edit_page,
+    get_double_redirects,
+    get_page_text,
+    is_page_exists,
+)
+
 from ....new_jobs.base_worker import BaseJobWorker
 from .add_rtt import R_NEW_ROW, add_to_tables, fix_title
 
 logger = logging.getLogger(__name__)
+
+
+def get_titles_redirects(titles):
+    # ---
+    redirects = {}
+    # ---
+    # for i in range(0, len(titles), 50): group = titles[i : i + 50]
+    for title_chunk in self.chunk_titles(titles, chunk_size=50):
+        params = {
+            "action": "query",
+            "format": "json",
+            "titles": "|".join(title_chunk),
+            "redirects": 1,
+            # "prop": "templates|langlinks",
+            "utf8": 1,
+            # "normalize": 1,
+        }
+        # ---
+        json1 = self.post_continue(params, "query", _p_="redirects", p_empty=[])
+        # ---
+        lists = {x["from"]: x["to"] for x in json1}
+        # ---
+        if lists:
+            redirects.update(lists)
+    # ---
+    return redirects
 
 
 def find_redirects(pages, text):
@@ -38,9 +74,9 @@ def find_redirects(pages, text):
 
     logger.info(f" pages: {len(mdwiki_pages)}")
 
-    titles = api_new.get_titles_redirects(mdwiki_pages)
+    titles = get_titles_redirects(mdwiki_pages)
 
-    # titles = api_new.get_titles_redirects(["Ehlers–Danlos syndrome"]) # {'Ehlers–Danlos syndrome': 'Ehlers–Danlos syndromes'}
+    # titles = get_titles_redirects(["Ehlers–Danlos syndrome"]) # {'Ehlers–Danlos syndrome': 'Ehlers–Danlos syndromes'}
     redirects = dict(titles.items())
 
     return redirects
@@ -58,6 +94,7 @@ class AddRColumnWorker(BaseJobWorker):
     ) -> None:
         self.job_id = job_id
         self.args = args or {}
+        self.page = None
         super().__init__(job_id, user, cancel_event)
 
     def get_job_type(self) -> str:
@@ -80,10 +117,17 @@ class AddRColumnWorker(BaseJobWorker):
 
     def process(self) -> Dict[str, Any]:
         """
-        Placeholder process method.
+        process method.
         """
+        self.site = get_user_site(self.user)
+        if not self.site:
+            logger.warning(f"Job {self.job_id}: No site authentication available")
+            self.result["status"] = "failed"
+            self.result["error"] = "No authenticated user site available. Please log in via OAuth."
+            self.result["failed_at"] = datetime.now().isoformat()
+            return self.result
 
-        logger.info(f"Job {self.job_id}: Placeholder for Add R column.")
+        logger.info(f"Job {self.job_id}: for Add R column.")
 
         if self.is_cancelled():
             return self.result
@@ -104,9 +148,10 @@ class AddRColumnWorker(BaseJobWorker):
         self.result["status"] = "running"
 
         title = "WikiProjectMed:WikiProject Medicine/Popular pages"
-        page = md_MainPage(title, "www", family="mdwiki")
 
-        if not page.exists():
+        self.page = MwClientPage(title, self.site)
+
+        if not self.page.check_exists():
             return False
 
         text = page.get_text()
