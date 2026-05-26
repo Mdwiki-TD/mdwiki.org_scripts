@@ -1,7 +1,7 @@
-const WIKIMEDIA_API_URL = "https://mdwiki.org/w/api.php";
+
 const API_USER_AGENT = "Translation Dashboard/1.0 (https://mdwiki.toolforge.org/; tools.mdwiki@toolforge.org)";
 
-function setupWikiAutocomplete(inputSelector) {
+function setupWikiAutocomplete(inputSelector, wikimedia_api_url) {
     // attach autocomplete behavior to input field
     $(inputSelector).autocomplete({
         delay: 300,
@@ -9,7 +9,7 @@ function setupWikiAutocomplete(inputSelector) {
         source: function (request, response) {
             // make AJAX request to Wikipedia API
             $.ajax({
-                url: WIKIMEDIA_API_URL,
+                url: wikimedia_api_url,
                 headers: {
                     'Api-User-Agent': API_USER_AGENT
                 },
