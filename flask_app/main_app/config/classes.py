@@ -9,6 +9,26 @@ from typing import Any, Optional
 
 
 @dataclass(frozen=True)
+class OtherConfig:
+    """configs not in specific sections"""
+
+    csrf_time_limit: Optional[int]  # None means never expire
+    user_agent: str
+    # Phase-1 additions (see docs/merge-plan.md §7)
+    allowlist_users: tuple[str, ...]
+    wiki_domain: str
+    static_server: str
+
+
+@dataclass(frozen=True)
+class JobsConfig:
+    """Configuration for jobs."""
+
+    jobs_max_workers: int
+    jobs_log_lines: int
+
+
+@dataclass(frozen=True)
 class DbConfig:
     db_name: str
     db_host: str
@@ -56,7 +76,6 @@ class OAuthConfig:
     consumer_key: str
     consumer_secret: str
     encryption_key: str | None
-    user_agent: str
 
 
 @dataclass(frozen=True)
@@ -72,19 +91,17 @@ class SecurityConfig:
 
 @dataclass(frozen=True)
 class Settings:
+    """Main settings container."""
+
+    # Nested configurations
     database_data: DbConfig
+    paths: Paths
     cookie: CookieConfig
     sessions: SessionConfig
     oauth: Optional[OAuthConfig]
-    paths: Paths
     security: SecurityConfig
-    csrf_time_limit: Optional[int]  # None means never expire
-    # Phase-1 additions (see docs/merge-plan.md §7)
-    allowlist_users: tuple[str, ...]
-    enable_oauth: bool
-    jobs_max_workers: int
-    jobs_log_lines: int
-    wiki_domain: str
+    other: OtherConfig
+    jobs: JobsConfig
 
 
 __all__ = [
@@ -93,6 +110,8 @@ __all__ = [
     "CookieConfig",
     "SessionConfig",
     "OAuthConfig",
-    "SecurityConfig",
+    "JobsConfig",
     "Settings",
+    "OtherConfig",
+    "SecurityConfig",
 ]

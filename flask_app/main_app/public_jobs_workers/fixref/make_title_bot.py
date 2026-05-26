@@ -70,8 +70,10 @@ def get_url(url):
         # ---
         if 500 <= req.status_code < 600:
             logger.info(f"received {req.status_code} status from {req.url}")
-        else:
-            json1 = req.json()
+        # ---
+        req.raise_for_status()
+        # ---
+        json1 = req.json()
     # ---
     except Exception:
         logger.exception("Exception:", exc_info=True)

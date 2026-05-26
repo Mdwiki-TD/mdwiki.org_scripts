@@ -2,8 +2,8 @@
 
 from flask import Flask
 
-from .main import bp_main
 from .jobs import bp_jobs
+from .main import bp_main
 
 
 def register_blueprints(app: Flask) -> None:

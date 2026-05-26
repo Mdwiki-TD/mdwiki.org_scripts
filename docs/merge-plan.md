@@ -160,7 +160,7 @@ We do **not** implement full OAuth in this PR. We add:
 -   `auth.current_user() -> User | None` reading `session["username"]`.
 -   `auth.is_authenticated()` and `auth.is_authorized(user)`.
 -   `@login_required` (302 to a login placeholder if missing).
--   `@authorized_only(allowlist=settings.allowlist_users)` returning **403 with
+-   `@authorized_only(allowlist=settings.other.allowlist_users)` returning **403 with
     a friendly “Access denied” template** for `import-history` and `replace`.
 
 For local testing, a hidden `?dev_user=Mr. Ibrahem` query writes the username

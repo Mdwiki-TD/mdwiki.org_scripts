@@ -17,19 +17,23 @@ they live in :class:`_RunState` so concurrent jobs can't collide.
 from __future__ import annotations
 
 import logging
+import mwclient
 import re
 from dataclasses import dataclass, field
 from threading import Event
 from typing import Any, Callable, Literal, Optional
 
-from ...api_services.newapi import AllAPIS
+from ...api_services.clients.wiki_client import get_user_site
+
+from ...api_services.pages_api import resolve_redirects
+from ...su_services.users_service import current_user
+
+from ...newapi import AllAPIS
 from .._api import get_api
 
 logger = logging.getLogger(__name__)
 
-_LINK_CHUNK = 300
 _NS_MAIN = "0"
-
 
 OutcomeKind = Literal["notext", "no_changes", "changes", "saved"]
 
@@ -68,16 +72,6 @@ def _post(api: AllAPIS, params: dict) -> dict:
     return api.NewApi().post_params(params, method="post") or {}
 
 
-def _list_nonredirects(api: AllAPIS) -> list[str]:
-    """All mainspace non-redirect titles. Cached on the API client by Get_All_pages."""
-
-    return api.NewApi().Get_All_pages(
-        start="!",
-        namespace=_NS_MAIN,
-        apfilterredir="nonredirects",
-    )
-
-
 def _get_page_links(api: AllAPIS, title: str) -> dict[str, Any]:
     """Mirror of legacy ``Get_page_links`` using the new API client."""
 
@@ -103,43 +97,7 @@ def _get_page_links(api: AllAPIS, title: str) -> dict[str, Any]:
     return out
 
 
-def _resolve_redirects_for(api: AllAPIS, state: _RunState, link_titles: list[str]) -> None:
-    """Populate ``state.from_to`` / ``state.normalized`` for a batch of link titles."""
-
-    # Skip titles already known to map.
-    pending = [t for t in link_titles if t not in state.from_to]
-    for i in range(0, len(pending), _LINK_CHUNK):
-        chunk = pending[i : i + _LINK_CHUNK]
-        params = {
-            "action": "query",
-            "format": "json",
-            "prop": "redirects",
-            "titles": "|".join(chunk),
-            "redirects": 1,
-            "converttitles": 1,
-            "utf8": 1,
-            "rdlimit": "max",
-        }
-        data = _post(api, params)
-        if not data:
-            continue
-        query = data.get("query", {}) or {}
-
-        for nor in query.get("normalized", []) or []:
-            state.normalized[nor["to"]] = nor["from"]
-
-        # Top-level redirects array: page is a redirect TO some target.
-        for red in query.get("redirects", []) or []:
-            state.from_to[red["from"]] = red["to"]
-
-        # Per-page redirects array: pages that redirect TO this title.
-        for page in (query.get("pages", {}) or {}).values():
-            target = page.get("title", "")
-            for src in page.get("redirects", []) or []:
-                state.from_to[src["title"]] = target
-
-
-def _replace_links(text: str, oldlink: str, oldlink2: str, newlink: str) -> str:
+def _replace_links(text: str, oldlink: str, oldlink2: str, newlink: str,) -> str:
     """Mirror of legacy ``replace_links2``.
 
     Each wikilink ``[[old]]`` becomes ``[[new|old]]`` (preserve the original
@@ -147,31 +105,29 @@ def _replace_links(text: str, oldlink: str, oldlink2: str, newlink: str) -> str:
     normalized-title alias if present in ``state.normalized``.
     """
 
-    while f"[[{oldlink}]]" in text or f"[[{oldlink}|" in text or f"[[{oldlink2}]]" in text or f"[[{oldlink2}|" in text:
-        text = text.replace(f"[[{oldlink}]]", f"[[{newlink}|{oldlink}]]")
-        text = text.replace(f"[[{oldlink}|", f"[[{newlink}|")
+    text = text.replace(f"[[{oldlink}]]", f"[[{newlink}|{oldlink}]]")
+    text = text.replace(f"[[{oldlink}|", f"[[{newlink}|")
 
+    text = re.sub(
+        rf"\[\[{re.escape(oldlink)}(\|\]\])",
+        rf"[[{newlink}\g<1>",
+        text,
+        flags=re.IGNORECASE,
+    )
+
+    if oldlink != oldlink2:
         text = re.sub(
-            rf"\[\[{re.escape(oldlink)}(\|\]\])",
+            rf"\[\[{re.escape(oldlink2)}(\|\]\])",
             rf"[[{newlink}\g<1>",
             text,
             flags=re.IGNORECASE,
         )
-
-        if oldlink != oldlink2:
-            text = re.sub(
-                rf"\[\[{re.escape(oldlink2)}(\|\]\])",
-                rf"[[{newlink}\g<1>",
-                text,
-                flags=re.IGNORECASE,
-            )
-            text = text.replace(f"[[{oldlink2}]]", f"[[{newlink}|{oldlink2}]]")
-            text = text.replace(f"[[{oldlink2}|", f"[[{newlink}|")
-
+        text = text.replace(f"[[{oldlink2}]]", f"[[{newlink}|{oldlink2}]]")
+        text = text.replace(f"[[{oldlink2}|", f"[[{newlink}|")
     return text
 
 
-def _treat_page(api: AllAPIS, title: str, state: _RunState, *, save: bool) -> tuple[str, str]:
+def _treat_page(api: AllAPIS, title: str, state: _RunState, *, save: bool, site: mwclient.Site) -> tuple[str, str]:
     """Return one of: ``missing``, ``no-changes``, ``would-fix``, ``fixed``, ``error``."""
 
     page = api.MainPage(title)
@@ -188,13 +144,18 @@ def _treat_page(api: AllAPIS, title: str, state: _RunState, *, save: bool) -> tu
     if not link_titles:
         return "no-changes", text
 
-    _resolve_redirects_for(api, state, link_titles)
+    data = resolve_redirects(link_titles, site)
 
     new_targets = {}
     for _, info in links["links"].items():
         oldlink = info["title"]
-        oldlink2 = state.normalized.get(oldlink, oldlink)
-        target = state.from_to.get(oldlink) or state.from_to.get(oldlink2)
+        # ---
+        # oldlink2 = state.normalized.get(oldlink, oldlink)
+        # target = state.from_to.get(oldlink) or state.from_to.get(oldlink2)
+        # ---
+        oldlink2 = data.get("normalized", {}).get(oldlink, oldlink)
+        target = data.get("from_to", {}).get(oldlink) or data.get("from_to", {}).get(oldlink2)
+        # ---
         if target:
             new_targets[oldlink2] = target
             new_targets[oldlink] = target
@@ -223,7 +184,7 @@ def replace_in_text(text, new_targets):
     return newtext
 
 
-def _work_on_text(api, title, text) -> str:
+def _work_on_text(api, title, text, site: mwclient.Site) -> str:
     """ """
     state = _RunState()
 
@@ -236,13 +197,18 @@ def _work_on_text(api, title, text) -> str:
     if not link_titles:
         return text
 
-    _resolve_redirects_for(api, state, link_titles)
+    data = resolve_redirects(link_titles, site)
 
     new_targets = {}
     for _, info in links["links"].items():
         oldlink = info["title"]
-        oldlink2 = state.normalized.get(oldlink, oldlink)
-        target = state.from_to.get(oldlink) or state.from_to.get(oldlink2)
+        # ---
+        # oldlink2 = state.normalized.get(oldlink, oldlink)
+        # target = state.from_to.get(oldlink) or state.from_to.get(oldlink2)
+        # ---
+        oldlink2 = data.get("normalized", {}).get(oldlink, oldlink)
+        target = data.get("from_to", {}).get(oldlink) or data.get("from_to", {}).get(oldlink2)
+        # ---
         if target:
             new_targets[oldlink2] = target
             new_targets[oldlink] = target
@@ -259,6 +225,9 @@ def run_all(
 ) -> dict[str, Any]:
     """ """
 
+    user = current_user()
+    site = get_user_site(user)
+
     def _emit(done: int, total: int, msg: str) -> None:
         if on_progress is not None:
             on_progress(done, total, message=msg)
@@ -266,7 +235,24 @@ def run_all(
     api = get_api()
     state = _RunState()
 
-    titles = _list_nonredirects(api)
+    # titles = api.NewApi().Get_All_pages( start="!", namespace=_NS_MAIN, apfilterredir="nonredirects")
+    titles = site.allpages(
+        start="!",
+        prefix=None,
+        namespace=_NS_MAIN,
+        filterredir="all",
+        minsize=None,
+        maxsize=None,
+        prtype=None,
+        prlevel=None,
+        limit=None,
+        dir="ascending",
+        filterlanglinks="all",
+        generator=True,
+        end=None,
+        max_items=None,
+        api_chunk_size=None,
+    )
 
     counts = {
         "scanned": 0,
@@ -284,7 +270,7 @@ def run_all(
             break
         counts["scanned"] += 1
         try:
-            outcome, _ = _treat_page(api, t, state, save=save)
+            outcome, _ = _treat_page(api, t, state, save=save, site=site)
         except Exception as exc:
             logger.exception("treat_page failed for %s", t)
             counts["errors"] += 1
@@ -321,6 +307,9 @@ def work_on_title(
     * ``changes``    — there is a diff to review/save.
     """
 
+    user = current_user()
+    site = get_user_site(user)
+
     title = (title or "").strip()
     if not title:
         return UpdaterOutcome(kind="notext")
@@ -335,7 +324,7 @@ def work_on_title(
         return UpdaterOutcome(kind="notext", old_text=old_text)
 
     try:
-        new_text = _work_on_text(api, title, old_text)
+        new_text = _work_on_text(api, title, old_text, site=site)
     except Exception:
         logger.exception("work_on_text failed for %s", title)
         raise

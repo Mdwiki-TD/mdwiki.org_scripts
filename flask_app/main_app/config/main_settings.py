@@ -7,10 +7,12 @@ from functools import lru_cache
 from pathlib import Path
 from typing import Optional
 
-from .classes import (  # JobsConfig,
+from .classes import (
     CookieConfig,
     DbConfig,
+    JobsConfig,
     OAuthConfig,
+    OtherConfig,
     Paths,
     SecurityConfig,
     SessionConfig,
@@ -117,10 +119,6 @@ def _load_oauth_config() -> Optional[OAuthConfig]:
         mw_uri=mw_uri,
         consumer_key=consumer_key,
         consumer_secret=consumer_secret,
-        user_agent=os.getenv(
-            "USER_AGENT",
-            "Copy SVG Translations/1.0 (https://copy-svg-langs.toolforge.org; tools.copy-svg-langs@toolforge.org)",
-        ),
         encryption_key=encryption_key,
     )
 
@@ -154,6 +152,38 @@ def _get_paths() -> Paths:
         main_files_path=main_files_path,
     )
 
+
+def load_other_config() -> OtherConfig:
+    # CSRF token lifetime (in seconds). Default 3600 (1 hour).
+    # Set to 0 or None to disable expiration (not recommended for production).
+    csrf_time_limit = _env_int("WTF_CSRF_TIME_LIMIT", 3600)
+    if not csrf_time_limit or csrf_time_limit <= 0:
+        csrf_time_limit = 3600
+
+    # Tool authorization allow-list (used by /import-history/ and /replace/).
+    _allowlist_raw = os.getenv("ALLOWLIST_USERS", "Doc James,Mr. Ibrahem")
+    allowlist_users = tuple(name.strip() for name in _allowlist_raw.split(",") if name.strip())
+
+    _lang = os.getenv("WIKI_LANG") or "www"
+    _family = os.getenv("WIKI_FAMILY") or "mdwiki"
+    wiki_domain = f"{_lang}.{_family}.org"
+    static_server = os.getenv("STATIC_SERVER") or "https://tools-static.wmflabs.org/cdnjs"
+
+    user_agent = os.getenv(
+        "USER_AGENT",
+        "Copy SVG Translations/1.0 (https://copy-svg-langs.toolforge.org; tools.copy-svg-langs@toolforge.org)",
+    )
+    _config = OtherConfig(
+        csrf_time_limit=csrf_time_limit,
+        user_agent=user_agent,
+        allowlist_users=allowlist_users,
+        wiki_domain=wiki_domain,
+        static_server=static_server,
+    )
+
+    return _config
+
+
 def load_cookie_config() -> CookieConfig:
     session_cookie_secure = _env_bool("SESSION_COOKIE_SECURE", default=True)
     session_cookie_httponly = _env_bool("SESSION_COOKIE_HTTPONLY", default=True)
@@ -168,6 +198,19 @@ def load_cookie_config() -> CookieConfig:
     )
 
     return cookie
+
+
+def _load_jobs_config() -> JobsConfig:
+    # Background job runner sizing.
+    jobs_max_workers = max(1, _env_int("JOBS_MAX_WORKERS", 2))
+    jobs_log_lines = max(10, _env_int("JOBS_LOG_LINES", 200))
+
+    _config = JobsConfig(
+        jobs_max_workers=jobs_max_workers,
+        jobs_log_lines=jobs_log_lines,
+    )
+
+    return _config
 
 
 @lru_cache(maxsize=1)
@@ -196,36 +239,20 @@ def get_settings() -> Settings:
 
     oauth_config = _load_oauth_config()
 
-    enable_oauth = _env_bool("ENABLE_OAUTH", default=False)
-
-    if enable_oauth and oauth_config is None:
+    if oauth_config is None:
         raise RuntimeError(
             "MediaWiki OAuth configuration is incomplete. Set OAUTH_MWURI, OAUTH_CONSUMER_KEY, and OAUTH_CONSUMER_SECRET."
         )
-    if enable_oauth and not oauth_config.encryption_key:
+
+    if not oauth_config.encryption_key:
         raise RuntimeError("OAUTH_ENCRYPTION_KEY environment variable is required when ENABLE_OAUTH=true")
 
     cookie_config = load_cookie_config()
 
-    # CSRF token lifetime (in seconds). Default 3600 (1 hour).
-    # Set to 0 or None to disable expiration (not recommended for production).
-    csrf_time_limit = _env_int("WTF_CSRF_TIME_LIMIT", 3600)
-    if not csrf_time_limit or csrf_time_limit <= 0:
-        csrf_time_limit = 3600
-
-    # Tool authorization allow-list (used by /import-history/ and /replace/).
-    allowlist_raw = os.getenv("ALLOWLIST_USERS", "Doc James,Mr. Ibrahem")
-    allowlist_users = tuple(name.strip() for name in allowlist_raw.split(",") if name.strip())
-
-    # Background job runner sizing.
-    jobs_max_workers = max(1, _env_int("JOBS_MAX_WORKERS", 2))
-    jobs_log_lines = max(10, _env_int("JOBS_LOG_LINES", 200))
-
-    lang = os.getenv("WIKI_LANG") or "www"
-    family = os.getenv("WIKI_FAMILY") or "mdwiki"
-    wiki_domain = f"{lang}.{family}.org"
+    other_config = load_other_config()
 
     database_data = _load_database_config()
+    jobs_config = _load_jobs_config()
 
     return Settings(
         paths=_get_paths(),
@@ -234,12 +261,8 @@ def get_settings() -> Settings:
         oauth=oauth_config,
         security=security_config,
         sessions=sessions,
-        csrf_time_limit=csrf_time_limit,
-        allowlist_users=allowlist_users,
-        enable_oauth=enable_oauth,
-        jobs_max_workers=jobs_max_workers,
-        jobs_log_lines=jobs_log_lines,
-        wiki_domain=wiki_domain,
+        jobs=jobs_config,
+        other=other_config,
     )
 
 

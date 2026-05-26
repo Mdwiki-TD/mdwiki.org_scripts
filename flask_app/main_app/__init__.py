@@ -1,24 +1,24 @@
-"""Flask application factory."""
+"""
+Flask application factory.
+"""
 
 from __future__ import annotations
 
 import logging
-from typing import Tuple, Type
+from typing import Any, Tuple, Type
 
 from flask import Flask, flash, render_template
 from flask_wtf.csrf import CSRFError, CSRFProtect
 
-from .app_routes.auth.routes import bp_auth
-
-from .su_services.users_service import current_user
-from .config import settings
-
 from .app_routes import register_blueprints
-from .jobs_routes import register_jobs_blueprints
+from .app_routes.auth.routes import bp_auth
+from .config import settings
 from .core.cookies import CookieHeaderClient
 from .db import init_db
 from .extensions import db as _db
 from .extensions import migrate
+from .jobs_routes import register_jobs_blueprints
+from .su_services.users_service import current_user
 
 logger = logging.getLogger(__name__)
 
@@ -32,7 +32,8 @@ def context_user() -> dict[str, any]:
         "current_user": user,
         "is_authenticated": user is not None,
         "username": user.username if user else None,
-        "wiki_domain": settings.wiki_domain,
+        "wiki_domain": settings.other.wiki_domain,
+        "static_server": settings.other.static_server,
     }
 
 
@@ -109,16 +110,15 @@ def create_app(config_class: Type) -> Flask:
     csrf = CSRFProtect(app)  # noqa: F841
 
     # Initialize Flask-SQLAlchemy and Flask-Migrate
-    # if akpp.config.get("SQLALCHEMY_DATABASE_URI"):
-    _db.init_app(app)
-    migrate.init_app(app, _db)
+    if app.config.get("SQLALCHEMY_DATABASE_URI"):
+        _db.init_app(app)
+        migrate.init_app(app, _db)
 
-    # Create database tables and views if they don't exist
-    init_db(app, _db)
+        # Create database tables and views if they don't exist
+        init_db(app, _db)
 
     @app.context_processor
-    def _inject_user() -> dict:
-        """Make `current_user` and `is_authorized` available in all templates."""
+    def _inject_user() -> dict[str, Any]:
         return context_user()
 
     # app.jinja_env.filters["format_stage_timestamp"] = format_stage_timestamp
