@@ -1,4 +1,4 @@
-"""Blueprint for `/redirect/` — copy enwiki redirects to mdwiki."""
+"""Blueprint for `/create_redirects/` — copy enwiki redirects to mdwiki."""
 
 from __future__ import annotations
 
@@ -9,9 +9,9 @@ from flask import Blueprint, flash, redirect, render_template, request, url_for
 from ...su_services.users_service import current_user, oauth_required
 from .. import runner
 from ..store import get_store
-from ..workers import redirect as svc
+from ..workers import create_redirects as svc
 
-bp_redirect = Blueprint("redirect", __name__, url_prefix="/redirect")
+bp_redirect = Blueprint("create_redirects", __name__, url_prefix="/create_redirects")
 logger = logging.getLogger(__name__)
 
 # Cap input size so a runaway paste can't queue a million-page job.
@@ -37,11 +37,11 @@ def _split_titles(raw_title: str, raw_titlelist: str) -> list[str]:
     return out
 
 
-@bp_redirect.route("/", methods=["GET"], endpoint="redirect")
+@bp_redirect.route("/", methods=["GET"], endpoint="create_redirects")
 @oauth_required
 def redirect_view():
     return render_template(
-        "jobs_templates/redirect.html",
+        "jobs_templates/create_redirects.html",
         title="Copy redirects from enwiki",
         form_title="",
         form_titlelist="",
@@ -60,7 +60,7 @@ def redirect_post():
     if not titles:
         flash("Provide at least one title.", "warning")
         return render_template(
-            "jobs_templates/redirect.html",
+            "jobs_templates/create_redirects.html",
             title="Copy redirects from enwiki",
             form_title=raw_title,
             form_titlelist=raw_titlelist,
@@ -68,27 +68,27 @@ def redirect_post():
     if len(titles) > _MAX_TITLES:
         flash(f"Too many titles ({len(titles)}); cap is {_MAX_TITLES}.", "warning")
         return render_template(
-            "jobs_templates/redirect.html",
+            "jobs_templates/create_redirects.html",
             title="Copy redirects from enwiki",
             form_title=raw_title,
             form_titlelist=raw_titlelist,
         )
 
-    active = get_store().find_active("redirect")
+    active = get_store().find_active("create_redirects")
     if active is not None:
-        flash(f"A redirect job is already running ({active.id}).", "info")
+        flash(f"A create_redirects job is already running ({active.id}).", "info")
         return redirect(url_for("jobs.status", job_id=active.id))
 
     job = runner.submit(
-        "redirect",
+        "create_redirects",
         svc.run,
         submitted_by=user.username,
         params={"title_count": len(titles), "save": True},
         titles=titles,
         save=True,
     )
-    flash(f"Started redirect job {job.id} for {len(titles)} title(s)", "success")
-    logger.info("redirect job %s submitted by %s for %d titles", job.id, user.username, len(titles))
+    flash(f"Started create_redirects job {job.id} for {len(titles)} title(s)", "success")
+    logger.info("create_redirects job %s submitted by %s for %d titles", job.id, user.username, len(titles))
     return redirect(url_for("jobs.status", job_id=job.id))
 
 
