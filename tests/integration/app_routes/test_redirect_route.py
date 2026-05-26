@@ -31,7 +31,7 @@ class TestRedirect:
         assert b'name="titlelist"' in r.data
 
     def test_post_single_title_submits_job(self, mock_client, login, csrf_token, monkeypatch):
-        from flask_app.main_app.public_jobs_workers import redirect as redsvc
+        from flask_app.main_app.jobs.workers import redirect as redsvc
 
         captured: dict = {}
 
@@ -50,7 +50,7 @@ class TestRedirect:
         assert captured["titles"] == ["Aspirin"]
 
     def test_post_titlelist_dedupes_and_strips(self, mock_client, login, csrf_token, monkeypatch):
-        from flask_app.main_app.public_jobs_workers import redirect as redsvc
+        from flask_app.main_app.jobs.workers import redirect as redsvc
 
         captured: dict = {}
 

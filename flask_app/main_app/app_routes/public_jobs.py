@@ -18,8 +18,7 @@ from flask import (
 from flask.typing import ResponseReturnValue
 from werkzeug.wrappers.response import Response
 
-from ..db.services import (
-    # active_coordinators,
+from ..db.services import (  # active_coordinators,
     delete_job,
     get_job,
     list_jobs,

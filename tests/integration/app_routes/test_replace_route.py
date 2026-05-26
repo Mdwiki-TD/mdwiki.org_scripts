@@ -48,7 +48,7 @@ class TestReplace:
         assert b'name="listtype"' in r.data
 
     def test_post_submits_job_with_find_replace_listtype(self, mock_client, login, csrf_token, monkeypatch):
-        from flask_app.main_app.public_jobs_workers import replace as repsvc
+        from flask_app.main_app.jobs.workers import replace as repsvc
 
         captured: dict = {}
 

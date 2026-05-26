@@ -17,7 +17,7 @@ from .core.cookies import CookieHeaderClient
 from .db import init_db
 from .extensions import db as _db
 from .extensions import migrate
-from .jobs.jobs_routes import register_jobs_blueprints
+from .jobs.routes import register_jobs_blueprints
 from .su_services.users_service import current_user
 
 logger = logging.getLogger(__name__)

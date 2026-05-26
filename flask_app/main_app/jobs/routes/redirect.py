@@ -6,10 +6,10 @@ import logging
 
 from flask import Blueprint, flash, redirect, render_template, request, url_for
 
+from ...su_services.users_service import current_user, oauth_required
 from .. import runner
 from ..store import get_store
-from ...public_jobs_workers import redirect as svc
-from ...su_services.users_service import current_user, oauth_required
+from ..workers import redirect as svc
 
 bp_redirect = Blueprint("redirect", __name__, url_prefix="/redirect")
 logger = logging.getLogger(__name__)

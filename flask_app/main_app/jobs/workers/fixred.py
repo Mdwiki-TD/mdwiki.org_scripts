@@ -17,19 +17,18 @@ they live in :class:`_RunState` so concurrent jobs can't collide.
 from __future__ import annotations
 
 import logging
-import mwclient
 import re
 from dataclasses import dataclass, field
 from threading import Event
 from typing import Any, Callable, Literal, Optional
 
+import mwclient
+
 from ...api_services.clients.wiki_client import get_user_site
-
 from ...api_services.pages_api import resolve_redirects
-from ...su_services.users_service import current_user
-
 from ...newapi import AllAPIS
-from .._api import get_api
+from ...su_services.users_service import current_user
+from ._api import get_api
 
 logger = logging.getLogger(__name__)
 
@@ -97,7 +96,12 @@ def _get_page_links(api: AllAPIS, title: str) -> dict[str, Any]:
     return out
 
 
-def _replace_links(text: str, oldlink: str, oldlink2: str, newlink: str,) -> str:
+def _replace_links(
+    text: str,
+    oldlink: str,
+    oldlink2: str,
+    newlink: str,
+) -> str:
     """Mirror of legacy ``replace_links2``.
 
     Each wikilink ``[[old]]`` becomes ``[[new|old]]`` (preserve the original

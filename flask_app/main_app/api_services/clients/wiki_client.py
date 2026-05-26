@@ -47,11 +47,9 @@ def get_user_site(user: Dict[str, Any] | None) -> mwclient.Site | None:
         site = mwclient.Site(
             settings.other.wiki_domain,
             scheme="https",
-
             clients_useragent=settings.other.user_agent,
             consumer_token=settings.oauth.consumer_key,
             consumer_secret=settings.oauth.consumer_secret,
-
             access_token=_access_key,
             access_secret=_access_secret,
         )

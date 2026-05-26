@@ -7,11 +7,11 @@ from __future__ import annotations
 
 import logging
 import threading
+from dataclasses import dataclass, field
 from datetime import datetime
 from typing import Any, Dict, Iterable
 
 import mwclient
-from dataclasses import dataclass, field
 
 from ...api_services.clients import get_user_site
 from ...api_services.pages_api import edit_page, is_page_exists, is_redirect, move_page
