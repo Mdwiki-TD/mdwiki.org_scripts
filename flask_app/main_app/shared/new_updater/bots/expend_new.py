@@ -50,7 +50,7 @@ def expend_infoboxs(new_text):
 
         name = str(temp.normal_name()).strip().lower()
 
-        isvalid = name.startswith("infobox") or name.endswith("infobox") or name.endswith("box")
+        isvalid = name.startswith("infobox") or name.endswith(("infobox", "box"))
 
         if name not in main_temps_list and not isvalid:
             continue

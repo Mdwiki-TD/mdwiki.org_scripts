@@ -27,7 +27,7 @@ def expend_infoboxs_and_fix(new_text):
                 # ---
                 dups = dup_params.get(name.lower(), {})
                 # ---
-                logger.debug("expend_infoboxs_and_fix", f"expend_and_fix: name: {name}")
+                logger.debug(f"expend_and_fix: name: {name}")
                 # ---
                 new_temp = "{{" + name + "\n"
                 # ---

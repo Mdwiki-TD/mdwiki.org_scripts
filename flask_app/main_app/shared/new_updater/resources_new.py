@@ -3,16 +3,14 @@
 """
 
 import logging
-
-# ---
 import re
 
 import wikitextparser as wtp
 
 from .bots.Remove import portal_remove, remove_cite_web
+from .lists.identifier_params import identifiers_params
 
 logger = logging.getLogger(__name__)
-from .lists.identifier_params import identifiers_params
 
 # ---
 page_identifier_params = {}
@@ -130,10 +128,10 @@ def move_resources(text, title, lkj=_lkj_, lkj2=_lkj2_):
             fa = re.search(lkj2, value)
             # ---
             if fa:
-                logger.debug("move_resources", f"fa = {fa}")
-                logger.debug("move_resources", dir(fa))
+                logger.debug(f"fa = {fa}")
+                logger.debug(dir(fa))
                 tt = fa.group()
-                logger.debug("move_resources", f"tt = {tt}")
+                logger.debug(f"tt = {tt}")
                 value = value.replace(tt, "").strip()
             # ---
             page_identifier_params[param] = value
@@ -159,18 +157,18 @@ def move_resources(text, title, lkj=_lkj_, lkj2=_lkj2_):
         # ---
         resources_old = resources_temp.string
         # ---
-        logger.debug("move_resources", f"resources_temp = {resources_temp}")
+        logger.debug(f"resources_temp = {resources_temp}")
         # ---
         resources_params = resources_temp.arguments
         # ---
-        logger.debug("move_resources", f"resources_params = {resources_params}")
+        logger.debug(f"resources_params = {resources_params}")
         # ---
         for param, value in page_identifier_params.items():
             value = value.strip()
             # ---
             if resources_temp.has_arg(param):
                 # ---
-                logger.debug("move_resources", f"resources_temp.has_arg({param}) = {resources_temp.has_arg(param)}")
+                logger.debug(f"resources_temp.has_arg({param}) = {resources_temp.has_arg(param)}")
                 # ---
                 old_value = resources_temp.get_arg(param).value
                 # ---
@@ -183,7 +181,7 @@ def move_resources(text, title, lkj=_lkj_, lkj2=_lkj2_):
         resources_new = resources_temp.string
         # resources_new = resources_temp.pformat()
         # ---
-        logger.debug("move_resources", f"resources_new = {resources_new}")
+        logger.debug(f"resources_new = {resources_new}")
         # ---
         resources_new = re.sub(r"\n\n\n+<", "\n\n<", resources_new, flags=re.DOTALL | re.MULTILINE)
         # ---
@@ -193,13 +191,13 @@ def move_resources(text, title, lkj=_lkj_, lkj2=_lkj2_):
         # نقل المعرفات لأسفل
         new_text, line = add_resources(new_text, drug_resources)
         # ---
-    resources_get_NLM = False
+    resources_get_nlm = False
     # ---
     if "NLM" in resources_params:
-        resources_get_NLM = resources_params["NLM"]
+        resources_get_nlm = resources_params["NLM"]
     # ---
     # إزالة استشهاد خاطىء
-    new_text = remove_cite_web(new_text, resources_get_NLM, line, title)
+    new_text = remove_cite_web(new_text, resources_get_nlm, line, title)
     # ---
     # إزالة شريط البوابات
     new_text = portal_remove(new_text)
