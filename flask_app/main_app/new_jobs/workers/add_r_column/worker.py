@@ -17,8 +17,9 @@ import wikitextparser as wtp
 
 from ....api_services import MwClientPage, get_user_site
 from ....api_services.query_api import get_template_pages
-from ....new_jobs.base_worker import BaseJobWorker
+from ....new_jobs.base_worker_object import BaseObjectsJobWorker
 from .add_rtt import R_NEW_ROW, add_header_r, fix_title, header_has_r, work_one_table
+from .objects import AddRColumnWorkerObject
 
 logger = logging.getLogger(__name__)
 
@@ -78,7 +79,7 @@ def get_titles_redirects(
     return from_to
 
 
-class AddRColumnWorker(BaseJobWorker):
+class AddRColumnWorker(BaseObjectsJobWorker):
     """Add R column to tables."""
 
     def __init__(
@@ -96,7 +97,16 @@ class AddRColumnWorker(BaseJobWorker):
     def get_job_type(self) -> str:
         return "add_r_column"
 
+    def get_initial_result_object(self) -> AddRColumnWorkerObject:
+        """
+        self.result_object: WorkerObject = self.get_initial_result_object()
+        """
+        return AddRColumnWorkerObject()
+
     def get_initial_result(self) -> Dict[str, Any]:
+        """
+        self.result: Dict[str, Any] = self.get_initial_result()
+        """
         _status = ["pending", "running", "completed", "failed", "skipped", "cancelled"]
         return {
             "status": "pending",
@@ -259,9 +269,7 @@ class AddRColumnWorker(BaseJobWorker):
         saved = self.page.edit_page(text=new_text, summary=summary, nocreate=1)
 
         if saved.get("success"):
-            newrevid = saved.get("newrevid", 0)
-            if newrevid:
-                self.result["steps"][step_name]["newrevid"] = newrevid
+            self.result["steps"][step_name]["newrevid"] = saved.get("newrevid", 0)
             return True
 
         logger.error(f"Failed to save text for {self.page.title}")
