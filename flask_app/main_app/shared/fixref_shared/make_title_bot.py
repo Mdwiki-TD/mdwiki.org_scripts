@@ -74,13 +74,12 @@ def get_url(url):
 
     except requests.exceptions.Timeout as e:
         logger.error(f"Timeout Error for URL [{url}]: {e}")
-
     except requests.exceptions.HTTPError as e:
         logger.error(f"HTTP Error for URL [{url}]: {e}")
-
+    except ValueError as e:
+        logger.error(f"JSON Decode Error for URL [{url}]: {e}")
     except requests.exceptions.RequestException as e:
         logger.error(f"Network Request Error for URL [{url}]: {e}")
-
     except Exception:
         logger.exception("Unexpected Exception occurred:")
 
