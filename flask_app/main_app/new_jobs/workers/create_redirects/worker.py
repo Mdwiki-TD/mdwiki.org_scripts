@@ -20,7 +20,8 @@ import requests
 from ....api_services.clients import get_user_site
 from ....api_services.pages_api import create_page, is_page_exists
 from ....api_services.query_api import is_pages_exists
-from ....new_jobs.base_worker import BaseJobWorker
+from ....new_jobs.base_worker_object import BaseObjectsJobWorker
+from .objects import CreateRedirectsWorkerObject
 
 logger = logging.getLogger(__name__)
 
@@ -83,7 +84,7 @@ def _enwiki_redirects_for(title: str, *, timeout: int = 10) -> list[str]:
     return out
 
 
-class CreateRedirectsWorker(BaseJobWorker):
+class CreateRedirectsWorker(BaseObjectsJobWorker):
     """Copy redirects from enwiki to mdwiki."""
 
     def __init__(
@@ -96,41 +97,27 @@ class CreateRedirectsWorker(BaseJobWorker):
         self.job_id = job_id
         self.args = args
         self.site: mwclient.Site | None = None
+        self.result_object: CreateRedirectsWorkerObject = self.get_initial_result_object()
         super().__init__(job_id, user, cancel_event)
 
     # ------------------------------------------------------------------
-    # BaseJobWorker hooks
+    # BaseObjectsJobWorker hooks
     # ------------------------------------------------------------------
 
     def get_job_type(self) -> str:
         return "create_redirects"
 
-    def get_initial_result(self) -> Dict[str, Any]:
-        return {
-            "status": "pending",
-            "started_at": datetime.now().isoformat(),
-            "completed_at": None,
-            "cancelled_at": None,
-            "summary": {
-                "scanned": 0,
-                "target_missing": 0,
-                "created": 0,
-                "already_exists": 0,
-                "skipped": 0,
-                "errors": 0,
-                "total": 0,
-            },
-            "pages_processed": [],
-        }
+    def get_initial_result_object(self) -> CreateRedirectsWorkerObject:
+        return CreateRedirectsWorkerObject()
 
     def process(self) -> Dict[str, Any]:
         self.site = get_user_site(self.user)
         if not self.site:
             logger.warning(f"Job {self.job_id}: No site authentication available")
-            self.result["status"] = "failed"
-            self.result["error"] = "No authenticated user site available. Please log in via OAuth."
-            self.result["failed_at"] = datetime.now().isoformat()
-            return self.result
+            self.result_object.status = "failed"
+            self.result_object.error = "No authenticated user site available. Please log in via OAuth."
+            self.result_object.failed_at = datetime.now().isoformat()
+            return self.result_object
 
         titles_raw = self.args.get("titles", [])
         if isinstance(titles_raw, str):
@@ -139,7 +126,7 @@ class CreateRedirectsWorker(BaseJobWorker):
             titles = [t.replace("_", " ").strip() for t in titles_raw if t and t.strip()]
 
         total = len(titles)
-        self.result["summary"]["total"] = total
+        self.result_object.summary.total = total
         per_item = self.get_priority(total) if total else 1
 
         logger.info(f"Job {self.job_id}: Processing {total} titles")
@@ -148,14 +135,14 @@ class CreateRedirectsWorker(BaseJobWorker):
             if self.is_cancelled():
                 break
 
-            self.result["summary"]["scanned"] += 1
+            self.result_object.summary.scanned += 1
 
             try:
                 counts = self._process_one(title)
             except Exception as exc:
                 logger.exception("redirect run failed for %s", title)
-                self.result["summary"]["errors"] += 1
-                self.result["pages_processed"].append(
+                self.result_object.summary.errors += 1
+                self.result_object.pages_processed.append(
                     {
                         "title": title,
                         "status": "error",
@@ -165,10 +152,10 @@ class CreateRedirectsWorker(BaseJobWorker):
                 continue
 
             for key, val in counts.items():
-                self.result["summary"][key] = self.result["summary"].get(key, 0) + val
+                setattr(self.result_object.summary, key, getattr(self.result_object.summary, key, 0) + val)
 
             status = "created" if counts.get("created") else "skipped"
-            self.result["pages_processed"].append(
+            self.result_object.pages_processed.append(
                 {
                     "title": title,
                     "status": status,
@@ -179,10 +166,10 @@ class CreateRedirectsWorker(BaseJobWorker):
             if i == 1 or i % per_item == 0:
                 self._save_progress()
 
-        if self.result.get("status") in ("pending", "running"):
-            self.result["status"] = "completed"
+        if self.result_object.status in ("pending", "running"):
+            self.result_object.status = "completed"
 
-        return self.result
+        return self.result_object
 
     # ------------------------------------------------------------------
     # Internal helpers

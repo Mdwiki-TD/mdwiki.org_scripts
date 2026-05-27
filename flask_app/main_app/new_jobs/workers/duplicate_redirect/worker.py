@@ -20,12 +20,13 @@ from ....api_services.pages_api import (
     is_page_exists,
 )
 from ....api_services.query_api import get_double_redirects
-from ....new_jobs.base_worker import BaseJobWorker
+from ....new_jobs.base_worker_object import BaseObjectsJobWorker
+from .objects import DuplicateRedirectWorkerObject
 
 logger = logging.getLogger(__name__)
 
 
-class DuplicateRedirectWorker(BaseJobWorker):
+class DuplicateRedirectWorker(BaseObjectsJobWorker):
     """Fix double redirects on mdwiki."""
 
     def __init__(
@@ -38,48 +39,34 @@ class DuplicateRedirectWorker(BaseJobWorker):
         self.job_id = job_id
         self.args = args
         self.site: mwclient.Site | None = None
+        self.result_object: DuplicateRedirectWorkerObject = self.get_initial_result_object()
         super().__init__(job_id, user, cancel_event)
 
     # ------------------------------------------------------------------
-    # BaseJobWorker hooks
+    # BaseObjectsJobWorker hooks
     # ------------------------------------------------------------------
 
     def get_job_type(self) -> str:
         return "duplicate_redirect"
 
-    def get_initial_result(self) -> Dict[str, Any]:
-        return {
-            "status": "pending",
-            "started_at": datetime.now().isoformat(),
-            "completed_at": None,
-            "cancelled_at": None,
-            "summary": {
-                "scanned": 0,
-                "fixed": 0,
-                "unchanged": 0,
-                "missing": 0,
-                "skipped": 0,
-                "errors": 0,
-                "total": 0,
-            },
-            "pages_processed": [],
-        }
+    def get_initial_result_object(self) -> DuplicateRedirectWorkerObject:
+        return DuplicateRedirectWorkerObject()
 
     def process(self) -> Dict[str, Any]:
         self.site = get_user_site(self.user)
         if not self.site:
             logger.warning(f"Job {self.job_id}: No site authentication available")
-            self.result["status"] = "failed"
-            self.result["error"] = "No authenticated user site available. Please log in via OAuth."
-            self.result["failed_at"] = datetime.now().isoformat()
-            return self.result
+            self.result_object.status = "failed"
+            self.result_object.error = "No authenticated user site available. Please log in via OAuth."
+            self.result_object.failed_at = datetime.now().isoformat()
+            return self.result_object
 
         # Get all double redirects
         redirects = get_double_redirects(self.site)
         from_to = {e["from"]: e["to"] for e in redirects if "from" in e and "to" in e}
 
         total = len(redirects)
-        self.result["summary"]["total"] = total
+        self.result_object.summary.total = total
         per_item = self.get_priority(total) if total else 1
 
         logger.info(f"Job {self.job_id}: Loaded {len(redirects)} redirects, processing {total}")
@@ -100,11 +87,11 @@ class DuplicateRedirectWorker(BaseJobWorker):
                 curr = next_target
             final_target = curr
 
-            self.result["summary"]["scanned"] += 1
+            self.result_object.summary.scanned += 1
 
             if not from_title or not final_target:
-                self.result["summary"]["skipped"] += 1
-                self.result["pages_processed"].append(
+                self.result_object.summary.skipped += 1
+                self.result_object.pages_processed.append(
                     {
                         "from_title": from_title,
                         "to_title": final_target,
@@ -118,8 +105,8 @@ class DuplicateRedirectWorker(BaseJobWorker):
                 outcome = self._fix_one(from_title, final_target)
             except Exception as exc:
                 logger.exception("failed for %s -> %s", from_title, final_target)
-                self.result["summary"]["errors"] += 1
-                self.result["pages_processed"].append(
+                self.result_object.summary.errors += 1
+                self.result_object.pages_processed.append(
                     {
                         "from_title": from_title,
                         "to_title": final_target,
@@ -129,8 +116,8 @@ class DuplicateRedirectWorker(BaseJobWorker):
                 )
                 continue
 
-            self.result["summary"][outcome] = self.result["summary"].get(outcome, 0) + 1
-            self.result["pages_processed"].append(
+            setattr(self.result_object.summary, outcome, getattr(self.result_object.summary, outcome, 0) + 1)
+            self.result_object.pages_processed.append(
                 {
                     "from_title": from_title,
                     "to_title": final_target,
@@ -142,10 +129,10 @@ class DuplicateRedirectWorker(BaseJobWorker):
             if i == 1 or i % per_item == 0:
                 self._save_progress()
 
-        if self.result.get("status") in ("pending", "running"):
-            self.result["status"] = "completed"
+        if self.result_object.status in ("pending", "running"):
+            self.result_object.status = "completed"
 
-        return self.result
+        return self.result_object
 
     # ------------------------------------------------------------------
     # Internal helpers
