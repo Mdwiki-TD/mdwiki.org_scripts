@@ -2,11 +2,11 @@
 
 from __future__ import annotations
 
-from dataclasses import asdict, dataclass, field
 import functools
 import logging
 import threading
 from abc import ABC, abstractmethod
+from dataclasses import asdict, dataclass, field
 from datetime import datetime
 from typing import Any, Callable, Dict, Final, Optional, TypeVar
 
@@ -28,6 +28,9 @@ class WorkerObject:
     started_at: str = field(default_factory=lambda: datetime.now().isoformat())
     completed_at: Optional[str] = None
     cancelled_at: Optional[str] = None
+    failed_at: Optional[str] = None
+    error: Optional[str] = None
+    error_type: Optional[str] = None
 
     def to_json(self) -> Dict[str, Any]:
         """
@@ -126,7 +129,6 @@ class BaseObjectsJobWorker(ABC):
         self.cancel_event: Final[threading.Event | None] = cancel_event
         self.job_type: str = self.get_job_type()
         self.result_file: str = generate_result_file_name(job_id, self.job_type)
-        self.result: Dict[str, Any] = self.get_initial_result()
         self._status: str = "pending"
         self.result_object: WorkerObject = self.get_initial_result_object()
 
@@ -140,19 +142,8 @@ class BaseObjectsJobWorker(ABC):
         ...
 
     @abstractmethod
-    def get_initial_result(self) -> Dict[str, Any]:
-        """Return the initial result dictionary structure.
-
-        Returns:
-            Dictionary with initial result structure including
-            job_id, started_at, summary, and tracking lists
-        """
-        ...
-
-    @abstractmethod
     def get_initial_result_object(self):
-        """
-        """
+        """ """
         ...
 
     @abstractmethod
@@ -202,7 +193,7 @@ class BaseObjectsJobWorker(ABC):
     def _save_progress(self):
         try:
             result = self.result_object.to_dict()
-            jobs_files_service.save_job_result_by_name(self.result_file, self.result)
+            jobs_files_service.save_job_result_by_name(self.result_file, result)
         except Exception:
             logger.exception(f"Job {self.job_id}: Failed to save job result")
 
@@ -226,10 +217,8 @@ class BaseObjectsJobWorker(ABC):
 
     def _mark_as_cancelled_in_result(self) -> None:
         """Standardize the result dictionary for a cancelled job."""
-        self.result["status"] = "cancelled"
-        # if "cancelled_at" not in self.result:
-        if self.result.get("cancelled_at") is None:
-            self.result["cancelled_at"] = datetime.now().isoformat()
+        self.result_object.status = "cancelled"
+        self.result_object.cancelled_at = datetime.now().isoformat()
 
     def get_priority(self, length) -> int:
         if length < 11:
@@ -249,9 +238,9 @@ class BaseObjectsJobWorker(ABC):
             prefix += f": {context}"
         logger.exception(prefix)
 
-        self.result["status"] = "failed"
-        self.result["error"] = str(error)
-        self.result["error_type"] = type(error).__name__
+        self.result_object.status = "failed"
+        self.result_object.error = str(error)
+        self.result_object.error_type = type(error).__name__
 
     def run(self) -> Dict[str, Any]:
         """Execute the complete job lifecycle.
@@ -267,10 +256,10 @@ class BaseObjectsJobWorker(ABC):
         try:
             # Pre-processing setup
             if not self.before_run():
-                return self.result
+                return self.result_object.to_json()
 
             # Main processing
-            self.result = self.process()
+            self.result_object = self.process()
 
         except Exception as e:
             self.handle_error(e)
@@ -279,7 +268,7 @@ class BaseObjectsJobWorker(ABC):
             # Post-processing cleanup
             self.after_run()
 
-        return self.result
+        return self.result_object.to_json()
 
 
 __all__ = [

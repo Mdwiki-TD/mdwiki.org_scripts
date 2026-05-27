@@ -1,11 +1,11 @@
-"""
-"""
+""" """
 
 from __future__ import annotations
 
 import logging
+from dataclasses import dataclass, field, fields
 from typing import Optional
-from dataclasses import dataclass, field
+
 from ....new_jobs.base_worker_object import WorkerObject
 
 logger = logging.getLogger(__name__)
@@ -33,6 +33,24 @@ class Steps:
 class AddRColumnWorkerObject(WorkerObject):
     steps: Steps = field(default_factory=Steps)
     new_text: str = ""
+
+    def set_step_status(self, step: str, status: str, message: str = "") -> None:
+        """
+        Updates the status and message of a specific step dynamically.
+        """
+        step_attr = getattr(self.steps, step, None)
+        if step_attr:
+            step_attr.status = status
+            step_attr.message = message
+
+    def set_steps_skipped(self) -> None:
+        """
+        Loops through all dataclass fields in steps and skips any pending ones.
+        """
+        for f in fields(self.steps):
+            step = getattr(self.steps, f.name)
+            if step.status == "pending":
+                step.status = "skipped"
 
 
 __all__ = [

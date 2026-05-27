@@ -92,6 +92,7 @@ class AddRColumnWorker(BaseObjectsJobWorker):
         self.job_id = job_id
         self.args = args or {}
         self.page = None
+        self.result_object: AddRColumnWorkerObject = self.get_initial_result_object()
         super().__init__(job_id, user, cancel_event)
 
     def get_job_type(self) -> str:
@@ -103,40 +104,17 @@ class AddRColumnWorker(BaseObjectsJobWorker):
         """
         return AddRColumnWorkerObject()
 
-    def get_initial_result(self) -> Dict[str, Any]:
-        """
-        self.result: Dict[str, Any] = self.get_initial_result()
-        """
-        _status = ["pending", "running", "completed", "failed", "skipped", "cancelled"]
-        return {
-            "status": "pending",
-            "started_at": datetime.now().isoformat(),
-            "completed_at": None,
-            "cancelled_at": None,
-            "steps": {
-                "load_page": {"status": "pending", "title": "get page", "message": ""},
-                "load_text": {"status": "pending", "title": "Load page text", "message": ""},
-                "add_empty_r_column": {"status": "pending", "title": "Add empty R column", "message": ""},
-                "first_save": {"status": "pending", "title": "Save page", "message": "", "newrevid": 0},
-                "add_r_column": {"status": "pending", "title": "Add R column", "message": ""},
-                "final_save": {"status": "pending", "title": "Save page", "message": "", "newrevid": 0},
-            },
-            "new_text": "",
-        }
-
     def _set_step_status(self, step: str, status: str, message: str) -> None:
-        self.result["steps"][step]["status"] = status
-        self.result["steps"][step]["message"] = message
+        self.result_object.set_step_status(step, status, message)
 
     def _set_steps_skipped(self) -> None:
-        for key, step in self.result["steps"].items():
-            if step["status"] == "pending":
-                self.result["steps"][key]["status"] = "skipped"
+        self.result_object.set_steps_skipped()
 
     def _set_status_failed(self, error) -> None:
-        self.result["status"] = "failed"
-        self.result["error"] = error
-        self.result["failed_at"] = datetime.now().isoformat()
+
+        self.result_object.status = "failed"
+        self.result_object.error = error
+        self.result_object.failed_at = datetime.now().isoformat()
 
     def process(self) -> Dict[str, Any]:
         """
@@ -147,26 +125,26 @@ class AddRColumnWorker(BaseObjectsJobWorker):
             logger.warning(f"Job {self.job_id}: No site authentication available")
             self._set_status_failed("No authenticated user site available. Please log in via OAuth.")
             self._set_steps_skipped()
-            return self.result
+            return self.result_object
 
         logger.info(f"Job {self.job_id}: for Add R column.")
 
         if self.is_cancelled():
-            return self.result
+            return self.result_object
 
         self._start()
 
         # set any pending steps to skipped
         self._set_steps_skipped()
 
-        if self.result.get("status") in ("pending", "running"):
-            self.result["status"] = "completed"
+        if self.result_object.status in ("pending", "running"):
+            self.result_object.status = "completed"
 
-        return self.result
+        return self.result_object
 
     def _start(self) -> None:
         """Start the job."""
-        self.result["status"] = "running"
+        self.result_object.status = "running"
 
         title = "WikiProjectMed:WikiProject Medicine/Popular pages"
 
@@ -216,15 +194,16 @@ class AddRColumnWorker(BaseObjectsJobWorker):
         self._set_step_status("add_empty_r_column", "completed", "")
 
         if new_text != text:
-            if not self._save_text(new_text, step_name="first_save"):
-                self._set_step_status("first_save", "failed", "Failed to save text")
+            if not self._save_text(
+                new_text,
+                summary="Add R column",
+                step=self.result_object.steps.first_save,
+            ):
                 self._set_status_failed("Failed to save text")
                 return False
 
             text = new_text
-            self.result["new_text"] = new_text
-
-        self._set_step_status("first_save", "completed", "")
+            self.result_object.new_text = new_text
 
         # step 4 add R column
         old_counts = text.count(R_NEW_ROW.strip())
@@ -243,13 +222,13 @@ class AddRColumnWorker(BaseObjectsJobWorker):
         self._set_step_status("add_r_column", "completed", "")
 
         if newtext == text:
-            self.result["status"] = "skipped"
-            self.result["error"] = "No changes"
+            self.result_object.status = "skipped"
+            self.result_object.error = "No changes"
             logger.info("no changes")
             return False
 
         # step 5 save new text to files
-        self.result["new_text"] = newtext
+        self.result_object.new_text = newtext
 
         # count R_NEW_ROW in newtext
         counts = newtext.count(R_NEW_ROW.strip()) - old_counts
@@ -257,19 +236,22 @@ class AddRColumnWorker(BaseObjectsJobWorker):
         # step 6 save new texg to page
         summary = f"Added R column to {counts} titles."
 
-        if not self._save_text(newtext, summary, step_name="final_save"):
-            self._set_step_status("final_save", "failed", "Failed to save final text")
+        if not self._save_text(
+            newtext,
+            summary,
+            step=self.result_object.steps.final_save,
+        ):
             self._set_status_failed("failed to save final text")
             return False
 
-        self._set_step_status("final_save", "completed", "")
         return True
 
-    def _save_text(self, new_text: str, summary: str = "Add R column", step_name: str="") -> bool:
+    def _save_text(self, new_text: str, summary: str, step) -> bool:
         saved = self.page.edit_page(text=new_text, summary=summary, nocreate=1)
 
         if saved.get("success"):
-            self.result["steps"][step_name]["newrevid"] = saved.get("newrevid", 0)
+            step.newrevid = saved.get("newrevid", 0)
+            step.status = "completed"
             return True
 
         logger.error(f"Failed to save text for {self.page.title}")
@@ -277,6 +259,8 @@ class AddRColumnWorker(BaseObjectsJobWorker):
         error_code: str = saved.get("error", "")
         details: str = saved.get("details")
 
+        step.status = "failed"
+        step.message = "Failed to save text"
         logger.warning(f"Error code: {error_code}, details: {details}")
         return False
 
