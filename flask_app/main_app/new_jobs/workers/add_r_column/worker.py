@@ -203,7 +203,6 @@ class AddRColumnWorker(BaseObjectsJobWorker):
                 return False
 
             text = new_text
-            self.result_object.new_text = new_text
 
         # step 4 add R column
         old_counts = text.count(R_NEW_ROW.strip())
@@ -227,9 +226,6 @@ class AddRColumnWorker(BaseObjectsJobWorker):
             logger.info("no changes")
             return False
 
-        # step 5 save new text to files
-        self.result_object.new_text = newtext
-
         # count R_NEW_ROW in newtext
         counts = newtext.count(R_NEW_ROW.strip()) - old_counts
 
@@ -241,6 +237,7 @@ class AddRColumnWorker(BaseObjectsJobWorker):
             summary,
             step=self.result_object.steps.final_save,
         ):
+            self.result_object.new_text = newtext
             self._set_status_failed("failed to save final text")
             return False
 
