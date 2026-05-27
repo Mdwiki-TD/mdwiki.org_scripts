@@ -167,6 +167,7 @@ class BaseObjectsJobWorker(ABC):
         """
         try:
             update_job_status(self.job_id, "running", self.result_file, job_type=self.job_type)
+            self.result_object.status = "running"
             return True
         except LookupError:
             logger.exception(
@@ -221,6 +222,7 @@ class BaseObjectsJobWorker(ABC):
         """Standardize the result dictionary for a cancelled job."""
         self.result_object.status = "cancelled"
         self.result_object.cancelled_at = datetime.now().isoformat()
+        self._save_progress()
 
     def get_priority(self, length) -> int:
         if length < 11:
