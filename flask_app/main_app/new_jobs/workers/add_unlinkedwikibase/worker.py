@@ -8,15 +8,15 @@ from __future__ import annotations
 
 import logging
 import threading
-from datetime import datetime
 from typing import Any, Dict
 
-from ....new_jobs.base_worker import BaseJobWorker
+from ....new_jobs.base_worker_object import BaseObjectsJobWorker
+from .objects import AddUnlinkedWikibaseWorkerObject
 
 logger = logging.getLogger(__name__)
 
 
-class AddUnlinkedWikibaseWorker(BaseJobWorker):
+class AddUnlinkedWikibaseWorker(BaseObjectsJobWorker):
     """Add unlinkedwikibase tag to pages."""
 
     def __init__(
@@ -28,26 +28,14 @@ class AddUnlinkedWikibaseWorker(BaseJobWorker):
     ) -> None:
         self.job_id = job_id
         self.args = args or {}
+        self.result_object: AddUnlinkedWikibaseWorkerObject = self.get_initial_result_object()
         super().__init__(job_id, user, cancel_event)
 
     def get_job_type(self) -> str:
         return "add_unlinkedwikibase"
 
-    def get_initial_result(self) -> Dict[str, Any]:
-        return {
-            "status": "pending",
-            "started_at": datetime.now().isoformat(),
-            "completed_at": None,
-            "cancelled_at": None,
-            "summary": {
-                "scanned": 0,
-                "tagged": 0,
-                "skipped": 0,
-                "errors": 0,
-                "total": 0,
-            },
-            "pages_processed": [],
-        }
+    def get_initial_result_object(self) -> AddUnlinkedWikibaseWorkerObject:
+        return AddUnlinkedWikibaseWorkerObject()
 
     def process(self) -> Dict[str, Any]:
         """
@@ -58,10 +46,10 @@ class AddUnlinkedWikibaseWorker(BaseJobWorker):
         # In a real scenario, we might scan all pages.
         # For placeholder, we'll just do nothing.
 
-        if self.result.get("status") in ("pending", "running"):
-            self.result["status"] = "completed"
+        if self.result_object.status in ("pending", "running"):
+            self.result_object.status = "completed"
 
-        return self.result
+        return self.result_object
 
 
 def add_unlinkedwikibase_worker_entry(

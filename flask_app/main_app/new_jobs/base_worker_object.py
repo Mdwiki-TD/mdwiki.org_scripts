@@ -28,6 +28,7 @@ class WorkerObject:
     started_at: str = field(default_factory=lambda: datetime.now().isoformat())
     completed_at: Optional[str] = None
     cancelled_at: Optional[str] = None
+    last_update: Optional[str] = ""
     failed_at: Optional[str] = None
     error: Optional[str] = None
     error_type: Optional[str] = None
@@ -110,7 +111,7 @@ class BaseObjectsJobWorker(ABC):
 
     Subclasses must implement:
     - get_job_type(): Return the job type string
-    - get_initial_result(): Return the initial result dictionary
+    - get_initial_result_object(): Return the initial result dictionary
     - process(): Implement the actual processing logic
 
     Optional overrides:
@@ -166,6 +167,7 @@ class BaseObjectsJobWorker(ABC):
         """
         try:
             update_job_status(self.job_id, "running", self.result_file, job_type=self.job_type)
+            self.result_object.status = "running"
             return True
         except LookupError:
             logger.exception(
@@ -193,6 +195,7 @@ class BaseObjectsJobWorker(ABC):
     def _save_progress(self):
         try:
             result = self.result_object.to_json()
+            result["last_update"] = datetime.now().isoformat()
             jobs_files_service.save_job_result_by_name(self.result_file, result)
         except Exception:
             logger.exception(f"Job {self.job_id}: Failed to save job result")
@@ -219,6 +222,7 @@ class BaseObjectsJobWorker(ABC):
         """Standardize the result dictionary for a cancelled job."""
         self.result_object.status = "cancelled"
         self.result_object.cancelled_at = datetime.now().isoformat()
+        self._save_progress()
 
     def get_priority(self, length) -> int:
         if length < 11:

@@ -13,17 +13,21 @@ from typing import Any, Dict
 
 import mwclient
 
+from ....shared.fixref_shared.fixred_worker import work_on_text
+
+from ....shared.fixred_one import RunState
+
 from ....api_services.clients import get_user_site
 from ....api_services.pages_api import edit_page, get_page_text, is_page_exists
-from ....new_jobs.base_worker import BaseJobWorker
-from ....shared.fixref_shared.fixred_worker import RunState, work_on_text
+from ....new_jobs.base_worker_object import BaseObjectsJobWorker
+from .objects import FixredAllWorkerObject
 
 logger = logging.getLogger(__name__)
 
 _NS_MAIN = 0
 
 
-class FixredAllWorker(BaseJobWorker):
+class FixredAllWorker(BaseObjectsJobWorker):
     """Fix redirect links in all mdwiki pages."""
 
     def __init__(
@@ -36,40 +40,27 @@ class FixredAllWorker(BaseJobWorker):
         self.job_id = job_id
         self.args = args
         self.site: mwclient.Site | None = None
+        self.result_object: FixredAllWorkerObject = self.get_initial_result_object()
         super().__init__(job_id, user, cancel_event)
 
     # ------------------------------------------------------------------
-    # BaseJobWorker hooks
+    # BaseObjectsJobWorker hooks
     # ------------------------------------------------------------------
 
     def get_job_type(self) -> str:
         return "fixred_all"
 
-    def get_initial_result(self) -> Dict[str, Any]:
-        return {
-            "status": "pending",
-            "started_at": datetime.now().isoformat(),
-            "completed_at": None,
-            "cancelled_at": None,
-            "summary": {
-                "scanned": 0,
-                "fixed": 0,
-                "no_changes": 0,
-                "missing": 0,
-                "errors": 0,
-                "total": 0,
-            },
-            "pages_processed": [],
-        }
+    def get_initial_result_object(self) -> FixredAllWorkerObject:
+        return FixredAllWorkerObject()
 
     def process(self) -> Dict[str, Any]:
         self.site = get_user_site(self.user)
         if not self.site:
             logger.warning(f"Job {self.job_id}: No site authentication available")
-            self.result["status"] = "failed"
-            self.result["error"] = "No authenticated user site available. Please log in via OAuth."
-            self.result["failed_at"] = datetime.now().isoformat()
-            return self.result
+            self.result_object.status = "failed"
+            self.result_object.error = "No authenticated user site available. Please log in via OAuth."
+            self.result_object.failed_at = datetime.now().isoformat()
+            return self.result_object
 
         state = RunState()
         titles = list(
@@ -83,7 +74,7 @@ class FixredAllWorker(BaseJobWorker):
         )
 
         total = len(titles)
-        self.result["summary"]["total"] = total
+        self.result_object.summary.total = total
         per_item = self.get_priority(total) if total else 1
 
         logger.info(f"Job {self.job_id}: Processing {total} pages")
@@ -93,14 +84,14 @@ class FixredAllWorker(BaseJobWorker):
                 break
 
             title = page.name if hasattr(page, "name") else str(page)
-            self.result["summary"]["scanned"] += 1
+            self.result_object.summary.scanned += 1
 
             try:
                 outcome = self._treat_page(title, state)
             except Exception as exc:
                 logger.exception("treat_page failed for %s", title)
-                self.result["summary"]["errors"] += 1
-                self.result["pages_processed"].append(
+                self.result_object.summary.errors += 1
+                self.result_object.pages_processed.append(
                     {
                         "title": title,
                         "status": "error",
@@ -110,13 +101,13 @@ class FixredAllWorker(BaseJobWorker):
                 continue
 
             if outcome == "fixed":
-                self.result["summary"]["fixed"] += 1
+                self.result_object.summary.fixed += 1
             elif outcome == "no-changes":
-                self.result["summary"]["no_changes"] += 1
+                self.result_object.summary.no_changes += 1
             elif outcome == "missing":
-                self.result["summary"]["missing"] += 1
+                self.result_object.summary.missing += 1
 
-            self.result["pages_processed"].append(
+            self.result_object.pages_processed.append(
                 {
                     "title": title,
                     "status": outcome,
@@ -127,10 +118,10 @@ class FixredAllWorker(BaseJobWorker):
             if i == 1 or i % per_item == 0:
                 self._save_progress()
 
-        if self.result.get("status") in ("pending", "running"):
-            self.result["status"] = "completed"
+        if self.result_object.status in ("pending", "running"):
+            self.result_object.status = "completed"
 
-        return self.result
+        return self.result_object
 
     # ------------------------------------------------------------------
     # Internal helpers
