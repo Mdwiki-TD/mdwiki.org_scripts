@@ -71,7 +71,7 @@
                             <table class="table table-sm">
                                 <tr>
                                     <th>Last update:</th>
-                                    <td>{{ job.last_update.strftime('%Y-%m-%d %H:%M:%S') if job.last_update else '-' }}
+                                    <td>{{ job.last_update if job.last_update else '-' }}
                                     </td>
                                 </tr>
                                 <tr>
