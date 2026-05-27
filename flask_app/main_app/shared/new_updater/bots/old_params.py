@@ -40,24 +40,24 @@ def rename_params(temptext):
         if str(name).lower() in temps_okay:
             _temps_.append(temp)
         else:
-            logger.debug("rename_params", f"*+name ({[name]}) not in temps_okay .")
+            logger.debug(f"rename_params {name=} not in temps_okay .")
     # ---
     if not _temps_:
-        logger.debug("rename_params", "*+_temps_ == 0 .")
+        logger.debug("_temps_ is empty")
         return new_temptext
     # ---
     for temp in _temps_:
         old_temp = temp.string
         # ---
         if new_temptext.find(old_temp) == -1:
-            logger.debug("rename_params", f"*+new_temptext find ({[old_temp]}) == -1 .")
+            logger.debug(f"*+new_temptext find ({[old_temp]}) == -1 .")
             continue
         # ---
         # Replace the old parameter with the new parameter
         for old, new in to_replace.items():
             if temp.has_arg(old):
                 value = temp.get_arg(old).value
-                logger.debug("rename_params", f"value: {value}")
+                logger.debug(f"value: {value}")
                 temp.set_arg(new, value, before=old)
                 temp.del_arg(old)
         # ---
