@@ -1,8 +1,0 @@
-{
-    "python.analysis.exclude": [
-        "**/flask_app_old/**"
-    ],
-    "python.analysis.ignore": [
-        "**/flask_app_old/**"
-    ],
-}
