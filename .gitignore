@@ -4,3 +4,4 @@
 /php/bots/sh
 **/old/**
 *.pyc
+src/app1.py
