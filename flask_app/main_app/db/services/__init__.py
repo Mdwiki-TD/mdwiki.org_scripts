@@ -6,6 +6,7 @@ from .jobs_service import (
     is_job_cancelled,
     list_jobs,
     update_job_status,
+    get_user_jobs_stats,
 )
 from .user_token_service import (
     delete_user_token,
@@ -26,6 +27,7 @@ __all__ = [
     "get_job",
     "list_jobs",
     "update_job_status",
+    "get_user_jobs_stats",
     "cancel_job",
     "is_job_cancelled",
 ]

@@ -5,9 +5,58 @@ from datetime import UTC, datetime
 
 from ...extensions import db
 from ..models.jobs import JobRecord
+from sqlalchemy import func
 
 logger = logging.getLogger(__name__)
 
+
+# ------------------
+# private API
+# ------------------
+
+def _update_status(job_id: int, status: str, result_file: str, job_type: str) -> JobRecord:
+    """
+    Update job status and result file.
+    """
+    query = db.session.query(JobRecord).filter(JobRecord.id == job_id)
+    if job_type:
+        query = query.filter(JobRecord.job_type == job_type)
+    job = query.first()
+
+    if not job:
+        raise LookupError(f"Job id {job_id} was not found")
+
+    job.status = status
+    if status in ("completed", "failed", "cancelled"):
+        job.completed_at = datetime.now(UTC)
+    if result_file:
+        job.result_file = result_file
+    db.session.commit()
+    db.session.refresh(job)
+
+    return job
+
+
+def _update_running_status(job_id: int, result_file: str | None = None, *, job_type: str) -> JobRecord:
+    """
+    Update running job status and optional result file.
+    """
+    job = db.session.query(JobRecord).filter(JobRecord.id == job_id, JobRecord.job_type == job_type).first()
+    if not job:
+        raise LookupError(f"Job id {job_id} was not found")
+
+    job.status = "running"
+    if not job.started_at:
+        job.started_at = datetime.now(UTC)
+    if result_file:
+        job.result_file = result_file
+    db.session.commit()
+    db.session.refresh(job)
+    return job
+
+# ------------------
+# public API
+# ------------------
 
 def create_job(job_type: str, username: str | None = None) -> JobRecord:
     """
@@ -22,7 +71,6 @@ def create_job(job_type: str, username: str | None = None) -> JobRecord:
     db.session.commit()
     db.session.refresh(job)
     return job
-
 
 def get_job(job_id: int, job_type: str) -> JobRecord:
     """
@@ -49,48 +97,6 @@ def get_job(job_id: int, job_type: str) -> JobRecord:
         raise LookupError(f"Job id {job_id} was not found")
     return job
 
-
-def update_running_status(job_id: int, result_file: str | None = None, *, job_type: str) -> JobRecord:
-    """
-    Update running job status and optional result file.
-    """
-    job = db.session.query(JobRecord).filter(JobRecord.id == job_id, JobRecord.job_type == job_type).first()
-    if not job:
-        raise LookupError(f"Job id {job_id} was not found")
-
-    job.status = "running"
-    if not job.started_at:
-        job.started_at = datetime.now(UTC)
-    if result_file:
-        job.result_file = result_file
-    db.session.commit()
-    db.session.refresh(job)
-    return job
-
-
-def _update_status(job_id: int, status: str, result_file: str, job_type: str) -> JobRecord:
-    """
-    Update job status and result file.
-    """
-    query = db.session.query(JobRecord).filter(JobRecord.id == job_id)
-    if job_type:
-        query = query.filter(JobRecord.job_type == job_type)
-    job = query.first()
-
-    if not job:
-        raise LookupError(f"Job id {job_id} was not found")
-
-    job.status = status
-    if status in ("completed", "failed", "cancelled"):
-        job.completed_at = datetime.now(UTC)
-    if result_file:
-        job.result_file = result_file
-    db.session.commit()
-    db.session.refresh(job)
-
-    return job
-
-
 def update_job_status(job_id: int, status: str, result_file: str | None = None, *, job_type: str) -> JobRecord:
     """
     Update job status and optional result file.
@@ -99,7 +105,7 @@ def update_job_status(job_id: int, status: str, result_file: str | None = None, 
 
     """
     if status == "running":
-        return update_running_status(job_id, result_file, job_type=job_type)
+        return _update_running_status(job_id, result_file, job_type=job_type)
 
     return _update_status(job_id, status, result_file, job_type)
 
@@ -190,13 +196,51 @@ def is_job_cancelled(job_id: int, job_type: str) -> bool:
     return False
 
 
+def get_user_jobs_stats(username: str) -> list[JobRecord]:
+    """
+    Get user jobs
+    """
+
+    base_query = db.session.query(JobRecord).filter(JobRecord.username == username)
+
+    status_counts = dict(
+        db.session.query(JobRecord.status, func.count(JobRecord.id))
+        .filter(JobRecord.username == username)
+        .group_by(JobRecord.status)
+        .all()
+    )
+
+    recent_jobs = (
+        base_query.order_by(JobRecord.created_at.desc())
+        .limit(50)
+        .all()
+    )
+
+    total_jobs = base_query.count()
+
+    stats = {
+        "total": total_jobs,
+        "completed": status_counts.get("completed", 0),
+        "failed": status_counts.get("failed", 0),
+        "running": status_counts.get("running", 0),
+        "pending": status_counts.get("pending", 0),
+        "cancelled": status_counts.get("cancelled", 0),
+    }
+
+    data = {
+        "stats": stats,
+        "recent_jobs": recent_jobs,
+    }
+
+    return data
+
 __all__ = [
     "create_job",
     "get_job",
     "list_jobs",
     "update_job_status",
-    "update_running_status",
     "cancel_job",
     "is_job_cancelled",
     "delete_job",
+    "get_user_jobs_stats",
 ]
