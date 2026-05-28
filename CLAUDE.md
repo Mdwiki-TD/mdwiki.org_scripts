@@ -75,6 +75,16 @@ Jobs run in daemon threads via `flask_app/main_app/new_jobs/`:
 -   `su_services/` — Higher-level services (`current_user()`, `oauth_required` decorator)
 -   `shared/` — Business logic shared between routes and jobs
 
+### Separation of Concerns
+
+Strict layering enforced — dependency flow is **Controller → Service → Repository → Database**:
+
+-   **Controllers** (`app_routes/`) — Request validation, auth checks, service calls, and responses only. Must never import or call `db/services/` or SQLAlchemy models directly.
+-   **Services** (`su_services/`, `shared/`) — Business logic and orchestration. Call repositories for data access, API services for external calls.
+-   **Repositories** (`db/services/`) — Data access only. All SQLAlchemy queries and mutations live here. No business logic.
+-   Controllers must not contain database queries, model imports, or business rules.
+-   Services must not access `request`, `session`, or return Flask responses.
+
 ### MediaWiki Integration
 
 -   Uses `mwclient` for API calls, `mwoauth` for OAuth 1.0a handshake
