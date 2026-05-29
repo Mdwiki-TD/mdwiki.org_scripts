@@ -102,7 +102,7 @@ class FindAndReplaceWorker(BaseObjectsJobWorker):
             try:
                 outcome = self._process_one(title, str_find, str_replace)
             except Exception as exc:
-                logger.exception("replace failed for %s", title)
+                logger.exception("job failed for %s", title)
                 self.result_object.summary.errors += 1
                 self.result_object.pages_processed.append(
                     {

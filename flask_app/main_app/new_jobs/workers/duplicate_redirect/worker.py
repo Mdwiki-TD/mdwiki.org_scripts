@@ -26,6 +26,7 @@ from ....api_services.pages_api import (
 from ....api_services.query_api import get_double_redirects
 from ....new_jobs.base_worker_object import BaseObjectsJobWorker
 from ...shared_objects import SharedworkerObject
+from ...shared_objects import UpdaterOutcome
 
 logger = logging.getLogger(__name__)
 
@@ -119,9 +120,9 @@ class DuplicateRedirectWorker(BaseObjectsJobWorker):
             self.result_object.summary.scanned += 1
 
             try:
-                outcome = self._fix_one(from_title, redirect_to, final_target)
+                outcome = self._process_one(from_title, redirect_to, final_target)
             except Exception as exc:
-                logger.exception("failed for %s -> %s", from_title, final_target)
+                logger.exception("job failed for %s", from_title)
                 self.result_object.summary.errors += 1
                 self.result_object.pages_processed.append(
                     {
@@ -133,23 +134,25 @@ class DuplicateRedirectWorker(BaseObjectsJobWorker):
                 )
                 continue
 
-            if outcome == "changed":
+            page_record = {
+                "from_title": from_title,
+                "to_title": final_target,
+                "status": outcome.kind,
+                "msg": f"{from_title} -> {final_target}",
+                "newrevid": "",
+            }
+            if outcome.kind == "changed":
                 self.result_object.summary.changed += 1
-            elif outcome == "no_changes":
+                page_record["newrevid"] = outcome.newrevid
+
+            elif outcome.kind == "no_changes":
                 self.result_object.summary.no_changes += 1
-            elif outcome == "missing":
+            elif outcome.kind == "missing":
                 self.result_object.summary.missing += 1
-            elif outcome == "errors":
+            elif outcome.kind == "error":
                 self.result_object.summary.errors += 1
 
-            self.result_object.pages_processed.append(
-                {
-                    "from_title": from_title,
-                    "to_title": final_target,
-                    "status": outcome,
-                    "msg": f"{from_title} -> {final_target}",
-                }
-            )
+            self.result_object.pages_processed.append(page_record)
 
             if i == 1 or i % per_item == 0:
                 self._save_progress()
@@ -163,28 +166,28 @@ class DuplicateRedirectWorker(BaseObjectsJobWorker):
     # Internal helpers
     # ------------------------------------------------------------------
 
-    def _fix_one(self, from_title: str, redirect_to: str, final_target: str) -> str:
+    def _process_one(self, title: str, redirect_to: str, final_target: str) -> UpdaterOutcome:
         """
         Treat one double redirect; return a short outcome label.
         """
-        if not is_page_exists(from_title, self.site):
-            return "missing"
+        if not is_page_exists(title, self.site):
+            return UpdaterOutcome(kind="missing")
 
-        oldtext = get_page_text(from_title, self.site) or ""
+        text = get_page_text(title, self.site) or ""
 
         # TODO: replace only the link not the whole text, use wikitextparser to analyze the text
-        newtext = f"#REDIRECT [[{final_target}]]"
+        new_text = f"#REDIRECT [[{final_target}]]"
 
-        if oldtext == newtext:
-            return "no_changes"
+        if new_text == text:
+            return UpdaterOutcome(kind="no_changes")
 
         summary = f"fix duplicate redirect to [[{final_target}]]"
 
-        result = edit_page(self.site, from_title, newtext, summary)
+        result = edit_page(self.site, title, new_text, summary)
         if result.get("success"):
-            return "changed"
+            return UpdaterOutcome(kind="changed", newrevid=result.get("newrevid", 0))
 
-        return "errors"
+        return UpdaterOutcome(kind="error")
 
 
 def duplicate_redirect_worker_entry(

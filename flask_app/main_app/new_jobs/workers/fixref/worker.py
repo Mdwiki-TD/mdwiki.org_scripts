@@ -81,6 +81,7 @@ class FixrefWorker(BaseObjectsJobWorker):
         logger.info(f"Job {self.job_id}: Processing {total} pages")
 
         for i, title in enumerate(pages, start=1):
+            logger.debug(f"i: {i}/{total}, page: {title}.")
             if self.is_cancelled():
                 break
 
@@ -89,7 +90,7 @@ class FixrefWorker(BaseObjectsJobWorker):
             try:
                 outcome = self._process_one(title)
             except Exception as exc:
-                logger.exception("fixref failed for %s", title)
+                logger.exception("job failed for %s", title)
                 self.result_object.summary.errors += 1
                 self.result_object.pages_processed.append(
                     {
@@ -126,10 +127,6 @@ class FixrefWorker(BaseObjectsJobWorker):
             self.result_object.status = "completed"
 
         return self.result_object
-
-    # ------------------------------------------------------------------
-    # Internal helpers
-    # ------------------------------------------------------------------
 
     def _resolve_targets(
         self,
@@ -177,6 +174,10 @@ class FixrefWorker(BaseObjectsJobWorker):
             return [p.name for p in titles]
 
         return []
+
+    # ------------------------------------------------------------------
+    # Internal helpers
+    # ------------------------------------------------------------------
 
     def _process_one(self, title: str) -> UpdaterOutcome:
         if not is_page_exists(title, self.site):

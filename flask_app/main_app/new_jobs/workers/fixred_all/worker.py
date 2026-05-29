@@ -75,6 +75,7 @@ class FixredAllWorker(BaseObjectsJobWorker):
         logger.info(f"Job {self.job_id}: Processing {total} pages")
 
         for i, page in enumerate(titles, start=1):
+            logger.debug(f"i: {i}/{total}, page: {page}.")
             if self.is_cancelled():
                 break
 
@@ -82,9 +83,9 @@ class FixredAllWorker(BaseObjectsJobWorker):
             self.result_object.summary.scanned += 1
 
             try:
-                outcome = self._treat_page(title, state)
+                outcome = self._process_one(title, state)
             except Exception as exc:
-                logger.exception("treat_page failed for %s", title)
+                logger.exception("job failed for %s", title)
                 self.result_object.summary.errors += 1
                 self.result_object.pages_processed.append(
                     {
@@ -104,12 +105,16 @@ class FixredAllWorker(BaseObjectsJobWorker):
             if outcome.kind == "changed":
                 self.result_object.summary.changed += 1
                 page_record["newrevid"] = outcome.newrevid
+
             elif outcome.kind == "no_changes":
                 self.result_object.summary.no_changes += 1
             elif outcome.kind == "missing":
                 self.result_object.summary.missing += 1
+            elif outcome.kind == "error":
+                self.result_object.summary.errors += 1
 
             self.result_object.pages_processed.append(page_record)
+
             if i == 1 or i % per_item == 0:
                 self._save_progress()
 
@@ -122,23 +127,24 @@ class FixredAllWorker(BaseObjectsJobWorker):
     # Internal helpers
     # ------------------------------------------------------------------
 
-    def _treat_page(self, title: str, state: RunState) -> UpdaterOutcome:
-        """Return one of: ``missing``, ``no_changes``, ``changed``, ``error``."""
+    def _process_one(self, title: str, state: RunState) -> UpdaterOutcome:
         if not is_page_exists(title, self.site):
             return UpdaterOutcome(kind="missing")
 
         text = get_page_text(title, self.site)
-        if text is None:
-            return UpdaterOutcome(kind="missing")
-
-        newtext = work_on_text(title, text, self.site, state)
-
-        if newtext == text:
+        if not text or not text.strip():
             return UpdaterOutcome(kind="no_changes")
 
-        result = edit_page(self.site, title, newtext, "Fix redirects")
+        new_text = work_on_text(title, text, self.site, state)
+        if new_text == text:
+            return UpdaterOutcome(kind="no_changes")
+
+        summary = "Fix redirects"
+        result = edit_page(self.site, title, new_text, summary)
+
         if result.get("success"):
             return UpdaterOutcome(kind="changed", newrevid=result.get("newrevid", 0))
+
         return UpdaterOutcome(kind="error")
 
 
