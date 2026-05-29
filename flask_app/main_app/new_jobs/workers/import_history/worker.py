@@ -79,7 +79,7 @@ class ImportHistoryWorker(BaseObjectsJobWorker):
 
         titles_raw = self.args.get("titles", [])
         from_lang = self.args.get("from_lang", "en")
-        self.result_object.summary.from_lang = from_lang
+        self.result_object.from_lang = from_lang
 
         if isinstance(titles_raw, str):
             titles = [t.strip() for t in titles_raw.splitlines() if t.strip()]
@@ -102,8 +102,7 @@ class ImportHistoryWorker(BaseObjectsJobWorker):
                 outcome = self._process_one(title)
             except Exception as exc:
                 logger.exception("job failed for %s", title)
-                self.result_object.summary.errors += 1
-                self.result_object.pages_processed.append(
+                self.result_object.pages_error.append(
                     {
                         "title": title,
                         "status": "error",
@@ -118,22 +117,7 @@ class ImportHistoryWorker(BaseObjectsJobWorker):
                 "msg": "",
                 "newrevid": "",
             }
-            if outcome.kind == "imported":
-                self.result_object.summary.imported += 1
-                page_record["newrevid"] = outcome.newrevid
-
-            elif outcome.kind == "imported_fallback":
-                self.result_object.summary.imported_fallback += 1
-                page_record["newrevid"] = outcome.newrevid
-
-            elif outcome.kind == "no_revisions":
-                self.result_object.summary.no_revisions += 1
-            elif outcome.kind == "missing":
-                self.result_object.summary.missing += 1
-            elif outcome.kind == "error":
-                self.result_object.summary.errors += 1
-
-            self.result_object.pages_processed.append(page_record)
+            self.record_page_outcome(outcome, page_record)
 
             if i == 1 or i % per_item == 0:
                 self._save_progress()
@@ -142,6 +126,26 @@ class ImportHistoryWorker(BaseObjectsJobWorker):
             self.result_object.status = "completed"
 
         return self.result_object
+
+    def record_page_outcome(self, outcome, page_record):
+        if outcome.kind == "imported":
+            page_record["newrevid"] = outcome.newrevid
+            self.result_object.pages_imported.append(page_record)
+
+        elif outcome.kind == "imported_fallback":
+            page_record["newrevid"] = outcome.newrevid
+            self.result_object.pages_imported_fallback.append(page_record)
+
+        elif outcome.kind == "no_revisions":
+            self.result_object.pages_no_revisions.append(page_record)
+
+        elif outcome.kind == "missing":
+            self.result_object.pages_missing.append(page_record)
+
+        elif outcome.kind == "error":
+            self.result_object.pages_error.append(page_record)
+        else:
+            self.result_object.pages_processed.append(page_record)
 
     # ------------------------------------------------------------------
     # Internal helpers

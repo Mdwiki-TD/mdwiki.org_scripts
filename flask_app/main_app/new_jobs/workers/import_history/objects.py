@@ -14,20 +14,21 @@ logger = logging.getLogger(__name__)
 @dataclass
 class Summary:
     scanned: int = 0
-    imported: int = 0
-    imported_fallback: int = 0
-    no_revisions: int = 0
-    missing: int = 0
-    errors: int = 0
     total: int = 0
-    from_lang: str = "en"
 
 
 @dataclass
 class ImportHistoryWorkerObject(WorkerObject):
     summary: Summary = field(default_factory=Summary)
-    pages_processed: list[dict[str, Any]] = field(default_factory=list)
 
+    from_lang: str = "en"
+
+    pages_processed: list[dict[str, Any]] = field(default_factory=list)
+    pages_missing: list[dict[str, Any]] = field(default_factory=list)
+    pages_no_revisions: list[dict[str, Any]] = field(default_factory=list)
+    pages_imported: list[dict[str, Any]] = field(default_factory=list)
+    pages_imported_fallback: list[dict[str, Any]] = field(default_factory=list)
+    pages_error: list[dict[str, Any]] = field(default_factory=list)
 
 __all__ = [
     "ImportHistoryWorkerObject",

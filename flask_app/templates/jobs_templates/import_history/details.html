@@ -7,28 +7,23 @@
 {% block detail_headline %}Import History from Enwiki{% endblock %}
 
 {% block job_summary %}
-{% if result_data and result_data.summary %}
 <div class="row g-3 mb-4">
-    <div class="col-md-2 col-sm-6">
+    <div class="col-md-3 col-sm-6">
         {{ stats_card('Processing', result_data.summary.scanned ~ ' / ' ~ result_data.summary.total, "primary", "") }}
     </div>
-    <div class="col-md-2 col-sm-6">
-        {{ stats_card('Imported / Fallback', result_data.summary.imported ~ ' / ' ~ result_data.summary.imported_fallback, "success", "") }}
+    <div class="col-md-3 col-sm-6">
+        {{ stats_card('Imported / Fallback', result_data.pages_imported|length ~ ' / ' ~ result_data.pages_imported_fallback|length, "success", "") }}
     </div>
     <div class="col-md-2 col-sm-6">
-        {{ stats_card('skipped', result_data.summary.skipped, "success", "") }}
+        {{ stats_card('no revisions', result_data.pages_no_revisions|length, "secondary", "") }}
     </div>
     <div class="col-md-2 col-sm-6">
-        {{ stats_card('no revisions', result_data.summary.no_revisions, "secondary", "") }}
+        {{ stats_card('missing', result_data.pages_missing|length, "secondary", "") }}
     </div>
     <div class="col-md-2 col-sm-6">
-        {{ stats_card('missing', result_data.summary.missing, "secondary", "") }}
-    </div>
-    <div class="col-md-2 col-sm-6">
-        {{ stats_card('Errors', result_data.summary.errors, "danger", "") }}
+        {{ stats_card('Errors', result_data.pages_error|length, "danger", "") }}
     </div>
 </div>
-{% endif %}
 {% endblock %}
 
 {% block job_details %}
