@@ -28,8 +28,10 @@ class AddUnlinkedWikibaseWorker(BaseObjectsJobWorker):
     ) -> None:
         self.job_id = job_id
         self.args = args or {}
-        self.result_object: AddUnlinkedWikibaseWorkerObject = AddUnlinkedWikibaseWorkerObject()
+
         super().__init__(job_id, user, cancel_event)
+
+        self.result_object: AddUnlinkedWikibaseWorkerObject = AddUnlinkedWikibaseWorkerObject()
 
     def get_job_type(self) -> str:
         return "add_unlinkedwikibase"

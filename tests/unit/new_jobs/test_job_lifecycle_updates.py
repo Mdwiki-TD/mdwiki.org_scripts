@@ -10,9 +10,7 @@ from flask_app.main_app.new_jobs.base_worker_object import BaseObjectsJobWorker,
 
 
 class MockWorker(BaseObjectsJobWorker):
-    def __init__(
-        self,
-    ) -> None:
+    def __init__(self) -> None:
         self.result_object: WorkerObject = WorkerObject()
 
     def get_job_type(self) -> str:

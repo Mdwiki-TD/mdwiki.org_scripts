@@ -92,8 +92,10 @@ class AddRColumnWorker(BaseObjectsJobWorker):
         self.job_id = job_id
         self.args = args or {}
         self.page = None
-        self.result_object: AddRColumnWorkerObject = AddRColumnWorkerObject()
+
         super().__init__(job_id, user, cancel_event)
+
+        self.result_object: AddRColumnWorkerObject = AddRColumnWorkerObject()
 
     def get_job_type(self) -> str:
         return "add_r_column"

@@ -97,8 +97,10 @@ class CreateRedirectsWorker(BaseObjectsJobWorker):
         self.job_id = job_id
         self.args = args
         self.site: mwclient.Site | None = None
-        self.result_object: CreateRedirectsWorkerObject = CreateRedirectsWorkerObject()
+
         super().__init__(job_id, user, cancel_event)
+
+        self.result_object: CreateRedirectsWorkerObject = CreateRedirectsWorkerObject()
 
     # ------------------------------------------------------------------
     # BaseObjectsJobWorker hooks

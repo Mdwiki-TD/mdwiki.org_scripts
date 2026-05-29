@@ -39,8 +39,10 @@ class DuplicateRedirectWorker(BaseObjectsJobWorker):
         self.job_id = job_id
         self.args = args
         self.site: mwclient.Site | None = None
-        self.result_object: DuplicateRedirectWorkerObject = DuplicateRedirectWorkerObject()
+
         super().__init__(job_id, user, cancel_event)
+
+        self.result_object: DuplicateRedirectWorkerObject = DuplicateRedirectWorkerObject()
 
     # ------------------------------------------------------------------
     # BaseObjectsJobWorker hooks

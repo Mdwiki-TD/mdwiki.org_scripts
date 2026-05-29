@@ -55,8 +55,10 @@ class FixrefWorker(BaseObjectsJobWorker):
         self.job_id = job_id
         self.args = args
         self.site: mwclient.Site | None = None
-        self.result_object: FixrefWorkerObject = FixrefWorkerObject()
+
         super().__init__(job_id, user, cancel_event)
+
+        self.result_object: FixrefWorkerObject = FixrefWorkerObject()
 
     # ------------------------------------------------------------------
     # BaseObjectsJobWorker hooks
