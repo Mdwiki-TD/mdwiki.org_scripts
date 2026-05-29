@@ -141,13 +141,7 @@ class CreateRedirectsWorker(BaseObjectsJobWorker):
             except Exception as exc:
                 logger.exception("redirect run failed for %s", title)
                 self.result_object.summary.errors += 1
-                self.result_object.pages_processed.append(
-                    {
-                        "title": title,
-                        "status": "error",
-                        "msg": str(exc),
-                    }
-                )
+                self.result_object.pages_errors.append({ "title": title, "msg": str(exc)})
                 continue
 
             self.result_object.summary.target_missing += counts.get("target_missing", 0)

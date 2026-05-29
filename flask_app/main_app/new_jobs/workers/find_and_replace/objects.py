@@ -27,6 +27,7 @@ class Summary:
 class FindAndReplaceWorkerObject(WorkerObject):
     summary: Summary = field(default_factory=Summary)
     pages_processed: list[dict[str, Any]] = field(default_factory=list)
+    pages_errors: list[dict[str, Any]] = field(default_factory=list)
     text_find: str = ""
     text_replace: str = ""
 

@@ -23,25 +23,9 @@ from ....api_services.pages_api import (
     is_page_exists,
 )
 from ....new_jobs.base_worker_object import BaseObjectsJobWorker
-from .objects import ImportHistoryWorkerObject
+from .objects import ImportHistoryWorkerObject, UpdaterOutcome
 
 logger = logging.getLogger(__name__)
-
-
-@dataclass(frozen=True)
-class UpdaterOutcome:
-    """Result of running the updater on one page."""
-
-    kind: Literal["missing", "no_revisions", "imported", "imported_fallback", "error"]
-    newrevid: int = 0
-
-    @property
-    def has_changes(self) -> bool:
-        return self.kind == "changed"
-
-    def to_json(self) -> dict[str, Any]:
-        return asdict(self)
-
 
 class ImportHistoryWorker(BaseObjectsJobWorker):
     """Import revision history from enwiki to mdwiki."""
@@ -102,22 +86,11 @@ class ImportHistoryWorker(BaseObjectsJobWorker):
                 outcome = self._process_one(title)
             except Exception as exc:
                 logger.exception("job failed for %s", title)
-                self.result_object.pages_error.append(
-                    {
-                        "title": title,
-                        "status": "error",
-                        "msg": str(exc),
-                    }
-                )
+                self.result_object.summary.errors += 1
+                self.result_object.pages_errors.append({ "title": title, "msg": str(exc)})
                 continue
 
-            page_record = {
-                "title": title,
-                "status": outcome.kind,
-                "msg": "",
-                "newrevid": "",
-            }
-            self.record_page_outcome(outcome, page_record)
+            self.record_page_outcome(outcome, title)
 
             if i == 1 or i % per_item == 0:
                 self._save_progress()
@@ -127,7 +100,11 @@ class ImportHistoryWorker(BaseObjectsJobWorker):
 
         return self.result_object
 
-    def record_page_outcome(self, outcome, page_record):
+    def record_page_outcome(self, outcome: UpdaterOutcome, title: str) -> None:
+        page_record = {
+            "title": title,
+            "msg": outcome.msg,
+        }
         if outcome.kind == "imported":
             page_record["newrevid"] = outcome.newrevid
             self.result_object.pages_imported.append(page_record)
@@ -136,15 +113,13 @@ class ImportHistoryWorker(BaseObjectsJobWorker):
             page_record["newrevid"] = outcome.newrevid
             self.result_object.pages_imported_fallback.append(page_record)
 
-        elif outcome.kind == "no_revisions":
-            self.result_object.pages_no_revisions.append(page_record)
-
         elif outcome.kind == "missing":
-            self.result_object.pages_missing.append(page_record)
+            self.result_object.pages_missing.append(title)
 
         elif outcome.kind == "error":
-            self.result_object.pages_error.append(page_record)
+            self.result_object.pages_errors.append(page_record)
         else:
+            page_record["status"] = outcome.kind
             self.result_object.pages_processed.append(page_record)
 
     # ------------------------------------------------------------------
@@ -161,12 +136,12 @@ class ImportHistoryWorker(BaseObjectsJobWorker):
         result = import_page_from_wiki(self.site, title, family="wikipedia")
         if result.get("error"):
             logger.warning(f"Job {self.job_id}: import_page failed for {title}: {result['error']}")
-            return UpdaterOutcome(kind="errors")
+            return UpdaterOutcome(kind="error", msg=result["error"])
 
         revisions = (result.get("import") or [{}])[0].get("revisions", 0)
         if not revisions:
             logger.info(f"Job {self.job_id}: {title!r}: import returned 0 revisions")
-            return UpdaterOutcome(kind="no_revisions")
+            return UpdaterOutcome(kind="error", msg="Import returned 0 revisions")
 
         logger.info(f"Job {self.job_id}: {title!r}: imported {revisions} revision(s)")
 
@@ -193,7 +168,7 @@ class ImportHistoryWorker(BaseObjectsJobWorker):
 
             logger.warning(f"Job {self.job_id}: fallback save failed too for {fallback_title}")
 
-            return UpdaterOutcome(kind="errors")
+            return UpdaterOutcome(kind="error")
 
         return "imported"
 

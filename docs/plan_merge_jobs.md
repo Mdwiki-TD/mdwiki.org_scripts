@@ -138,7 +138,7 @@ Edit `flask_app/main_app/new_jobs/workers_list.py`:
 
 **Template form:** Single textarea for titles (one per line), from_lang input (defaults to "en").
 
-**Initial result summary:** `scanned`, `imported`, `imported_fallback`, `no_revisions`, `missing`, `errors`, `total`, `from_lang`.
+**Initial result summary:** `scanned`, `imported`, `imported_fallback`, `missing`, `errors`, `total`, `from_lang`.
 
 ---
 

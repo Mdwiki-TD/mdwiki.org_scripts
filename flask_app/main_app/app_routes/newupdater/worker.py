@@ -32,6 +32,7 @@ class UpdaterOutcome:
     old_text: str = ""
     new_text: str = ""
     newrevid: int = 0
+    msg: str = ""
 
     @property
     def has_changes(self) -> bool:

@@ -124,24 +124,16 @@ class DuplicateRedirectWorker(BaseObjectsJobWorker):
             except Exception as exc:
                 logger.exception("job failed for %s", from_title)
                 self.result_object.summary.errors += 1
-                self.result_object.pages_processed.append(
+                self.result_object.pages_errors.append(
                     {
                         "from_title": from_title,
                         "to_title": final_target,
-                        "status": "error",
                         "msg": str(exc),
                     }
                 )
                 continue
 
-            page_record = {
-                "from_title": from_title,
-                "to_title": final_target,
-                "status": outcome.kind,
-                "msg": f"{from_title} -> {final_target}",
-                "newrevid": "",
-            }
-            self.record_page_outcome(outcome, page_record)
+            self.record_page_outcome(outcome, entry)
 
             if i == 1 or i % per_item == 0:
                 self._save_progress()
@@ -151,7 +143,18 @@ class DuplicateRedirectWorker(BaseObjectsJobWorker):
 
         return self.result_object
 
-    def record_page_outcome(self, outcome, page_record):
+    def record_page_outcome(self, outcome: UpdaterOutcome, entry: dict[str, Any]) -> None:
+        from_title = entry["title"]
+        redirect_to = entry["redirect_to"]
+        final_target = entry["final_target"]
+
+        page_record = {
+            "from_title": from_title,
+            "to_title": final_target,
+            "status": outcome.kind,
+            "msg": f"{from_title} -> {redirect_to} -> {final_target}",
+            "newrevid": "",
+        }
         if outcome.kind == "changed":
             self.result_object.summary.changed += 1
             page_record["newrevid"] = outcome.newrevid
@@ -163,7 +166,11 @@ class DuplicateRedirectWorker(BaseObjectsJobWorker):
         elif outcome.kind == "error":
             self.result_object.summary.errors += 1
 
+        else:
+            page_record["status"] = outcome.kind
+
         self.result_object.pages_processed.append(page_record)
+
 
     # ------------------------------------------------------------------
     # Internal helpers

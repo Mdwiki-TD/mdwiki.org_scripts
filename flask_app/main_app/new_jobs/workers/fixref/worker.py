@@ -90,22 +90,10 @@ class FixrefWorker(BaseObjectsJobWorker):
             except Exception as exc:
                 logger.exception("job failed for %s", title)
                 self.result_object.summary.errors += 1
-                self.result_object.pages_processed.append(
-                    {
-                        "title": title,
-                        "status": "error",
-                        "msg": str(exc),
-                    }
-                )
+                self.result_object.pages_errors.append({ "title": title, "msg": str(exc)})
                 continue
 
-            page_record = {
-                "title": title,
-                "status": outcome.kind,
-                "msg": "",
-                "newrevid": "",
-            }
-            self.record_page_outcome(outcome, page_record)
+            self.record_page_outcome(outcome, title)
 
             if i == 1 or i % per_item == 0:
                 self._save_progress()
@@ -115,19 +103,32 @@ class FixrefWorker(BaseObjectsJobWorker):
 
         return self.result_object
 
-    def record_page_outcome(self, outcome, page_record):
+    def record_page_outcome(self, outcome: UpdaterOutcome, title: str) -> None:
+
+        page_record = {
+            "title": title,
+            "msg": outcome.msg,
+            "newrevid": "",
+        }
         if outcome.kind == "changed":
-            self.result_object.summary.changed += 1
             page_record["newrevid"] = outcome.newrevid
+            self.result_object.pages_changed.append(page_record)
 
         elif outcome.kind == "no_changes":
-            self.result_object.summary.no_changes += 1
-        elif outcome.kind == "missing":
-            self.result_object.summary.missing += 1
-        elif outcome.kind == "error":
-            self.result_object.summary.errors += 1
+            self.result_object.pages_no_changes.append(page_record)
 
-        self.result_object.pages_processed.append(page_record)
+        elif outcome.kind == "missing":
+            self.result_object.pages_missing.append(title)
+
+        elif outcome.kind == "skipped":
+            self.result_object.pages_skipped.append(page_record)
+
+        elif outcome.kind == "error":
+            self.result_object.pages_errors.append(page_record)
+
+        else:
+            page_record["status"] = outcome.kind
+            self.result_object.pages_processed.append(page_record)
 
     def _resolve_targets(
         self,
