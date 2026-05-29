@@ -15,7 +15,7 @@ logger = logging.getLogger(__name__)
 class UpdaterOutcome:
     """Result of running the updater on one page."""
 
-    kind: Literal["missing", "no-changes", "changed", "error"]
+    kind: Literal["missing", "no_changes", "changed", "error"]
     newrevid: int = 0
 
     @property

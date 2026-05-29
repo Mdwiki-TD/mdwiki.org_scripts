@@ -110,7 +110,7 @@ class FixrefWorker(BaseObjectsJobWorker):
                 self.result_object.summary.changed += 1
                 page_record["newrevid"] = outcome.newrevid
 
-            elif outcome.kind == "no-changes":
+            elif outcome.kind == "no_changes":
                 self.result_object.summary.no_changes += 1
             elif outcome.kind == "missing":
                 self.result_object.summary.missing += 1
@@ -191,7 +191,7 @@ class FixrefWorker(BaseObjectsJobWorker):
             summary = "Normalize references"
 
         if new_text == text:
-            return UpdaterOutcome(kind="no-changes")
+            return UpdaterOutcome(kind="no_changes")
 
         result = edit_page(self.site, title, new_text, summary)
         if result.get("success"):

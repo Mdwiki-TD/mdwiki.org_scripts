@@ -123,7 +123,7 @@ class FindAndReplaceWorker(BaseObjectsJobWorker):
                 self.result_object.summary.changed += 1
                 page_record["newrevid"] = outcome.newrevid
 
-            elif outcome.kind == "no-changes":
+            elif outcome.kind == "no_changes":
                 self.result_object.summary.no_changes += 1
             elif outcome.kind == "missing":
                 self.result_object.summary.missing += 1
@@ -184,11 +184,11 @@ class FindAndReplaceWorker(BaseObjectsJobWorker):
 
         text = get_page_text(title, self.site)
         if not text or not text.strip():
-            return UpdaterOutcome(kind="no-changes")
+            return UpdaterOutcome(kind="no_changes")
 
         new_text = text.replace(str_find, replace)
         if new_text == text:
-            return UpdaterOutcome(kind="no-changes")
+            return UpdaterOutcome(kind="no_changes")
 
         summary = "Replace via mdwiki.toolforge.org find-and-replace tool."
         result = edit_page(self.site, title, new_text, summary)
