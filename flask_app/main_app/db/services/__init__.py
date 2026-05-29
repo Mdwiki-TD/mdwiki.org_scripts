@@ -15,6 +15,10 @@ from .user_token_service import (
     upsert_user_token,
 )
 
+from .coordinator_service import (
+    active_coordinators,
+)
+
 __all__ = [
     # user_token_service
     "upsert_user_token",
@@ -30,4 +34,6 @@ __all__ = [
     "get_user_jobs_stats",
     "cancel_job",
     "is_job_cancelled",
+
+    "active_coordinators",
 ]
