@@ -31,9 +31,10 @@
                 <hr class="d-lg-none text-dark-subtle text-50">
                 <div class="d-flex align-items-center">
                     {% if current_user or is_authenticated %}
-                    <a class="nav-link d-inline-block me-3" href="{{ url_for('profile.dashboard') }}">
+                    <a class="nav-link d-inline-block me-3"
+                        href="{{ url_for('profile.user_dashboard', user_name=current_user.username) }}">
                         <i class="bi bi-person-circle me-1"></i>
-                        <span class="navbar-text text-decoration-none">{{ current_user.username }}</span>
+                        <span class="navbar-text">{{ current_user.username }}</span>
                     </a>
                     <a class="btn btn-outline-secondary btn-sm" href="{{ url_for('auth.logout') }}">Logout</a>
                     {% else %}

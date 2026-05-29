@@ -108,9 +108,10 @@
     "cancelled": "warning",
     "error": "danger",
     } %}
+
 {% set status_lower = status | lower %}
 {# Return the matched class, or a default class if not found #}
-{{ status_classes[status_lower] if status_lower in status_classes else 'light text-dark' }}
+{{ status_classes[status_lower] if status_lower in status_classes else 'secondary' }}
 {% endmacro %}
 
 {# status icon #}
