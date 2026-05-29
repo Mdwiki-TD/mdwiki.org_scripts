@@ -178,12 +178,12 @@ def get_find_and_replace(nn):
     find_file = f"{work_dir}/{nn}/find.txt"
     replace_file = f"{work_dir}/{nn}/replace.txt"
     # ---
-    find = ""
+    str_find = ""
     replace = ""
     # ---
     try:
         with open(find_file, "r", encoding="utf-8") as file:
-            find = file.read()
+            str_find = file.read()
     except Exception as e:
         logger.info(f"Error reading find file: {e}")
         # return
@@ -198,4 +198,4 @@ def get_find_and_replace(nn):
     if replace.strip() == "empty":
         replace = ""
     # ---
-    return find, replace
+    return str_find, replace
