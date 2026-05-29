@@ -13,8 +13,8 @@ out of scope for the merge.
 from __future__ import annotations
 
 import logging
-from dataclasses import dataclass
-from typing import Literal
+from dataclasses import asdict, dataclass
+from typing import Any, Literal
 
 from ...api_services.clients.wiki_client import get_user_site
 from ...api_services.pages_api import edit_page, get_page_text
@@ -36,6 +36,9 @@ class UpdaterOutcome:
     @property
     def has_changes(self) -> bool:
         return self.kind == "changes"
+
+    def to_json(self) -> dict[str, Any]:
+        return asdict(self)
 
 
 def work_on_title(

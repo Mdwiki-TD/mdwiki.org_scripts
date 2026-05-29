@@ -9,9 +9,8 @@ from __future__ import annotations
 
 import logging
 import threading
-from dataclasses import asdict, dataclass
 from datetime import datetime
-from typing import Any, Dict, Literal
+from typing import Any, Dict
 
 import mwclient
 
@@ -22,25 +21,11 @@ from ....api_services.clients import get_user_site
 from ....api_services.pages_api import edit_page, get_page_text, is_page_exists
 from ....new_jobs.base_worker_object import BaseObjectsJobWorker
 from ....shared.fixref_shared.fixref_text_new import fix_ref_template
+from ...shared_objects import UpdaterOutcome
 
 logger = logging.getLogger(__name__)
 
 MAX_PAGES_FIXREF = 20000
-
-
-@dataclass(frozen=True)
-class UpdaterOutcome:
-    """Result of running the updater on one page."""
-
-    kind: Literal["missing", "no-changes", "changed", "error"]
-    newrevid: int = 0
-
-    @property
-    def has_changes(self) -> bool:
-        return self.kind == "changed"
-
-    def to_json(self) -> Dict[str, Any]:
-        return asdict(self)
 
 
 class FixrefWorker(BaseObjectsJobWorker):

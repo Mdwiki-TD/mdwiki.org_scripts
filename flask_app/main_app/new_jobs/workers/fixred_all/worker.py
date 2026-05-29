@@ -8,9 +8,8 @@ from __future__ import annotations
 
 import logging
 import threading
-from dataclasses import asdict, dataclass
 from datetime import datetime
-from typing import Any, Dict, Literal
+from typing import Any, Dict
 
 import mwclient
 
@@ -20,24 +19,9 @@ from ....new_jobs.base_worker_object import BaseObjectsJobWorker
 from ....shared.fixred_one import RunState
 from ....shared.fixref_shared.fixred_worker import work_on_text
 from ...shared_objects import SharedworkerObject
+from ...shared_objects import UpdaterOutcome
 
 logger = logging.getLogger(__name__)
-
-
-@dataclass(frozen=True)
-class UpdaterOutcome:
-    """Result of running the updater on one page."""
-
-    kind: Literal["missing", "no-changes", "changed", "error"]
-    newrevid: int = 0
-
-    @property
-    def has_changes(self) -> bool:
-        return self.kind == "changed"
-
-    def to_json(self) -> Dict[str, Any]:
-        return asdict(self)
-
 
 class FixredAllWorker(BaseObjectsJobWorker):
     """Fix redirect links in all mdwiki pages."""

@@ -8,9 +8,9 @@ from __future__ import annotations
 
 import logging
 import threading
-from dataclasses import asdict, dataclass
+
 from datetime import datetime
-from typing import Any, Dict, Literal
+from typing import Any, Dict
 
 import mwclient
 
@@ -20,24 +20,9 @@ from ....api_services.pages_api import edit_page, get_page_text, is_page_exists
 # from ....api_services.query_api import search_pages
 from ....new_jobs.base_worker_object import BaseObjectsJobWorker
 from .objects import FindAndReplaceWorkerObject
+from ...shared_objects import UpdaterOutcome
 
 logger = logging.getLogger(__name__)
-
-
-@dataclass(frozen=True)
-class UpdaterOutcome:
-    """Result of running the updater on one page."""
-
-    kind: Literal["missing", "no-changes", "changed", "error"]
-    newrevid: int = 0
-
-    @property
-    def has_changes(self) -> bool:
-        return self.kind == "changed"
-
-    def to_json(self) -> Dict[str, Any]:
-        return asdict(self)
-
 
 class FindAndReplaceWorker(BaseObjectsJobWorker):
     """Find-and-replace bot for mdwiki pages."""
