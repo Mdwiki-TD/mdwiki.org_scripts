@@ -14,7 +14,7 @@ logger = logging.getLogger(__name__)
 # private API
 # ------------------
 
-def _update_status(job_id: int, status: str, result_file: str, job_type: str) -> JobRecord:
+def _update_status(job_id: int, status: str, result_file: str | None, job_type: str) -> JobRecord:
     """
     Update job status and result file.
     """
@@ -196,7 +196,7 @@ def is_job_cancelled(job_id: int, job_type: str) -> bool:
     return False
 
 
-def get_user_jobs_stats(username: str) -> list[JobRecord]:
+def get_user_jobs_stats(username: str) -> dict[str, dict[str, int] | list[JobRecord]]:
     """
     Get user jobs
     """
@@ -216,15 +216,15 @@ def get_user_jobs_stats(username: str) -> list[JobRecord]:
         .all()
     )
 
-    total_jobs = base_query.count()
+    total_jobs = sum(status_counts.values())
 
     stats = {
         "total": total_jobs,
         "completed": status_counts.get("completed", 0),
         "failed": status_counts.get("failed", 0),
-        "running": status_counts.get("running", 0),
-        "pending": status_counts.get("pending", 0),
         "cancelled": status_counts.get("cancelled", 0),
+        # "running": status_counts.get("running", 0),
+        # "pending": status_counts.get("pending", 0),
     }
 
     data = {
