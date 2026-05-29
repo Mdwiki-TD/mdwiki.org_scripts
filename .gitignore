@@ -4,5 +4,5 @@
 /php/bots/sh
 **/old/**
 *.pyc
-.vscode
+.vscode/**
 src/app1.py
