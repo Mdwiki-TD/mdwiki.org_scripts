@@ -62,7 +62,7 @@ class FixredAllWorker(BaseObjectsJobWorker):
             self.site.allpages(
                 start="!",
                 namespace=0,
-                filterredir="all",
+                filterredir="nonredirects",
                 dir="ascending",
                 generator=True,
             )
