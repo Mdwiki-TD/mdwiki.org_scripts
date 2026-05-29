@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import logging
 
-from sqlalchemy import Column, DateTime, Integer, String, func, text
+from sqlalchemy import Column, DateTime, Integer, String, func
 
 from ...extensions import db
 
@@ -32,7 +32,7 @@ class JobRecord(db.Model):
     id = Column(Integer, primary_key=True, autoincrement=True)
     job_type = Column(String(255), nullable=False)
     username = Column(String(255), db.ForeignKey('user_tokens.username'), nullable=False)
-    status = Column(String(50), nullable=False, server_default=text("pending"))
+    status = Column(String(50), nullable=False, server_default="pending")
     started_at = Column(DateTime, nullable=True)
     completed_at = Column(DateTime, nullable=True)
     result_file = Column(String(500), nullable=True)

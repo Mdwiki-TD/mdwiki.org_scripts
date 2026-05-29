@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import logging
 
-from sqlalchemy import Boolean, Column, DateTime, Integer, LargeBinary, String, func, text
+from sqlalchemy import Boolean, Column, DateTime, Integer, LargeBinary, String, func
 from sqlalchemy.orm import validates
 
 from ...core.crypto import decrypt_value
@@ -30,7 +30,7 @@ class AdminUserRecord(db.Model):
 
     id = Column(Integer, primary_key=True, autoincrement=True)
     username = Column(String(255), db.ForeignKey('user_tokens.username'), unique=True, nullable=False)
-    is_active = Column(Boolean, nullable=False, default=True, server_default=text("0"))
+    is_active = Column(Boolean, nullable=False, default=True, server_default="0")
 
     created_at = Column(DateTime, nullable=False, server_default=func.current_timestamp())
     updated_at = Column(
