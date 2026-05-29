@@ -55,7 +55,7 @@ class FixrefWorker(BaseObjectsJobWorker):
         self.job_id = job_id
         self.args = args
         self.site: mwclient.Site | None = None
-        self.result_object: FixrefWorkerObject = self.get_initial_result_object()
+        self.result_object: FixrefWorkerObject = FixrefWorkerObject()
         super().__init__(job_id, user, cancel_event)
 
     # ------------------------------------------------------------------
@@ -64,9 +64,6 @@ class FixrefWorker(BaseObjectsJobWorker):
 
     def get_job_type(self) -> str:
         return "fixref"
-
-    def get_initial_result_object(self) -> FixrefWorkerObject:
-        return FixrefWorkerObject()
 
     def process(self) -> Dict[str, Any]:
         self.site = get_user_site(self.user)

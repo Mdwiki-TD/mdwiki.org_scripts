@@ -52,7 +52,7 @@ class FindAndReplaceWorker(BaseObjectsJobWorker):
         self.job_id = job_id
         self.args = args
         self.site: mwclient.Site | None = None
-        self.result_object: FindAndReplaceWorkerObject = self.get_initial_result_object()
+        self.result_object: FindAndReplaceWorkerObject = FindAndReplaceWorkerObject()
         super().__init__(job_id, user, cancel_event)
 
     # ------------------------------------------------------------------
@@ -61,9 +61,6 @@ class FindAndReplaceWorker(BaseObjectsJobWorker):
 
     def get_job_type(self) -> str:
         return "find_and_replace"
-
-    def get_initial_result_object(self) -> FindAndReplaceWorkerObject:
-        return FindAndReplaceWorkerObject()
 
     def process(self) -> Dict[str, Any]:
         self.site = get_user_site(self.user)

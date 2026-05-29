@@ -40,7 +40,7 @@ class ImportHistoryWorker(BaseObjectsJobWorker):
         self.job_id = job_id
         self.args = args
         self.site: mwclient.Site | None = None
-        self.result_object: ImportHistoryWorkerObject = self.get_initial_result_object()
+        self.result_object: ImportHistoryWorkerObject = ImportHistoryWorkerObject()
         super().__init__(job_id, user, cancel_event)
 
     # ------------------------------------------------------------------
@@ -49,9 +49,6 @@ class ImportHistoryWorker(BaseObjectsJobWorker):
 
     def get_job_type(self) -> str:
         return "import_history"
-
-    def get_initial_result_object(self) -> ImportHistoryWorkerObject:
-        return ImportHistoryWorkerObject()
 
     def process(self) -> Dict[str, Any]:
         self.site = get_user_site(self.user)
