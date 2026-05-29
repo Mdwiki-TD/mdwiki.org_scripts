@@ -13,7 +13,7 @@
         {{ stats_card('Processing', result_data.summary.scanned ~ ' / ' ~ result_data.summary.total, "primary", "") }}
     </div>
     <div class="col-md-3">
-        {{ stats_card('Changed', result_data.summary.fixed, "success", "") }}
+        {{ stats_card('Changed', result_data.summary.changed, "success", "") }}
     </div>
     <div class="col-md-2">
         {{ stats_card('No Changes', result_data.summary.no_changes, "secondary", "") }}
@@ -31,8 +31,8 @@
 {% block job_details %}
 {% if result_data and result_data.pages_processed %}
 
-{% set changed_pages = result_data.pages_processed | selectattr("status", "equalto", "fixed") | list %}
-{% set remaining_pages = result_data.pages_processed | rejectattr("status", "equalto", "fixed") | list %}
+{% set changed_pages = result_data.pages_processed | selectattr("status", "equalto", "changed") | list %}
+{% set remaining_pages = result_data.pages_processed | rejectattr("status", "equalto", "changed") | list %}
 
 {% if changed_pages %}
 <div class="card mb-3">
@@ -61,8 +61,7 @@
                             </a>
                         </td>
                         <td>
-                            <a href="https://{{ wiki_domain }}/w/index.php?diff={{ item.newrevid }}"
-                                target="_blank">
+                            <a href="https://{{ wiki_domain }}/w/index.php?diff={{ item.newrevid }}" target="_blank">
                                 Diff
                             </a>
                         </td>

@@ -1,5 +1,5 @@
 {% extends "new_jobs_templates/base_details2.html" %}
-{% from "_macros.html" import card_header, stats_card %}
+{% from "_macros.html" import card_header, status_icon, stats_card %}
 
 {% set job_type = 'find_and_replace' %}
 
@@ -8,7 +8,6 @@
 
 {% block job_summary %}
 {% if result_data and result_data.summary %}
-
 <div class="row g-3 mb-4">
     <div class="col-md-3">
         {{ stats_card('Processing', result_data.summary.scanned ~ ' / ' ~ result_data.summary.total, "primary", "") }}
@@ -62,8 +61,7 @@
                             </a>
                         </td>
                         <td>
-                            <a href="https://{{ wiki_domain }}/w/index.php?diff={{ item.newrevid }}"
-                                target="_blank">
+                            <a href="https://{{ wiki_domain }}/w/index.php?diff={{ item.newrevid }}" target="_blank">
                                 Diff
                             </a>
                         </td>

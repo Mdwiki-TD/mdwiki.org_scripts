@@ -125,9 +125,6 @@ class FixredAllWorker(BaseObjectsJobWorker):
                 self.result_object.summary.missing += 1
 
             self.result_object.pages_processed.append(page_record)
-                
-            
-
             if i == 1 or i % per_item == 0:
                 self._save_progress()
 

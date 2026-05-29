@@ -115,8 +115,8 @@ class DuplicateRedirectWorker(BaseObjectsJobWorker):
                 )
                 continue
 
-            if outcome == "fixed":
-                self.result_object.summary.fixed += 1
+            if outcome == "changed":
+                self.result_object.summary.changed += 1
             elif outcome == "unchanged":
                 self.result_object.summary.unchanged += 1
             elif outcome == "missing":
@@ -159,7 +159,7 @@ class DuplicateRedirectWorker(BaseObjectsJobWorker):
         summary = f"fix duplicate redirect to [[{final_target}]]"
         result = edit_page(self.site, from_title, newtext, summary)
         if result.get("success"):
-            return "fixed"
+            return "changed"
         return "errors"
 
 
