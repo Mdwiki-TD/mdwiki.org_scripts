@@ -11,7 +11,7 @@ import threading
 from typing import Any, Dict
 
 from ....new_jobs.base_worker_object import BaseObjectsJobWorker
-from .objects import AddUnlinkedWikibaseWorkerObject
+from ...shared_objects import SharedworkerObject
 
 logger = logging.getLogger(__name__)
 
@@ -31,7 +31,7 @@ class AddUnlinkedWikibaseWorker(BaseObjectsJobWorker):
 
         super().__init__(job_id, user, cancel_event)
 
-        self.result_object: AddUnlinkedWikibaseWorkerObject = AddUnlinkedWikibaseWorkerObject()
+        self.result_object: SharedworkerObject = SharedworkerObject()
 
     def get_job_type(self) -> str:
         return "add_unlinkedwikibase"

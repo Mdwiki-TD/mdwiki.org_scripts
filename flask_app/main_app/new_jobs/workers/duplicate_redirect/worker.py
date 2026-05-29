@@ -21,7 +21,7 @@ from ....api_services.pages_api import (
 )
 from ....api_services.query_api import get_double_redirects
 from ....new_jobs.base_worker_object import BaseObjectsJobWorker
-from .objects import DuplicateRedirectWorkerObject
+from ...shared_objects import SharedworkerObject
 
 logger = logging.getLogger(__name__)
 
@@ -42,7 +42,7 @@ class DuplicateRedirectWorker(BaseObjectsJobWorker):
 
         super().__init__(job_id, user, cancel_event)
 
-        self.result_object: DuplicateRedirectWorkerObject = DuplicateRedirectWorkerObject()
+        self.result_object: SharedworkerObject = SharedworkerObject()
 
     # ------------------------------------------------------------------
     # BaseObjectsJobWorker hooks

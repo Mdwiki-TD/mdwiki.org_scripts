@@ -19,7 +19,7 @@ from ....api_services.pages_api import edit_page, get_page_text, is_page_exists
 from ....new_jobs.base_worker_object import BaseObjectsJobWorker
 from ....shared.fixred_one import RunState
 from ....shared.fixref_shared.fixred_worker import work_on_text
-from .objects import FixredAllWorkerObject
+from ...shared_objects import SharedworkerObject
 
 logger = logging.getLogger(__name__)
 
@@ -55,7 +55,7 @@ class FixredAllWorker(BaseObjectsJobWorker):
 
         super().__init__(job_id, user, cancel_event)
 
-        self.result_object: FixredAllWorkerObject = FixredAllWorkerObject()
+        self.result_object: SharedworkerObject = SharedworkerObject()
 
     # ------------------------------------------------------------------
     # BaseObjectsJobWorker hooks
