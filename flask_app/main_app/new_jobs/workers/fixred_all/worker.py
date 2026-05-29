@@ -23,6 +23,7 @@ from .objects import FixredAllWorkerObject
 
 logger = logging.getLogger(__name__)
 
+
 @dataclass(frozen=True)
 class UpdaterOutcome:
     """Result of running the updater on one page."""
