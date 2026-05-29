@@ -15,7 +15,7 @@ import mwclient
 
 from ....api_services.clients import get_user_site
 from ....api_services.pages_api import edit_page, get_page_text, is_page_exists
-from ....api_services.query_api import search_pages
+# from ....api_services.query_api import search_pages
 from ....new_jobs.base_worker_object import BaseObjectsJobWorker
 from .objects import FindAndReplaceWorkerObject
 
@@ -138,8 +138,22 @@ class FindAndReplaceWorker(BaseObjectsJobWorker):
         """Pick the page list to walk based on *listtype*."""
         if listtype == "newlist":
             # return search_pages(str_find, self.site, namespace=0, limit="max")
-            return self.site.search(str_find, namespace=None, what=None, redirects=False,
-            max_items=None, api_chunk_size=None)
+            """
+            "list": "search",
+            "srsearch": query,
+            "srnamespace": str(namespace),
+            "srlimit": str(limit),
+            "srwhat": "text",
+            "srsort": "just_match",
+            """
+            return self.site.search(
+                str_find,
+                namespace="0",
+                what="text",
+                redirects=False,
+                max_items=None,
+                api_chunk_size=None,
+            )
 
         # oldlist: walk every mainspace page.
         return [p.name for p in self.site.allpages(namespace=0)]

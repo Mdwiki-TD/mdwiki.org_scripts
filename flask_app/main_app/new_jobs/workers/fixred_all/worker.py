@@ -22,6 +22,7 @@ from .objects import FixredAllWorkerObject
 
 logger = logging.getLogger(__name__)
 
+
 class FixredAllWorker(BaseObjectsJobWorker):
     """Fix redirect links in all mdwiki pages."""
 
