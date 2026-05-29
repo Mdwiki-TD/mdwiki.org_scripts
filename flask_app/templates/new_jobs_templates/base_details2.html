@@ -80,15 +80,15 @@
                                 <tr>
                                     <th style="width: 40%">Failed At:</th>
                                     <td>
-                                        {{ (job.failed_at or result_data.failed_at) }}
+                                        {{ (job.failed_at or result_data.failed_at) | format_long_date("-") }}
                                     </td>
                                 </tr>
                                 {% endif %}
                                 {% if job.cancelled_at or (result_data and result_data.cancelled_at) %}
                                 <tr>
-                                    <th style="width: 40%">Failed At:</th>
+                                    <th style="width: 40%">Cancelled At:</th>
                                     <td>
-                                        {{ (job.cancelled_at or result_data.cancelled_at) }}
+                                        {{ (job.cancelled_at or result_data.cancelled_at)| format_long_date("-") }}
                                     </td>
                                 </tr>
                                 {% endif %}
@@ -107,7 +107,8 @@
                                 </tr>
                                 <tr>
                                     <th>Last update:</th>
-                                    <td>{{ result_data.last_update if result_data and result_data.last_update else '-' }}
+                                    <td>
+                                        {{ result_data.last_update| format_long_date("-") }}
                                     </td>
                                 </tr>
                                 {% block job_info_extra %}{% endblock %}
