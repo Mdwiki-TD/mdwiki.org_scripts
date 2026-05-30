@@ -20,7 +20,7 @@ workers/
 ├── create_redirects/
 │   ├── __init__.py            # Exports create_redirects_worker_entry
 │   ├── worker.py              # CreateRedirectsWorker — copies enwiki redirects to mdwiki
-│   └── objects.py             # CreateRedirectsWorkerObject, custom Summary
+│   └── objects.py             # CreateRedirectsWorkerObject, custom Summary: RedirectsSummary
 ├── duplicate_redirect/
 │   ├── __init__.py            # Exports duplicate_redirect_worker_entry
 │   └── worker.py              # DuplicateRedirectWorker — fixes double redirects
@@ -190,7 +190,6 @@ Session is shared across all job invocations in the same process. Fine for threa
 
 -   [ ] Implement `add_unlinkedwikibase` or remove from registry
 -   [ ] Unify `UpdaterOutcome` definitions — extend shared version to support all worker-specific `kind` values
--   [ ] Unify `Summary` definitions — `create_redirects` should use shared `Summary` or the shared version should be extended
 -   [ ] Add `"skipped"` to shared `UpdaterOutcome.kind` Literal
 -   [ ] Add retry logic for transient API failures
 -   [ ] Add unit tests for all workers
@@ -210,9 +209,8 @@ Session is shared across all job invocations in the same process. Fine for threa
 ### Medium-Term
 
 1. Consolidate `UpdaterOutcome` — make the shared version support `"imported"` and `"imported_fallback"` kinds, or use inheritance
-2. Extend shared `Summary` to include optional fields (`created`, `errors`, `skipped`, etc.) so `create_redirects` can drop its custom version
-3. Add retry decorator for transient mwclient/API errors
-4. Add unit tests for each worker's `process()` method
+2. Add retry decorator for transient mwclient/API errors
+3. Add unit tests for each worker's `process()` method
 
 ### Long-Term
 

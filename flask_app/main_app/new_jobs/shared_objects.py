@@ -15,7 +15,7 @@ logger = logging.getLogger(__name__)
 class UpdaterOutcome:
     """Result of running the updater on one page."""
 
-    kind: Literal["missing", "no_changes", "changed", "error"]
+    kind: Literal["missing", "no_changes", "changed", "error", "skipped"]
     newrevid: int = 0
     msg: str = ""
 
