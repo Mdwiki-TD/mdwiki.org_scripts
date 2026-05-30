@@ -21,12 +21,7 @@ def work_on_title(
     summary: str = "Fix redirects.",
 ) -> UpdaterTextOutcome:
     """
-
-    Returns one of:
-
-    * ``notext``     — the page was empty or the rewriter wiped it out.
-    * ``no_changes`` — the rewriter is satisfied with the current text.
-    * ``changes``    — there is a diff to review/save.
+    s
     """
 
     user = current_user()
@@ -40,13 +35,11 @@ def work_on_title(
 
     title = (title or "").strip()
     if not title:
-        return UpdaterTextOutcome(kind="notext")
+        return UpdaterTextOutcome(kind="notitle")
 
     old_text = get_page_text(title, site)
-    if old_text is None:
-        return UpdaterTextOutcome(kind="notext")
 
-    if not old_text.strip():
+    if not old_text or not old_text.strip():
         return UpdaterTextOutcome(kind="notext", old_text=old_text)
 
     state = RunState()
@@ -60,7 +53,7 @@ def work_on_title(
         return UpdaterTextOutcome(kind="notext", old_text=old_text)
 
     if new_text == old_text:
-        return UpdaterTextOutcome(kind="no_changes", old_text=old_text, new_text=new_text)
+        return UpdaterTextOutcome(kind="skipped", msg="No changes")
 
     if save:
         result = edit_page(site, title, new_text, summary)

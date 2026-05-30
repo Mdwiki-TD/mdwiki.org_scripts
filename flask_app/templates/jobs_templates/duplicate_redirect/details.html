@@ -33,9 +33,9 @@
 
 {% endif %}
 
-{% if result_data and result_data.pages_no_changes %}
+{% if result_data and result_data.pages_skipped %}
 
-{{ template_pages_errors(wiki_domain, 'Pages no changes', result_data.pages_no_changes, title_columns=title_columns) }}
+{{ template_pages_errors(wiki_domain, 'Pages skipped', result_data.pages_skipped, title_columns=title_columns) }}
 
 {% endif %}
 {% if result_data and result_data.pages_missing %}
