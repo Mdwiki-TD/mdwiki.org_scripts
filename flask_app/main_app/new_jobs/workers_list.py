@@ -1,4 +1,3 @@
-
 from dataclasses import dataclass
 from typing import Callable, Optional
 
@@ -11,6 +10,7 @@ from .workers.fixred_all.worker import fixred_all_worker_entry
 from .workers.fixref.worker import fixref_worker_entry
 from .workers.import_history.worker import import_history_worker_entry
 
+
 @dataclass
 class JobData:
     job_type: str
@@ -20,8 +20,9 @@ class JobData:
     job_list_template: str
     job_details_template: Optional[str] = "jobs_templates/_help_templates/shared_details.html"
 
+
 jobs_data = {
-    "add_r_column" : JobData(
+    "add_r_column": JobData(
         job_type="add_r_column",
         job_name="Add R column",
         job_details_template="one_page_templates/add_r_column/details.html",
