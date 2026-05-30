@@ -5,7 +5,8 @@ from pathlib import Path
 def generate_domain_test_placeholders(src_root, test_root):
     """ """
     src_path = Path(src_root)
-    test_base = Path(test_root)
+    test_base_unit = Path(test_root) / "unit"
+    test_base_integration = Path(test_root) / "integration"
 
     for root, dirs, files in os.walk(src_path):
         current_path = Path(root)
@@ -15,18 +16,19 @@ def generate_domain_test_placeholders(src_root, test_root):
         # استخراج المسار النسبي من بعد مجلد المشروع (مثلاً: admin/domain/db)
         # نستخدم current_path.relative_to(src_path) للحصول على المسار داخل flask_app/x
         rel_path = current_path.relative_to(src_path)
-        target_dir = test_base / rel_path
 
         for file in files:
+            target_dir = test_base_unit / rel_path
             if file.endswith(".py") and file != "__init__.py":
                 file_stem = Path(file).stem
                 if "routes" in current_path.parts or file_stem == "routes":
-                    continue
+                    target_dir = test_base_integration / rel_path
 
                 to_re = [
                     "worker",
                     "utils",
                     "objects",
+                    "routes",
                 ]
                 if file_stem in to_re:
                     parent_name = current_path.stem
@@ -61,7 +63,7 @@ if __name__ == "__main__":
     main_path = Path(__file__).parent.parent
 
     SOURCE_DIR = main_path / "flask_app/main_app"
-    TEST_DIR = main_path / "tests/unit"
+    TEST_DIR = main_path / "tests"
 
     print(f"SOURCE_DIR: {SOURCE_DIR}")
     print(f"TEST_DIR: {TEST_DIR}")
