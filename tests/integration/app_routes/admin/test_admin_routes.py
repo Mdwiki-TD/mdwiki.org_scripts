@@ -13,7 +13,6 @@ from flask_app.main_app.db.services import (
 )
 from flask_app.main_app.db.services.admin_service import (
     add_coordinator,
-    delete_coordinator,
     list_coordinators,
     set_coordinator_active,
 )

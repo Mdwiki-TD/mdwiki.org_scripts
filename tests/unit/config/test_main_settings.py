@@ -2,8 +2,6 @@
 
 from __future__ import annotations
 
-import os
-
 import pytest
 from flask_app.main_app.config.classes import CookieConfig, OtherConfig
 from flask_app.main_app.config.main_settings import (

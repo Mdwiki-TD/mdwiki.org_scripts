@@ -34,7 +34,7 @@ class TestRenameChemParams:
 
     def test_no_empty_keys(self):
         for key in rename_chem_params:
-            assert key.strip(), f"Empty key found"
+            assert key.strip(), "Empty key found"
 
     def test_no_empty_values(self):
         for key, val in rename_chem_params.items():

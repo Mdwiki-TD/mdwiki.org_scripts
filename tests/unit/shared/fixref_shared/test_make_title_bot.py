@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from unittest.mock import MagicMock, patch
+from unittest.mock import patch
 
 from flask_app.main_app.shared.fixref_shared.make_title_bot import make_title
 

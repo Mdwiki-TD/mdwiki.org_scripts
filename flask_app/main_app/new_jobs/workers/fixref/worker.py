@@ -103,7 +103,6 @@ class FixRefWorker(BaseObjectsJobWorker):
         return self.result_object
 
     def record_page_outcome(self, outcome: UpdaterOutcome, title: str) -> None:
-
         page_record = {
             "title": title,
             "msg": outcome.msg,

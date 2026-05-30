@@ -2,9 +2,8 @@
 
 from __future__ import annotations
 
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock
 
-import pytest
 from flask_app.main_app.api_services.mwclient_page import _RETRY_DELAYS, MwClientPage
 
 

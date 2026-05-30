@@ -1,5 +1,6 @@
 #
 """ """
+
 import logging
 
 import wikitextparser as wtp

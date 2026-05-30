@@ -4,7 +4,6 @@ from __future__ import annotations
 
 from unittest.mock import MagicMock
 
-import pytest
 from flask_app.main_app.app_routes.utils.routes_utils import load_auth_payload
 
 

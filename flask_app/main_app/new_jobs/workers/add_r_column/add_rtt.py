@@ -1,5 +1,6 @@
 #!/usr/bin/python3
 """ """
+
 import logging
 
 import tqdm
@@ -18,7 +19,6 @@ def fix_title(title):
 
 
 def header_has_r(text, table=False):
-
     if not table:
         parsed = wtp.parse(text)
         table = parsed.tables[0]
@@ -36,7 +36,6 @@ def header_has_r(text, table=False):
 
 
 def add_header_r(text, table=False):
-
     if not table:
         parsed = wtp.parse(text)
         table = parsed.tables[0]
@@ -52,7 +51,6 @@ def add_header_r(text, table=False):
 
     # add R to header in 2nd column
     for x in table.cells():
-
         if x[0].is_header:
             x[0].value = x[0].value + "\n! R"
         else:
@@ -66,7 +64,6 @@ def add_header_r(text, table=False):
 
 
 def work_one_table(table_text, redirects, pages):
-
     parsed = wtp.parse(table_text)
     table = parsed.tables[0]
 
@@ -85,7 +82,6 @@ def work_one_table(table_text, redirects, pages):
     data = table.data()
 
     for n, x in enumerate(tqdm.tqdm(table.cells())):
-
         if x[1].is_header or len(x) < 3:
             continue
 

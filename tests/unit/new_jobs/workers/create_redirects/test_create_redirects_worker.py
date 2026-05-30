@@ -2,8 +2,6 @@
 
 from __future__ import annotations
 
-from unittest.mock import MagicMock
-
 from flask_app.main_app.new_jobs.workers.create_redirects.worker import (
     CreateRedirectsWorker,
 )

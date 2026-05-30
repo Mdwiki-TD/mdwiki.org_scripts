@@ -2,11 +2,8 @@
 
 from __future__ import annotations
 
-from unittest.mock import MagicMock, patch
-
 from flask_app.main_app.new_jobs.workers.add_unlinkedwikibase.worker import (
     AddUnlinkedWikibaseWorker,
-    add_unlinkedwikibase_worker_entry,
 )
 
 

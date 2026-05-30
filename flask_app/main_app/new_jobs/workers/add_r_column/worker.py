@@ -29,7 +29,6 @@ def add_to_tables(
     redirects: dict,
     pages: list,
 ) -> str:
-
     parsed = wtp.parse(text)
 
     if not parsed.tables:
@@ -110,7 +109,6 @@ class AddRColumnWorker(BaseObjectsJobWorker):
         self.result_object.set_steps_skipped()
 
     def _set_status_failed(self, error) -> None:
-
         self.result_object.status = "failed"
         self.result_object.error = error
         self.result_object.failed_at = datetime.now().isoformat()
@@ -262,7 +260,6 @@ class AddRColumnWorker(BaseObjectsJobWorker):
         return False
 
     def _get_text_wikilinks(self, text):
-
         to_f = "== List =="
 
         mdwiki_pages = []

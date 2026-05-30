@@ -7,10 +7,7 @@ from unittest.mock import MagicMock, patch
 import pytest
 from flask_app.main_app.db.services.admin_service import (
     add_coordinator,
-    delete_coordinator,
     get_coordinator_by_id,
-    list_coordinators,
-    set_coordinator_active,
 )
 
 

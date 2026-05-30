@@ -1,10 +1,9 @@
 from __future__ import annotations
 
-import threading
 from typing import Any, Dict
 
 from flask_app.main_app.db.models.jobs import JobRecord
-from flask_app.main_app.db.services.jobs_service import cancel_job, create_job, is_job_cancelled
+from flask_app.main_app.db.services.jobs_service import create_job, is_job_cancelled
 from flask_app.main_app.extensions import db
 from flask_app.main_app.new_jobs.base_worker_object import BaseObjectsJobWorker, WorkerObject
 

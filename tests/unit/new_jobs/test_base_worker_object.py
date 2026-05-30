@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import pytest
 from flask_app.main_app.new_jobs.base_worker_object import WorkerObject
 
 
