@@ -65,6 +65,7 @@ def cancel_job(job_id: int, job_type: str | None = None, job: JobRecord | None =
         logger.info(f"Local cancellation requested for job {job_id}")
         local_cancelled = True
 
+    cancelled_file = False
     # 2. Create result_file_cancelled file
     if job and job.result_file:
         cancelled_file = create_job_cancelled_file(f"{job.result_file}.cancelled")
