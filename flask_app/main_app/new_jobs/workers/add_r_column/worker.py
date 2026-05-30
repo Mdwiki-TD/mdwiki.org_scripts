@@ -32,6 +32,9 @@ def add_to_tables(
 
     parsed = wtp.parse(text)
 
+    if not parsed.tables:
+        return text
+
     table = parsed.tables[0]
 
     new_text = text
