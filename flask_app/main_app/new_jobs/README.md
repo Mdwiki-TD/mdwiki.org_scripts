@@ -133,6 +133,13 @@ jobs_data = {
 }
 ```
 
+## Testing
+
+```bash
+pytest tests/unit/new_jobs --cov=flask_app/main_app/new_jobs
+pytest tests/unit/new_jobs --cov=flask_app/main_app/new_jobs
+```
+
 ## Strengths
 
 -   **Clean abstract base class** with template method pattern

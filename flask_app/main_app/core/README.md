@@ -53,6 +53,12 @@ Custom Jinja2 filters registered via a `filters` dict in `__init__.py`:
 
 `get_status_class` maps statuses like `running`→`primary`, `completed`/`changed`/`imported`→`success`, `missing`/`skipped`/`cancelled`→`warning`, `failed`/`error`→`danger`, `pending`/`no_changes`→`secondary`.
 
+## Testing
+
+```bash
+pytest tests/unit/core --cov=flask_app/main_app/core
+```
+
 ## Strengths
 
 -   **Fernet encryption** is industry-standard symmetric encryption
