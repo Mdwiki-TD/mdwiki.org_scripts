@@ -87,7 +87,7 @@ class SharedworkerObject(WorkerObject):
     pages_changed: list[dict[str, Any]]
     pages_errors: list[dict[str, Any]]
     pages_skipped: list[dict[str, Any]]
-    pages_no_changes: list[str]
+    pages_no_changes: list[dict[str, Any]]
     pages_missing: list[str]
 ```
 
