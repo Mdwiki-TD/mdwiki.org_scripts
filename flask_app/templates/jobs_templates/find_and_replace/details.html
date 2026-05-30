@@ -7,7 +7,6 @@
 {% block detail_headline %}Find and Replace{% endblock %}
 
 {% block job_summary %}
-{% if result_data and result_data.summary %}
 <div class="row g-3 mb-4">
     <div class="col-md-2 col-sm-6">
         {{ stats_card('Processing', result_data.summary.scanned ~ ' / ' ~ result_data.summary.total, "primary", "") }}
@@ -28,7 +27,6 @@
         {{ stats_card('Errors', result_data.summary.errors, "danger", "") }}
     </div>
 </div>
-{% endif %}
 {% endblock %}
 
 {% block job_details %}

@@ -27,6 +27,7 @@ from .objects import ImportHistoryWorkerObject, UpdaterOutcome
 
 logger = logging.getLogger(__name__)
 
+
 class ImportHistoryWorker(BaseObjectsJobWorker):
     """Import revision history from enwiki to mdwiki."""
 
@@ -86,8 +87,7 @@ class ImportHistoryWorker(BaseObjectsJobWorker):
                 outcome = self._process_one(title)
             except Exception as exc:
                 logger.exception("job failed for %s", title)
-                self.result_object.summary.errors += 1
-                self.result_object.pages_errors.append({ "title": title, "msg": str(exc)})
+                self.result_object.pages_errors.append({"title": title, "msg": str(exc)})
                 continue
 
             self.record_page_outcome(outcome, title)

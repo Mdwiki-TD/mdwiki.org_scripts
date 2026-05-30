@@ -6,8 +6,7 @@
 {% block detail_title %}Add unlinkedwikibase tag{% endblock %}
 {% block detail_headline %}Add unlinkedwikibase tag{% endblock %}
 
-{% block job_summary %}
-{% if result_data and result_data.summary %}
+{% block job_summary %}zz
 <div class="row g-3 mb-4">
     <div class="col-md-2 col-sm-6">
         {{ stats_card('Processing', result_data.summary.scanned ~ ' / ' ~ result_data.summary.total, "primary", "") }}
@@ -46,7 +45,6 @@
         </tbody>
     </table>
 </div>
-{% endif %}
 {% endblock %}
 
 {% block job_details %}

@@ -123,7 +123,6 @@ class DuplicateRedirectWorker(BaseObjectsJobWorker):
                 outcome = self._process_one(from_title, redirect_to, final_target)
             except Exception as exc:
                 logger.exception("job failed for %s", from_title)
-                self.result_object.summary.errors += 1
                 self.result_object.pages_errors.append(
                     {
                         "from_title": from_title,
@@ -173,7 +172,6 @@ class DuplicateRedirectWorker(BaseObjectsJobWorker):
         else:
             page_record["status"] = outcome.kind
             self.result_object.pages_processed.append(page_record)
-
 
     # ------------------------------------------------------------------
     # Internal helpers

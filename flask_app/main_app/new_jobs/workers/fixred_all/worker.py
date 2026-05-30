@@ -86,8 +86,7 @@ class FixredAllWorker(BaseObjectsJobWorker):
                 outcome = self._process_one(title, state)
             except Exception as exc:
                 logger.exception("job failed for %s", title)
-                self.result_object.summary.errors += 1
-                self.result_object.pages_errors.append({ "title": title, "msg": str(exc)})
+                self.result_object.pages_errors.append({"title": title, "msg": str(exc)})
                 continue
 
             self.record_page_outcome(outcome, title)

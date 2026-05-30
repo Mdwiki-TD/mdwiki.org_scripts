@@ -76,7 +76,7 @@ class FindAndReplaceWorker(BaseObjectsJobWorker):
         except ValueError:
             cap = None
 
-        self.result_object.summary.cap = cap
+        self.result_object.cap = cap
 
         # save json file before start search
         self._save_progress()
@@ -91,7 +91,7 @@ class FindAndReplaceWorker(BaseObjectsJobWorker):
         for i, title in enumerate(titles, start=1):
             logger.debug(f"i: {i}/{total}, page: {title}.")
             if self.is_cancelled():
-                self.result_object.summary.stopped = True
+                self.result_object.stopped = True
                 break
             if cap is not None and self.result_object.summary.changed >= cap:
                 logger.info(f"Job {self.job_id}: Reached cap of {cap} modifications")
@@ -103,8 +103,7 @@ class FindAndReplaceWorker(BaseObjectsJobWorker):
                 outcome = self._process_one(title, str_find, str_replace)
             except Exception as exc:
                 logger.exception("job failed for %s", title)
-                self.result_object.summary.errors += 1
-                self.result_object.pages_errors.append({ "title": title, "msg": str(exc)})
+                self.result_object.pages_errors.append({"title": title, "msg": str(exc)})
                 continue
 
             self.record_page_outcome(outcome, title)
