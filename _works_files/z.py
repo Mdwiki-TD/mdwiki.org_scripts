@@ -19,7 +19,13 @@ def generate_domain_test_placeholders(src_root, test_root):
 
         for file in files:
             target_dir = test_base_unit / rel_path
-            if file.endswith(".py") and file != "__init__.py":
+            if file.endswith(".py"):
+
+                if file == "__init__.py":
+                    file_content = Path(file).read_text(encoding="utf-8")
+                    if "def " not in file_content:
+                        continue
+
                 file_stem = Path(file).stem
                 if "routes" in current_path.parts or file_stem == "routes":
                     target_dir = test_base_integration / rel_path
