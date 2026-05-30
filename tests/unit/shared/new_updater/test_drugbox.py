@@ -36,4 +36,5 @@ class TestTextProcessor:
     def test_params_extracted(self):
         text = "{{Infobox drug\n| name = Aspirin\n| class = NSAID\n}}"
         tp = TextProcessor(text)
-        assert "name" in tp.drugbox_params or "Aspirin" in str(tp.drugbox_params)
+        assert "name" in tp.drugbox_params
+        assert "class" in tp.drugbox_params

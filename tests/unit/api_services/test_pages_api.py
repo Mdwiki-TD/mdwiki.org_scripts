@@ -49,6 +49,8 @@ class TestMovePage:
             MockPage.return_value.move_page.return_value = {"success": True}
             result = move_page(mock_site, "Old", "New")
             assert result["success"] is True
+            MockPage.assert_called_once_with("Old", mock_site)
+            MockPage.return_value.move_page.assert_called_once_with("New", reason="", move_talk=True, no_redirect=False)
 
 
 class TestCreatePage:
@@ -63,6 +65,8 @@ class TestCreatePage:
             MockPage.return_value.edit_page.return_value = {"success": True}
             result = create_page("Test", "content", mock_site)
             assert result["success"] is True
+            MockPage.assert_called_once_with("Test", mock_site)
+            MockPage.return_value.edit_page.assert_called_once_with("content", "", nocreate=1)
 
 
 class TestUpdatePageText:
@@ -90,6 +94,12 @@ class TestImportPageFromWiki:
         mock_site.post.return_value = {"imported": True}
         result = import_page_from_wiki(mock_site, "Test")
         assert result == {"imported": True}
+        mock_site.post.assert_called_once_with(
+            action="import",
+            title="Test",
+            interwikisource="wikipedia",
+            fullhistory=1,
+        )
 
     def test_error_returns_dict(self):
         mock_site = MagicMock()
