@@ -87,15 +87,20 @@ def generate_domain_test_placeholders(src_root, test_root):
                 classes, functions = extract_classes_and_functions(file_path)
 
                 #
-                classes_str = ", ".join(classes) if classes else "None"
-                functions_str = ", ".join(functions) if functions else "None"
+                classes_str = ", ".join(classes) if classes else ""
+                functions_str = ", ".join(functions) if functions else ""
+
+                methods_parts = []
+                if classes_str:
+                    methods_parts.append(f"Classes to test: {classes_str}")
+                if functions_str:
+                    methods_parts.append(f"Functions to test: {functions_str}")
 
                 _new = [
                     '"""',
                     f'Unit tests for {internal_path}/{file} module.',
                     '',
-                    f'Classes to test: {classes_str}',
-                    f'Functions to test: {functions_str}',
+                    "\n".join(methods_parts),
                     '',
                     'TODO: write tests',
                     '"""',
