@@ -10,6 +10,7 @@ Shared domain logic for wiki content processing. Contains the medical content up
 shared/
 ├── __init__.py           # Empty
 ├── decode_bytes.py       # coerce_bytes() — type coercion for encrypted values
+├── shared_classes.py     # UpdaterTextOutcome — shared result dataclass for single-page operations
 ├── fixred_one.py         # Single-page redirect fix service
 ├── fixref_shared/
 │   ├── __init__.py
@@ -38,12 +39,26 @@ shared/
 
 ## Key Components
 
+### shared_classes.py — Shared Result Types
+
+```python
+@dataclass(frozen=True)
+class UpdaterTextOutcome:
+    kind: Literal["notext", "no_changes", "changes", "saved"]
+    old_text: str = ""
+    new_text: str = ""
+    newrevid: int = 0
+    msg: str = ""
+```
+
+Used by single-page operations (`fixred_one.py`, `newupdater/worker.py`) where the caller needs old/new text for diff display.
+
 ### fixred_one.py — Single-Page Redirect Fixer
 
 ```python
-def work_on_title(title, save=False, summary="Fix redirects.") -> UpdaterOutcome:
+def work_on_title(title, save=False, summary="Fix redirects.") -> UpdaterTextOutcome:
     # Fetch page → run redirect fixer → optionally save
-    # Returns: UpdaterOutcome(kind="notext"|"no_changes"|"changes"|"saved")
+    # Returns: UpdaterTextOutcome(kind="notext"|"no_changes"|"changes"|"saved")
 ```
 
 ### fixref_shared/fixred_worker.py — Redirect Algorithm

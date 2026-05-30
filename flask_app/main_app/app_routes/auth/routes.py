@@ -168,12 +168,16 @@ def callback() -> Response:
 
     # ------------------
     # upsert credentials
-    upsert_user_token(
-        user_id=user_id,
-        username=username,
-        access_key=str(token_key),
-        access_secret=str(token_secret),
-    )
+    try:
+        upsert_user_token(
+            user_id=user_id,
+            username=username,
+            access_key=str(token_key),
+            access_secret=str(token_secret),
+        )
+    except Exception:
+        logger.exception("Failed to upsert user credentials")
+        flash("Failed to upsert user credentials", "danger")
 
     session["uid"] = user_id
     session["username"] = username

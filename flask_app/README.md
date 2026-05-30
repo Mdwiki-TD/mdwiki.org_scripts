@@ -44,8 +44,8 @@ flask_app/
 ├── static/                # CSS/JS assets
 ├── templates/             # Jinja2 templates
 │   ├── base.html, index.html, _navbar.html
-│   ├── jobs_templates/    # Legacy job templates
-│   └── new_jobs_templates/# Per-worker-type templates
+│   ├── jobs_templates/    # Shared job templates (base_details2, base_list2, macros, per-worker)
+│   └── one_page_templates/# Single-page job templates (add_r_column)
 └── main_app/              # Core application package
     ├── __init__.py         # create_app() factory
     ├── extensions.py       # SQLAlchemy + Migrate instances
@@ -99,7 +99,7 @@ The thread-based job runner is simple but limited — no job queue, no persisten
 -   **No `requirements.txt` or `pyproject.toml`** — dependencies are undocumented
 -   **Zero test coverage** — no test files exist
 -   **`__pycache__` directories** present in the repository
--   **Code duplication** — `UpdaterOutcome` dataclass defined in both `fixred_one.py` and `newupdater/worker.py`
+-   **Code duplication resolved** — `UpdaterOutcome` consolidated into `shared_objects.py`, `UpdaterTextOutcome` into `shared_classes.py`
 -   **Complex business logic** in `shared/new_updater/` with poor documentation
 -   **Mixed comments** — Arabic comments without English translations in some files
 -   **Empty packages** — `api_services/utils/` is effectively dead code
@@ -190,7 +190,7 @@ Service functions call `db.session.commit()` without try/except rollback blocks.
 ### Medium-Term (1-2 weeks)
 
 1. Add pytest test suite with SQLite in-memory database
-2. Consolidate duplicate `UpdaterOutcome` dataclasses into a shared module
+2. Consolidate remaining worker Summary dataclasses into `shared_objects.py`
 3. Add proper DB session rollback handling in all service functions
 4. Add ruff for linting and mypy for type checking
 5. Add an `.env.example` documenting all required/optional variables
