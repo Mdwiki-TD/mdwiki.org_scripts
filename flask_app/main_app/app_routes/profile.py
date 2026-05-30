@@ -19,7 +19,12 @@ def dashboard():
         flash("You must be logged in to view your profile.", "warning")
         return render_template("profile.html")
 
-    data = get_user_jobs_stats(user.username)
+    try:
+        data = get_user_jobs_stats(user.username)
+    except Exception:  # pragma: no cover - defensive guard
+        logger.exception("Unable to load user stats.")
+        flash("Unable to load your job statistics.", "danger")
+        data = {"stats": {}, "recent_jobs": []}
 
     return render_template(
         "profile.html",
@@ -31,7 +36,12 @@ def dashboard():
 
 @bp_profile.route("/<string:user_name>", methods=["GET"])
 def user_dashboard(user_name: str):
-    data = get_user_jobs_stats(user_name)
+    try:
+        data = get_user_jobs_stats(user_name)
+    except Exception:  # pragma: no cover - defensive guard
+        logger.exception("Unable to load user stats.")
+        flash("Unable to load user job statistics.", "danger")
+        data = {"stats": {}, "recent_jobs": []}
 
     return render_template(
         "profile.html",
