@@ -35,19 +35,24 @@ def test_current_user_no_session(app):
             mock_get.assert_not_called()
 
 
-def test_oauth_required_decorator(app):
-    @app.route("/protected")
+def test_oauth_required_decorator_no_user(app):
     @oauth_required
     def protected():
         return "allowed"
 
     with app.test_request_context("/protected"):
-        # Case 1: No user
         with patch("flask_app.main_app.su_services.users_service.current_user", return_value=None):
             response = protected()
             assert response.status_code == 302
             assert "/login" in response.location
-        # Case 2: User exists
+
+
+def test_oauth_required_decorator_with_user(app):
+    @oauth_required
+    def protected():
+        return "allowed"
+
+    with app.test_request_context("/protected"):
         with patch("flask_app.main_app.su_services.users_service.current_user", return_value=MagicMock()):
             response = protected()
             assert response == "allowed"
