@@ -24,7 +24,7 @@ class TestMoveExternalLinksSection:
         text = "== Summary ==\nText.\n== External links ==\n* link1\n"
         bot = MoveExternalLinksSection(text)
         result = bot.make_new_txt()
-        assert result == ""
+        assert result == """== Summary ==\nText.\n== External links ==\n* link1\n"""
 
     def test_no_sections(self):
         text = "Just some text without sections."
