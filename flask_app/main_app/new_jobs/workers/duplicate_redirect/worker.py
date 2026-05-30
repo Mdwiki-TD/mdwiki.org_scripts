@@ -36,8 +36,8 @@ def resolve_redirect_chains(redirects: list[dict]) -> list[dict]:
     and final targets, excluding any intermediate or final pages from the root keys.
     """
     # Create a fast lookup mapping and track all pages that are pointed 'to'
-    redirect_map = {item["from"]: item["to"] for item in redirects}
-    all_targets = {item["to"] for item in redirects}
+    redirect_map = {item["from"]: item["to"] for item in redirects if "from" in item and "to" in item}
+    all_targets = set(redirect_map.values())
 
     resolved_dict = []
 
@@ -50,8 +50,13 @@ def resolve_redirect_chains(redirects: list[dict]) -> list[dict]:
 
         # Follow the chain to the absolute final destination
         final_target = immediate_redirect
+        seen = {start_page, final_target}
         while final_target in redirect_map:
-            final_target = redirect_map[final_target]
+            next_target = redirect_map[final_target]
+            if next_target in seen:
+                break
+            seen.add(next_target)
+            final_target = next_target
 
         page_data = {
             "title": start_page,
@@ -126,6 +131,7 @@ class DuplicateRedirectWorker(BaseObjectsJobWorker):
                 self.result_object.pages_errors.append(
                     {
                         "from_title": from_title,
+                        "redirect_to": redirect_to,
                         "final_target": final_target,
                         "msg": str(exc),
                     }
@@ -149,8 +155,8 @@ class DuplicateRedirectWorker(BaseObjectsJobWorker):
 
         page_record = {
             "from_title": from_title,
-            "final_target": final_target,
             "redirect_to": redirect_to,
+            "final_target": final_target,
             "msg": outcome.msg,
         }
         if outcome.kind == "changed":
