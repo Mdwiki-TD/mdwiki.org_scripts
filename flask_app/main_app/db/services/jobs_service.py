@@ -162,18 +162,25 @@ def cancel_job(job_id: int, job_type: str | None = None) -> bool:
         rowcount = self.db.execute_query_safe(query, tuple(params))
         return rowcount > 0
     """
-    query = db.session.query(JobRecord).filter(JobRecord.id == job_id)
-    if job_type:
-        query = query.filter(JobRecord.job_type == job_type)
 
-    job = query.filter(JobRecord.status.in_(["pending", "running"])).first()
+    try:
+        query = db.session.query(JobRecord).filter(JobRecord.id == job_id)
+        if job_type:
+            query = query.filter(JobRecord.job_type == job_type)
 
-    if job:
-        job.status = "cancelled"
-        job.completed_at = datetime.now(UTC)
-        db.session.commit()
-        db.session.refresh(job)
-        return True
+        job = query.filter(JobRecord.status.in_(["pending", "running"])).first()
+
+        if job:
+            job.status = "cancelled"
+            job.completed_at = datetime.now(UTC)
+            db.session.commit()
+            db.session.refresh(job)
+            return True
+
+    except Exception:  # pragma: no cover - defensive guard
+        logger.exception("Failed to cancel job %s in database.", job_id)
+        db.session.rollback()
+
     return False
 
 
