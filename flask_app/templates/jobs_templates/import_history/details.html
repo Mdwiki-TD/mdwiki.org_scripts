@@ -1,0 +1,58 @@
+{% extends "jobs_templates/base_details2.html" %}
+{% from "_macros.html" import stats_card %}
+{%- from "jobs_templates/_help_templates/_jobs_macros.html" import template_pages_changed, template_pages_processed, template_pages_errors, template_pages_only_title -%}
+
+{% set job_type = 'import_history' %}
+
+{% block job_summary %}
+<div class="row g-3 mb-4">
+    <div class="col-md-3 col-sm-6">
+        {{ stats_card('Processing', result_data.summary.scanned ~ ' / ' ~ result_data.summary.total, "primary", "") }}
+    </div>
+    <div class="col-md-3 col-sm-6">
+        {{ stats_card('Imported / Fallback', result_data.pages_imported|length ~ ' / ' ~ result_data.pages_imported_fallback|length, "success", "") }}
+    </div>
+    <div class="col-md-3 col-sm-6">
+        {{ stats_card('missing', result_data.pages_missing|length, "warning", "") }}
+    </div>
+    <div class="col-md-3 col-sm-6">
+        {{ stats_card('Errors', result_data.pages_errors|length, "danger", "") }}
+    </div>
+</div>
+{% endblock %}
+
+{% block job_details %}
+
+{% if result_data and result_data.pages_imported %}
+{{ template_pages_changed(wiki_domain, 'Pages imported', result_data.pages_imported) }}
+{% endif %}
+
+{% if result_data and result_data.pages_imported_fallback %}
+
+{{ template_pages_changed(wiki_domain, 'Pages imported fallback', result_data.pages_imported_fallback) }}
+
+{% endif %}
+
+{% if result_data and result_data.pages_processed %}
+
+{{ template_pages_processed(wiki_domain, 'Pages Processed', result_data.pages_processed) }}
+
+{% endif %}
+
+{% if result_data and result_data.pages_errors %}
+
+{{ template_pages_errors(wiki_domain, 'Pages Errors', result_data.pages_errors) }}
+
+{% endif %}
+
+{% if result_data and result_data.pages_no_changes %}
+
+{{ template_pages_only_title(wiki_domain, 'Pages no changes', result_data.pages_no_changes) }}
+
+{% endif %}
+{% if result_data and result_data.pages_missing %}
+
+{{ template_pages_only_title(wiki_domain, 'Pages missing', result_data.pages_missing) }}
+
+{% endif %}
+{% endblock %}

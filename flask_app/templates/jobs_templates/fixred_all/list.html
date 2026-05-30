@@ -1,0 +1,15 @@
+{% extends "jobs_templates/base_list2.html" %}
+
+{% set job_type = 'fixred_all' %}
+
+
+
+{% block start_confirm_message %}Start fixing redirects in all pages?{% endblock %}
+
+{% block list_info %}
+<p class="text-muted">
+    Walks the wikilinks on every mdwiki page and rewrites every
+    redirect link to point at its canonical target (preserving the
+    original display text).
+</p>
+{% endblock %}

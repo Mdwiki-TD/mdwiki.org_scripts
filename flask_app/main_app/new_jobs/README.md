@@ -78,16 +78,17 @@ BaseObjectsJobWorker (ABC)
 
 ### workers_list.py — Registry
 
-```python
-jobs_targets_public = {
-    "fixref": fixref_worker_entry,
-    "fixred_all": fixred_all_worker_entry,
-    # ... 8 total
-}
+Single `jobs_data` dict keyed by job type, each entry a `JobData` dataclass:
 
-JOB_TYPE_TEMPLATES_PUBLIC = {
-    "fixref": "new_jobs_templates/fixref/details.html",
-    # ... per-worker list + detail templates
+```python
+jobs_data = {
+    "fixref": JobData(
+        job_type="fixref",
+        job_name="Normalize References",
+        job_list_template="jobs_templates/fixref/list.html",
+        job_callable=fixref_worker_entry,
+    ),
+    # ... 8 total entries
 }
 ```
 

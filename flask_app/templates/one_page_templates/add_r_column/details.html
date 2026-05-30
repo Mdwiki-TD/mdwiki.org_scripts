@@ -1,0 +1,55 @@
+{% extends "jobs_templates/base_details2.html" %}
+{% from "_macros.html" import card_header, status_icon %}
+
+{% set job_type = 'add_r_column' %}
+
+
+
+{% block job_summary %}
+
+<!-- Pipeline Stages -->
+{% if result_data.steps %}
+{% set stage_order = ['load_page', 'load_text', 'add_empty_r_column', 'first_save', 'add_r_column', 'final_save'] %}
+{% set stages = [] %}
+{% for stage_key in stage_order %}
+{% set stage = result_data.steps.get(stage_key) %}
+{% if stage %}
+{% set _ = stages.append((stage_key, stage)) %}
+{% endif %}
+{% endfor %}
+
+{% if stages %}
+<div class="table-responsive">
+    <table class="table table-striped table-sm mb-0">
+        <thead>
+            <tr>
+                <th></th>
+                {% for stage_key, stage in stages %}
+                <th>{{ stage.title |title }}</th>
+                {% endfor %}
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><strong>Status</strong></td>
+                {% for stage_key, stage in stages %}
+                <td>
+                    {{ status_icon(stage.status) }}
+                </td>
+                {% endfor %}
+            </tr>
+            <tr>
+                <td><strong>Message</strong></td>
+                {% for stage_key, stage in stages %}
+                <td><small>{{ stage.message }}</small></td>
+                {% endfor %}
+            </tr>
+        </tbody>
+    </table>
+</div>
+{% endif %}
+{% endif %}
+{% endblock %}
+
+{% block job_details %}
+{% endblock %}

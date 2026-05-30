@@ -9,8 +9,9 @@ from __future__ import annotations
 
 import logging
 import threading
+from dataclasses import asdict, dataclass
 from datetime import datetime
-from typing import Any, Dict
+from typing import Any, Dict, Literal
 
 import mwclient
 
@@ -22,7 +23,7 @@ from ....api_services.pages_api import (
     is_page_exists,
 )
 from ....new_jobs.base_worker_object import BaseObjectsJobWorker
-from .objects import ImportHistoryWorkerObject
+from .objects import ImportHistoryWorkerObject, UpdaterOutcome
 
 logger = logging.getLogger(__name__)
 
@@ -63,7 +64,7 @@ class ImportHistoryWorker(BaseObjectsJobWorker):
 
         titles_raw = self.args.get("titles", [])
         from_lang = self.args.get("from_lang", "en")
-        self.result_object.summary.from_lang = from_lang
+        self.result_object.from_lang = from_lang
 
         if isinstance(titles_raw, str):
             titles = [t.strip() for t in titles_raw.splitlines() if t.strip()]
@@ -85,35 +86,11 @@ class ImportHistoryWorker(BaseObjectsJobWorker):
             try:
                 outcome = self._process_one(title)
             except Exception as exc:
-                logger.exception("import run failed for %s", title)
-                self.result_object.summary.errors += 1
-                self.result_object.pages_processed.append(
-                    {
-                        "title": title,
-                        "status": "error",
-                        "msg": str(exc),
-                    }
-                )
+                logger.exception("job failed for %s", title)
+                self.result_object.pages_errors.append({"title": title, "msg": str(exc)})
                 continue
 
-            if outcome == "imported":
-                self.result_object.summary.imported += 1
-            elif outcome == "imported_fallback":
-                self.result_object.summary.imported_fallback += 1
-            elif outcome == "no_revisions":
-                self.result_object.summary.no_revisions += 1
-            elif outcome == "missing":
-                self.result_object.summary.missing += 1
-            elif outcome == "errors":
-                self.result_object.summary.errors += 1
-
-            self.result_object.pages_processed.append(
-                {
-                    "title": title,
-                    "status": outcome,
-                    "msg": "",
-                }
-            )
+            self.record_page_outcome(outcome, title)
 
             if i == 1 or i % per_item == 0:
                 self._save_progress()
@@ -123,27 +100,53 @@ class ImportHistoryWorker(BaseObjectsJobWorker):
 
         return self.result_object
 
+    def record_page_outcome(self, outcome: UpdaterOutcome, title: str) -> None:
+
+        page_record = {
+            "title": title,
+            "msg": outcome.msg,
+        }
+        if outcome.kind == "imported":
+            page_record["newrevid"] = outcome.newrevid
+            self.result_object.pages_imported.append(page_record)
+
+        elif outcome.kind == "imported_fallback":
+            page_record["newrevid"] = outcome.newrevid
+            self.result_object.pages_imported_fallback.append(page_record)
+
+        elif outcome.kind == "no_changes":
+            self.result_object.pages_no_changes.append(title)
+
+        elif outcome.kind == "missing":
+            self.result_object.pages_missing.append(title)
+
+        elif outcome.kind == "error":
+            self.result_object.pages_errors.append(page_record)
+
+        else:
+            page_record["status"] = outcome.kind
+            self.result_object.pages_processed.append(page_record)
+
     # ------------------------------------------------------------------
     # Internal helpers
     # ------------------------------------------------------------------
 
-    def _process_one(self, title: str) -> str:
-        """Return one of: ``missing``, ``no_revisions``, ``imported``, ``imported_fallback``, ``errors``."""
+    def _process_one(self, title: str) -> UpdaterOutcome:
         if not is_page_exists(title, self.site):
             logger.info(f"Job {self.job_id}: {title!r}: missing on mdwiki")
-            return "missing"
+            return UpdaterOutcome(kind="missing")
 
         text = get_page_text(title, self.site)
 
         result = import_page_from_wiki(self.site, title, family="wikipedia")
         if result.get("error"):
             logger.warning(f"Job {self.job_id}: import_page failed for {title}: {result['error']}")
-            return "errors"
+            return UpdaterOutcome(kind="error", msg=result["error"])
 
         revisions = (result.get("import") or [{}])[0].get("revisions", 0)
         if not revisions:
             logger.info(f"Job {self.job_id}: {title!r}: import returned 0 revisions")
-            return "no_revisions"
+            return UpdaterOutcome(kind="error", msg="Import returned 0 revisions")
 
         logger.info(f"Job {self.job_id}: {title!r}: imported {revisions} revision(s)")
 
@@ -152,20 +155,28 @@ class ImportHistoryWorker(BaseObjectsJobWorker):
         if text is not None:
             saved = edit_page(self.site, title, text, "")
             if saved.get("success"):
-                return "imported"
+                return UpdaterOutcome(kind="imported", newrevid=saved.get("newrevid", 0))
 
             username = self.site.username or "Mr._Ibrahem"
             fallback_title = f"User:{username}/{title}"
             logger.info(f"Job {self.job_id}: {title!r}: top-level save failed; writing to {fallback_title!r}")
-            fallback_result = edit_page(
-                self.site, fallback_title, text, "Returns the article text after importing the history"
-            )
-            if fallback_result.get("success"):
-                return "imported_fallback"
-            logger.warning(f"Job {self.job_id}: fallback save failed too for {fallback_title}")
-            return "errors"
 
-        return "imported"
+            fallback_result = edit_page(
+                self.site,
+                fallback_title,
+                text,
+                "Returns the article text after importing the history",
+            )
+
+            if fallback_result.get("success"):
+                return UpdaterOutcome(kind="imported_fallback", newrevid=fallback_result.get("newrevid", 0))
+
+            logger.warning(f"Job {self.job_id}: fallback save failed too for {fallback_title}")
+
+            return UpdaterOutcome(kind="error", msg=fallback_result.get("error", "Unknown error"))
+
+        # return UpdaterOutcome(kind="imported")
+        return UpdaterOutcome(kind="error", msg="Unknown error")
 
 
 def import_history_worker_entry(

@@ -29,7 +29,7 @@ function make_form($titlelist, $number)
 				<div class='row'>
 					<div class='col-lg-12'>
 						<div class='form-group'>
-							<label for='find'><h4>All pages:</h4></label>
+							<label for='str_find'><h4>All pages:</h4></label>
 							<div class='input-group mb-3'>
 								<div class='input-group-prepend'>
 									<span class='input-group-text'>Number of pages</span>

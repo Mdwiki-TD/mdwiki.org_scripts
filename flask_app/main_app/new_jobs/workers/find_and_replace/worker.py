@@ -8,9 +8,8 @@ from __future__ import annotations
 
 import logging
 import threading
-from dataclasses import asdict, dataclass
 from datetime import datetime
-from typing import Any, Dict, Literal
+from typing import Any, Dict
 
 import mwclient
 
@@ -19,24 +18,10 @@ from ....api_services.pages_api import edit_page, get_page_text, is_page_exists
 
 # from ....api_services.query_api import search_pages
 from ....new_jobs.base_worker_object import BaseObjectsJobWorker
+from ...shared_objects import UpdaterOutcome
 from .objects import FindAndReplaceWorkerObject
 
 logger = logging.getLogger(__name__)
-
-
-@dataclass(frozen=True)
-class UpdaterOutcome:
-    """Result of running the updater on one page."""
-
-    kind: Literal["missing", "no-changes", "changed", "error"]
-    newrevid: int = 0
-
-    @property
-    def has_changes(self) -> bool:
-        return self.kind == "changed"
-
-    def to_json(self) -> Dict[str, Any]:
-        return asdict(self)
 
 
 class FindAndReplaceWorker(BaseObjectsJobWorker):
@@ -73,8 +58,8 @@ class FindAndReplaceWorker(BaseObjectsJobWorker):
             self.result_object.failed_at = datetime.now().isoformat()
             return self.result_object
 
-        str_find = self.args.get("find", "")
-        str_replace = self.args.get("replace", "")
+        str_find = self.args.get("str_find", "")
+        str_replace = self.args.get("str_replace", "")
         listtype = self.args.get("listtype", "newlist")
         number = self.args.get("number")
 
@@ -91,7 +76,7 @@ class FindAndReplaceWorker(BaseObjectsJobWorker):
         except ValueError:
             cap = None
 
-        self.result_object.summary.cap = cap
+        self.result_object.cap = cap
 
         # save json file before start search
         self._save_progress()
@@ -106,7 +91,7 @@ class FindAndReplaceWorker(BaseObjectsJobWorker):
         for i, title in enumerate(titles, start=1):
             logger.debug(f"i: {i}/{total}, page: {title}.")
             if self.is_cancelled():
-                self.result_object.summary.stopped = True
+                self.result_object.stopped = True
                 break
             if cap is not None and self.result_object.summary.changed >= cap:
                 logger.info(f"Job {self.job_id}: Reached cap of {cap} modifications")
@@ -117,35 +102,11 @@ class FindAndReplaceWorker(BaseObjectsJobWorker):
             try:
                 outcome = self._process_one(title, str_find, str_replace)
             except Exception as exc:
-                logger.exception("replace failed for %s", title)
-                self.result_object.summary.errors += 1
-                self.result_object.pages_processed.append(
-                    {
-                        "title": title,
-                        "status": "error",
-                        "msg": str(exc),
-                    }
-                )
+                logger.exception("job failed for %s", title)
+                self.result_object.pages_errors.append({"title": title, "msg": str(exc)})
                 continue
 
-            page_record = {
-                "title": title,
-                "status": outcome.kind,
-                "msg": "",
-                "newrevid": "",
-            }
-            if outcome.kind == "changed":
-                self.result_object.summary.changed += 1
-                page_record["newrevid"] = outcome.newrevid
-
-            elif outcome.kind == "no-changes":
-                self.result_object.summary.no_changes += 1
-            elif outcome.kind == "missing":
-                self.result_object.summary.missing += 1
-            elif outcome.kind == "error":
-                self.result_object.summary.errors += 1
-
-            self.result_object.pages_processed.append(page_record)
+            self.record_page_outcome(outcome, title)
 
             if i == 1 or i % per_item == 0:
                 self._save_progress()
@@ -155,9 +116,31 @@ class FindAndReplaceWorker(BaseObjectsJobWorker):
 
         return self.result_object
 
-    # ------------------------------------------------------------------
-    # Internal helpers
-    # ------------------------------------------------------------------
+    def record_page_outcome(self, outcome: UpdaterOutcome, title: str) -> None:
+
+        page_record = {
+            "title": title,
+            "msg": outcome.msg,
+        }
+        if outcome.kind == "changed":
+            page_record["newrevid"] = outcome.newrevid
+            self.result_object.pages_changed.append(page_record)
+
+        elif outcome.kind == "no_changes":
+            self.result_object.pages_no_changes.append(title)
+
+        elif outcome.kind == "missing":
+            self.result_object.pages_missing.append(title)
+
+        elif outcome.kind == "skipped":
+            self.result_object.pages_skipped.append(page_record)
+
+        elif outcome.kind == "error":
+            self.result_object.pages_errors.append(page_record)
+
+        else:
+            page_record["status"] = outcome.kind
+            self.result_object.pages_processed.append(page_record)
 
     def _resolve_titles(
         self,
@@ -193,17 +176,21 @@ class FindAndReplaceWorker(BaseObjectsJobWorker):
         # oldlist: walk every mainspace page.
         return [p.name for p in titles]
 
-    def _process_one(self, title: str, str_find: str, replace: str) -> UpdaterOutcome:
+    # ------------------------------------------------------------------
+    # Internal helpers
+    # ------------------------------------------------------------------
+
+    def _process_one(self, title: str, str_find: str, str_replace: str) -> UpdaterOutcome:
         if not is_page_exists(title, self.site):
             return UpdaterOutcome(kind="missing")
 
         text = get_page_text(title, self.site)
         if not text or not text.strip():
-            return UpdaterOutcome(kind="no-changes")
+            return UpdaterOutcome(kind="no_changes")
 
-        new_text = text.replace(str_find, replace)
+        new_text = text.replace(str_find, str_replace)
         if new_text == text:
-            return UpdaterOutcome(kind="no-changes")
+            return UpdaterOutcome(kind="no_changes")
 
         summary = "Replace via mdwiki.toolforge.org find-and-replace tool."
         result = edit_page(self.site, title, new_text, summary)
@@ -211,7 +198,7 @@ class FindAndReplaceWorker(BaseObjectsJobWorker):
         if result.get("success"):
             return UpdaterOutcome(kind="changed", newrevid=result.get("newrevid", 0))
 
-        return UpdaterOutcome(kind="error")
+        return UpdaterOutcome(kind="error", msg=result.get("error", "Unknown error"))
 
 
 def find_and_replace_worker_entry(

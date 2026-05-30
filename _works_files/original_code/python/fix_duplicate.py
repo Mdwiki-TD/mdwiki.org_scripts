@@ -23,8 +23,6 @@ for arg in sys.argv:
     # ---
     if arg.lower() in ["offset", "-offset"] and value.isdigit():
         offset[1] = int(value)
-# ---
-from_to = {}
 
 
 @functools.lru_cache(maxsize=1)
@@ -76,28 +74,65 @@ def post_s(params, addtoken=False, files=None):
     return json1
 
 
-def _fix_one(from_title, to_title):
+def _fix_one(from_title, redirect_to, final_target):
     """Treat one double redirect."""
-    # ---
-    if to_title in from_to:
-        to_title = from_to[to_title]
-    # ---
-    newtext = f"#REDIRECT [[{to_title}]]"
     # ---
     main_api = load_main_api()
     # ---
     page = main_api.MainPage(from_title, "www", family="mdwiki")
+    # ---
     _exists = page.exists()
     # ---
     oldtext = page.get_text()
     # ---
-    sus = f"fix duplicate redirect to [[{to_title}]]"
+    # TODO: replace only the link not the whole text, use wikitextparser to analyze the text
+    newtext = f"#REDIRECT [[{final_target}]]"
+    # ---
+    sus = f"fix duplicate redirect to [[{final_target}]]"
     # ---
     if oldtext == newtext:
         logger.info("no changes.")
         return False
     # ---
     return page.save(newtext=newtext, summary=sus)
+
+
+def resolve_redirect_chains(redirects: list[dict]) -> list[dict]:
+    """
+    Resolves a list of redirects into a dictionary tracking the immediate
+    and final targets, excluding any intermediate or final pages from the root keys.
+    """
+    # Create a fast lookup mapping and track all pages that are pointed 'to'
+    redirect_map = {item["from"]: item["to"] for item in redirects if "from" in item and "to" in item}
+    all_targets = set(redirect_map.values())
+
+    resolved_dict = []
+
+    # Process only the root starting pages
+    for start_page in redirect_map.keys():
+        if start_page in all_targets:
+            continue  # Skip intermediate or final pages
+
+        immediate_redirect = redirect_map[start_page]
+
+        # Follow the chain to the absolute final destination
+        final_target = immediate_redirect
+        seen = {start_page, final_target}
+        while final_target in redirect_map:
+            next_target = redirect_map[final_target]
+            if next_target in seen:
+                break
+            seen.add(next_target)
+            final_target = next_target
+
+        page_data = {
+            "title": start_page,
+            "redirect_to": immediate_redirect,
+            "final_target": final_target,
+        }
+        resolved_dict.append(page_data)
+
+    return resolved_dict
 
 
 def main():
@@ -111,19 +146,19 @@ def main():
     # ---
     api = load_main_api()
     # ---
-    redirects = _list_double_redirects(api)
+    redirects_data = _list_double_redirects(api)
     # ---
-    for gg in redirects:
-        from_title = gg["from"]
-        to_title = gg["to"]
-        from_to[from_title] = to_title
+    results = resolve_redirect_chains(redirects_data)
     # ---
-    for nu, title in enumerate(redirects, start=1):
-        from_title = title["from"]
-        logger.info(f'-------\n*<<yellow>> >{nu}/{len(redirects)} from_title:"{from_title}".')
-        to_title = title["to"]
-        if to_title in from_to:
-            _fix_one(from_title, to_title)
+    for nu, entry in enumerate(results, start=1):
+        # { "title": start_page, "redirect_to": immediate_redirect, "final_target": final_target }
+        from_title = entry["title"]
+        redirect_to = entry["redirect_to"]
+        final_target = entry["final_target"]
+
+        logger.info(f'-------\n*<<yellow>> >{nu}/{len(redirects_data)} from_title:"{from_title}".')
+
+        _fix_one(from_title, redirect_to, final_target)
 
 
 if __name__ == "__main__":

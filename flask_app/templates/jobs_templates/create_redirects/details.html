@@ -1,0 +1,60 @@
+{% extends "jobs_templates/base_details2.html" %}
+{%- from "jobs_templates/_help_templates/_jobs_macros.html" import template_pages_changed, template_pages_processed, template_pages_errors, template_pages_only_title -%}
+{% from "_macros.html" import card_header, stats_card %}
+
+{% set job_type = 'create_redirects' %}
+
+{% block job_summary %}
+<div class="row g-3 mb-4">
+    <div class="col-md-2 col-sm-6">
+        {{ stats_card('Processing', result_data.summary.scanned ~ ' / ' ~ result_data.summary.total, "primary", "") }}
+    </div>
+    <div class="col-md-2 col-sm-6">
+        {{ stats_card('Created', result_data.summary.created, 'success', "") }}
+    </div>
+    <div class="col-md-2 col-sm-6">
+        {{ stats_card('skipped', result_data.summary.skipped, 'secondary', "") }}
+    </div>
+    <div class="col-md-2 col-sm-6">
+        {{ stats_card('Already exists', result_data.summary.already_exists, 'secondary', "") }}
+    </div>
+    <div class="col-md-2 col-sm-6">
+        {{ stats_card('Target missing', result_data.summary.target_missing, 'secondary', "") }}
+    </div>
+    <div class="col-md-2 col-sm-6">
+        {{ stats_card('Errors', result_data.summary.errors, 'danger', "") }}
+    </div>
+</div>
+{% endblock %}
+
+{% block job_details %}
+
+{% if result_data and result_data.pages_changed %}
+
+{{ template_pages_changed(wiki_domain, 'Changed Pages', result_data.pages_changed) }}
+
+{% endif %}
+
+{% if result_data and result_data.pages_processed %}
+
+{{ template_pages_processed(wiki_domain, 'Pages Processed', result_data.pages_processed) }}
+
+{% endif %}
+
+{% if result_data and result_data.pages_errors %}
+
+{{ template_pages_errors(wiki_domain, 'Pages Errors', result_data.pages_errors) }}
+
+{% endif %}
+
+{% if result_data and result_data.pages_no_changes %}
+
+{{ template_pages_only_title(wiki_domain, 'Pages no changes', result_data.pages_no_changes) }}
+
+{% endif %}
+{% if result_data and result_data.pages_missing %}
+
+{{ template_pages_only_title(wiki_domain, 'Pages missing', result_data.pages_missing) }}
+
+{% endif %}
+{% endblock %}

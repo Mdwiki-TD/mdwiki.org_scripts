@@ -9,9 +9,8 @@ from __future__ import annotations
 
 import logging
 import threading
-from dataclasses import asdict, dataclass
 from datetime import datetime
-from typing import Any, Dict, Literal
+from typing import Any, Dict
 
 import mwclient
 
@@ -20,26 +19,11 @@ from ....api_services.clients import get_user_site
 from ....api_services.pages_api import edit_page, get_page_text, is_page_exists
 from ....new_jobs.base_worker_object import BaseObjectsJobWorker
 from ....shared.fixref_shared.fixref_text_new import fix_ref_template
-from .objects import FixrefWorkerObject
+from ...shared_objects import SharedworkerObject, UpdaterOutcome
 
 logger = logging.getLogger(__name__)
 
 MAX_PAGES_FIXREF = 20000
-
-
-@dataclass(frozen=True)
-class UpdaterOutcome:
-    """Result of running the updater on one page."""
-
-    kind: Literal["missing", "no-changes", "fixed", "error"]
-    newrevid: int = 0
-
-    @property
-    def has_changes(self) -> bool:
-        return self.kind == "fixed"
-
-    def to_json(self) -> Dict[str, Any]:
-        return asdict(self)
 
 
 class FixrefWorker(BaseObjectsJobWorker):
@@ -58,7 +42,7 @@ class FixrefWorker(BaseObjectsJobWorker):
 
         super().__init__(job_id, user, cancel_event)
 
-        self.result_object: FixrefWorkerObject = FixrefWorkerObject()
+        self.result_object: SharedworkerObject = SharedworkerObject()
 
     # ------------------------------------------------------------------
     # BaseObjectsJobWorker hooks
@@ -95,6 +79,7 @@ class FixrefWorker(BaseObjectsJobWorker):
         logger.info(f"Job {self.job_id}: Processing {total} pages")
 
         for i, title in enumerate(pages, start=1):
+            logger.debug(f"i: {i}/{total}, page: {title}.")
             if self.is_cancelled():
                 break
 
@@ -103,35 +88,11 @@ class FixrefWorker(BaseObjectsJobWorker):
             try:
                 outcome = self._process_one(title)
             except Exception as exc:
-                logger.exception("fixref failed for %s", title)
-                self.result_object.summary.errors += 1
-                self.result_object.pages_processed.append(
-                    {
-                        "title": title,
-                        "status": "error",
-                        "msg": str(exc),
-                    }
-                )
+                logger.exception("job failed for %s", title)
+                self.result_object.pages_errors.append({"title": title, "msg": str(exc)})
                 continue
 
-            page_record = {
-                "title": title,
-                "status": outcome.kind,
-                "msg": "",
-                "newrevid": "",
-            }
-            if outcome.kind == "fixed":
-                self.result_object.summary.fixed += 1
-                page_record["newrevid"] = outcome.newrevid
-
-            elif outcome.kind == "no-changes":
-                self.result_object.summary.no_changes += 1
-            elif outcome.kind == "missing":
-                self.result_object.summary.missing += 1
-            elif outcome.kind == "error":
-                self.result_object.summary.errors += 1
-
-            self.result_object.pages_processed.append(page_record)
+            self.record_page_outcome(outcome, title)
 
             if i == 1 or i % per_item == 0:
                 self._save_progress()
@@ -141,9 +102,31 @@ class FixrefWorker(BaseObjectsJobWorker):
 
         return self.result_object
 
-    # ------------------------------------------------------------------
-    # Internal helpers
-    # ------------------------------------------------------------------
+    def record_page_outcome(self, outcome: UpdaterOutcome, title: str) -> None:
+
+        page_record = {
+            "title": title,
+            "msg": outcome.msg,
+        }
+        if outcome.kind == "changed":
+            page_record["newrevid"] = outcome.newrevid
+            self.result_object.pages_changed.append(page_record)
+
+        elif outcome.kind == "no_changes":
+            self.result_object.pages_no_changes.append(title)
+
+        elif outcome.kind == "missing":
+            self.result_object.pages_missing.append(title)
+
+        elif outcome.kind == "skipped":
+            self.result_object.pages_skipped.append(page_record)
+
+        elif outcome.kind == "error":
+            self.result_object.pages_errors.append(page_record)
+
+        else:
+            page_record["status"] = outcome.kind
+            self.result_object.pages_processed.append(page_record)
 
     def _resolve_targets(
         self,
@@ -192,6 +175,10 @@ class FixrefWorker(BaseObjectsJobWorker):
 
         return []
 
+    # ------------------------------------------------------------------
+    # Internal helpers
+    # ------------------------------------------------------------------
+
     def _process_one(self, title: str) -> UpdaterOutcome:
         if not is_page_exists(title, self.site):
             return UpdaterOutcome(kind="missing")
@@ -205,13 +192,14 @@ class FixrefWorker(BaseObjectsJobWorker):
             summary = "Normalize references"
 
         if new_text == text:
-            return UpdaterOutcome(kind="no-changes")
+            return UpdaterOutcome(kind="no_changes")
 
         result = edit_page(self.site, title, new_text, summary)
-        if result.get("success"):
-            return UpdaterOutcome(kind="fixed", newrevid=result.get("newrevid", 0))
 
-        return UpdaterOutcome(kind="error")
+        if result.get("success"):
+            return UpdaterOutcome(kind="changed", newrevid=result.get("newrevid", 0))
+
+        return UpdaterOutcome(kind="error", msg=result.get("error", "Unknown error"))
 
 
 def fixref_worker_entry(
