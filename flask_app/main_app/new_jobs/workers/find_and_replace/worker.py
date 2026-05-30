@@ -93,6 +93,7 @@ class FindAndReplaceWorker(BaseObjectsJobWorker):
             if self.is_cancelled():
                 self.result_object.stopped = True
                 break
+
             if cap is not None and self.result_object.summary.changed >= cap:
                 logger.info(f"Job {self.job_id}: Reached cap of {cap} modifications")
                 break

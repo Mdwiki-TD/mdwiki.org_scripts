@@ -139,7 +139,7 @@ class BaseObjectsJobWorker(ABC):
         except Exception:
             logger.exception(f"Job {self.job_id}: Failed to save job result")
 
-    def is_cancelled(self) -> bool:
+    def is_cancelled(self, check_db: bool = False) -> bool:
         """Check if the job has been cancelled.
 
         Returns:
@@ -155,10 +155,12 @@ class BaseObjectsJobWorker(ABC):
             self._mark_as_cancelled_in_result()
             return True
 
-        if is_job_cancelled(self.job_id, job_type=self.job_type):
-            logger.info(f"Job {self.job_id}: Global cancellation detected, stopping.")
-            self._mark_as_cancelled_in_result()
-            return True
+        if check_db:
+            # Optimize is_cancelled DB check frequency, by reducing the check frequency (to occur every N cycles).
+            if is_job_cancelled(self.job_id, job_type=self.job_type):
+                logger.info(f"Job {self.job_id}: Global cancellation detected, stopping.")
+                self._mark_as_cancelled_in_result()
+                return True
 
         return False
 
