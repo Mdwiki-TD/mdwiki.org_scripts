@@ -15,7 +15,7 @@ logger = logging.getLogger(__name__)
 P = ParamSpec("P")
 R = TypeVar("R")
 
-def db_try_except(default_return: Any = False):
+def db_guard(default_return: Any = False, msg: str = "") -> Callable[..., Callable[P, R]]:
     """Decorator factory to wrap a DB service function.
 
     On success, the original return value is passed through.
@@ -28,11 +28,14 @@ def db_try_except(default_return: Any = False):
             try:
                 return func(*args, **kwargs)
             except sqlalchemy.exc.OperationalError as exc:
-                logger.error("Failed to check job status: %s", exc)
+                logger.error("DB error in %s", func.__qualname__)
+                logger.exception(f"{msg}: %s", exc)
                 db.session.rollback()
-            except Exception:
-                logger.exception("DB error in %s", func.__qualname__)
+                return default_return
+            except Exception as exc:
+                logger.error("DB error in %s", func.__qualname__)
+                logger.exception(f"{msg}: %s", exc)
                 db.session.rollback()
-            return default_return
+                return default_return
         return wrapper
     return decorator

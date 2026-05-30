@@ -6,7 +6,7 @@ from sqlalchemy import func
 
 from ...extensions import db
 from ..models.jobs import JobRecord
-from .utils import db_try_except
+from .utils import db_guard
 
 logger = logging.getLogger(__name__)
 
@@ -138,7 +138,6 @@ def list_jobs(limit: int = 100, job_type: str | None = None) -> list[JobRecord]:
         query = query.filter(JobRecord.job_type == job_type)
     return query.order_by(JobRecord.created_at.desc()).limit(limit).all()
 
-@db_try_except(default_return=False)
 def delete_job(job_id: int, job_type: str) -> bool:
     """Delete a job by ID and job type efficiently."""
     affected_rows = (
@@ -175,7 +174,7 @@ def cancel_job(job_id: int, job_type: str | None = None) -> bool:
         return True
     return False
 
-@db_try_except(default_return=False)
+@db_guard(default_return=False)
 def is_job_cancelled(job_id: int, job_type: str) -> bool:
     """
     Check if a job is marked as cancelled.

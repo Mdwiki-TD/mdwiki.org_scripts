@@ -1,5 +1,8 @@
 """
 SQLAlchemy-based service for managing coordinators.
+
+only active_coordinators need db_guard
+
 """
 
 from __future__ import annotations
@@ -9,11 +12,16 @@ from typing import List
 
 from ...extensions import db
 from ..models import AdminUserRecord
-from .utils import db_try_except
+from .utils import db_guard
 
 logger = logging.getLogger(__name__)
 
-@db_try_except(default_return=[])
+@db_guard(default_return=[], msg="Failed to active coordinators")
+def active_coordinators() -> list[str]:
+    """Get a list of active coordinator usernames from the database."""
+    records = db.session.query(AdminUserRecord).filter(AdminUserRecord.is_active).all()
+    return [u.username for u in records]
+
 def list_coordinators() -> List[AdminUserRecord]:
     """
     Return all coordinators from the database.
@@ -21,16 +29,6 @@ def list_coordinators() -> List[AdminUserRecord]:
     Returns a list of records, or an empty list on failure.
     """
     return db.session.query(AdminUserRecord).all()
-
-def active_coordinators() -> list[str]:
-    """Get a list of active coordinator usernames from the database."""
-    try:
-        records = db.session.query(AdminUserRecord).filter(AdminUserRecord.is_active).all()
-        return [u.username for u in records]
-    except Exception as e:
-        logger.exception("Failed to fetch active coordinators: %s", e)
-        return []
-
 
 def get_coordinator_by_id(coordinator_id: int) -> AdminUserRecord:
     """
@@ -71,7 +69,6 @@ def set_coordinator_active(coordinator_id: int, is_active: bool) -> AdminUserRec
         return record
 
 
-@db_try_except(default_return=False)
 def delete_coordinator(coordinator_id: int) -> bool:
     """
     Delete a coordinator efficiently.

@@ -25,8 +25,13 @@ bp_coordinators = Blueprint("coordinators", __name__, url_prefix="/coordinators"
 
 def _coordinators_dashboard() -> str:
     """Render the coordinator management dashboard."""
+    try:
+        coordinators = admin_service.list_coordinators()
+    except Exception:  # pragma: no cover - defensive guard
+        logger.exception("Unable to list coordinators.")
+        flash("Unable to list coordinators.", "danger")
+        coordinators = []
 
-    coordinators = admin_service.list_coordinators()
     total = len(coordinators)
     active = sum(1 for coord in coordinators if coord.is_active)
 

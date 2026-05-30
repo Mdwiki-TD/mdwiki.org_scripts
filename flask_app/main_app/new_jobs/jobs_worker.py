@@ -29,7 +29,7 @@ def _pop_cancel_event(task_id: int) -> threading.Event | None:
         return JOBS_CANCEL_EVENTS.pop(task_id, None)
 
 
-def get_jobs_cancel_event(task_id: int) -> threading.Event | None:
+def _get_jobs_cancel_event(task_id: int) -> threading.Event | None:
     with JOBS_CANCEL_EVENTS_LOCK:
         return JOBS_CANCEL_EVENTS.get(task_id)
 
@@ -56,7 +56,7 @@ def cancel_job(task_id: int, job_type: str | None = None) -> bool:
     Returns True if the job was found and cancellation was requested.
     """
     # 1. Try local cancellation (if the job is in this process)
-    cancel_event = get_jobs_cancel_event(task_id)
+    cancel_event = _get_jobs_cancel_event(task_id)
     local_cancelled = False
     if cancel_event:
         cancel_event.set()
@@ -93,8 +93,12 @@ def start_job_with_args(
 
     username = user.get("username") if user else None
 
-    # Create job record
-    job = create_job(job_type, username)
+    try:
+        # Create job record
+        job = create_job(job_type, username)
+    except Exception as e:
+        logger.exception(f"Failed to create job record for job type {job_type}")
+        raise e
 
     cancel_event = threading.Event()
     _register_cancel_event(job.id, cancel_event)

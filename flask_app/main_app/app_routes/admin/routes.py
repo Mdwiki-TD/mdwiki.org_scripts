@@ -8,6 +8,7 @@ from flask import (
     Blueprint,
     render_template,
     request,
+    flash,
 )
 
 from ...db.services import list_users
@@ -41,8 +42,13 @@ def admin_dashboard():
 @admin_required
 def users_dashboard() -> str:
     """Render the coordinator management dashboard."""
+    try:
+        users = list_users()
+    except Exception as e:
+        logger.error(f"Error listing users: {e}")
+        flash("Error listing users", "error")
+        users = []
 
-    users = list_users()
     total = len(users)
 
     return render_template(
