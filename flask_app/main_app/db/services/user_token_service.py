@@ -79,6 +79,7 @@ def delete_user_token(user_id: int) -> bool:
     affected_rows = (
         db.session.query(UserTokenRecord).filter(UserTokenRecord.user_id == user_id).delete(synchronize_session=False)
     )
+    db.session.commit()
     return affected_rows > 0
 
 

@@ -81,6 +81,7 @@ def delete_coordinator(coordinator_id: int) -> bool:
     affected_rows = (
         db.session.query(AdminUserRecord).filter(AdminUserRecord.id == coordinator_id).delete(synchronize_session=False)
     )
+    db.session.commit()
     return affected_rows > 0
 
 

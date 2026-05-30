@@ -147,6 +147,7 @@ def delete_job(job_id: int, job_type: str) -> bool:
         .filter(JobRecord.id == job_id, JobRecord.job_type == job_type)
         .delete(synchronize_session=False)
     )
+    db.session.commit()
     return affected_rows > 0
 
 
