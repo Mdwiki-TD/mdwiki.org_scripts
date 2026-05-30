@@ -237,7 +237,7 @@ for b in parsed.get_bolds():
   `contents == ''`.
 - **`tag.attrs` keys/values are decoded strings**, but the underlying
   matcher works on bytes — exotic UTF-8 attribute values may round-trip
-  through `.encode('ascii', 'replace')`. For ASCII-only attributes (the
+  through `.encode('ascii', 'str_replace')`. For ASCII-only attributes (the
   norm) this is fine.
 - **`<ref name="x"/>` reuse** has `contents is None`. Don't compare against
   `''`.

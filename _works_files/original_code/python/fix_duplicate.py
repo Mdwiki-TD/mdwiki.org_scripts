@@ -74,7 +74,7 @@ def post_s(params, addtoken=False, files=None):
     return json1
 
 
-def _fix_one(from_title, redirect_to, to_title):
+def _fix_one(from_title, redirect_to, final_target):
     """Treat one double redirect."""
     # ---
     main_api = load_main_api()
@@ -86,9 +86,9 @@ def _fix_one(from_title, redirect_to, to_title):
     oldtext = page.get_text()
     # ---
     # TODO: replace only the link not the whole text, use wikitextparser to analyze the text
-    newtext = f"#REDIRECT [[{to_title}]]"
+    newtext = f"#REDIRECT [[{final_target}]]"
     # ---
-    sus = f"fix duplicate redirect to [[{to_title}]]"
+    sus = f"fix duplicate redirect to [[{final_target}]]"
     # ---
     if oldtext == newtext:
         logger.info("no changes.")

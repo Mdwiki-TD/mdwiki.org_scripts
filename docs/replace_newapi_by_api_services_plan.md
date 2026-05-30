@@ -716,7 +716,7 @@ Already uses `api_services` for `resolve_redirects` and `get_user_site`. Remaini
 +    if not site:
 +        abort(401, "Wiki authentication required")
      runner.submit(
-         "replace",
+         "str_replace",
          svc.run,
          submitted_by=user.username,
          params={...},
@@ -1072,7 +1072,7 @@ def start_replace():
     if not site:
         abort(401, "Wiki authentication required. Please log in again.")
     runner.submit(
-        "replace",
+        "str_replace",
         svc.run,
         submitted_by=user.username,
         params={...},

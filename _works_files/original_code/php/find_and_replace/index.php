@@ -2,8 +2,8 @@
 include_once __DIR__ . '/../header.php';
 //---
 $listtype   = $_GET['listtype'] ?? $_POST['listtype'] ?? '';
-$find       = $_GET['find'] ?? $_POST['find'] ?? '';
-$replace    = $_GET['replace'] ?? $_POST['replace'] ?? '';
+$find       = $_GET['str_find'] ?? $_POST['str_find'] ?? '';
+$replace    = $_GET['str_replace'] ?? $_POST['str_replace'] ?? '';
 $number     = $_GET['number'] ?? $_POST['number'] ?? '';
 //---
 $valid_user = $username == 'Doc James' || $username == 'Mr. Ibrahem';
@@ -31,15 +31,15 @@ function generateForm($find, $replace, $number)
 
     $findRow = <<<HTML
         <div class='form-group'>
-            <label for='find'>Find:</label>
-            <textarea class='form-control' cols='40' rows='6' id='find' name='find' required>$find</textarea>
+            <label for='str_find'>Find:</label>
+            <textarea class='form-control' cols='40' rows='6' id='str_find' name='str_find' required>$find</textarea>
         </div>
     HTML;
 
     $replaceRow = <<<HTML
         <div class='form-group'>
-            <label for='replace'>Replace with:</label>
-            <textarea class='form-control' cols='40' rows='6' id='replace' name='replace' placeholder='(write empty to replace it with empty value.)' required>$replace</textarea>
+            <label for='str_replace'>Replace with:</label>
+            <textarea class='form-control' cols='40' rows='6' id='str_replace' name='str_replace' placeholder='(write empty to replace it with empty value.)' required>$replace</textarea>
         </div>
     HTML;
 
@@ -108,8 +108,8 @@ function performReplacement($find, $replace, $number, $listtype)
 {
     //---
     $data = [
-        'find' => "",
-        'replace' => "",
+        'str_find' => "",
+        'str_replace' => "",
         'number' => "",
         'listtype' => ""
     ];
@@ -122,8 +122,8 @@ function performReplacement($find, $replace, $number, $listtype)
         writeToFile($nn, 'find.txt', $find);
         // ---
         writeToFile($nn, 'replace.txt', $replace);
-        $data['find'] = $find;
-        $data['replace'] = $replace;
+        $data['str_find'] = $find;
+        $data['str_replace'] = $replace;
     }
 
     $data['number'] = $number;

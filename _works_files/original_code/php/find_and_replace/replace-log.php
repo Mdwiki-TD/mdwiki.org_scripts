@@ -180,14 +180,14 @@ if ($id == '') {
         //---
         $find_row = "
         <div class='form-group'>
-            <label for='find'>Find:</label>
-            <textarea class='form-control' id='find' name='find' readonly='true'>$find</textarea>
+            <label for='str_find'>Find:</label>
+            <textarea class='form-control' id='str_find' name='str_find' readonly='true'>$find</textarea>
         </div>";
         //---
         $replace_row = "
         <div class='form-group'>
-            <label for='replace'>Replace with:</label>
-            <textarea class='form-control' id='replace' name='replace' readonly='true'>$replace</textarea>
+            <label for='str_replace'>Replace with:</label>
+            <textarea class='form-control' id='str_replace' name='str_replace' readonly='true'>$replace</textarea>
         </div>";
         //---
         echo "

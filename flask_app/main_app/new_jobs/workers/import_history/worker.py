@@ -101,6 +101,7 @@ class ImportHistoryWorker(BaseObjectsJobWorker):
         return self.result_object
 
     def record_page_outcome(self, outcome: UpdaterOutcome, title: str) -> None:
+
         page_record = {
             "title": title,
             "msg": outcome.msg,
@@ -118,6 +119,7 @@ class ImportHistoryWorker(BaseObjectsJobWorker):
 
         elif outcome.kind == "error":
             self.result_object.pages_errors.append(page_record)
+
         else:
             page_record["status"] = outcome.kind
             self.result_object.pages_processed.append(page_record)
@@ -168,9 +170,10 @@ class ImportHistoryWorker(BaseObjectsJobWorker):
 
             logger.warning(f"Job {self.job_id}: fallback save failed too for {fallback_title}")
 
-            return UpdaterOutcome(kind="error")
+            return UpdaterOutcome(kind="error", msg=fallback_result.get("error", "Unknown error"))
 
-        return "imported"
+        # return UpdaterOutcome(kind="imported")
+        return UpdaterOutcome(kind="error", msg="Unknown error")
 
 
 def import_history_worker_entry(

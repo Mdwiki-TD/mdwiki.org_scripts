@@ -58,8 +58,8 @@ class FindAndReplaceWorker(BaseObjectsJobWorker):
             self.result_object.failed_at = datetime.now().isoformat()
             return self.result_object
 
-        str_find = self.args.get("find", "")
-        str_replace = self.args.get("replace", "")
+        str_find = self.args.get("str_find", "")
+        str_replace = self.args.get("str_replace", "")
         listtype = self.args.get("listtype", "newlist")
         number = self.args.get("number")
 
@@ -122,7 +122,6 @@ class FindAndReplaceWorker(BaseObjectsJobWorker):
         page_record = {
             "title": title,
             "msg": outcome.msg,
-            "newrevid": "",
         }
         if outcome.kind == "changed":
             page_record["newrevid"] = outcome.newrevid
@@ -182,7 +181,7 @@ class FindAndReplaceWorker(BaseObjectsJobWorker):
     # Internal helpers
     # ------------------------------------------------------------------
 
-    def _process_one(self, title: str, str_find: str, replace: str) -> UpdaterOutcome:
+    def _process_one(self, title: str, str_find: str, str_replace: str) -> UpdaterOutcome:
         if not is_page_exists(title, self.site):
             return UpdaterOutcome(kind="missing")
 
@@ -190,7 +189,7 @@ class FindAndReplaceWorker(BaseObjectsJobWorker):
         if not text or not text.strip():
             return UpdaterOutcome(kind="no_changes")
 
-        new_text = text.replace(str_find, replace)
+        new_text = text.replace(str_find, str_replace)
         if new_text == text:
             return UpdaterOutcome(kind="no_changes")
 
@@ -200,7 +199,7 @@ class FindAndReplaceWorker(BaseObjectsJobWorker):
         if result.get("success"):
             return UpdaterOutcome(kind="changed", newrevid=result.get("newrevid", 0))
 
-        return UpdaterOutcome(kind="error")
+        return UpdaterOutcome(kind="error", msg=result.get("error", "Unknown error"))
 
 
 def find_and_replace_worker_entry(

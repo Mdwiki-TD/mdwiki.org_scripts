@@ -104,7 +104,7 @@ Edit `flask_app/main_app/new_jobs/workers_list.py`:
 
 **Worker logic:** Copy `_resolve_titles()` and `_process_one()` from old worker. Use `get_user_site(self.user)`.
 
-**Args:** `self.args.get("find")`, `self.args.get("replace", "")`, `self.args.get("listtype", "newlist")`, `self.args.get("number")`.
+**Args:** `self.args.get("str_find")`, `self.args.get("str_replace", "")`, `self.args.get("listtype", "newlist")`, `self.args.get("number")`.
 
 **Template form:** Find/replace textareas, listtype dropdown, number input (same as old template).
 

@@ -108,7 +108,6 @@ class FixrefWorker(BaseObjectsJobWorker):
         page_record = {
             "title": title,
             "msg": outcome.msg,
-            "newrevid": "",
         }
         if outcome.kind == "changed":
             page_record["newrevid"] = outcome.newrevid
@@ -197,10 +196,11 @@ class FixrefWorker(BaseObjectsJobWorker):
             return UpdaterOutcome(kind="no_changes")
 
         result = edit_page(self.site, title, new_text, summary)
+
         if result.get("success"):
             return UpdaterOutcome(kind="changed", newrevid=result.get("newrevid", 0))
 
-        return UpdaterOutcome(kind="error")
+        return UpdaterOutcome(kind="error", msg=result.get("error", "Unknown error"))
 
 
 def fixref_worker_entry(

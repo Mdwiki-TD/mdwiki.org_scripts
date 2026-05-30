@@ -88,7 +88,7 @@ function generateEditForm($title, $newtext = '')
     if (!empty($newtext)) {
         $form .= <<<HTML
             <div class='form-group'>
-                <label for='find'>new text:</label>
+                <label for='str_find'>new text:</label>
                 <textarea id='wikitext-new' class='form-control' name='wpTextbox1' rows='5'>$newtext</textarea>
             </div>
             <div class='editOptions aligncenter'>

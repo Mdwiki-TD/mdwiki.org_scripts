@@ -101,24 +101,30 @@ class FixredAllWorker(BaseObjectsJobWorker):
         return self.result_object
 
     def record_page_outcome(self, outcome: UpdaterOutcome, title: str) -> None:
+
         page_record = {
             "title": title,
-            "status": outcome.kind,
             "msg": outcome.msg,
-            "newrevid": "",
         }
         if outcome.kind == "changed":
-            self.result_object.summary.changed += 1
             page_record["newrevid"] = outcome.newrevid
+            self.result_object.pages_changed.append(page_record)
 
         elif outcome.kind == "no_changes":
-            self.result_object.summary.no_changes += 1
-        elif outcome.kind == "missing":
-            self.result_object.summary.missing += 1
-        elif outcome.kind == "error":
-            self.result_object.summary.errors += 1
+            self.result_object.pages_no_changes.append(page_record)
 
-        self.result_object.pages_processed.append(page_record)
+        elif outcome.kind == "missing":
+            self.result_object.pages_missing.append(title)
+
+        elif outcome.kind == "skipped":
+            self.result_object.pages_skipped.append(page_record)
+
+        elif outcome.kind == "error":
+            self.result_object.pages_errors.append(page_record)
+
+        else:
+            page_record["status"] = outcome.kind
+            self.result_object.pages_processed.append(page_record)
 
     # ------------------------------------------------------------------
     # Internal helpers
@@ -142,7 +148,7 @@ class FixredAllWorker(BaseObjectsJobWorker):
         if result.get("success"):
             return UpdaterOutcome(kind="changed", newrevid=result.get("newrevid", 0))
 
-        return UpdaterOutcome(kind="error")
+        return UpdaterOutcome(kind="error", msg=result.get("error", "Unknown error"))
 
 
 def fixred_all_worker_entry(

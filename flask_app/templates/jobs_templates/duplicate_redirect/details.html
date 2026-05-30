@@ -44,7 +44,8 @@
                     <tr>
                         <th>#</th>
                         <th>From</th>
-                        <th>To</th>
+                        <th>Redirect to</th>
+                        <th>Final target</th>
                         <th>Status</th>
                         <th>Message</th>
                     </tr>
@@ -54,7 +55,8 @@
                     <tr>
                         <td> {{ loop.index }} </td>
                         <td>{{ item.from_title if item.from_title else '-' }}</td>
-                        <td>{{ item.to_title if item.to_title else '-' }}</td>
+                        <td>{{ item.redirect_to if item.redirect_to else '-' }}</td>
+                        <td>{{ item.final_target if item.final_target else '-' }}</td>
                         <td>
                             {{ status_icon(item.status) }}
                         </td>

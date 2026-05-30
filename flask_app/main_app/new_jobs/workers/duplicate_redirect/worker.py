@@ -127,7 +127,7 @@ class DuplicateRedirectWorker(BaseObjectsJobWorker):
                 self.result_object.pages_errors.append(
                     {
                         "from_title": from_title,
-                        "to_title": final_target,
+                        "final_target": final_target,
                         "msg": str(exc),
                     }
                 )
@@ -150,26 +150,29 @@ class DuplicateRedirectWorker(BaseObjectsJobWorker):
 
         page_record = {
             "from_title": from_title,
-            "to_title": final_target,
-            "status": outcome.kind,
-            "msg": f"{from_title} -> {redirect_to} -> {final_target}",
-            "newrevid": "",
+            "final_target": final_target,
+            "redirect_to": redirect_to,
+            "msg": outcome.msg,
         }
         if outcome.kind == "changed":
-            self.result_object.summary.changed += 1
             page_record["newrevid"] = outcome.newrevid
+            self.result_object.pages_changed.append(page_record)
 
         elif outcome.kind == "no_changes":
-            self.result_object.summary.no_changes += 1
+            self.result_object.pages_no_changes.append(page_record)
+
         elif outcome.kind == "missing":
-            self.result_object.summary.missing += 1
+            self.result_object.pages_missing.append(from_title)
+
+        elif outcome.kind == "skipped":
+            self.result_object.pages_skipped.append(page_record)
+
         elif outcome.kind == "error":
-            self.result_object.summary.errors += 1
+            self.result_object.pages_errors.append(page_record)
 
         else:
             page_record["status"] = outcome.kind
-
-        self.result_object.pages_processed.append(page_record)
+            self.result_object.pages_processed.append(page_record)
 
 
     # ------------------------------------------------------------------
@@ -197,7 +200,7 @@ class DuplicateRedirectWorker(BaseObjectsJobWorker):
         if result.get("success"):
             return UpdaterOutcome(kind="changed", newrevid=result.get("newrevid", 0))
 
-        return UpdaterOutcome(kind="error")
+        return UpdaterOutcome(kind="error", msg=result.get("error", "Unknown error"))
 
 
 def duplicate_redirect_worker_entry(

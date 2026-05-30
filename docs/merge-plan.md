@@ -181,7 +181,7 @@ flow → edge cases → tests**.
 -   **Auth:** `@login_required`.
 -   **Service:** `services.fix_duplicate.run(*, save: bool, offset: int = 0,
 on_progress=None) -> JobResult`. Iterates `DoubleRedirects`, for each pair
-    runs `fix_dup(from_title, to_title)` lifted out of
+    runs `fix_dup(from_title, final_target)` lifted out of
     `python/fix_duplicate.py`. Returns counts of (`scanned`, `fixed`,
     `unchanged`, `errors`).
 -   **Flow:** 1. GET `/dup/` → render form (with auth-aware “please log in” banner if
