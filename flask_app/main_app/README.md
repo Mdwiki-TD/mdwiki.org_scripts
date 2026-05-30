@@ -90,7 +90,7 @@ migrate = Migrate()
 
 -   **No dependency injection** — tight coupling to `settings` singleton
 -   **`shared/` package** contains complex wikitext processing with poor documentation
--   **Worker objects** duplicate similar Summary dataclasses per worker type
+-   **Worker objects partially consolidated** — `SharedworkerObject` in `new_jobs/shared_objects.py` replaces per-worker dataclasses for 4 workers; 3 workers retain local objects
 -   **No middleware** for request logging, timing, or metrics
 -   **`load_auth_payload`** passes encrypted bytes without explicit decryption context
 -   **All error handlers** render `index.html` — no dedicated error pages
@@ -118,7 +118,7 @@ All error handlers render `index.html` with a flash message — users get no use
 -   [ ] Create dedicated error templates
 -   [ ] Add request logging middleware
 -   [ ] Document the `shared/` package's wikitext processing logic
--   [ ] Consolidate duplicate WorkerObject/Summary dataclasses
+-   [ ] Consolidate remaining worker Summary dataclasses into `shared_objects.py`
 -   [ ] Add proper DB session rollback handling
 
 ## Improvement Plan
@@ -132,7 +132,7 @@ All error handlers render `index.html` with a flash message — users get no use
 ### Medium-Term
 
 1. Add request timing middleware
-2. Consolidate worker result dataclasses
+2. Consolidate remaining worker Summary dataclasses
 3. Add pytest fixtures for app factory with TestingConfig
 
 ### Long-Term

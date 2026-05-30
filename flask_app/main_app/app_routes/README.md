@@ -22,7 +22,7 @@ app_routes/
 ├── newupdater/
 │   ├── __init__.py
 │   ├── route.py          # bp_newupdater — medical content updater
-│   └── worker.py         # UpdaterOutcome + work_on_title()
+│   └── worker.py         # UpdaterTextOutcome + work_on_title()
 └── utils/
     ├── __init__.py
     └── routes_utils.py   # load_auth_payload(), get_job_detail_url()

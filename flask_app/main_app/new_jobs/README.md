@@ -114,6 +114,14 @@ class SharedworkerObject(WorkerObject):
 Single `jobs_data` dict keyed by job type, each entry a `JobData` dataclass:
 
 ```python
+@dataclass
+class JobData:
+    job_type: str
+    job_name: str
+    job_callable: Callable
+    job_list_template: str
+    job_details_template: Optional[str] = "jobs_templates/_help_templates/shared_details.html"
+
 jobs_data = {
     "fixref": JobData(
         job_type="fixref",
