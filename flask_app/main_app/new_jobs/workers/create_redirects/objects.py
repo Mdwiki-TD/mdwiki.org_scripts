@@ -33,5 +33,6 @@ class CreateRedirectsWorkerObject(WorkerObject):
 
 
 __all__ = [
+    "RedirectsSummary",
     "CreateRedirectsWorkerObject",
 ]

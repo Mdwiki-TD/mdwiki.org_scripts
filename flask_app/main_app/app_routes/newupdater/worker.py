@@ -34,7 +34,8 @@ def work_on_title(
 
     user = current_user()
     if user is None:
-        return UpdaterTextOutcome(kind="notext")
+        return UpdaterTextOutcome(kind="skipped", msg="No user")
+
     user_dict = {
         "access_token": user.access_token,
         "access_secret": user.access_secret,
