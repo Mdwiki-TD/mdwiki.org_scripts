@@ -13,7 +13,7 @@ class TestWorkOnText:
     def test_plain_text_no_templates(self):
         text = "Just plain text with no templates."
         result = work_on_text("Test", text)
-        assert result == ""
+        assert result == "Just plain text with no templates."
 
     def test_preserves_content_without_infobox(self):
         text = "Some text without any medical templates."

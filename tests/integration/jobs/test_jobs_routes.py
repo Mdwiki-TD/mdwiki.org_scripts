@@ -337,15 +337,11 @@ class TestJobsRouteIntegration:
         resp = mock_client.get(f"/new_jobs/{VALID_JOB_TYPE}/{job_id}")
         assert resp.status_code == 200
 
-        # Cancel
-        with patch(
-            "flask_app.main_app.app_routes.new_jobs.jobs_worker.cancel_job",
-            return_value=True,
-        ):
-            resp = mock_client.post(
-                f"/new_jobs/{VALID_JOB_TYPE}/{job_id}/cancel",
-                follow_redirects=True,
-            )
+        # Cancel (no mock — let the real cancel_job_db update the DB)
+        resp = mock_client.post(
+            f"/new_jobs/{VALID_JOB_TYPE}/{job_id}/cancel",
+            follow_redirects=True,
+        )
 
         assert resp.status_code == 200
 

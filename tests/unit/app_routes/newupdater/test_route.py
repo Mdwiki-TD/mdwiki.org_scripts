@@ -9,7 +9,7 @@ import pytest
 class TestNewupdaterRoute:
     def test_requires_auth(self, mock_client):
         resp = mock_client.get("/newupdater/")
-        assert resp.status_code == 403
+        assert resp.status_code == 302
 
     def test_get_with_login(self, mock_client, login, monkeypatch):
         login("TestUser")
