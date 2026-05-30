@@ -91,6 +91,9 @@ class FixRedAllWorker(BaseObjectsJobWorker):
 
             self.record_page_outcome(outcome, title)
 
+            if outcome.kind == "changed" and self.check_cancel_db_periodic():
+                break
+
             if i == 1 or i % per_item == 0:
                 self._save_progress()
 

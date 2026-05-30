@@ -74,6 +74,7 @@ class BaseObjectsJobWorker(ABC):
         self.result_object: WorkerObject = None
 
         self.result_file_cancelled: str = f"{self.result_file}.cancelled"
+        self._edit_count: int = 0
 
     @abstractmethod
     def get_job_type(self) -> str:
@@ -162,6 +163,24 @@ class BaseObjectsJobWorker(ABC):
                 self._mark_as_cancelled_in_result()
                 return True
 
+        return False
+
+    def check_cancel_db_periodic(self, interval: int = 10) -> bool:
+        """
+        Increment edit counter and check DB cancellation every `interval` edits.
+
+        Call this after a successful edit (when outcome.newrevid exists)
+        to periodically verify if an admin cancelled the job via the DB.
+
+        Args:
+            interval: Check DB every N successful edits (default 10).
+
+        Returns:
+            True if cancelled, False otherwise.
+        """
+        self._edit_count += 1
+        if self._edit_count % interval == 0:
+            return self.is_cancelled(check_db=True)
         return False
 
     def _mark_as_cancelled_in_result(self) -> None:

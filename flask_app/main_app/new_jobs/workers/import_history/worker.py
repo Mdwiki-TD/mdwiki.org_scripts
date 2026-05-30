@@ -91,6 +91,10 @@ class ImportHistoryWorker(BaseObjectsJobWorker):
 
             self.record_page_outcome(outcome, title)
 
+            # Check DB if the job cancelled every N successful edits
+            if outcome.kind in ("imported", "imported_fallback") and self.check_cancel_db_periodic():
+                break
+
             if i == 1 or i % per_item == 0:
                 self._save_progress()
 
