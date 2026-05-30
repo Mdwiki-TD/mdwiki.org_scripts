@@ -10,4 +10,4 @@ class TestAddToTables:
         text = "Just plain text with no tables."
         result = add_to_tables(text, {}, [])
         # Should return text unchanged or handle gracefully
-        assert result == ""
+        assert result == "Just plain text with no tables."
