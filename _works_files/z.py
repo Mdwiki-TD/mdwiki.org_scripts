@@ -21,6 +21,7 @@ def generate_domain_test_placeholders(src_root, test_root):
             target_dir = test_base_unit / rel_path
             if file.endswith(".py"):
                 parent_name = current_path.stem
+                file_path = current_path / file
 
                 file_stem = Path(file).stem
                 if "routes" in current_path.parts or file_stem == "routes":
@@ -39,7 +40,6 @@ def generate_domain_test_placeholders(src_root, test_root):
                     test_filename = f"test_{file_stem}.py"
 
                 if file == "__init__.py":
-                    file_path = current_path / file
                     file_content = file_path.read_text(encoding="utf-8")
                     if "def " not in file_content:
                         continue
@@ -56,10 +56,11 @@ def generate_domain_test_placeholders(src_root, test_root):
                 internal_path = "/".join(parts[parts.index("flask_app") :])
 
                 _new = [
-                    r'"""',
+                    '"""',
                     f'Unit tests for {internal_path}/{file} module.',
                     'TODO: write tests',
-                    r'\n"""'
+                    '"""',
+                    '\n',
                 ]
                 content_new = "\n".join(_new)
 

@@ -33,3 +33,8 @@ def replace_wikilink_destinations(text: str, redirect_to: str, final_target: str
 
     # Return the updated wikitext as a string
     return parsed_text.string
+
+__all__ = [
+    "replace_redirect_link",
+    "replace_wikilink_destinations",
+]
