@@ -1,11 +1,8 @@
 {% extends "jobs_templates/base_details2.html" %}
-{% from "_macros.html" import card_header, stats_card, diff_link, wiki_domain_link %}
-{%- from "jobs_templates/_help_templates/_jobs_macros.html" import template_pages_changed, template_pages_processed -%}
-{%- from "jobs_templates/_help_templates/_jobs_macros.html" import template_pages_errors -%}
+{% from "_macros.html" import stats_card %}
+{%- from "jobs_templates/_help_templates/_jobs_macros.html" import template_pages_changed, template_pages_processed, template_pages_errors, template_pages_only_title -%}
 
 {% set job_type = 'import_history' %}
-
-
 
 {% block job_summary %}
 <div class="row g-3 mb-4">
@@ -36,14 +33,26 @@
 
 {% endif %}
 
-{% if result_data and result_data.pages_errors %}
-{{ template_pages_errors(wiki_domain, 'Pages Errors', result_data.pages_errors) }}
-{% endif %}
-
 {% if result_data and result_data.pages_processed %}
 
 {{ template_pages_processed(wiki_domain, 'Pages Processed', result_data.pages_processed) }}
 
 {% endif %}
 
+{% if result_data and result_data.pages_errors %}
+
+{{ template_pages_errors(wiki_domain, 'Pages Errors', result_data.pages_errors) }}
+
+{% endif %}
+
+{% if result_data and result_data.pages_no_changes %}
+
+{{ template_pages_only_title(wiki_domain, 'Pages no changes', result_data.pages_no_changes) }}
+
+{% endif %}
+{% if result_data and result_data.pages_missing %}
+
+{{ template_pages_only_title(wiki_domain, 'Pages missing', result_data.pages_missing) }}
+
+{% endif %}
 {% endblock %}

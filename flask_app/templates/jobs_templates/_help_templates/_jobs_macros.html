@@ -105,3 +105,37 @@
     </div>
 </div>
 {%- endmacro -%}
+
+
+
+{# {%- from "jobs_templates/_help_templates/_jobs_macros.html" import template_pages_only_title -%} #}
+
+{% macro template_pages_only_title(domain, title, data) %}
+<div class="card mb-3">
+    <div class="card-header">
+        {{ card_header(title ~ " (" ~ data|length ~ ")") }}
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-striped table-sm">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Title</th>
+                        <th>Msg</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for title in data %}
+                    <tr>
+                        <td> {{ loop.index }} </td>
+                        <td> {{ wiki_domain_link(domain, title) }} </td>
+                        <td><small></small></td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{%- endmacro -%}
