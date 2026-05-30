@@ -22,7 +22,8 @@ def generate_domain_test_placeholders(src_root, test_root):
             if file.endswith(".py"):
 
                 if file == "__init__.py":
-                    file_content = Path(file).read_text(encoding="utf-8")
+                    file_path = current_path / file
+                    file_content = file_path.read_text(encoding="utf-8")
                     if "def " not in file_content:
                         continue
 
