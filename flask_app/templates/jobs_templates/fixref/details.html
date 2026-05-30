@@ -1,29 +1,34 @@
 {% extends "jobs_templates/base_details2.html" %}
-{% from "_macros.html" import card_header, status_icon, stats_card %}
+{%- from "jobs_templates/_help_templates/_jobs_macros.html" import template_pages_changed, template_pages_processed, template_pages_errors -%}
 
 {% set job_type = 'fixref' %}
-
 {% block detail_title %}Normalize References{% endblock %}
 {% block detail_headline %}Normalize References{% endblock %}
 
 {% block job_summary %}
+
 {% include 'jobs_templates/_help_templates/_job_summary.html' %}
-<div class="table-responsive">
-    <table class="table table-striped table-sm mb-0">
-        <thead>
-            <tr>
-                <th>Metric</th>
-                <th>Count</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for key, value in result_data.summary.items() %}
-            <tr>
-                <td>{{ key }}</td>
-                <td>{{ value }}</td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
-</div>
+
+{% endblock %}
+
+{% block job_details %}
+
+{% if result_data and result_data.pages_changed %}
+
+{{ template_pages_changed(wiki_domain, 'Changed Pages', result_data.pages_changed) }}
+
+{% endif %}
+
+{% if result_data and result_data.pages_processed %}
+
+{{ template_pages_processed(wiki_domain, 'Pages Processed', result_data.pages_processed) }}
+
+{% endif %}
+
+{% if result_data and result_data.pages_errors %}
+
+{{ template_pages_errors(wiki_domain, 'Pages Errors', result_data.pages_errors) }}
+
+{% endif %}
+
 {% endblock %}

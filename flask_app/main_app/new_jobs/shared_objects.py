@@ -4,12 +4,11 @@ from __future__ import annotations
 
 import logging
 from dataclasses import asdict, dataclass, field
-from typing import Any, Literal, Optional
+from typing import Any, Literal
 
 from ..new_jobs.base_worker_object import WorkerObject
 
 logger = logging.getLogger(__name__)
-
 
 @dataclass(frozen=True)
 class UpdaterOutcome:
@@ -19,10 +18,6 @@ class UpdaterOutcome:
     newrevid: int = 0
     msg: str = ""
 
-    @property
-    def has_changes(self) -> bool:
-        return self.kind == "changed"
-
     def to_json(self) -> dict[str, Any]:
         return asdict(self)
 
@@ -31,14 +26,6 @@ class UpdaterOutcome:
 class Summary:
     scanned: int = 0
     total: int = 0
-
-    changed: int = 0
-    errors: int = 0
-    skipped: Optional[int] = 0
-
-    no_changes: int = 0
-    missing: int = 0
-
 
 @dataclass
 class SharedworkerObject(WorkerObject):

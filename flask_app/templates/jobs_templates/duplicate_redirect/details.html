@@ -36,10 +36,8 @@
                         <td>{{ item.from_title if item.from_title else '-' }}</td>
                         <td>{{ item.redirect_to if item.redirect_to else '-' }}</td>
                         <td>{{ item.final_target if item.final_target else '-' }}</td>
-                        <td>
-                            {{ status_icon(item.status) }}
-                        </td>
-                        <td><small>{{ item.msg if item.msg else '' }}</small></td>
+                        <td> {{ status_icon(item.status) }} </td>
+                        <td><small>{{ item.msg }}</small></td>
                     </tr>
                     {% endfor %}
                 </tbody>

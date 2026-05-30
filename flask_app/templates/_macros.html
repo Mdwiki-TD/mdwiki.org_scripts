@@ -145,15 +145,15 @@
 {%- endmacro -%}
 
 {# Diff link #}
-{% macro diff_link(newrevid) %}
-<a href="https://{{ wiki_domain }}/w/index.php?diff={{ newrevid }}" target="_blank">
+{% macro diff_link(domain, newrevid) %}
+<a href="https://{{ domain }}/w/index.php?diff={{ newrevid }}" target="_blank">
     Diff
 </a>
 {%- endmacro -%}
 
 {# wiki domain link #}
-{% macro wiki_domain_link(title) %}
-<a href="https://{{ wiki_domain }}/wiki/{{ title | replace(' ', '_') | urlencode }}" target="_blank">
+{% macro wiki_domain_link(domain, title) %}
+<a href="https://{{ domain }}/wiki/{{ title | replace(' ', '_') | urlencode }}" target="_blank">
     {{ title }}
 </a>
 {%- endmacro -%}

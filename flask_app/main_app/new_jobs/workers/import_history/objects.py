@@ -7,6 +7,7 @@ from dataclasses import asdict, dataclass, field
 from typing import Any, Literal
 
 from ....new_jobs.base_worker_object import WorkerObject
+from ...shared_objects import Summary
 
 logger = logging.getLogger(__name__)
 
@@ -19,19 +20,8 @@ class UpdaterOutcome:
     newrevid: int = 0
     msg: str = ""
 
-    @property
-    def has_changes(self) -> bool:
-        return self.kind == "changed"
-
     def to_json(self) -> dict[str, Any]:
         return asdict(self)
-
-
-@dataclass
-class Summary:
-    scanned: int = 0
-    total: int = 0
-
 
 @dataclass
 class ImportHistoryWorkerObject(WorkerObject):
@@ -51,7 +41,6 @@ class ImportHistoryWorkerObject(WorkerObject):
 
 
 __all__ = [
-    "Summary",
     "ImportHistoryWorkerObject",
     "UpdaterOutcome",
 ]

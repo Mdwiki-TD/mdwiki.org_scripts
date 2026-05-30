@@ -27,7 +27,7 @@ class Summary:
 @dataclass
 class CreateRedirectsWorkerObject(WorkerObject):
     summary: Summary = field(default_factory=Summary)
-
+    pages_to_work: list[str] = field(default_factory=list)
     pages_processed: list[dict[str, Any]] = field(default_factory=list)
     pages_errors: list[dict[str, Any]] = field(default_factory=list)
 

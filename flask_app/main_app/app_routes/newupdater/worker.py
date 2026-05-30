@@ -13,8 +13,8 @@ out of scope for the merge.
 from __future__ import annotations
 
 import logging
-from dataclasses import asdict, dataclass
-from typing import Any, Literal
+
+from ...shared.shared_classes import UpdaterTextOutcome
 
 from ...api_services.clients.wiki_client import get_user_site
 from ...api_services.pages_api import edit_page, get_page_text
@@ -23,31 +23,13 @@ from ...su_services.users_service import current_user
 
 logger = logging.getLogger(__name__)
 
-
-@dataclass(frozen=True)
-class UpdaterOutcome:
-    """Result of running the updater on one page."""
-
-    kind: Literal["notext", "no_changes", "changes", "saved"]
-    old_text: str = ""
-    new_text: str = ""
-    newrevid: int = 0
-    msg: str = ""
-
-    @property
-    def has_changes(self) -> bool:
-        return self.kind == "changes"
-
-    def to_json(self) -> dict[str, Any]:
-        return asdict(self)
-
-
 def work_on_title(
     title: str,
     save: bool = False,
     summary: str = "Med updater.",
-) -> UpdaterOutcome:
-    """Fetch the page, run the updater, and report what the diff would be.
+) -> UpdaterTextOutcome:
+    """
+    Fetch the page, run the updater, and report what the diff would be.
 
     Returns one of:
 
@@ -58,7 +40,7 @@ def work_on_title(
 
     user = current_user()
     if user is None:
-        return UpdaterOutcome(kind="notext")
+        return UpdaterTextOutcome(kind="notext")
     user_dict = {
         "access_token": user.access_token,
         "access_secret": user.access_secret,
@@ -67,14 +49,14 @@ def work_on_title(
 
     title = (title or "").strip()
     if not title:
-        return UpdaterOutcome(kind="notext")
+        return UpdaterTextOutcome(kind="notext")
 
     old_text = get_page_text(title, site)
     if old_text is None:
-        return UpdaterOutcome(kind="notext")
+        return UpdaterTextOutcome(kind="notext")
 
     if not old_text.strip():
-        return UpdaterOutcome(kind="notext", old_text=old_text)
+        return UpdaterTextOutcome(kind="notext", old_text=old_text)
 
     try:
         new_text = work_on_text(title, old_text)
@@ -83,20 +65,20 @@ def work_on_title(
         raise
 
     if not new_text or not new_text.strip():
-        return UpdaterOutcome(kind="notext", old_text=old_text)
+        return UpdaterTextOutcome(kind="notext", old_text=old_text)
 
     if new_text == old_text:
-        return UpdaterOutcome(kind="no_changes", old_text=old_text, new_text=new_text)
+        return UpdaterTextOutcome(kind="no_changes", old_text=old_text, new_text=new_text)
 
     if save:
         result = edit_page(site, title, new_text, summary)
         if result.get("success"):
-            return UpdaterOutcome(kind="saved", newrevid=result.get("newrevid", 0))
+            return UpdaterTextOutcome(kind="saved", newrevid=result.get("newrevid", 0))
 
-    return UpdaterOutcome(kind="changes", old_text=old_text, new_text=new_text)
+    return UpdaterTextOutcome(kind="changes", old_text=old_text, new_text=new_text)
 
 
 __all__ = [
-    "UpdaterOutcome",
+    "UpdaterTextOutcome",
     "work_on_title",
 ]

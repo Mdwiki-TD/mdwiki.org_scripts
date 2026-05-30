@@ -7,22 +7,9 @@ from dataclasses import dataclass, field
 from typing import Any, Optional
 
 from ....new_jobs.base_worker_object import WorkerObject
+from ...shared_objects import Summary
 
 logger = logging.getLogger(__name__)
-
-
-@dataclass
-class Summary:
-    scanned: int = 0
-    total: int = 0
-
-    changed: int = 0
-    errors: int = 0
-    skipped: Optional[int] = 0
-
-    no_changes: int = 0
-    missing: int = 0
-
 
 @dataclass
 class FindAndReplaceWorkerObject(WorkerObject):

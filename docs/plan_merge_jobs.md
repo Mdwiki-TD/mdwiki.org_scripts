@@ -63,7 +63,7 @@ Create `flask_app/templates/new_jobs_templates/<job_type>/` with:
 **`details.html`** — extends `base_details2.html`:
 
 -   Set `job_type = '<job_type>'`
--   Block `detail_title` / `detail_headline`: human-readable name
+-   Set `detail_title` / `detail_headline`: human-readable name
 -   Block `job_summary`: show summary counters from `result_data.summary`
 -   Block `job_details`: show any per-page tracking lists if applicable
 

@@ -118,11 +118,7 @@ class CreateRedirectsWorker(BaseObjectsJobWorker):
             self.result_object.failed_at = datetime.now().isoformat()
             return self.result_object
 
-        titles_raw = self.args.get("titles", [])
-        if isinstance(titles_raw, str):
-            titles = [t.strip() for t in titles_raw.splitlines() if t.strip()]
-        else:
-            titles = [t.replace("_", " ").strip() for t in titles_raw if t and t.strip()]
+        titles = self._resolve_titles()
 
         total = len(titles)
         self.result_object.summary.total = total
@@ -166,6 +162,16 @@ class CreateRedirectsWorker(BaseObjectsJobWorker):
             self.result_object.status = "completed"
 
         return self.result_object
+
+    def _resolve_titles(self):
+        titles_raw = self.args.get("titles", [])
+        if isinstance(titles_raw, str):
+            titles = [t.strip() for t in titles_raw.splitlines() if t.strip()]
+        else:
+            titles = [t.replace("_", " ").strip() for t in titles_raw if t and t.strip()]
+
+        self.result_object.pages_to_work = titles
+        return titles
 
     # ------------------------------------------------------------------
     # Internal helpers
