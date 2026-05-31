@@ -75,14 +75,13 @@ CREATE TABLE users (
     user_id    INT NOT NULL,
     username   VARCHAR(255) NOT NULL,
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     PRIMARY KEY (user_id),
     UNIQUE KEY uq_users_username (username)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- 2. Migrate data from user_tokens → users
-INSERT INTO users (user_id, username, created_at, updated_at)
-SELECT user_id, username, created_at, updated_at FROM user_tokens;
+INSERT INTO users (user_id, username, created_at)
+SELECT user_id, username, created_at FROM user_tokens;
 
 -- 5. Add new FK from admin_users → users
 ALTER TABLE admin_users
