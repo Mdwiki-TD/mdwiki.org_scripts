@@ -125,7 +125,7 @@ class TestReplaceWikilinkDestinations:
         input_text = "نص [[  مصر  ]] قديم."
         redirect_to = "مصر"
         final_target = "جمهورية مصر العربية"
-        expected_text = "نص [[جمهورية مصر العربية]]."
+        expected_text =  "نص [[جمهورية مصر العربية]] قديم."
 
         result = replace_wikilink_destinations(input_text, redirect_to, final_target)
 
