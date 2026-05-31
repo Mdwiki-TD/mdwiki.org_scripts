@@ -87,15 +87,15 @@ The `user_tokens` table was split into two tables to resolve FK constraint error
 
 ### Remaining (not fixed — medium/low priority)
 
-| Violation | File                                                    | Severity  |
-| --------- | ------------------------------------------------------- | --------- |
-| V-R5      | `admin/sidebar.py` — HTML via f-strings                 | 🟢 Low    |
-| V-C1      | `core/cookies.py` — test utility in core                | 🟡 Medium |
-| V-CF3     | `logger_config.py` — duplicate env var read             | 🟡 Medium |
-| V-X2      | `add_r_column/worker.py` — 314 lines                    | 🟡 Medium |
-| V-X5      | `import_history/objects.py` — duplicated UpdaterOutcome | 🟡 Medium |
-| V-X2      | `drugbox.py` — 317 lines                                | 🟡 Medium |
-| V-X2      | `bot_params.py` — 356 lines                             | 🟡 Medium |
+| Violation | File                                                    | Severity  | Notes        |
+| --------- | ------------------------------------------------------- | --------- | ------------ |
+| V-R5      | `admin/sidebar.py` — HTML via f-strings                 | 🟢 Low    |              |
+| V-C1      | `core/cookies.py` — test utility in core                | 🟡 Medium |              |
+| V-CF3     | `logger_config.py` — duplicate env var read             | 🟡 Medium | Intentional  |
+| V-X2      | `add_r_column/worker.py` — 314 lines                    | 🟡 Medium |              |
+| V-X5      | `import_history/objects.py` — duplicated UpdaterOutcome | 🟡 Medium |              |
+| V-X2      | `drugbox.py` — 317 lines                                | 🟡 Medium |              |
+| V-X2      | `bot_params.py` — 356 lines                             | 🟡 Medium |              |
 
 ---
 
@@ -723,6 +723,8 @@ Move directory creation to app startup in `create_app()`.
 
 **How to Fix**:
 Import `MAIN_DIR` resolution from `config.settings.paths` instead of re-reading `os.getenv`.
+
+**Status**: Intentional — logger must initialize before the app/config is created. Not a violation.
 
 ---
 
