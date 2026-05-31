@@ -18,7 +18,7 @@ class TestNewupdaterRoute:
         from flask_app.main_app.su_services.objects import CurrentUser
 
         monkeypatch.setattr(
-            "flask_app.main_app.app_routes.auth.utils.current_user",
+            "flask_app.main_app.app_routes.auth.utils.load_user",
             lambda: CurrentUser(user_id="1", username="TestUser"),
         )
         resp = mock_client.get("/newupdater/")

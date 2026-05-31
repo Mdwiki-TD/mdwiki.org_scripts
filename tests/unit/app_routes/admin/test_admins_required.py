@@ -15,7 +15,7 @@ class TestAdminRequired:
             return "ok"
 
         with app.test_request_context("/admin"):
-            with patch("flask_app.main_app.app_routes.admin.admins_required.current_user", return_value=None):
+            with patch("flask_app.main_app.app_routes.admin.admins_required.load_user", return_value=None):
                 response = view()
                 assert response.status_code == 302
                 assert "/login" in response.location
@@ -28,7 +28,7 @@ class TestAdminRequired:
         with app.test_request_context("/admin"):
             user = MagicMock()
             user.username = "regular_user"
-            with patch("flask_app.main_app.app_routes.admin.admins_required.current_user", return_value=user):
+            with patch("flask_app.main_app.app_routes.admin.admins_required.load_user", return_value=user):
                 with patch(
                     "flask_app.main_app.app_routes.admin.admins_required.active_coordinators", return_value=["admin"]
                 ):
@@ -43,7 +43,7 @@ class TestAdminRequired:
         with app.test_request_context("/admin"):
             user = MagicMock()
             user.username = "admin_user"
-            with patch("flask_app.main_app.app_routes.admin.admins_required.current_user", return_value=user):
+            with patch("flask_app.main_app.app_routes.admin.admins_required.load_user", return_value=user):
                 with patch(
                     "flask_app.main_app.app_routes.admin.admins_required.active_coordinators",
                     return_value=["admin_user"],
