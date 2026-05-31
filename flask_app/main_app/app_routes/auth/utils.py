@@ -31,6 +31,7 @@ def _resolve_user_id(uid) -> int | None:
     except (TypeError, ValueError):
         return None
 
+
 def load_logged_in_user() -> None:
     """Automatically load the user from session or cookie before each request.
 
