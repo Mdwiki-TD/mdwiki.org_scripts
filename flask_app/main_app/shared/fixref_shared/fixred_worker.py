@@ -24,7 +24,7 @@ def _replace_links(
     Mirror of legacy ``replace_links2``.
 
     Each wikilink
-        - ``[[old]]`` becomes ``[[new|old]]`` (preserve the originaldisplay text);
+        - ``[[old]]`` becomes ``[[new|old]]`` (preserve the original display text);
         - ``[[old|...]]`` becomes ``[[new|...]]``.
 
     Also handles the normalized-title alias if present in ``state.normalized``.
