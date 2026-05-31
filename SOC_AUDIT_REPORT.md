@@ -566,11 +566,13 @@ Extract `_enwiki_redirects_for()` into `api_services/enwiki_api.py` or add to `a
 
 ---
 
-### [🟠 High] V-API2: Domain filtering logic in API service
+### [🟠 High] V-API2: Domain filtering logic in API service ✅ FIXED
 
 **File**: `flask_app/main_app/api_services/category.py`
 **Line(s)**: 51–58
 **Violation**: V-API2
+
+**Fix**: Removed `get_category_members()` entirely. Production code already uses `get_category_members_api()` directly.
 
 **Problem**:
 `get_category_members()` applies domain-specific filtering — only `Template:` namespace titles, excluding `owidslider` and `owid`. This is a business decision that doesn't belong in an API client wrapper.
@@ -592,11 +594,13 @@ Remove `get_category_members()` or rename it. Callers should call `get_category_
 
 ---
 
-### [🟠 High] V-X3: Mutable singleton `settings` with side effects
+### [🟠 High] V-X3: Mutable singleton `settings` with side effects ✅ FIXED
 
 **File**: `flask_app/main_app/config/main_settings.py`
 **Line(s)**: 264
 **Violation**: V-X3
+
+**Fix**: Moved `mkdir()` out of `_get_paths()`. Added `ensure_directories()` function called from `create_app()` at startup.
 
 **Problem**:
 `settings = get_settings()` is a module-level singleton. The `@lru_cache` on `get_settings()` means the object is created once and shared across all threads. While the Settings dataclass itself is frozen, the `_get_paths()` call inside creates directories as a side effect.
@@ -617,11 +621,13 @@ Move `mkdir()` calls to app startup in the factory (`create_app()`), not in the 
 
 ---
 
-### [🟠 High] V-C1: SQLAlchemy import in app factory
+### [🟠 High] V-C1: SQLAlchemy import in app factory ✅ FIXED
 
 **File**: `flask_app/main_app/__init__.py`
 **Line(s)**: 12, 79
 **Violation**: V-C1
+
+**Fix**: Moved `OperationalError` handling to `db/__init__.py`'s `init_db()` which now raises `DatabaseInitError`. Factory catches the domain exception.
 
 **Problem**:
 The application factory imports `sqlalchemy.exc.OperationalError` and catches it directly. This couples the factory to the database layer.
