@@ -25,13 +25,9 @@ from mwoauth import RequestToken
 
 from ...config import settings
 from ...db.services import delete_user_token
-from ...su_services.users_service import UserService
+from ...su_services.auth_service import OAuthCallbackError, complete_oauth_callback
 from .cookie import extract_user_id, sign_state_token, sign_user_id, verify_state_token
-from .oauth import (
-    OAuthIdentityError,
-    complete_login,
-    start_login,
-)
+from .oauth import OAuthIdentityError, start_login
 from .rate_limit import callback_rate_limiter, login_rate_limiter
 from .utils import load_logged_in_user
 
@@ -160,58 +156,14 @@ def callback() -> Response:
     # ------------------
     # access_token, identity
     try:
-        query_string = urlencode(request.args)
-        access_token, identity = complete_login(request_token, query_string)
+        user_id, username, user_record = complete_oauth_callback(request_token, urlencode(request.args))
     except OAuthIdentityError:
         logger.exception("OAuth identity verification failed")
         flash("Failed to verify OAuth identity", "danger")
         return redirect(url_for("main.index"))
-
-    # ------------------
-    # access_key, access_secret
-    token_key = getattr(access_token, "key", None)
-    token_secret = getattr(access_token, "secret", None)
-
-    if not (token_key and token_secret) and isinstance(access_token, Sequence):
-        token_key = access_token[0]
-        token_secret = access_token[1]
-
-    if not (token_key and token_secret):
-        logger.error("OAuth access token missing key/secret")
-        flash("Missing OAuth credentials", "danger")
-        return redirect(url_for("main.index"))
-
-    # ------------------
-    # user info
-    user_identifier = identity.get("sub") or identity.get("id") or identity.get("central_id") or identity.get("user_id")
-    if not user_identifier:
-        flash("Missing user id", "danger")
-        return redirect(url_for("main.index"))
-
-    try:
-        user_id = int(user_identifier)
-    except (TypeError, ValueError):
-        logger.exception("Invalid user identifier")
-        flash("Invalid user identifier", "danger")
-        return redirect(url_for("main.index"))
-
-    username = identity.get("username") or identity.get("name")
-    if not username:
-        flash("Missing username", "danger")
-        return redirect(url_for("main.index"))
-
-    # ------------------
-    # upsert credentials
-    user_record = UserService.save_and_get_user(
-        user_id=user_id,
-        username=username,
-        access_key=str(token_key),
-        access_secret=str(token_secret),
-    )
-
-    if not user_record:
-        logger.error("Failed to upsert user credentials")
-        flash("Failed to process user credentials", "danger")
+    except OAuthCallbackError as exc:
+        logger.error("OAuth callback failed: %s", exc)
+        flash(str(exc), exc.flash_category)
         return redirect(url_for("main.index"))
 
     # Set sessions

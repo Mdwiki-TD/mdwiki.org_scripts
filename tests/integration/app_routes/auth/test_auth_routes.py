@@ -127,7 +127,7 @@ class TestCallbackRoute:
                 return_value="my_nonce",
             ),
             patch(
-                "flask_app.main_app.app_routes.auth.routes.complete_login",
+                "flask_app.main_app.su_services.auth_service.complete_login",
                 return_value=(fake_access, fake_identity),
             ),
         ):
@@ -155,7 +155,7 @@ class TestCallbackRoute:
                 return_value="my_nonce",
             ),
             patch(
-                "flask_app.main_app.app_routes.auth.routes.complete_login",
+                "flask_app.main_app.su_services.auth_service.complete_login",
                 return_value=(fake_access, fake_identity),
             ),
         ):
@@ -184,7 +184,7 @@ class TestCallbackRoute:
                 return_value="my_nonce",
             ),
             patch(
-                "flask_app.main_app.app_routes.auth.routes.complete_login",
+                "flask_app.main_app.su_services.auth_service.complete_login",
                 return_value=(fake_access, fake_identity),
             ),
         ):
@@ -210,7 +210,7 @@ class TestCallbackRoute:
                 return_value="my_nonce",
             ),
             patch(
-                "flask_app.main_app.app_routes.auth.routes.complete_login",
+                "flask_app.main_app.su_services.auth_service.complete_login",
                 return_value=(fake_access, fake_identity),
             ),
         ):
@@ -238,7 +238,7 @@ class TestCallbackRoute:
                 return_value="my_nonce",
             ),
             patch(
-                "flask_app.main_app.app_routes.auth.routes.complete_login",
+                "flask_app.main_app.su_services.auth_service.complete_login",
                 return_value=(fake_access, fake_identity),
             ),
         ):
@@ -346,7 +346,7 @@ class TestAuthRouteIntegration:
                 return_value="my_nonce",
             ),
             patch(
-                "flask_app.main_app.app_routes.auth.routes.complete_login",
+                "flask_app.main_app.su_services.auth_service.complete_login",
                 return_value=(fake_access, fake_identity),
             ),
         ):
