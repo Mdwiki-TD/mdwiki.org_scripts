@@ -22,8 +22,10 @@ from flask import (
     url_for,
 )
 from mwoauth import RequestToken
+
 from ...config import settings
 from ...db.services import delete_user_token
+from ...su_services.new_user_service import UserService
 from ...su_services.objects import CurrentUser
 from .cookie import extract_user_id, sign_state_token, sign_user_id, verify_state_token
 from .oauth import (
@@ -32,7 +34,6 @@ from .oauth import (
     start_login,
 )
 from .rate_limit import callback_rate_limiter, login_rate_limiter
-from ...su_services.new_user_service import UserService
 from .utils import load_logged_in_user
 
 logger = logging.getLogger(__name__)
@@ -45,6 +46,7 @@ request_token_key = settings.sessions.request_token_key
 # ---------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------
+
 
 def _client_key() -> str:
     forwarded_for = request.headers.get("X-Forwarded-For")
@@ -62,9 +64,11 @@ def _load_request_token(raw: Sequence[Any] | None):
 
     return RequestToken(raw[0], raw[1])
 
+
 # ---------------------------------------------------------
 # Hooks
 # ---------------------------------------------------------
+
 
 # Register the hook right after defining the blueprint
 @bp_auth.before_app_request
@@ -72,9 +76,11 @@ def before_request():
     """Automatically load the user before any route is processed."""
     load_logged_in_user()
 
+
 # ---------------------------------------------------------
 # Routes
 # ---------------------------------------------------------
+
 
 @bp_auth.get("/login")
 def login() -> Response:

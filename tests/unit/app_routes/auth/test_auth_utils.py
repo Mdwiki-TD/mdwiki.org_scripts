@@ -6,6 +6,7 @@ from unittest.mock import MagicMock, patch
 
 from flask_app.main_app.app_routes.auth.utils import oauth_required
 
+
 def test_oauth_required_decorator_no_user(app):
     @oauth_required
     def protected():

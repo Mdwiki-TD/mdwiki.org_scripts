@@ -169,5 +169,4 @@ def create_app(config_class: Type) -> Flask:
                 return None
             return render_template("index_db_error.html"), 503
 
-
     return app

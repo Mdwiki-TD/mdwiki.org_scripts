@@ -15,6 +15,7 @@ from ..db.services import get_user_token
 FuncType = TypeVar("FuncType", bound=Callable[..., Any])
 logger = logging.getLogger(__name__)
 
+
 def _resolve_user_id() -> int | None:
     uid = session.get("uid")
     if isinstance(uid, int):
@@ -47,6 +48,7 @@ def current_user() -> Optional[UserTokenRecord]:
 
     g._current_user = user  # type: ignore[attr-defined]
     return user
+
 
 __all__ = [
     "current_user",

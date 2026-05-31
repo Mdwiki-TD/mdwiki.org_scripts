@@ -1,5 +1,5 @@
-
 from dataclasses import dataclass
+
 
 @dataclass(frozen=True)
 class CurrentUser:
@@ -7,4 +7,3 @@ class CurrentUser:
 
     user_id: str
     username: str
-
