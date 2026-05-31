@@ -33,7 +33,7 @@ class TestLoadAuthPayload:
 
     def test_with_magic_mock_fallback(self):
         """MagicMock without to_auth_payload should use fallback path."""
-        user = MagicMock()
+        user = MagicMock(spec=["user_id", "username", "access_token", "access_secret"])
         user.user_id = 42
         user.username = "TestUser"
         user.access_token = "token123"
