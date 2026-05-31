@@ -136,6 +136,8 @@ The project demonstrates **good overall layering** — services correctly own DB
 **Problem**:
 The `callback()` function is 107 lines of OAuth orchestration: rate limiting, state verification, token extraction, identity parsing, credential upsert, session/cookie management. This business logic belongs in a service.
 
+**Fix**: Created `su_services/auth_service.py` with `complete_oauth_callback()`. Callback reduced to 51 lines — only HTTP concerns remain.
+
 **Offending Code**:
 
 ```python
