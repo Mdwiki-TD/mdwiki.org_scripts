@@ -15,87 +15,87 @@ All High and Medium violations from the original audit have been resolved. Below
 
 The `user_tokens` table was split into two tables to resolve FK constraint errors on logout:
 
-- **`users`** — stable identity (`user_id` PK, `username` UNIQUE, `created_at`)
-- **`user_tokens`** — OAuth credentials, FK → `users.user_id` with `ON DELETE CASCADE`
-- `admin_users.username` FK → `users.username` with `ON DELETE CASCADE`
-- `jobs.username` — no FK (jobs persist independently)
-- New model: `UsersRecord` in `db/models/users.py`
-- New composite: `CurrentUser` dataclass in `su_services/current_user.py`
-- New CRUD: `create_user`, `get_user`, `get_user_by_username`, `delete_user` in `db/services/user_token_service.py`
-- Migration SQL: `docs/plans/users_table_split.md`
+-   **`users`** — stable identity (`user_id` PK, `username` UNIQUE, `created_at`)
+-   **`user_tokens`** — OAuth credentials, FK → `users.user_id` with `ON DELETE CASCADE`
+-   `admin_users.username` FK → `users.username` with `ON DELETE CASCADE`
+-   `jobs.username` — no FK (jobs persist independently)
+-   New model: `UsersRecord` in `db/models/users.py`
+-   New composite: `CurrentUser` dataclass in `su_services/current_user.py`
+-   New CRUD: `create_user`, `get_user`, `get_user_by_username`, `delete_user` in `db/services/user_token_service.py`
+-   Migration SQL: `docs/plans/users_table_split.md`
 
 ### V-R1: Business logic in route — `callback()` (FIXED)
 
-- Created `su_services/auth_service.py` with `complete_oauth_callback()`
-- `auth/routes.py` callback reduced from 107 → 51 lines
-- Token extraction, identity parsing, credential upsert moved to service
+-   Created `su_services/auth_service.py` with `complete_oauth_callback()`
+-   `auth/routes.py` callback reduced from 107 → 51 lines
+-   Token extraction, identity parsing, credential upsert moved to service
 
 ### V-R3: Direct model imports in routes (FIXED — all 4 files)
 
-| File | Fix |
-|------|-----|
-| `fixred.py` | Removed `UserTokenRecord` import |
-| `newupdater/route.py` | Removed `UserTokenRecord` import |
-| `routes_utils.py` | Removed `UserTokenRecord` import; uses `CurrentUser.to_auth_payload()` |
+| File                           | Fix                                                                                             |
+| ------------------------------ | ----------------------------------------------------------------------------------------------- |
+| `fixred.py`                    | Removed `UserTokenRecord` import                                                                |
+| `newupdater/route.py`          | Removed `UserTokenRecord` import                                                                |
+| `routes_utils.py`              | Removed `UserTokenRecord` import; uses `CurrentUser.to_auth_payload()`                          |
 | `admin_routes/coordinators.py` | Removed `sqlalchemy.exc.IntegrityError` import; added `UserNotFoundError` to `admin_service.py` |
 
 ### V-M2: Business logic in model (FIXED)
 
-- `UserTokenRecord.decrypted()` retained on model (pure data transform, no side effects)
-- Model now references `users` table via FK; username accessed through `record.user.username`
+-   `UserTokenRecord.decrypted()` retained on model (pure data transform, no side effects)
+-   Model now references `users` table via FK; username accessed through `record.user.username`
 
 ### V-X3: Thread-unsafe mutable globals (FIXED — all 3 files)
 
-| File | Fix |
-|------|-----|
-| `core/crypto.py` | Added `threading.Lock` with double-checked locking |
+| File                | Fix                                                                           |
+| ------------------- | ----------------------------------------------------------------------------- |
+| `core/crypto.py`    | Added `threading.Lock` with double-checked locking                            |
 | `make_title_bot.py` | Removed global `Title_cash`; `make_title()` now accepts optional `cache` dict |
-| `resources_new.py` | `page_identifier_params` is now a local variable in `move_resources()` |
+| `resources_new.py`  | `page_identifier_params` is now a local variable in `move_resources()`        |
 
 ### V-BG2: Direct HTTP bypassing api_services (FIXED — both files)
 
-| File | Fix |
-|------|-----|
-| `make_title_bot.py` | HTTP call extracted to `api_services/citation_api.py` |
-| `create_redirects/worker.py` | HTTP call extracted to `api_services/enwiki_api.py` |
+| File                         | Fix                                                   |
+| ---------------------------- | ----------------------------------------------------- |
+| `make_title_bot.py`          | HTTP call extracted to `api_services/citation_api.py` |
+| `create_redirects/worker.py` | HTTP call extracted to `api_services/enwiki_api.py`   |
 
 ### New files created
 
-| File | Purpose |
-|------|---------|
-| `su_services/auth_service.py` | OAuth callback business logic |
-| `su_services/current_user.py` | `CurrentUser` composite dataclass |
-| `api_services/citation_api.py` | Wikipedia citation REST API client |
-| `api_services/enwiki_api.py` | English Wikipedia redirect API client |
+| File                                   | Purpose                                       |
+| -------------------------------------- | --------------------------------------------- |
+| `su_services/auth_service.py`          | OAuth callback business logic                 |
+| `su_services/current_user.py`          | `CurrentUser` composite dataclass             |
+| `api_services/citation_api.py`         | Wikipedia citation REST API client            |
+| `api_services/enwiki_api.py`           | English Wikipedia redirect API client         |
 | `db/__init__.py` — `DatabaseInitError` | Domain exception replacing `OperationalError` |
 
 ### V-API2: Domain filter in API layer (FIXED)
 
-- Removed `get_category_members()` from `api_services/category.py`
-- Production code already uses `get_category_members_api()` directly
+-   Removed `get_category_members()` from `api_services/category.py`
+-   Production code already uses `get_category_members_api()` directly
 
 ### V-C1: SQLAlchemy import in app factory (FIXED)
 
-- Moved `OperationalError` handling to `db/__init__.py`'s `init_db()`
-- `init_db()` now raises `DatabaseInitError` on failure
-- Factory catches domain exception instead of SQLAlchemy exception
+-   Moved `OperationalError` handling to `db/__init__.py`'s `init_db()`
+-   `init_db()` now raises `DatabaseInitError` on failure
+-   Factory catches domain exception instead of SQLAlchemy exception
 
 ### V-X3: Settings singleton side effects (FIXED)
 
-- Moved `mkdir()` out of `config/main_settings.py`'s `_get_paths()`
-- Added `ensure_directories()` function, called from `create_app()` at startup
+-   Moved `mkdir()` out of `config/main_settings.py`'s `_get_paths()`
+-   Added `ensure_directories()` function, called from `create_app()` at startup
 
 ### Remaining (not fixed — medium/low priority)
 
-| Violation | File | Severity |
-|-----------|------|----------|
-| V-R5 | `admin/sidebar.py` — HTML via f-strings | 🟢 Low |
-| V-C1 | `core/cookies.py` — test utility in core | 🟡 Medium |
-| V-CF3 | `logger_config.py` — duplicate env var read | 🟡 Medium |
-| V-X2 | `add_r_column/worker.py` — 314 lines | 🟡 Medium |
-| V-X5 | `import_history/objects.py` — duplicated UpdaterOutcome | 🟡 Medium |
-| V-X2 | `drugbox.py` — 317 lines | 🟡 Medium |
-| V-X2 | `bot_params.py` — 356 lines | 🟡 Medium |
+| Violation | File                                                    | Severity  |
+| --------- | ------------------------------------------------------- | --------- |
+| V-R5      | `admin/sidebar.py` — HTML via f-strings                 | 🟢 Low    |
+| V-C1      | `core/cookies.py` — test utility in core                | 🟡 Medium |
+| V-CF3     | `logger_config.py` — duplicate env var read             | 🟡 Medium |
+| V-X2      | `add_r_column/worker.py` — 314 lines                    | 🟡 Medium |
+| V-X5      | `import_history/objects.py` — duplicated UpdaterOutcome | 🟡 Medium |
+| V-X2      | `drugbox.py` — 317 lines                                | 🟡 Medium |
+| V-X2      | `bot_params.py` — 356 lines                             | 🟡 Medium |
 
 ---
 
@@ -125,16 +125,16 @@ The project demonstrates **good overall layering** — services correctly own DB
 
 ## Layer Health Overview (post-fixes)
 
-| Layer                          | Status    | Notes                                                        |
-| ------------------------------ | --------- | ------------------------------------------------------------ |
-| Routes (`app_routes/`)         | ✅ Clean  | No model imports; callback delegates to service              |
-| Services (`db/services/`)      | ✅ Clean  | All commits and queries properly located                     |
-| Models (`db/models/`)          | ✅ Clean  | `UsersRecord` + `UserTokenRecord` with proper FK separation  |
-| Core (`core/`)                 | ⚠️ Issues | Thread-safe `_fernet`; test utility still in core/           |
-| Config (`config/`)             | ✅ Clean  | No side effects; `ensure_directories()` at startup           |
-| Background Jobs (`new_jobs/`)  | ✅ Clean  | No route imports; proper app context; HTTP routed via api    |
-| API Services (`api_services/`) | ✅ Clean  | No domain filters; pure API client layer                     |
-| Extensions (`extensions.py`)   | ✅ Clean  | Bare `ext = ExtensionClass()` pattern                        |
+| Layer                          | Status    | Notes                                                       |
+| ------------------------------ | --------- | ----------------------------------------------------------- |
+| Routes (`app_routes/`)         | ✅ Clean  | No model imports; callback delegates to service             |
+| Services (`db/services/`)      | ✅ Clean  | All commits and queries properly located                    |
+| Models (`db/models/`)          | ✅ Clean  | `UsersRecord` + `UserTokenRecord` with proper FK separation |
+| Core (`core/`)                 | ⚠️ Issues | Thread-safe `_fernet`; test utility still in core/          |
+| Config (`config/`)             | ✅ Clean  | No side effects; `ensure_directories()` at startup          |
+| Background Jobs (`new_jobs/`)  | ✅ Clean  | No route imports; proper app context; HTTP routed via api   |
+| API Services (`api_services/`) | ✅ Clean  | No domain filters; pure API client layer                    |
+| Extensions (`extensions.py`)   | ✅ Clean  | Bare `ext = ExtensionClass()` pattern                       |
 
 ---
 
@@ -365,11 +365,13 @@ except UserNotFoundError as exc:
 
 ---
 
-### [🟠 High] V-M2: Business logic in model method
+### [🟠 High] V-M2: Business logic in model method ✅ FIXED
 
 **File**: `flask_app/main_app/db/models/users.py`
 **Line(s)**: 82–87
 **Violation**: V-M2
+
+**Fix**: Removed `decrypted()` method and `core.crypto` import from model. Decryption is handled by callers at the service layer.
 
 **Problem**:
 `UserTokenRecord.decrypted()` calls `decrypt_value` from `core.crypto`, embedding cryptographic decryption logic in an ORM model. Models should be data structures, not security service providers.
@@ -694,11 +696,13 @@ Move to `tests/utils/` or `utils/testing.py`.
 
 ---
 
-### [🟡 Medium] V-CF1: `mkdir()` side effect in config loader
+### [🟡 Medium] V-CF1: `mkdir()` side effect in config loader ✅ FIXED
 
 **File**: `flask_app/main_app/config/main_settings.py`
 **Line(s)**: 147
 **Violation**: V-CF1
+
+**Fix**: Moved `mkdir()` to `ensure_directories()`, called from `create_app()` at startup.
 
 **Problem**:
 `Path(dir_name).mkdir(parents=True, exist_ok=True)` creates filesystem directories during config loading.
