@@ -7,7 +7,7 @@ from __future__ import annotations
 import logging
 from typing import Any, Tuple, Type
 
-from flask import Flask, flash, render_template
+from flask import Flask, flash, render_template, g
 from flask_wtf.csrf import CSRFError, CSRFProtect
 from sqlalchemy.exc import OperationalError
 
@@ -19,22 +19,18 @@ from .db import init_db
 from .db.services import active_coordinators
 from .extensions import db as _db
 from .extensions import migrate
-from .su_services.users_service import current_user
 
 logger = logging.getLogger(__name__)
 
-
-def context_user() -> dict[str, any]:
+def context_user() -> dict[str, Any]:
     """
-    used in @app.context_processor
+    Used in @app.context_processor to inject variables into templates.
     """
-    try:
-        user = current_user()
-    except Exception as e:
-        logger.error("Error getting current user: %s", e)
-        user = None
+    # Safe retrieval from g with a fallback to None
+    user = getattr(g, "_current_user", None)
 
     username = user.username if user else None
+
     return {
         "current_user": user,
         "is_authenticated": user is not None,
@@ -43,7 +39,6 @@ def context_user() -> dict[str, any]:
         "wiki_domain": settings.other.wiki_domain,
         "static_server": settings.other.static_server,
     }
-
 
 def register_error_pages(app: Flask):
     @app.errorhandler(400)

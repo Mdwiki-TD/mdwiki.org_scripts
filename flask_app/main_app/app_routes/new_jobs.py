@@ -7,6 +7,7 @@ from typing import Any
 
 from flask import (
     Blueprint,
+    g,
     abort,
     flash,
     jsonify,
@@ -18,7 +19,6 @@ from flask import (
 from flask.typing import ResponseReturnValue
 from werkzeug.wrappers.response import Response
 
-from ..db.models import JobRecord
 from ..db.services import (
     active_coordinators,
     delete_job,
@@ -28,7 +28,6 @@ from ..db.services import (
 from ..new_jobs import jobs_worker
 from ..new_jobs.workers_list import jobs_data
 from ..su_services import load_job_result
-from ..su_services.users_service import current_user
 from .utils.routes_utils import load_auth_payload
 
 logger = logging.getLogger(__name__)
@@ -54,7 +53,7 @@ def _can_manage_job(job: Any, user: Any) -> bool:
 
 def _cancel_job(job_id: int, job_type: str) -> Response:
     """Cancel a running job."""
-    user = current_user()
+    user = getattr(g, "_current_user", None)
     if not user:
         flash("You must be logged in to cancel jobs.", "danger")
         return redirect(url_for("new_jobs.job_detail", job_type=job_type, job_id=job_id))
@@ -96,7 +95,7 @@ def _delete_job(job_id: int, job_type: str) -> Response:
 
 def _start_job(job_type: str) -> int | None:
     """Start a job."""
-    user = current_user()
+    user = getattr(g, "_current_user", None)
 
     if not user:
         flash("You must be logged in to start this job.", "danger")
@@ -117,7 +116,7 @@ def _start_job(job_type: str) -> int | None:
 
 def _start_job_with_args(job_type: str, args: dict[str, Any]) -> int | None:
     """Start a job."""
-    user = current_user()
+    user = getattr(g, "_current_user", None)
 
     if not user:
         flash("You must be logged in to start this job.", "danger")

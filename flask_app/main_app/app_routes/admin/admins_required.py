@@ -6,6 +6,7 @@ from functools import wraps
 from typing import Callable, TypeVar, cast
 
 from flask import (
+    g,
     abort,
     redirect,
     url_for,
@@ -13,7 +14,6 @@ from flask import (
 from flask.typing import ResponseReturnValue
 
 from ...db.services import active_coordinators
-from ...su_services.users_service import current_user
 
 FuncType = TypeVar("FuncType", bound=Callable[..., ResponseReturnValue])
 
@@ -23,7 +23,7 @@ def admin_required(view: FuncType) -> FuncType:  # noqa: UP047
 
     @wraps(view)
     def wrapped(*args, **kwargs):
-        user = current_user()
+        user = getattr(g, "_current_user", None)
         if not user:
             return redirect(url_for("auth.login"))
         if user.username not in active_coordinators():

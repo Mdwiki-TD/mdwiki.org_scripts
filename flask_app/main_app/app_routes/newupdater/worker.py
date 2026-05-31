@@ -18,7 +18,6 @@ from ...api_services.clients.wiki_client import get_user_site
 from ...api_services.pages_api import edit_page, get_page_text
 from ...shared.new_updater import work_on_text
 from ...shared.shared_classes import UpdaterTextOutcome
-from ...su_services.users_service import current_user
 
 logger = logging.getLogger(__name__)
 
@@ -32,7 +31,7 @@ def work_on_title(
     Fetch the page, run the updater, and report what the diff would be.
     """
 
-    user = current_user()
+    user = getattr(g, "_current_user", None)
     if user is None:
         return UpdaterTextOutcome(kind="skipped", msg="No user")
 
