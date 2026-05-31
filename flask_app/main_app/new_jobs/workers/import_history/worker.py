@@ -21,7 +21,7 @@ from ....api_services.pages_api import (
     import_page_from_wiki,
     is_page_exists,
 )
-from ....new_jobs.base_worker_object import BaseObjectsJobWorker
+from ...base_worker_object import BaseObjectsJobWorker
 from .objects import ImportHistoryWorkerObject, UpdaterOutcome
 
 logger = logging.getLogger(__name__)

@@ -6,9 +6,9 @@ import logging
 
 from flask import Blueprint, flash, g, render_template, request
 
-from .auth.utils import oauth_required
 from ..db.models import UserTokenRecord
 from ..shared import fixred_one
+from .auth.utils import oauth_required
 
 bp_fixred = Blueprint("fixred", __name__, url_prefix="/fixred")
 logger = logging.getLogger(__name__)
