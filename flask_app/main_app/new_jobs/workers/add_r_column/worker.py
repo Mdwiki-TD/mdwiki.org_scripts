@@ -17,7 +17,7 @@ import wikitextparser as wtp
 
 from ....api_services import MwClientPage, get_user_site
 from ....api_services.query_api import get_template_pages
-from ....new_jobs.base_worker_object import BaseObjectsJobWorker
+from ...base_worker_object import BaseObjectsJobWorker
 from .add_rtt import R_NEW_ROW, add_header_r, fix_title, header_has_r, work_one_table
 from .objects import AddRColumnWorkerObject
 

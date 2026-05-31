@@ -168,7 +168,7 @@ class TestStartJob:
 
         assert resp.status_code == 302
 
-    def test_start_with_args_creates_job(self, app, mock_client):
+    def test_start_creates_job(self, app, mock_client):
         """Starting a job with args should succeed."""
         _seed_user(app)
         _login_user(mock_client)
@@ -179,12 +179,12 @@ class TestStartJob:
                 return_value={"id": 1, "username": "JobUser"},
             ),
             patch(
-                "flask_app.main_app.app_routes.new_jobs.jobs_worker.start_job_with_args",
+                "flask_app.main_app.app_routes.new_jobs.jobs_worker.start_job",
                 return_value=1,
             ),
         ):
             resp = mock_client.post(
-                f"/new_jobs/{VALID_JOB_TYPE}/start_with_args",
+                f"/new_jobs/{VALID_JOB_TYPE}/start",
                 data={"key": "value"},
                 follow_redirects=False,
             )
@@ -228,7 +228,7 @@ class TestCancelJob:
         job_id = _seed_job(app, VALID_JOB_TYPE, username="Owner")
 
         with patch(
-            "flask_app.main_app.app_routes.new_jobs.jobs_worker.cancel_job",
+            "flask_app.main_app.app_routes.new_jobs.jobs_worker.cancel_job_worker",
             return_value=True,
         ):
             resp = mock_client.post(
@@ -264,7 +264,7 @@ class TestCancelJob:
         _login_user(mock_client, user_id=2, username="AdminCancel")
 
         with patch(
-            "flask_app.main_app.app_routes.new_jobs.jobs_worker.cancel_job",
+            "flask_app.main_app.app_routes.new_jobs.jobs_worker.cancel_job_worker",
             return_value=True,
         ):
             resp = mock_client.post(
@@ -293,7 +293,7 @@ class TestDeleteJob:
         job_id = _seed_job(app, VALID_JOB_TYPE, username="Owner")
 
         with patch(
-            "flask_app.main_app.app_routes.new_jobs.jobs_worker.cancel_job",
+            "flask_app.main_app.app_routes.new_jobs.jobs_worker.cancel_job_worker",
             return_value=False,
         ):
             resp = mock_client.post(
@@ -313,7 +313,7 @@ class TestDeleteJob:
         _login_user(mock_client)
 
         with patch(
-            "flask_app.main_app.app_routes.new_jobs.jobs_worker.cancel_job",
+            "flask_app.main_app.app_routes.new_jobs.jobs_worker.cancel_job_worker",
             return_value=False,
         ):
             resp = mock_client.post(
@@ -385,7 +385,7 @@ class TestJobsRouteIntegration:
             job2_id = job2.id
 
         with patch(
-            "flask_app.main_app.app_routes.new_jobs.jobs_worker.cancel_job",
+            "flask_app.main_app.app_routes.new_jobs.jobs_worker.cancel_job_worker",
             return_value=False,
         ):
             mock_client.post(

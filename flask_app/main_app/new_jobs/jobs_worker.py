@@ -9,9 +9,8 @@ from typing import Any, Dict
 from flask import Flask, current_app
 
 from ..db.models import JobRecord
-from ..db.services import cancel_job as cancel_job_db
-from ..db.services import create_job
-from ..su_services import create_job_cancelled_file
+from ..db.services import cancel_job_db, create_job
+from ..su_services.jobs_files_service import create_job_cancelled_file
 from .workers_list import JobData, jobs_data
 
 logger = logging.getLogger(__name__)
@@ -51,7 +50,7 @@ def _runner(
             _pop_cancel_event(job_id)
 
 
-def cancel_job(job_id: int, job_type: str | None = None, job: JobRecord | None = None) -> bool:
+def cancel_job_worker(job_id: int, job_type: str | None = None, job: JobRecord | None = None) -> bool:
     """
     Cancel a running job.
     Works across multiple processes by updating the database status.
@@ -78,7 +77,7 @@ def cancel_job(job_id: int, job_type: str | None = None, job: JobRecord | None =
     return local_cancelled or cancelled_file or db_cancelled
 
 
-def start_job_with_args(
+def start_job(
     user: Dict[str, Any] | None,
     job_type: str,
     args: Dict[str, Any],
@@ -126,16 +125,7 @@ def start_job_with_args(
     return job.id
 
 
-def start_job(
-    user: Dict[str, Any] | None,
-    job_type: str,
-) -> int:
-    """Start a background job with no arguments."""
-    return start_job_with_args(user, job_type, args={})
-
-
 __all__ = [
     "start_job",
-    "start_job_with_args",
-    "cancel_job",
+    "cancel_job_worker",
 ]

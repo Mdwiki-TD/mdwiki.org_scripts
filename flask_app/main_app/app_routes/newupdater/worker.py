@@ -16,23 +16,26 @@ import logging
 
 from ...api_services.clients.wiki_client import get_user_site
 from ...api_services.pages_api import edit_page, get_page_text
+from ...db.models import UserTokenRecord
 from ...shared.new_updater import work_on_text
 from ...shared.shared_classes import UpdaterTextOutcome
-from ...su_services.users_service import current_user
 
 logger = logging.getLogger(__name__)
 
 
-def work_on_title(
+def newupdater_one_title(
     title: str,
     save: bool = False,
     summary: str = "Med updater.",
+    user: UserTokenRecord | None = None,
 ) -> UpdaterTextOutcome:
     """
     Fetch the page, run the updater, and report what the diff would be.
     """
+    title = (title or "").strip()
+    if not title:
+        return UpdaterTextOutcome(kind="skipped", msg="Invalid title")
 
-    user = current_user()
     if user is None:
         return UpdaterTextOutcome(kind="skipped", msg="No user")
 
@@ -41,10 +44,6 @@ def work_on_title(
         "access_secret": user.access_secret,
     }
     site = get_user_site(user_dict)
-
-    title = (title or "").strip()
-    if not title:
-        return UpdaterTextOutcome(kind="skipped", msg="Invalid title")
 
     old_text = get_page_text(title, site)
 
@@ -73,5 +72,5 @@ def work_on_title(
 
 __all__ = [
     "UpdaterTextOutcome",
-    "work_on_title",
+    "newupdater_one_title",
 ]

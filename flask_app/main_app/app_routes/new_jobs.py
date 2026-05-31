@@ -9,6 +9,7 @@ from flask import (
     Blueprint,
     abort,
     flash,
+    g,
     jsonify,
     redirect,
     render_template,
@@ -18,7 +19,6 @@ from flask import (
 from flask.typing import ResponseReturnValue
 from werkzeug.wrappers.response import Response
 
-from ..db.models import JobRecord
 from ..db.services import (
     active_coordinators,
     delete_job,
@@ -28,13 +28,9 @@ from ..db.services import (
 from ..new_jobs import jobs_worker
 from ..new_jobs.workers_list import jobs_data
 from ..su_services import load_job_result
-from ..su_services.users_service import current_user
 from .utils.routes_utils import load_auth_payload
 
 logger = logging.getLogger(__name__)
-
-
-bp_public_jobs = Blueprint("new_jobs", __name__, url_prefix="/new_jobs")
 
 
 def _can_manage_job(job: Any, user: Any) -> bool:
@@ -54,7 +50,7 @@ def _can_manage_job(job: Any, user: Any) -> bool:
 
 def _cancel_job(job_id: int, job_type: str) -> Response:
     """Cancel a running job."""
-    user = current_user()
+    user = getattr(g, "_current_user", None)
     if not user:
         flash("You must be logged in to cancel jobs.", "danger")
         return redirect(url_for("new_jobs.job_detail", job_type=job_type, job_id=job_id))
@@ -69,7 +65,7 @@ def _cancel_job(job_id: int, job_type: str) -> Response:
         flash("You don't have permission to cancel this job.", "danger")
         return redirect(url_for("new_jobs.job_detail", job_type=job_type, job_id=job_id))
 
-    if jobs_worker.cancel_job(job_id, job_type, job):
+    if jobs_worker.cancel_job_worker(job_id, job_type, job):
         flash(f"Job {job_id} cancellation requested.", "success")
     else:
         flash(f"Job {job_id} is not running or already cancelled.", "warning")
@@ -82,7 +78,7 @@ def _delete_job(job_id: int, job_type: str) -> Response:
 
     try:
         # Cancel the job if it's running
-        if jobs_worker.cancel_job(job_id, job_type):
+        if jobs_worker.cancel_job_worker(job_id, job_type):
             logger.info(f"Cancelled running job {job_id} before deletion")
 
         delete_job(job_id, job_type)
@@ -94,9 +90,9 @@ def _delete_job(job_id: int, job_type: str) -> Response:
     return redirect(url_for("new_jobs.jobs_list", job_type=job_type))
 
 
-def _start_job(job_type: str) -> int | None:
+def _start_job(job_type: str, args: dict[str, Any]) -> int | None:
     """Start a job."""
-    user = current_user()
+    user = getattr(g, "_current_user", None)
 
     if not user:
         flash("You must be logged in to start this job.", "danger")
@@ -105,28 +101,7 @@ def _start_job(job_type: str) -> int | None:
     try:
         # Get auth payload for OAuth uploads
         auth_payload = load_auth_payload(user)
-        job_id = jobs_worker.start_job(auth_payload, job_type)
-        flash(f"Job {job_id} started to {job_type.replace('_', ' ')}.", "success")
-        return job_id
-    except Exception:
-        logger.exception("Failed to start job")
-        flash("Failed to start job. Please try again.", "danger")
-
-    return None
-
-
-def _start_job_with_args(job_type: str, args: dict[str, Any]) -> int | None:
-    """Start a job."""
-    user = current_user()
-
-    if not user:
-        flash("You must be logged in to start this job.", "danger")
-        return None
-
-    try:
-        # Get auth payload for OAuth uploads
-        auth_payload = load_auth_payload(user)
-        job_id = jobs_worker.start_job_with_args(auth_payload, job_type, args)
+        job_id = jobs_worker.start_job(auth_payload, job_type, args)
         flash(f"Job {job_id} started to {job_type.replace('_', ' ')}.", "success")
         return job_id
     except Exception:
@@ -202,12 +177,16 @@ def _job_detail(job_id: int, job_type: str) -> Response | str:
 class JobsPublicRoutes:
     """Jobs management routes."""
 
-    def __init__(self, bp_public_jobs: Blueprint) -> None:
+    def __init__(self):
+        self.bp = Blueprint("new_jobs", __name__, url_prefix="/new_jobs")
+        self._setup_routes()
+
+    def _setup_routes(self):
         # ================================
         # All Jobs List route
         # ================================
 
-        @bp_public_jobs.get("/list")
+        @self.bp.get("/list")
         def all_jobs_list() -> str:
             try:
                 jobs = list_jobs(limit=100)
@@ -221,7 +200,7 @@ class JobsPublicRoutes:
         # Cancel Jobs routes
         # ================================
 
-        @bp_public_jobs.post("/<string:job_type>/<int:job_id>/cancel")
+        @self.bp.post("/<string:job_type>/<int:job_id>/cancel")
         def cancel_job(job_type: str, job_id: int) -> Response:
             if job_type not in jobs_data:
                 flash("Job type not found.", "warning")
@@ -233,7 +212,7 @@ class JobsPublicRoutes:
         # Jobs List routes
         # ================================
 
-        @bp_public_jobs.get("/<string:job_type>")
+        @self.bp.get("/<string:job_type>")
         def jobs_list(job_type: str) -> str:
             return _jobs_list(job_type)
 
@@ -241,7 +220,7 @@ class JobsPublicRoutes:
         # Job Detail routes
         # ================================
 
-        @bp_public_jobs.get("/<string:job_type>/<int:job_id>")
+        @self.bp.get("/<string:job_type>/<int:job_id>")
         def job_detail(job_type: str, job_id: int) -> Response | str:
             return _job_detail(job_id, job_type)
 
@@ -249,24 +228,17 @@ class JobsPublicRoutes:
         # Start Job routes
         # ================================
 
-        @bp_public_jobs.post("/<string:job_type>/start")
+        @self.bp.post("/<string:job_type>/start")
         def start_job(job_type: str) -> ResponseReturnValue:
-            if job_type not in jobs_data:
-                abort(404)
-            job_id = _start_job(job_type)
-            if not job_id:
-                return redirect(url_for("new_jobs.jobs_list", job_type=job_type))
-            return redirect(url_for("new_jobs.job_detail", job_type=job_type, job_id=job_id))
-
-        @bp_public_jobs.post("/<string:job_type>/start_with_args")
-        def start_job_with_args(job_type: str) -> ResponseReturnValue:
             if job_type not in jobs_data:
                 abort(404)
 
             args = request.form.to_dict()
-            job_id = _start_job_with_args(job_type, args)
+
+            job_id = _start_job(job_type, args)
             if not job_id:
                 return redirect(url_for("new_jobs.jobs_list", job_type=job_type))
+
             return redirect(url_for("new_jobs.job_detail", job_type=job_type, job_id=job_id))
 
         # ================================
@@ -274,17 +246,17 @@ class JobsPublicRoutes:
         # ================================
 
         # @admin_required
-        @bp_public_jobs.post("/<string:job_type>/<int:job_id>/delete")
+        @self.bp.post("/<string:job_type>/<int:job_id>/delete")
         def delete_job(job_type: str, job_id: int) -> Response:
             if job_type not in jobs_data:
                 abort(404)
             return _delete_job(job_id, job_type)
 
-        @bp_public_jobs.get("/read-job-result-file/<path:result_file>")
+        @self.bp.get("/read-job-result-file/<path:result_file>")
         def read_job_result_file(result_file: str) -> ResponseReturnValue:
             """ """
             result_data = load_job_result(result_file)
             return jsonify(result_data)
 
 
-JobsPublicRoutes(bp_public_jobs)
+jobs_module = JobsPublicRoutes()

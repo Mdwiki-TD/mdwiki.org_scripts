@@ -9,8 +9,8 @@ python3 core8/pwb.py md_core/mdpy/fixred
 import functools
 import logging
 import sys
-import wikitextparser as wtp
 
+import wikitextparser as wtp
 from python.mdwiki_page import NewApi, md_MainPage
 
 from .mdapi import post_s
@@ -19,7 +19,6 @@ logger = logging.getLogger(__name__)
 
 from_to = {}
 normalized = {}
-
 
 
 def _normalize_mediawiki_title(title: str) -> str:
@@ -80,9 +79,9 @@ def replace_wikilink_destinations(text: str, redirect_to: str, final_target: str
     # Return the updated wikitext as a string
     return parsed_text.string
 
+
 def replace_links2(text, oldlink, newlink):
     return replace_wikilink_destinations(text, oldlink, newlink, set_text=True)
-
 
 
 @functools.lru_cache(maxsize=1)
@@ -160,6 +159,7 @@ def find_redirects(links):
     # ---
     logger.info(f"def : find {nn} length")
     # logger.info( "def find_redirects: find %d for normalized" % normalized_numb )
+
 
 def Get_page_links(title, namespace="0", limit="max"):
     # ---
@@ -240,7 +240,7 @@ def treat_page(title):
 
             oldlink2 = normalized.get(tit, tit)
             if oldlink2 != tit:
-                newtext = replace_links2(newtext, tit, fixed_tit)
+                newtext = replace_links2(newtext, oldlink2, fixed_tit)
 
         elif tit not in nonredirects:
             if tit2 != tit:

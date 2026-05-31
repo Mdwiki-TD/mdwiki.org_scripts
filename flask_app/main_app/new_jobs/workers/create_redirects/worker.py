@@ -20,7 +20,7 @@ import requests
 from ....api_services.clients import get_user_site
 from ....api_services.pages_api import create_page, is_page_exists
 from ....api_services.query_api import is_pages_exists
-from ....new_jobs.base_worker_object import BaseObjectsJobWorker
+from ...base_worker_object import BaseObjectsJobWorker
 from .objects import CreateRedirectsWorkerObject
 
 logger = logging.getLogger(__name__)

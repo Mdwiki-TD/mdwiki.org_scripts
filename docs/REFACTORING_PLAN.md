@@ -69,7 +69,7 @@ This is a well-architected Flask application with a clean layered structure (Con
 
 -   [x] **Dead API wrapper** — `flask_app/main_app/api_services/query_api.py::get_template_pages_newapi()` (line 10) references `api.NewApi()` which doesn't exist. The function is unused anywhere.
 -   [ ] **Stub workers** — `add_r_column` and `add_unlinkedwikibase` workers contain `TODO: import logic from ...` comments. They are essentially empty shells.
--   [ ] **Commented-out blueprint registrations** — `flask_app/main_app/app_routes/admin/routes.py` (lines 103-108) has 5 commented-out blueprint registrations.
+-   [x] **Commented-out blueprint registrations** — `flask_app/main_app/app_routes/admin/routes.py` (lines 103-108) has 5 commented-out blueprint registrations.
 -   [ ] **Disabled teardown** — `flask_app/main_app/__init__.py` (lines 131-145) has a `_cleanup_connections` teardown function where the entire body is commented out with a pass statement.
 -   [ ] **Empty `__init__.py` files** — `flask_app/main_app/app_routes/newupdater/__init__.py`, `flask_app/main_app/shared/fixref_shared/__init__.py`, `flask_app/main_app/new_jobs/__init__.py` are all empty (though some serve package marker purposes).
 -   [ ] **Commented template code** — `flask_app/templates/jobs_templates/base_list2.html` and `base_details2.html` have commented-out `status_icon()` calls.
@@ -81,7 +81,7 @@ This is a well-architected Flask application with a clean layered structure (Con
 
 1. [ ] Remove `get_template_pages_newapi()` from `query_api.py`
 2. [ ] Either implement the two stub workers or remove them from `workers_list.py`
-3. [ ] Remove commented-out blueprint registrations
+3. [x] Remove commented-out blueprint registrations
 4. [ ] Either implement the teardown logic or remove the handler entirely
 5. [ ] Clean up commented template code
 6. [ ] Remove or implement the commented filter logic
@@ -254,7 +254,7 @@ This is a well-architected Flask application with a clean layered structure (Con
 -   [ ] Fix `pyproject.toml` stale settings (`ArWikiCats` → correct values)
 -   [ ] Fix `raise e` to `raise` in `jobs_worker.py`
 -   [ ] Fix retry logic in `_edit_with_retry()` — don't sleep before first attempt
--   [ ] Remove commented-out blueprint registrations in `admin/routes.py`
+-   [x] Remove commented-out blueprint registrations in `admin/routes.py`
 -   [ ] Clean up commented-out template code in `base_list2.html` and `base_details2.html`
 -   [ ] Consolidate `coerce_encrypted()` into `decode_bytes.py` or vice versa
 
@@ -322,10 +322,6 @@ This is a well-architected Flask application with a clean layered structure (Con
 -   **Strengths**: Clean factory pattern, good error handling, well-documented
 -   **Issues**: Imports `active_coordinators` from `db.services` (layering violation); disabled teardown handler
 -   **Priority**: Phase 2
-
-### `flask_app/main_app/app_routes/__init__.py`
-
--   Clean blueprint registration. No issues.
 
 ### `flask_app/main_app/app_routes/new_jobs.py`
 

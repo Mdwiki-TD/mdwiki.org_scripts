@@ -10,20 +10,17 @@ from flask_app.main_app.shared.shared_classes import UpdaterTextOutcome
 
 class TestWorkOnTitle:
     def test_no_user_returns_notext(self):
-        with patch("flask_app.main_app.shared.fixred_one.current_user", return_value=None):
-            result = work_on_title("Test", False)
-            assert isinstance(result, UpdaterTextOutcome)
-            assert result.kind == "skipped"
-            assert result.msg == "No user"
+        result = work_on_title("Test", False, user=None)
+        assert isinstance(result, UpdaterTextOutcome)
+        assert result.kind == "skipped"
+        assert result.msg == "No user"
 
     def test_empty_title_returns_notitle(self):
-        with patch("flask_app.main_app.shared.fixred_one.current_user", return_value=MagicMock()):
-            result = work_on_title("", False)
-            assert result.kind == "skipped"
-            assert result.msg == "Invalid title"
+        result = work_on_title("", False, user=MagicMock())
+        assert result.kind == "skipped"
+        assert result.msg == "Invalid title"
 
     def test_whitespace_title_returns_notext(self):
-        with patch("flask_app.main_app.shared.fixred_one.current_user", return_value=MagicMock()):
-            result = work_on_title("   ", False)
-            assert result.kind == "skipped"
-            assert result.msg == "Invalid title"
+        result = work_on_title("   ", False, user=MagicMock())
+        assert result.kind == "skipped"
+        assert result.msg == "Invalid title"

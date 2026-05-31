@@ -2,10 +2,9 @@ from __future__ import annotations
 
 import logging
 
-from flask import Blueprint, flash, render_template
+from flask import Blueprint, flash, g, render_template
 
 from ..db.services import get_user_jobs_stats
-from ..su_services import current_user
 
 logger = logging.getLogger(__name__)
 
@@ -14,7 +13,7 @@ bp_profile = Blueprint("profile", __name__, url_prefix="/profile")
 
 @bp_profile.route("/", methods=["GET"])
 def dashboard():
-    user = current_user()
+    user = getattr(g, "_current_user", None)
     if not user:
         flash("You must be logged in to view your profile.", "warning")
         return render_template("profile.html")

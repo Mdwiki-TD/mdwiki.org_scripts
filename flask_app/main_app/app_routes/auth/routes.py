@@ -21,10 +21,11 @@ from flask import (
     session,
     url_for,
 )
+from mwoauth import RequestToken
 
 from ...config import settings
-from ...db.services import delete_user_token, upsert_user_token
-from ...su_services.users_service import CurrentUser
+from ...db.services import delete_user_token
+from ...su_services.users_service import UserService
 from .cookie import extract_user_id, sign_state_token, sign_user_id, verify_state_token
 from .oauth import (
     OAuthIdentityError,
@@ -32,12 +33,30 @@ from .oauth import (
     start_login,
 )
 from .rate_limit import callback_rate_limiter, login_rate_limiter
+from .utils import load_logged_in_user
 
 logger = logging.getLogger(__name__)
 bp_auth = Blueprint("auth", __name__)
 
 oauth_state_nonce = settings.sessions.state_key
 request_token_key = settings.sessions.request_token_key
+
+
+# ---------------------------------------------------------
+# Helpers
+# ---------------------------------------------------------
+
+
+def _set_response_cookies(user_id, response) -> None:
+    response.set_cookie(
+        settings.cookie.name,
+        sign_user_id(user_id),
+        httponly=settings.cookie.httponly,
+        secure=settings.cookie.secure,
+        samesite=settings.cookie.samesite,
+        max_age=settings.cookie.max_age,
+        path="/",
+    )
 
 
 def _client_key() -> str:
@@ -48,8 +67,6 @@ def _client_key() -> str:
 
 
 def _load_request_token(raw: Sequence[Any] | None):
-    from mwoauth import RequestToken
-
     if not raw:
         raise ValueError("Missing OAuth request token")
 
@@ -57,6 +74,23 @@ def _load_request_token(raw: Sequence[Any] | None):
         raise ValueError("Invalid OAuth request token")
 
     return RequestToken(raw[0], raw[1])
+
+
+# ---------------------------------------------------------
+# Hooks
+# ---------------------------------------------------------
+
+
+# Register the hook right after defining the blueprint
+@bp_auth.before_app_request
+def before_request():
+    """Automatically load the user before any route is processed."""
+    load_logged_in_user()
+
+
+# ---------------------------------------------------------
+# Routes
+# ---------------------------------------------------------
 
 
 @bp_auth.get("/login")
@@ -168,49 +202,39 @@ def callback() -> Response:
 
     # ------------------
     # upsert credentials
-    try:
-        upsert_user_token(
-            user_id=user_id,
-            username=username,
-            access_key=str(token_key),
-            access_secret=str(token_secret),
-        )
-    except Exception:
-        logger.exception("Failed to upsert user credentials")
-        flash("Failed to upsert user credentials", "danger")
+    user_record = UserService.save_and_get_user(
+        user_id=user_id,
+        username=username,
+        access_key=str(token_key),
+        access_secret=str(token_secret),
+    )
 
+    if not user_record:
+        logger.error("Failed to upsert user credentials")
+        flash("Failed to process user credentials", "danger")
+        return redirect(url_for("main.index"))
+
+    # Set sessions
     session["uid"] = user_id
     session["username"] = username
 
-    # ------------------
-    # set cookies
+    # Set response and cookies
     response = make_response(redirect(session.pop("post_login_redirect", url_for("main.index"))))
-    response.set_cookie(
-        settings.cookie.name,
-        sign_user_id(user_id),
-        httponly=settings.cookie.httponly,
-        secure=settings.cookie.secure,
-        samesite=settings.cookie.samesite,
-        max_age=settings.cookie.max_age,
-        path="/",
-    )
 
-    g.current_user = CurrentUser(str(user_id), str(username))
-    g.is_authenticated = True
-    g.authenticated_user_id = str(user_id)
-    g.oauth_credentials = {
-        "consumer_key": settings.oauth.consumer_key,
-        "consumer_secret": settings.oauth.consumer_secret,
-        "access_token": str(token_key),
-        "access_secret": str(token_secret),
-    }
+    _set_response_cookies(user_id, response)
+
+    # Cache in g for the remainder of THIS request only
+    g._current_user = user_record
 
     return response
 
 
 @bp_auth.get("/logout")
-# Users with stale cookies will be redirected with a "login-required" error instead of being able to clean up their authentication state
 def logout() -> Response:
+    """
+    TODO: Users with stale cookies will be redirected with a "login-required" error
+    instead of being able to clean up their authentication state
+    """
     user_id = session.pop("uid", None)
     session.pop(request_token_key, None)
     session.pop(oauth_state_nonce, None)
@@ -237,11 +261,7 @@ def logout() -> Response:
     response = make_response(redirect(url_for("main.index")))
     response.delete_cookie(settings.cookie.name, path="/")
 
-    g.current_user = None
-    g.is_authenticated = False
-    g.oauth_credentials = None
-    g.authenticated_user_id = None
-
+    g._current_user = None
     return response
 
 

@@ -12,40 +12,18 @@ from flask_wtf.csrf import CSRFError, CSRFProtect
 from sqlalchemy.exc import OperationalError
 
 from .app_routes import register_blueprints
+from .app_routes.utils import context_user
 from .config import settings
 from .core.cookies import CookieHeaderClient
 from .core.jinja_filters import filters
 from .db import init_db
-from .db.services import active_coordinators
 from .extensions import db as _db
 from .extensions import migrate
-from .su_services.users_service import current_user
 
 logger = logging.getLogger(__name__)
 
 
-def context_user() -> dict[str, any]:
-    """
-    used in @app.context_processor
-    """
-    try:
-        user = current_user()
-    except Exception as e:
-        logger.error("Error getting current user: %s", e)
-        user = None
-
-    username = user.username if user else None
-    return {
-        "current_user": user,
-        "is_authenticated": user is not None,
-        "username": username,
-        "is_admin": bool(user and user.username in active_coordinators()),
-        "wiki_domain": settings.other.wiki_domain,
-        "static_server": settings.other.static_server,
-    }
-
-
-def register_error_pages(app: Flask):
+def register_error_pages(app: Flask) -> None:
     @app.errorhandler(400)
     def bad_request(e: Exception) -> Tuple[str, int]:
         """Handle 400 errors"""
@@ -136,7 +114,7 @@ def create_app(config_class: Type) -> Flask:
 
     @app.context_processor
     def _inject_user() -> dict[str, Any]:
-        return context_user()
+        return context_user(settings.other.wiki_domain, settings.other.static_server)
 
     app.jinja_env.filters.update(filters)
 
