@@ -100,13 +100,9 @@ def find_redirects(links):
 
 def replace_links2(text, oldlink, newlink):
     # ---
-    oldlink2 = normalized.get(oldlink, oldlink)
-    # ---
     while (
         text.find(f"[[{oldlink}]]") != -1
         or text.find(f"[[{oldlink}|") != -1
-        or text.find(f"[[{oldlink2}]]") != -1
-        or text.find(f"[[{oldlink2}|") != -1
     ):
         # ---
         logger.info(f"text.replace( '[[{oldlink}]]' , '[[{newlink}|{oldlink}]]' )")
@@ -114,12 +110,7 @@ def replace_links2(text, oldlink, newlink):
         text = text.replace(f"[[{oldlink}]]", f"[[{newlink}|{oldlink}]]")
         text = text.replace(f"[[{oldlink}|", f"[[{newlink}|")
         # ---
-        text = re.sub(r"\[\[%s(\|\]\])" % oldlink, r"[[%s\g<1>" % newlink, text, flags=re.IGNORECASE)
-        # ---
-        if oldlink != oldlink2:
-            text = re.sub(r"\[\[%s(\|\]\])" % oldlink2, r"[[%s\g<1>" % newlink, text, flags=re.IGNORECASE)
-            text = text.replace(f"[[{oldlink2}]]", f"[[{newlink}|{oldlink2}]]")
-            text = text.replace(f"[[{oldlink2}|", f"[[{newlink}|")
+        text = re.sub(rf"\[\[{oldlink}(\|\]\])", rf"[[{newlink}\g<1>", text, flags=re.IGNORECASE)
     # ---
     return text
 
@@ -197,8 +188,14 @@ def treat_page(title):
         tit = page["title"]
         tit2 = normalized.get(page["title"], page["title"])
         # ---
-        if fixed_tit := from_to.get(tit) or from_to.get(tit2):
+        fixed_tit = from_to.get(tit) or from_to.get(tit2)
+        if fixed_tit :
             newtext = replace_links2(newtext, tit, fixed_tit)
+
+            oldlink2 = normalized.get(tit, tit)
+            if oldlink2 != tit:
+                newtext = replace_links2(newtext, tit, fixed_tit)
+
         elif tit not in nonredirects:
             if tit2 != tit:
                 logger.info(f'<<red>> tit:["{tit}"] and tit:["{tit2}"] not in from_to')
