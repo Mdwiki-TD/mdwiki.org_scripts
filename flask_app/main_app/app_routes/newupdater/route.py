@@ -5,7 +5,7 @@ from __future__ import annotations
 import logging
 import urllib.parse
 
-from flask import Blueprint, flash, g, render_template, request
+from flask import Blueprint, flash, g, render_template, request, redirect, url_for
 
 from ...shared import newupdater_service as svc
 from ..auth.utils import oauth_required
@@ -17,6 +17,8 @@ logger = logging.getLogger(__name__)
 def _prase_title(title: str) -> str:
     title = title.replace("+", " ").replace("_", " ").strip()
     title = urllib.parse.unquote(title)
+    while title.endswith("/"):
+        title = title.removesuffix("/")
     return title
 
 def _newupdater(title: str, save: bool) -> str:
@@ -57,14 +59,6 @@ def _newupdater(title: str, save: bool) -> str:
         save=save,
     )
 
-@bp_newupdater.route("/", methods=["GET"])
-@oauth_required
-def newupdater() -> str:
-    title = _prase_title(request.args.get("title") or "")
-    save = int(request.args.get("save", "0")) == 1
-    return _newupdater(title, save)
-
-
 @bp_newupdater.route("/<path:title>", methods=["GET"])
 @oauth_required
 def worker(title: str) -> str:
@@ -80,6 +74,22 @@ def auto_save(title: str) -> str:
     title = urllib.parse.unquote(title)
     return _newupdater(title, True)
 
+@bp_newupdater.route("/", methods=["GET"])
+@oauth_required
+def newupdater() -> str:
+    title = _prase_title(request.args.get("title") or "")
+    save = int(request.args.get("save", "0")) == 1
+
+    # If the title is empty, just render the default page without redirecting
+    if not title:
+        return _newupdater("", False)
+
+    if save:
+        # Redirect to auto_save route: /save/<path:title>
+        return redirect(url_for("newupdater.auto_save", title=title))
+    else:
+        # Redirect to worker route: /<path:title>
+        return redirect(url_for("newupdater.worker", title=title))
 
 @bp_newupdater.route("/", methods=["GET"])
 def index() -> str:
