@@ -38,7 +38,7 @@ def _replace_wikilink_destinations(text: str, redirect_to: str, final_target: st
         - ``[[old|...]]`` becomes ``[[new|...]]``.
 
     With `set_text=True`:
-        - ``[[old]]`` becomes ``[[new|old]]`` (preserve the originaldisplay text)
+        - ``[[old]]`` becomes ``[[new|old]]`` (preserve the original display text)
     """
     parsed_text = wtp.parse(text)
 
@@ -60,7 +60,7 @@ def _replace_wikilink_destinations(text: str, redirect_to: str, final_target: st
             link.title = final_target
 
             if set_text and not link.text:
-                # preserve the originaldisplay text
+                # preserve the original display text
                 link.text = old_target
 
             logger.debug(f"Replaced link title '{old_title}' with '{final_target}'")
@@ -84,4 +84,5 @@ def replace_wikilink_redirects(text: str, redirect_to: str, final_target: str) -
 
 __all__ = [
     "replace_wikilink_destinations",
+    "replace_wikilink_redirects",
 ]
