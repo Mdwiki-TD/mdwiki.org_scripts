@@ -7,28 +7,21 @@ Copies redirects from English Wikipedia to mdwiki.
 
 from __future__ import annotations
 
-import functools
 import logging
-import os
 import threading
 from datetime import datetime
 from typing import Any, Dict
 
 import mwclient
-import requests
 
 from ....api_services.clients import get_user_site
+from ....api_services.enwiki_api import get_redirects_for
 from ....api_services.pages_api import create_page, is_page_exists
 from ....api_services.query_api import is_pages_exists
 from ...base_worker_object import BaseObjectsJobWorker
 from .objects import CreateRedirectsWorkerObject
 
 logger = logging.getLogger(__name__)
-
-_USER_AGENT = os.getenv(
-    "REDIRECT_USER_AGENT",
-    "WikiProjectMed Translation Dashboard/1.0 (https://mdwiki.toolforge.org/; tools.mdwiki@toolforge.org)",
-)
 
 _FORBIDDEN_PREFIXES: tuple[str, ...] = (
     "category:",
@@ -39,49 +32,12 @@ _FORBIDDEN_PREFIXES: tuple[str, ...] = (
 )
 
 
-@functools.lru_cache(maxsize=1)
-def _enwiki_session() -> requests.Session:
-    session = requests.Session()
-    session.headers.update({"User-Agent": _USER_AGENT})
-    return session
-
-
 def _valid_title(title: str) -> bool:
     """True iff this title should be copied as a redirect on mdwiki."""
     lower = title.lower().strip()
     if "(disambiguation)" in lower:
         return False
     return not any(lower.startswith(p) for p in _FORBIDDEN_PREFIXES)
-
-
-def _enwiki_redirects_for(title: str, *, timeout: int = 10) -> list[str]:
-    """Mainspace redirect titles pointing to *title* on enwiki."""
-    session = _enwiki_session()
-    params = {
-        "action": "query",
-        "format": "json",
-        "prop": "redirects",
-        "titles": title,
-        "utf8": 1,
-        "rdprop": "title",
-        "rdlimit": "max",
-    }
-    response = session.post("https://en.wikipedia.org/w/api.php", data=params, timeout=timeout)
-    response.raise_for_status()
-    payload = response.json() or {}
-    pages = (payload.get("query") or {}).get("pages") or {}
-
-    out: list[str] = []
-
-    for page in pages.values():
-        for r in page.get("redirects", []) or []:
-            # if page.get("title") != title: continue
-            if r.get("ns") != 0:
-                continue
-            redirect_title = r.get("title", "")
-            if redirect_title and redirect_title not in out:
-                out.append(redirect_title)
-    return out
 
 
 class CreateRedirectsWorker(BaseObjectsJobWorker):
@@ -186,7 +142,7 @@ class CreateRedirectsWorker(BaseObjectsJobWorker):
             counts["target_missing"] = 1
             return counts
 
-        redirect_titles = _enwiki_redirects_for(title)
+        redirect_titles = get_redirects_for(title)
         if not redirect_titles:
             logger.info(f"Job {self.job_id}: {title!r}: no redirects on enwiki")
             return counts
