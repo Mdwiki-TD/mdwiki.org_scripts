@@ -104,7 +104,7 @@ def _start_job(job_type: str, args: dict[str, Any]) -> int | None:
     try:
         # Get auth payload for OAuth uploads
         auth_payload = load_auth_payload(user)
-        job_id = jobs_worker.start_job_with_args(auth_payload, job_type, args)
+        job_id = jobs_worker.start_job(auth_payload, job_type, args)
         flash(f"Job {job_id} started to {job_type.replace('_', ' ')}.", "success")
         return job_id
     except Exception:

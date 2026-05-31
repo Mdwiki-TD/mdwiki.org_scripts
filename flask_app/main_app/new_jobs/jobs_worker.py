@@ -78,7 +78,7 @@ def cancel_job(job_id: int, job_type: str | None = None, job: JobRecord | None =
     return local_cancelled or cancelled_file or db_cancelled
 
 
-def start_job_with_args(
+def start_job(
     user: Dict[str, Any] | None,
     job_type: str,
     args: Dict[str, Any],
@@ -125,7 +125,8 @@ def start_job_with_args(
 
     return job.id
 
+
 __all__ = [
-    "start_job_with_args",
+    "start_job",
     "cancel_job",
 ]

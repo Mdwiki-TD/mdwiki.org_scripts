@@ -157,7 +157,7 @@ class TestStartJob:
                 return_value={"id": 1, "username": "JobUser"},
             ),
             patch(
-                "flask_app.main_app.app_routes.new_jobs.jobs_worker.start_job_with_args",
+                "flask_app.main_app.app_routes.new_jobs.jobs_worker.start_job",
                 return_value=1,
             ),
         ):
@@ -179,7 +179,7 @@ class TestStartJob:
                 return_value={"id": 1, "username": "JobUser"},
             ),
             patch(
-                "flask_app.main_app.app_routes.new_jobs.jobs_worker.start_job_with_args",
+                "flask_app.main_app.app_routes.new_jobs.jobs_worker.start_job",
                 return_value=1,
             ),
         ):
