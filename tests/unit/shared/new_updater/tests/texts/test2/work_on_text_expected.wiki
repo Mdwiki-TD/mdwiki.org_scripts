@@ -1,0 +1,60 @@
+{{#unlinkedwikibase:id=Q1752915}}
+{{drugbox
+
+| verifiedrevid     = 470614430
+| drug_name         =
+| image             = Trifluoperazine.svg
+| width             = 250
+| alt               =
+| caption           =
+
+<!-- | type = mab / vaccine / combo -->
+| type              =
+
+<!-- Names -->
+| pronounce         =
+| tradename         = Stelazine, Eskazinyl, Eskazine, Jatroneural, others
+| synonyms          =
+| IUPAC_name        = 10-[3-(4-methylpiperazin-1-yl)propyl]-<br/>2-(trifluoromethyl)-10''H''-phenothiazine
+
+<!-- Clinical data -->
+| class             = [[Typical antipsychotic]]
+| uses              = [[Schizophrenia]], [[generalized anxiety disorder]], [[nausea]]<ref name=AHFS2021/><ref name=BNF80/>
+| side_effects      = [[Movement disorders]], sleepiness, blurry vision, dry mouth, low blood pressure<ref name=AHFS2021/><ref name=Bus2007/>
+| interactions      = <!-- notable interactions -->
+| pregnancy_AU      = C
+| pregnancy_US      = C
+| pregnancy_category=
+| breastfeeding     =
+| routes_of_administration= By mouth, [[Intramuscular injection|IM]]
+| onset             =
+| duration_of_action=
+| defined_daily_dose=
+| typical_dose      =
+
+<!-- External links -->
+| Drugs.com         = {{drugs.com|monograph|trifluoperazine-hydrochloride}}
+| MedlinePlus       = a682121
+
+<!-- Legal data -->
+| legal_UK          = POM
+| legal_US          = Rx-only
+| legal_status      =
+| licence_US        =
+| licence_EU        =
+
+<!-- Pharmacokinetic data -->
+| bioavailability   =
+| metabolism        = [[Liver]]
+| elimination_half-life= 10–20 hours
+| excretion         =
+
+<!-- Chemical and physical data -->
+| C= 21 | F= 3 | H= 24 | N= 3 | S= 1
+
+| SMILES            = FC(F)(F)c2cc1N(c3c(Sc1cc2)cccc3)CCCN4CCN(C)CC4
+| StdInChI          = 1S/C21H24F3N3S/c1-25-11-13-26(14-12-25)9-4-10-27-17-5-2-3-6-19(17)28-20-8-7-16(15-18(20)27)21(22,23)24/h2-3,5-8,15H,4,9-14H2,1H3
+| StdInChI_Ref      = {{stdinchicite|correct|chemspider}}
+| StdInChIKey       = ZEWQUBUPAILYHI-UHFFFAOYSA-N
+| StdInChIKey_Ref   = {{stdinchicite|correct|chemspider}}
+}}

@@ -168,9 +168,9 @@ This is a well-architected Flask application with a clean layered structure (Con
 
 -   [ ] **`MedWorkNew.py` uses complex regexes** — Multiple multi-line regex patterns with minimal explanation of what they match.
 -   [ ] **Mixed language comments** — Some files in `shared/new_updater/` mix Arabic and English comments, reducing accessibility.
--   [ ] **No tests for `work_on_text_md()`** — The core function of the medical updater has zero test coverage.
+-   [ ] **No tests for `_work_on_text_md()`** — The core function of the medical updater has zero test coverage.
 -   [x] **`fixred_worker.py` uses string replacement for wikilink correction** — The `_replace_links()` function uses `str.replace()` and `re.sub()` instead of `wikitextparser`, despite the project depending on `wikitextparser`. There's even a TODO in `duplicate_redirect/worker.py` (line 195) suggesting this migration.
--   [ ] **`drugbox_work()` has deeply nested logic** — Multiple regex passes with opaque transformations.
+-   [ ] **`_drugbox_work()` has deeply nested logic** — Multiple regex passes with opaque transformations.
 
 #### Recommendations:
 
@@ -209,7 +209,6 @@ This is a well-architected Flask application with a clean layered structure (Con
 #### Issues Found:
 
 -   [ ] **Retry logic sleeps before first attempt** — `flask_app/main_app/api_services/mwclient_page.py::_edit_with_retry()` (lines 56-67) iterates through `_RETRY_DELAYS = (5, 15, 30)` and always sleeps for 5 seconds BEFORE making the first API call. The first attempt should not sleep.
--   [ ] **`category.py` filtering logic may be wrong** — `get_category_members()` filters `result = [x for x in result if x.startswith("Template:") and x.lower() not in EXCLUDED_TEMPLATES]`. This keeps items starting with "Template:" UNLESS they're in the exclusion list. But the exclusion list has lowercase entries like `"template:owidslider"` — the comparison `x.lower() not in EXCLUDED_TEMPLATES` works correctly, but the intent could be clearer.
 -   [ ] **`raise e` instead of `raise`** — `flask_app/main_app/new_jobs/jobs_worker.py` (line 103) uses `raise e` which loses the original traceback. Should use bare `raise`.
 -   [ ] **`resolve_redirects()` in `query_api.py` appears incomplete** — The function signature suggests it returns a dict, but the code shown was truncated. The `normalized` dict and `from_to` dict are used in `fixred_worker.py` — ensure they align.
 -   [ ] **`_get_current_object()` usage** — `jobs_worker.py` (line ~110) captures `current_app._get_current_object()` which is a green flag for potential context issues.

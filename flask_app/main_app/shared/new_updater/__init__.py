@@ -1,8 +1,4 @@
-"""
-
-from new_updater import rename_params
-
-"""
+""" """
 
 from .bots.expend import expend_infoboxs_and_fix
 from .bots.old_params import rename_params

@@ -79,10 +79,10 @@ def work_on_title(title, save=False, summary="Fix redirects.") -> UpdaterTextOut
 
 ```python
 def work_on_text(title, text):
-    # Pipeline: rename_params → move_resources → drugbox_work → MoveExternalLinksSection
+    # Pipeline: rename_params → move_resources → _drugbox_work → MoveExternalLinksSection
     newtext = old_params.rename_params(newtext)
     newtext = move_resources(newtext, title)
-    newtext = drugbox_work(newtext, text)
+    newtext = _drugbox_work(newtext, text)
     newtext = MoveExternalLinksSection(newtext).make_new_txt()
     return newtext
 ```

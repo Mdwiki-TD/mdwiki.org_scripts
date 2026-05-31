@@ -148,3 +148,11 @@ def create_app(config_class: Type) -> Flask:
             return render_template("index_db_error.html"), 503
 
     return app
+
+
+__all__ = [
+    "register_error_pages",
+    "init_app_and_db",
+    "create_app",
+]
+

@@ -21,12 +21,14 @@ class UserService:
     ) -> Optional[CurrentUser]:
         """Upsert OAuth credentials and return a CurrentUser composite."""
         try:
+            # 1. Update or insert into database via repository
             upsert_user_token(
                 user_id=user_id,
                 username=username,
                 access_key=access_key,
                 access_secret=access_secret,
             )
+            # 2. Get the fresh record
             token = get_user_token(user_id)
             if not token:
                 return None
