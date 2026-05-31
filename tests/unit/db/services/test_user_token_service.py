@@ -5,6 +5,7 @@ from flask_app.main_app.db.services.user_token_service import (
     delete_user,
     delete_user_token,
     get_user,
+    get_user_by_username,
     get_user_token,
     get_user_token_by_username,
     list_users,
