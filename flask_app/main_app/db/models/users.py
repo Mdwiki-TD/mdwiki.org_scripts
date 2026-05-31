@@ -19,7 +19,6 @@ class UsersRecord(db.Model):
         `user_id` int NOT NULL,
         `username` varchar(255) NOT NULL,
         `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
-        `updated_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
         PRIMARY KEY (`user_id`),
         UNIQUE KEY `uq_users_username` (`username`)
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -31,12 +30,6 @@ class UsersRecord(db.Model):
     username = Column(String(255), unique=True, nullable=False)
 
     created_at = Column(DateTime, nullable=False, server_default=func.current_timestamp())
-    updated_at = Column(
-        DateTime,
-        nullable=False,
-        server_default=func.current_timestamp(),
-        server_onupdate=func.current_timestamp(),
-    )
 
 
 class AdminUserRecord(db.Model):
