@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import logging
-from dataclasses import dataclass
 from typing import Any, Callable, Optional, TypeVar
 
 from flask import g, request, session
@@ -11,19 +10,11 @@ from flask import g, request, session
 from ..app_routes.auth.cookie import extract_user_id
 from ..config import settings
 from ..db.models import UserTokenRecord
-from ..db.services import get_user_token, upsert_user_token
+from ..db.services import get_user_token
+from .objects import CurrentUser
 
 FuncType = TypeVar("FuncType", bound=Callable[..., Any])
 logger = logging.getLogger(__name__)
-
-
-@dataclass(frozen=True)
-class CurrentUser:
-    """Lightweight representation of the authenticated user."""
-
-    user_id: str
-    username: str
-
 
 def _resolve_user_id() -> int | None:
     uid = session.get("uid")

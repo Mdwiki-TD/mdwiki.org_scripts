@@ -4,8 +4,10 @@ from .jobs_files_service import (
     load_job_result,
     save_job_result_by_name,
 )
-from .users_service import (
+from .objects import (
     CurrentUser,
+)
+from .users_service import (
     current_user,
 )
 
