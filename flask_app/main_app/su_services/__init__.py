@@ -7,7 +7,6 @@ from .jobs_files_service import (
 from .users_service import (
     CurrentUser,
     current_user,
-    oauth_required,
 )
 
 __all__ = [
@@ -17,5 +16,4 @@ __all__ = [
     "load_job_result",
     "CurrentUser",
     "current_user",
-    "oauth_required",
 ]

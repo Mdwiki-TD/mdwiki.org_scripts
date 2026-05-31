@@ -4,15 +4,14 @@ from __future__ import annotations
 
 import logging
 from dataclasses import dataclass
-from functools import wraps
-from typing import Any, Callable, Optional, TypeVar, cast
+from typing import Any, Callable, Optional, TypeVar
 
-from flask import g, redirect, request, session, url_for
+from flask import g, request, session
 
 from ..app_routes.auth.cookie import extract_user_id
 from ..config import settings
 from ..db.models import UserTokenRecord
-from ..db.services import get_user_token
+from ..db.services import get_user_token, upsert_user_token
 
 FuncType = TypeVar("FuncType", bound=Callable[..., Any])
 logger = logging.getLogger(__name__)
@@ -59,22 +58,7 @@ def current_user() -> Optional[UserTokenRecord]:
     g._current_user = user  # type: ignore[attr-defined]
     return user
 
-
-def oauth_required(func: FuncType) -> FuncType:  # noqa: UP047
-    """Decorator that requires a full OAuth credential bundle."""
-
-    @wraps(func)
-    def wrapper(*args: Any, **kwargs: Any):
-        if not current_user():
-            session["post_login_redirect"] = request.url
-            return redirect(url_for("auth.login"))
-        return func(*args, **kwargs)
-
-    return cast(FuncType, wrapper)
-
-
 __all__ = [
     "CurrentUser",
     "current_user",
-    "oauth_required",
 ]

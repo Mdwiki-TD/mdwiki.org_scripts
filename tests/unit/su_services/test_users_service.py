@@ -3,7 +3,7 @@ from __future__ import annotations
 from unittest.mock import MagicMock, patch
 
 from flask import g, session
-from flask_app.main_app.su_services.users_service import current_user, oauth_required
+from flask_app.main_app.su_services.users_service import current_user
 
 
 def test_current_user_from_session(app):
@@ -33,26 +33,3 @@ def test_current_user_no_session(app):
             user = current_user()
             assert user is None
             mock_get.assert_not_called()
-
-
-def test_oauth_required_decorator_no_user(app):
-    @oauth_required
-    def protected():
-        return "allowed"
-
-    with app.test_request_context("/protected"):
-        with patch("flask_app.main_app.su_services.users_service.current_user", return_value=None):
-            response = protected()
-            assert response.status_code == 302
-            assert "/login" in response.location
-
-
-def test_oauth_required_decorator_with_user(app):
-    @oauth_required
-    def protected():
-        return "allowed"
-
-    with app.test_request_context("/protected"):
-        with patch("flask_app.main_app.su_services.users_service.current_user", return_value=MagicMock()):
-            response = protected()
-            assert response == "allowed"

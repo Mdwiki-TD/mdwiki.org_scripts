@@ -6,7 +6,7 @@ import logging
 
 from flask import Blueprint, flash, render_template, request
 
-from ...su_services.users_service import oauth_required
+from ...app_routes.auth.utils import oauth_required
 from . import worker as svc
 
 bp_newupdater = Blueprint("newupdater", __name__, url_prefix="/newupdater")
