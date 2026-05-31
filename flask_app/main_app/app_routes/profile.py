@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import logging
 
-from flask import g, Blueprint, flash, render_template
+from flask import Blueprint, flash, g, render_template
 
 from ..db.services import get_user_jobs_stats
 

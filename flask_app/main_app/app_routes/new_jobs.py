@@ -7,9 +7,9 @@ from typing import Any
 
 from flask import (
     Blueprint,
-    g,
     abort,
     flash,
+    g,
     jsonify,
     redirect,
     render_template,

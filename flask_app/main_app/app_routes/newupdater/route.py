@@ -4,18 +4,20 @@ from __future__ import annotations
 
 import logging
 
-from flask import Blueprint, flash, render_template, request
+from flask import Blueprint, flash, g, render_template, request
 
 from ...app_routes.auth.utils import oauth_required
+from ...db.models import UserTokenRecord
 from . import worker as svc
 
 bp_newupdater = Blueprint("newupdater", __name__, url_prefix="/newupdater")
+
 logger = logging.getLogger(__name__)
 
 
 @bp_newupdater.route("/", methods=["GET"])
 @oauth_required
-def newupdater():
+def newupdater() -> str:
     title = (request.args.get("title") or "").replace("_", " ").strip()
     save = int(request.args.get("save", "0")) or 0
 
@@ -28,8 +30,15 @@ def newupdater():
             save=save,
         )
 
+    user: UserTokenRecord = getattr(g, "_current_user", None)
+
     try:
-        outcome = svc.work_on_title(title, save)
+        outcome = svc.newupdater_one_title(
+            title=title,
+            save=save,
+            summary="Med updater.",
+            user=user,
+        )
     except Exception as exc:
         logger.exception("work_on_title failed for %s", title)
         flash(f"Error processing {title!r}: {exc!r}", "danger")

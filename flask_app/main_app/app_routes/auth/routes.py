@@ -25,8 +25,7 @@ from mwoauth import RequestToken
 
 from ...config import settings
 from ...db.services import delete_user_token
-from ...su_services.new_user_service import UserService
-from ...su_services.objects import CurrentUser
+from ...su_services.users_service import UserService
 from .cookie import extract_user_id, sign_state_token, sign_user_id, verify_state_token
 from .oauth import (
     OAuthIdentityError,
@@ -222,7 +221,6 @@ def callback() -> Response:
     # Cache in g for the remainder of THIS request only
     g._current_user = user_record
 
-    g.current_user = CurrentUser(str(user_id), str(username))
     g.is_authenticated = True
     g.authenticated_user_id = str(user_id)
     g.oauth_credentials = {
@@ -267,7 +265,7 @@ def logout() -> Response:
     response = make_response(redirect(url_for("main.index")))
     response.delete_cookie(settings.cookie.name, path="/")
 
-    g.current_user = None
+    g._current_user = None
     g.is_authenticated = False
     g.oauth_credentials = None
     g.authenticated_user_id = None

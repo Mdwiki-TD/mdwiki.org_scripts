@@ -7,7 +7,7 @@ from __future__ import annotations
 import logging
 from typing import Any, Tuple, Type
 
-from flask import Flask, flash, render_template, g
+from flask import Flask, flash, g, render_template
 from flask_wtf.csrf import CSRFError, CSRFProtect
 from sqlalchemy.exc import OperationalError
 
@@ -21,6 +21,7 @@ from .extensions import db as _db
 from .extensions import migrate
 
 logger = logging.getLogger(__name__)
+
 
 def context_user() -> dict[str, Any]:
     """
@@ -39,6 +40,7 @@ def context_user() -> dict[str, Any]:
         "wiki_domain": settings.other.wiki_domain,
         "static_server": settings.other.static_server,
     }
+
 
 def register_error_pages(app: Flask):
     @app.errorhandler(400)

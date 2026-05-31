@@ -8,7 +8,7 @@ import logging
 
 from ..api_services.clients.wiki_client import get_user_site
 from ..api_services.pages_api import edit_page, get_page_text
-from ..su_services.users_service import current_user
+from ..db.models import UserTokenRecord
 from .fixref_shared.fixred_worker import work_on_text
 from .fixref_shared.objects import RunState
 from .shared_classes import UpdaterTextOutcome
@@ -20,12 +20,15 @@ def work_on_title(
     title: str,
     save: bool = False,
     summary: str = "Fix redirects.",
+    user: UserTokenRecord | None = None,
 ) -> UpdaterTextOutcome:
     """
     s
     """
+    title = (title or "").strip()
+    if not title:
+        return UpdaterTextOutcome(kind="skipped", msg="Invalid title")
 
-    user = current_user()
     if user is None:
         return UpdaterTextOutcome(kind="skipped", msg="No user")
 
@@ -34,10 +37,6 @@ def work_on_title(
         "access_secret": user.access_secret,
     }
     site = get_user_site(user_dict)
-
-    title = (title or "").strip()
-    if not title:
-        return UpdaterTextOutcome(kind="skipped", msg="Invalid title")
 
     old_text = get_page_text(title, site)
 

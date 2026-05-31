@@ -4,9 +4,10 @@ from __future__ import annotations
 
 import logging
 
-from flask import Blueprint, flash, render_template, request
+from flask import Blueprint, flash, g, render_template, request
 
 from ..app_routes.auth.utils import oauth_required
+from ..db.models import UserTokenRecord
 from ..shared import fixred_one
 
 bp_fixred = Blueprint("fixred", __name__, url_prefix="/fixred")
@@ -46,8 +47,15 @@ def fixred_post():
             save=save,
         )
 
+    user: UserTokenRecord = getattr(g, "_current_user", None)
+
     try:
-        outcome = fixred_one.work_on_title(title, save)
+        outcome = fixred_one.work_on_title(
+            title=title,
+            save=save,
+            summary="Med updater.",
+            user=user,
+        )
     except Exception as exc:
         logger.exception("work_on_title failed for %s", title)
         flash(f"Error processing {title!r}: {exc!r}", "danger")

@@ -15,11 +15,11 @@ class TestNewupdaterRoute:
 
     def test_get_with_login(self, mock_client, login, monkeypatch):
         login("TestUser")
-        from flask_app.main_app.su_services.objects import CurrentUser
+        from flask_app.main_app.db.models import UserTokenRecord
 
         monkeypatch.setattr(
             "flask_app.main_app.app_routes.auth.utils.load_user",
-            lambda: CurrentUser(user_id="1", username="TestUser"),
+            lambda: UserTokenRecord(user_id="1", username="TestUser"),
         )
         resp = mock_client.get("/newupdater/")
         assert resp.status_code == 200
