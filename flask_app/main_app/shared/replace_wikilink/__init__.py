@@ -27,11 +27,18 @@ def _normalize_mediawiki_title(title: str) -> str:
     return title
 
 
-def replace_wikilink_destinations(text: str, redirect_to: str, final_target: str) -> str:
+def _replace_wikilink_destinations(text: str, redirect_to: str, final_target: str, set_text: bool = False) -> str:
     """
     Parses wikitext to find links pointing to a specific redirect
     and updates their title to point to the final target.
     Relies on wikitextparser native properties to preserve fragments and display text.
+
+    Default:
+        - ``[[old]]`` becomes ``[[new]]``.
+        - ``[[old|...]]`` becomes ``[[new|...]]``.
+
+    With `set_text=True`:
+        - ``[[old]]`` becomes ``[[new|old]]`` (preserve the originaldisplay text)
     """
     parsed_text = wtp.parse(text)
 
@@ -48,11 +55,31 @@ def replace_wikilink_destinations(text: str, redirect_to: str, final_target: str
         # Compare the normalized titles
         if normalized_title == normalized_redirect:
             # Updating link.title automatically preserves link.fragment and link.text
+            old_target = link.target
             old_title = link.title
             link.title = final_target
+
+            if set_text and not link.text:
+                # preserve the originaldisplay text
+                link.text = old_target
+
             logger.debug(f"Replaced link title '{old_title}' with '{final_target}'")
     # Return the updated wikitext as a string
     return parsed_text.string
+
+
+def replace_wikilink_destinations(text: str, redirect_to: str, final_target: str) -> str:
+    """
+    Parses wikitext to find links pointing to a specific redirect
+    and updates their title to point to the final target.
+    Relies on wikitextparser native properties to preserve fragments and display text.
+    """
+    return _replace_wikilink_destinations(text, redirect_to, final_target)
+
+
+def replace_wikilink_redirects(text: str, redirect_to: str, final_target: str) -> str:
+    """ """
+    return _replace_wikilink_destinations(text, redirect_to, final_target, set_text=True)
 
 
 __all__ = [

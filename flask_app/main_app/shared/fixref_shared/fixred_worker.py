@@ -20,11 +20,14 @@ def _replace_links(
     oldlink: str,
     newlink: str,
 ) -> str:
-    """Mirror of legacy ``replace_links2``.
+    """
+    Mirror of legacy ``replace_links2``.
 
-    Each wikilink ``[[old]]`` becomes ``[[new|old]]`` (preserve the original
-    display text); ``[[old|...]]`` becomes ``[[new|...]]``. Also handles the
-    normalized-title alias if present in ``state.normalized``.
+    Each wikilink
+        - ``[[old]]`` becomes ``[[new|old]]`` (preserve the originaldisplay text);
+        - ``[[old|...]]`` becomes ``[[new|...]]``.
+
+    Also handles the normalized-title alias if present in ``state.normalized``.
     """
 
     text = text.replace(f"[[{oldlink}]]", f"[[{newlink}|{oldlink}]]")

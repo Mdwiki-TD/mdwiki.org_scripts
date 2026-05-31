@@ -51,13 +51,13 @@ removed — read the rules carefully, because they are easy to get wrong.
 
 ## Quick reference
 
-| Property       | Type             | Get              | Set                | Delete                        |
-| -------------- | ---------------- | ---------------- | ------------------ | ----------------------------- | ----------- | --------- | ---------- |
-| `wl.target`    | `str`            | "title#fragment" | Replaces target    | Removes target _and_ the pipe |
-| `wl.title`     | `str`            | before `#`       | Replaces title     | Removes title and the `#`     |
-| `wl.fragment`  | `str` or `None`  | after `#`        | Adds `#` if absent | Removes `#` and fragment      |
-| `wl.text`      | `str` or `None`  | after `          | `                  | Adds `                        | ` if absent | Removes ` | ` and text |
-| `wl.wikilinks` | `list[WikiLink]` | nested only      | —                  | —                             |
+| Property       | Type             | Get              | Set                 | Delete                        |
+| -------------- | ---------------- | ---------------- | ------------------- | ----------------------------- |
+| `wl.target`    | `str`            | "title#fragment" | Replaces target     | Removes target _and_ the pipe |
+| `wl.title`     | `str`            | before `#`       | Replaces title      | Removes title and the `#`     |
+| `wl.fragment`  | `str` or `None`  | after `#`        | Adds `#` if absent  | Removes `#` and fragment      |
+| `wl.text`      | `str` or `None`  | after `\|`       | Adds `\|` if absent | Removes `\|` and text         |
+| `wl.wikilinks` | `list[WikiLink]` | nested only      | —                   | —                             |
 
 ## Step by step
 
