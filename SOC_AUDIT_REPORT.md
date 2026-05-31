@@ -194,7 +194,7 @@ def callback() -> Response:
 
 ---
 
-### [🟠 High] V-R3: Direct model import in route
+### [🟠 High] V-R3: Direct model import in route ✅ FIXED
 
 **File**: `flask_app/main_app/app_routes/newupdater/worker.py`
 **Line(s)**: 19
@@ -202,6 +202,8 @@ def callback() -> Response:
 
 **Problem**:
 Imports `UserTokenRecord` directly from `db.models` into a route-layer file. Routes should call services, not import models.
+
+**Fix**: Moved to `shared/newupdater_service.py`; uses `CurrentUser` type.
 
 **Offending Code**:
 
@@ -216,7 +218,7 @@ Move the `newupdater_one_title()` function to `shared/newupdater_service.py` (th
 
 ---
 
-### [🟠 High] V-R3: Direct model import in route
+### [🟠 High] V-R3: Direct model import in route ✅ FIXED
 
 **File**: `flask_app/main_app/app_routes/fixred.py`
 **Line(s)**: 9
@@ -224,6 +226,8 @@ Move the `newupdater_one_title()` function to `shared/newupdater_service.py` (th
 
 **Problem**:
 Imports `UserTokenRecord` directly from `db.models`. The type annotation `user: UserTokenRecord` on line 50 couples the route to the ORM model.
+
+**Fix**: Removed `UserTokenRecord` import; type annotation removed.
 
 **Offending Code**:
 
@@ -246,7 +250,7 @@ user = getattr(g, "_current_user", None)
 
 ---
 
-### [🟠 High] V-R3: Direct model import in route
+### [🟠 High] V-R3: Direct model import in route ✅ FIXED
 
 **File**: `flask_app/main_app/app_routes/newupdater/route.py`
 **Line(s)**: 9
@@ -254,6 +258,8 @@ user = getattr(g, "_current_user", None)
 
 **Problem**:
 Imports `UserTokenRecord` from `db.models` for type annotation only.
+
+**Fix**: Removed `UserTokenRecord` import; type annotation removed.
 
 **Offending Code**:
 
@@ -390,6 +396,8 @@ def decrypt_user_token(record: UserTokenRecord) -> tuple[str, str]:
 **Problem**:
 `_fernet: Fernet | None = None` is a module-level mutable global with lazy initialization. Concurrent calls to `_require_fernet()` from multiple threads (job workers run in daemon threads) can race on initialization.
 
+**Fix**: Added `threading.Lock` with double-checked locking pattern.
+
 **Offending Code**:
 
 ```python
@@ -429,7 +437,7 @@ def _require_fernet() -> Fernet:
 
 ---
 
-### [🟠 High] V-X3: Shared mutable state — `Title_cash` cache
+### [🟠 High] V-X3: Shared mutable state — `Title_cash` cache ✅ FIXED
 
 **File**: `flask_app/main_app/shared/fixref_shared/make_title_bot.py`
 **Line(s)**: 18, 94, 97, 149
@@ -437,6 +445,8 @@ def _require_fernet() -> Fernet:
 
 **Problem**:
 Module-level dict `Title_cash` is used as a cache and mutated inside `make_title()`. If two concurrent job workers call `make_title()`, they race on the same dict with no locking.
+
+**Fix**: Removed global `Title_cash`; `make_title()` now accepts optional `cache` dict parameter.
 
 **Offending Code**:
 
@@ -465,6 +475,8 @@ Pass an explicit cache dict as a parameter, or use `functools.lru_cache`, or wra
 **Problem**:
 `requests.get()` calls Wikipedia REST API directly, bypassing the `api_services/` layer. This makes the call untestable, lacks retry/timeout standardization, and breaks the layering contract.
 
+**Fix**: HTTP call extracted to `api_services/citation_api.py`; `make_title_bot.py` imports `get_citation_title` from there.
+
 **Offending Code**:
 
 ```python
@@ -482,7 +494,7 @@ Move this HTTP call into `api_services/` (e.g., `api_services/citation_api.py`) 
 
 ---
 
-### [🟠 High] V-X3: Shared mutable state — `page_identifier_params`
+### [🟠 High] V-X3: Shared mutable state — `page_identifier_params` ✅ FIXED
 
 **File**: `flask_app/main_app/shared/new_updater/resources_new.py`
 **Line(s)**: 16, 137
@@ -490,6 +502,8 @@ Move this HTTP call into `api_services/` (e.g., `api_services/citation_api.py`) 
 
 **Problem**:
 Module-level dict `page_identifier_params` is populated inside `move_resources()` and never reset between calls. Running the updater on multiple pages sequentially accumulates stale identifiers from previous pages, causing cross-contamination.
+
+**Fix**: `page_identifier_params` is now a local variable in `move_resources()`, passed to `add_resources()` as a parameter.
 
 **Offending Code**:
 
@@ -522,6 +536,8 @@ def move_resources(text, title, lkj=_lkj_, lkj2=_lkj2_):
 
 **Problem**:
 `_enwiki_session()` and `_enwiki_redirects_for()` create a standalone `requests.Session` and make direct HTTP POST calls to `https://en.wikipedia.org/w/api.php`. This bypasses the `api_services/` abstraction layer used by every other worker.
+
+**Fix**: HTTP logic extracted to `api_services/enwiki_api.py`; worker imports `get_redirects_for` from there.
 
 **Offending Code**:
 

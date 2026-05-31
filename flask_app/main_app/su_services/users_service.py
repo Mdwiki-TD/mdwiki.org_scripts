@@ -5,7 +5,7 @@ from __future__ import annotations
 import logging
 from typing import Optional
 
-from ..db.services import get_user, get_user_token, upsert_user_token
+from ..db.services import get_authenticated_user_token, get_user_token, upsert_user_token
 from .current_user import CurrentUser
 
 logger = logging.getLogger(__name__)
@@ -44,15 +44,12 @@ class UserService:
     def get_authenticated_user(user_id: int) -> Optional[CurrentUser]:
         """Fetch the CurrentUser composite for session restoration."""
         try:
-            token = get_user_token(user_id)
+            token = get_authenticated_user_token(user_id)
             if not token:
-                return None
-            user = get_user(user_id)
-            if not user:
                 return None
             return CurrentUser(
                 user_id=user_id,
-                username=user.username,
+                username=token.user.username,
                 access_token=token.access_token,
                 access_secret=token.access_secret,
             )

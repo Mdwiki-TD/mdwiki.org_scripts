@@ -28,8 +28,9 @@ def init_db(_db) -> None:
     from . import models  # noqa: F401 - register models on db.metadata
 
     # Enable foreign keys for SQLite (used in tests)
-    if not event.contains(_db.engine, "connect", _enable_sqlite_foreign_keys):
-        event.listen(_db.engine, "connect", _enable_sqlite_foreign_keys)
+    if _db.engine.dialect.name == "sqlite":
+        if not event.contains(_db.engine, "connect", _enable_sqlite_foreign_keys):
+            event.listen(_db.engine, "connect", _enable_sqlite_foreign_keys)
 
     # Create only real tables; skip view-backed mapped classes
     real_tables = [t for t in _db.metadata.tables.values() if not t.info.get("is_view")]
