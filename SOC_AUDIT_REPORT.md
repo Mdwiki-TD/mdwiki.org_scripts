@@ -67,22 +67,35 @@ The `user_tokens` table was split into two tables to resolve FK constraint error
 | `su_services/current_user.py` | `CurrentUser` composite dataclass |
 | `api_services/citation_api.py` | Wikipedia citation REST API client |
 | `api_services/enwiki_api.py` | English Wikipedia redirect API client |
+| `db/__init__.py` — `DatabaseInitError` | Domain exception replacing `OperationalError` |
 
-### Remaining (not fixed — low priority)
+### V-API2: Domain filter in API layer (FIXED)
+
+- Removed `get_category_members()` from `api_services/category.py`
+- Production code already uses `get_category_members_api()` directly
+
+### V-C1: SQLAlchemy import in app factory (FIXED)
+
+- Moved `OperationalError` handling to `db/__init__.py`'s `init_db()`
+- `init_db()` now raises `DatabaseInitError` on failure
+- Factory catches domain exception instead of SQLAlchemy exception
+
+### V-X3: Settings singleton side effects (FIXED)
+
+- Moved `mkdir()` out of `config/main_settings.py`'s `_get_paths()`
+- Added `ensure_directories()` function, called from `create_app()` at startup
+
+### Remaining (not fixed — medium/low priority)
 
 | Violation | File | Severity |
 |-----------|------|----------|
 | V-R5 | `admin/sidebar.py` — HTML via f-strings | 🟢 Low |
 | V-C1 | `core/cookies.py` — test utility in core | 🟡 Medium |
-| V-CF1 | `config/main_settings.py` — `mkdir()` side effect | 🟡 Medium |
 | V-CF3 | `logger_config.py` — duplicate env var read | 🟡 Medium |
 | V-X2 | `add_r_column/worker.py` — 314 lines | 🟡 Medium |
 | V-X5 | `import_history/objects.py` — duplicated UpdaterOutcome | 🟡 Medium |
 | V-X2 | `drugbox.py` — 317 lines | 🟡 Medium |
 | V-X2 | `bot_params.py` — 356 lines | 🟡 Medium |
-| V-API2 | `category.py` — domain filter in API layer | 🟠 High |
-| V-X3 | `main_settings.py` — settings singleton | 🟠 High |
-| V-C1 | `__init__.py` — SQLAlchemy import in factory | 🟠 High |
 
 ---
 
@@ -118,9 +131,9 @@ The project demonstrates **good overall layering** — services correctly own DB
 | Services (`db/services/`)      | ✅ Clean  | All commits and queries properly located                     |
 | Models (`db/models/`)          | ✅ Clean  | `UsersRecord` + `UserTokenRecord` with proper FK separation  |
 | Core (`core/`)                 | ⚠️ Issues | Thread-safe `_fernet`; test utility still in core/           |
-| Config (`config/`)             | ⚠️ Issues | `mkdir()` side effect in config loader                       |
+| Config (`config/`)             | ✅ Clean  | No side effects; `ensure_directories()` at startup           |
 | Background Jobs (`new_jobs/`)  | ✅ Clean  | No route imports; proper app context; HTTP routed via api    |
-| API Services (`api_services/`) | ⚠️ Issues | 1 domain filter in `category.py`                             |
+| API Services (`api_services/`) | ✅ Clean  | No domain filters; pure API client layer                     |
 | Extensions (`extensions.py`)   | ✅ Clean  | Bare `ext = ExtensionClass()` pattern                        |
 
 ---
