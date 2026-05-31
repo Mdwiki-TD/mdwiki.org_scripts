@@ -1,0 +1,76 @@
+{{#unlinkedwikibase:id=Q1752915}}
+{{drugbox
+
+| verifiedrevid     = 470614430
+| drug_name         =
+| image             = Trifluoperazine.svg
+| width             = 250
+| alt               =
+| caption           =
+
+<!-- | type = mab / vaccine / combo -->
+| type              =
+
+<!-- Names -->
+| pronounce         =
+| tradename         = Stelazine, Eskazinyl, Eskazine, Jatroneural, others
+| synonyms          =
+| IUPAC_name        = 10-[3-(4-methylpiperazin-1-yl)propyl]-<br/>2-(trifluoromethyl)-10''H''-phenothiazine
+
+<!-- Clinical data -->
+| class             = [[Typical antipsychotic]]
+| uses              = [[Schizophrenia]], [[generalized anxiety disorder]], [[nausea]]<ref name=AHFS2021/><ref name=BNF80/>
+| side_effects      = [[Movement disorders]], sleepiness, blurry vision, dry mouth, low blood pressure<ref name=AHFS2021/><ref name=Bus2007/>
+| interactions      = <!-- notable interactions -->
+| pregnancy_AU      = C
+| pregnancy_US      = C
+| pregnancy_category=
+| breastfeeding     =
+| routes_of_administration= By mouth, [[Intramuscular injection|IM]]
+| onset             =
+| duration_of_action=
+| defined_daily_dose=
+| typical_dose      =
+
+<!-- External links -->
+| Drugs.com         = {{drugs.com|monograph|trifluoperazine-hydrochloride}}
+| MedlinePlus       = a682121
+
+<!-- Legal data -->
+| legal_UK          = POM
+| legal_US          = Rx-only
+| legal_status      =
+| licence_US        =
+| licence_EU        =
+
+<!-- Pharmacokinetic data -->
+| bioavailability   =
+| metabolism        = [[Liver]]
+| elimination_half-life= 10–20 hours
+| excretion         =
+
+<!-- Chemical and physical data -->
+| C= 21 | F= 3 | H= 24 | N= 3 | S= 1
+
+| SMILES            = FC(F)(F)c2cc1N(c3c(Sc1cc2)cccc3)CCCN4CCN(C)CC4
+| StdInChI          = 1S/C21H24F3N3S/c1-25-11-13-26(14-12-25)9-4-10-27-17-5-2-3-6-19(17)28-20-8-7-16(15-18(20)27)21(22,23)24/h2-3,5-8,15H,4,9-14H2,1H3
+| StdInChI_Ref      = {{stdinchicite|correct|chemspider}}
+| StdInChIKey       = ZEWQUBUPAILYHI-UHFFFAOYSA-N
+| StdInChIKey_Ref   = {{stdinchicite|correct|chemspider}}
+}}
+<!-- Definition and medical uses -->
+'''Trifluoperazine''', sold under the brand name '''Stelazine''' among others, is a [[typical antipsychotic]] primarily used to treat [[schizophrenia]].<ref name=AHFS2021>{{cite web |title=Trifluoperazine Monograph for Professionals |url=https://www.drugs.com/monograph/trifluoperazine.html |website=Drugs.com |access-date=19 September 2021 |language=en |archive-date=7 August 2017 |archive-url=https://web.archive.org/web/20170807114040/https://www.drugs.com/monograph/trifluoperazine-hydrochloride.html |url-status=live }}</ref> It is also used, short term, for [[generalized anxiety disorder]] but is less preferred to [[benzodiazepines]] and use for [[nausea]].<ref name=AHFS2021/><ref name=BNF80/> It is taken by mouth.<ref name=AHFS2021/>
+
+<!-- Side effects and mechanisms -->
+Common side effects include movement disorders including [[tardive dyskinesia]], sleepiness, blurry vision, dry mouth, and low blood pressure.<ref name=AHFS2021/><ref name=Bus2007/> Other severe side effects may include [[neuroleptic malignant syndrome]], [[pancytopenia]], and liver problems.<ref name=AHFS2021/> It increases the risk of death in those with [[dementia]].<ref name=AHFS2021/> It is in the [[phenothiazine]] [[chemical class]].<ref name=Bus2007/> It is believed to work by blocking the effects of [[dopamine]].<ref name=AHFS2021/>
+
+<!-- History and culture -->
+Trifluoperazine was patented in 1955 and came into medical use in 1959.<ref name=Bus2007>{{cite book |last1=Buschmann |first1=Helmut |last2=Holenz |first2=Jörg |last3=Párraga |first3=Antonio |last4=Torrens |first4=Antoni |last5=Vela |first5=José Miguel |last6=Díaz |first6=José Luis |title=Antidepressants, Antipsychotics, Anxiolytics, 2 Volume Set: From Chemistry and Pharmacology to Clinical Application |date=16 April 2007 |publisher=John Wiley & Sons |isbn=978-3-527-31058-6 |page=508 |url=https://www.google.ca/books/edition/Antidepressants_Antipsychotics_Anxiolyti/APcYEAAAQBAJ?hl=en&gbpv=1&dq=&pg=PA508 |language=en |access-date=19 September 2021 |archive-date=22 September 2021 |archive-url=https://web.archive.org/web/20210922200013/https://www.google.ca/books/edition/Antidepressants_Antipsychotics_Anxiolyti/APcYEAAAQBAJ?hl=en&gbpv=1&dq=&pg=PA508 |url-status=live }}</ref> It is available as a [[generic medication]].<ref name=BNF80/> In the United States a month of medication at 5 mg twice per day costs about 27 USD as of 2021.<ref>{{cite web |title=Trifluoperazine Prices, Coupons & Savings Tips - GoodRx |url=https://www.goodrx.com/trifluoperazine?dosage=5mg&form=tablet&label_override=trifluoperazine&quantity=60&sort_type=popularity |website=GoodRx |access-date=19 September 2021}}</ref> This amount in the United Kingdom costs the [[NHS]] about £83.<ref name=BNF80/>
+
+* [[dopamine]]
+* [[TESTERRORLINK]]
+
+==References==
+<ref name=BNF80>{{cite book | title=BNF|date=September 2020 - March 2021|publisher=BMJ Group and the Pharmaceutical Press|year=|isbn=978-0-85711-369-6|edition=80|location=|page=408}}</ref>
+
+{{Reflist}}

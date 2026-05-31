@@ -1,14 +1,8 @@
-#!/usr/bin/python3
-"""
-python3 pwb.py newupdater/med Aspirin from_toolforge
-python3 pwb.py newupdater/med Retinol from_toolforge
-
-"""
+""" """
 
 import logging
 import re
 
-# ---
 from .bots import expend  # expend_infoboxs_and_fix(text)
 from .bots import expend_new  # expend_infoboxs(text)
 from .bots import old_params
@@ -20,13 +14,13 @@ from .resources_new import move_resources
 logger = logging.getLogger(__name__)
 
 lkj = r"<!--\s*(Monoclonal antibody data|External links|Names*|Clinical data|Legal data|Legal status|Pharmacokinetic data|Chemical and physical data|Definition and medical uses|Chemical data|Chemical and physical data|index_label\s*=\s*Free Base|\w+ \w+ data|\w+ \w+ \w+ data|\w+ data|\w+ status|Identifiers)\s*-->"
-# ---
+
 lkj2 = r"(<!--\s*(?:Monoclonal antibody data|External links|Names*|Clinical data|Legal data|Legal status|Pharmacokinetic data|Chemical and physical data|Definition and medical uses|Chemical data|Chemical and physical data|index_label\s*=\s*Free Base|\w+ \w+ data|\w+ \w+ \w+ data|\w+ data|\w+ status)\s*-->)"
 
 
-def drugbox_work(new_text, text):
+def _drugbox_work(new_text):
     # ---
-    logger.debug("drugbox_work")
+    logger.debug("_drugbox_work")
     # ---
     # new_text = re.sub(r'<!--\s*\|\s*type\s*=\s*mab\s*\/\s*vaccine\s*\/\s*combo\s*-->', '<!-- type = mab / vaccine / combo -->', new_text, flags=re.IGNORECASE)
     # ---
@@ -65,9 +59,9 @@ def drugbox_work(new_text, text):
     return new_text
 
 
-def work_on_text_md(title, text):
+def _work_on_text_md(title, text):
     # ---
-    logger.debug("work_on_text_md")
+    logger.debug("_work_on_text_md")
     # ---
     new_text = text
     # ---
@@ -75,7 +69,7 @@ def work_on_text_md(title, text):
     # ---
     new_text = move_resources(new_text, title, lkj=lkj, lkj2=lkj2)
     # ---
-    new_text = drugbox_work(new_text, text)
+    new_text = _drugbox_work(new_text)
     # ---
     bot2 = MoveExternalLinksSection(new_text)
     # ---
@@ -106,6 +100,11 @@ def work_on_text(title, text):
         # ---
         # return newtext
     # ---
-    newtext = work_on_text_md(title, newtext)
+    newtext = _work_on_text_md(title, newtext)
     # ---
     return newtext
+
+
+__all__ = [
+    "work_on_text",
+]
