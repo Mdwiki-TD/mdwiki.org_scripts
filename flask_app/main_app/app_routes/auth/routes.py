@@ -47,6 +47,18 @@ request_token_key = settings.sessions.request_token_key
 # ---------------------------------------------------------
 
 
+def _set_response_cookies(user_id, response) -> None:
+    response.set_cookie(
+        settings.cookie.name,
+        sign_user_id(user_id),
+        httponly=settings.cookie.httponly,
+        secure=settings.cookie.secure,
+        samesite=settings.cookie.samesite,
+        max_age=settings.cookie.max_age,
+        path="/",
+    )
+
+
 def _client_key() -> str:
     forwarded_for = request.headers.get("X-Forwarded-For")
     if forwarded_for:
@@ -208,27 +220,11 @@ def callback() -> Response:
 
     # Set response and cookies
     response = make_response(redirect(session.pop("post_login_redirect", url_for("main.index"))))
-    response.set_cookie(
-        settings.cookie.name,
-        sign_user_id(user_id),
-        httponly=settings.cookie.httponly,
-        secure=settings.cookie.secure,
-        samesite=settings.cookie.samesite,
-        max_age=settings.cookie.max_age,
-        path="/",
-    )
+
+    _set_response_cookies(user_id, response)
 
     # Cache in g for the remainder of THIS request only
     g._current_user = user_record
-
-    g.is_authenticated = True
-    g.authenticated_user_id = str(user_id)
-    g.oauth_credentials = {
-        "consumer_key": settings.oauth.consumer_key,
-        "consumer_secret": settings.oauth.consumer_secret,
-        "access_token": str(token_key),
-        "access_secret": str(token_secret),
-    }
 
     return response
 
@@ -266,10 +262,6 @@ def logout() -> Response:
     response.delete_cookie(settings.cookie.name, path="/")
 
     g._current_user = None
-    g.is_authenticated = False
-    g.oauth_credentials = None
-    g.authenticated_user_id = None
-
     return response
 
 
