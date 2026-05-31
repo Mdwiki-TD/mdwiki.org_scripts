@@ -12,7 +12,7 @@ from flask import (
 )
 
 from ...db.services import list_users
-from ..admin_routes import (  # bp_jobs,; bp_owidcharts,; bp_settings,; bp_templates,
+from ..admin_routes import (
     coordinators_module,
 )
 from .admins_required import admin_required
@@ -22,6 +22,7 @@ logger = logging.getLogger(__name__)
 
 bp_admin = Blueprint("admin", __name__, url_prefix="/admin")
 
+bp_admin.register_blueprint(coordinators_module.bp)
 
 @bp_admin.app_context_processor
 def inject_sidebar():
@@ -57,13 +58,6 @@ def users_dashboard() -> str:
         total_users=total,
     )
 
-
-def register_blueprints(bp_admin) -> None:
-    bp_admin.register_blueprint(coordinators_module.bp)
-    # bp_admin.register_blueprint(bp_templates)
-    # bp_admin.register_blueprint(bp_settings)
-    # bp_admin.register_blueprint(bp_jobs)
-    # bp_admin.register_blueprint(bp_owidcharts)
-
-
-register_blueprints(bp_admin)
+__all__ = [
+    "bp_admin",
+]
