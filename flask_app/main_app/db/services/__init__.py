@@ -12,10 +12,10 @@ from .jobs_service import (
     update_job_status,
 )
 from .user_token_service import (
-    get_authenticated_user_token,
     create_user,
     delete_user,
     delete_user_token,
+    get_authenticated_user_token,
     get_user,
     get_user_by_username,
     get_user_token,

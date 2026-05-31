@@ -10,13 +10,14 @@ import logging
 from typing import Optional
 
 from sqlalchemy import func
+from sqlalchemy.orm import joinedload
 
 from ...core.crypto import encrypt_value
 from ...extensions import db
-from sqlalchemy.orm import joinedload
 from ..models import UsersRecord, UserTokenRecord
 
 logger = logging.getLogger(__name__)
+
 
 def get_authenticated_user_token(user_id: int):
     """Fetch the CurrentUser composite for session restoration."""
@@ -33,6 +34,7 @@ def get_authenticated_user_token(user_id: int):
     except Exception as e:
         logger.error("Error loading user for ID %s: %s", user_id, e)
         return None
+
 
 # ── User CRUD ───────────────────────────────────────────────
 
@@ -161,12 +163,8 @@ def get_user_token_by_username(username: str) -> Optional[UserTokenRecord]:
         return None
 
     # return db.session.query(UserTokenRecord).filter(UserTokenRecord.user_id == user.user_id).first()
-    return (
-        db.session.query(UserTokenRecord)
-        .join(UsersRecord)
-        .filter(UsersRecord.username == username)
-        .first()
-    )
+    return db.session.query(UserTokenRecord).join(UsersRecord).filter(UsersRecord.username == username).first()
+
 
 __all__ = [
     "create_user",
