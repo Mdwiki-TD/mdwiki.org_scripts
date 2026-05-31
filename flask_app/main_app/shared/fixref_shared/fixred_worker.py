@@ -10,10 +10,10 @@ import re
 import mwclient
 
 from ...api_services.query_api import get_page_links, resolve_redirects
-
 from .objects import RunState
 
 logger = logging.getLogger(__name__)
+
 
 def _replace_links(
     text: str,

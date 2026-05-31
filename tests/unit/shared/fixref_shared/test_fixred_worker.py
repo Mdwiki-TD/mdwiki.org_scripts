@@ -7,6 +7,7 @@ from flask_app.main_app.shared.fixref_shared.fixred_worker import (
     replace_in_text,
 )
 
+
 class TestReplaceLinks:
     def test_simple_link_gets_piped_with_display_text(self):
         text = "see [[Aspirin]]."
@@ -40,6 +41,7 @@ class TestReplaceLinks:
         assert "[[Aspirin]]" not in result
         assert "[[Acetylsalicylic acid|aspirin]]" in result
         assert "[[Acetylsalicylic acid|Aspirin]]" in result
+
 
 class TestReplaceLinksExtended:
     def test_simple_link(self):

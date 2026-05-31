@@ -1,5 +1,4 @@
-"""
-"""
+""" """
 
 from __future__ import annotations
 
@@ -21,6 +20,7 @@ class RunState:
 
     from_to: dict[str, str] = field(default_factory=dict)
     normalized: dict[str, str] = field(default_factory=dict)
+
 
 __all__ = [
     "RunState",

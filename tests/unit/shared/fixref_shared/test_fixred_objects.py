@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from flask_app.main_app.shared.fixref_shared.objects import RunState
 
+
 class TestRunStateIsolation:
     def test_each_state_starts_empty(self):
         a = RunState()
@@ -33,5 +34,3 @@ class TestRunState:
         b = RunState()
         a.from_to["key"] = "val"
         assert b.from_to == {}
-
-
