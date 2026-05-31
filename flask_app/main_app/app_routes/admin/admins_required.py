@@ -18,12 +18,16 @@ from ...db.services import active_coordinators
 FuncType = TypeVar("FuncType", bound=Callable[..., ResponseReturnValue])
 
 
+def load_user():
+    user = getattr(g, "_current_user", None)
+    return user
+
 def admin_required(view: FuncType) -> FuncType:  # noqa: UP047
     """Decorator enforcing that the current user is an administrator."""
 
     @wraps(view)
     def wrapped(*args, **kwargs):
-        user = getattr(g, "_current_user", None)
+        user = load_user()
         if not user:
             return redirect(url_for("auth.login"))
         if user.username not in active_coordinators():
