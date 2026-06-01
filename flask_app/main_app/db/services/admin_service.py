@@ -29,6 +29,17 @@ def active_coordinators() -> list[str]:
     return [u.username for u in records]
 
 
+@db_guard(default_return=False, msg="Failed to check coordinator status")
+def is_active_coordinator(username: str) -> bool:
+    """Check whether a single username is an active coordinator."""
+    return (
+        db.session.query(AdminUserRecord)
+        .filter(AdminUserRecord.username == username, AdminUserRecord.is_active)
+        .first()
+        is not None
+    )
+
+
 def list_coordinators() -> List[AdminUserRecord]:
     """
     Return all coordinators from the database.
@@ -103,10 +114,11 @@ def delete_coordinator(coordinator_id: int) -> bool:
 
 
 __all__ = [
-    "get_coordinator_by_id",
-    "list_coordinators",
     "active_coordinators",
     "add_coordinator",
-    "set_coordinator_active",
     "delete_coordinator",
+    "get_coordinator_by_id",
+    "is_active_coordinator",
+    "list_coordinators",
+    "set_coordinator_active",
 ]

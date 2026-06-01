@@ -6,7 +6,6 @@ from typing import Any, Dict
 
 from flask import g, url_for
 
-from ...db.services.admin_service import active_coordinators
 from ...new_jobs.workers_list import jobs_data
 
 logger = logging.getLogger(__name__)
@@ -14,7 +13,7 @@ logger = logging.getLogger(__name__)
 
 def _is_admin(user: Any) -> bool:
     """Check if user is an active coordinator (admin)."""
-    return bool(user and user.username in active_coordinators())
+    return bool(user and getattr(user, "is_active_admin", False))
 
 
 def context_user(wiki_domain: str, static_server: str) -> dict[str, Any]:
