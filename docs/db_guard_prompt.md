@@ -50,18 +50,15 @@ Ensure every database interaction is protected either by:
         - Example:
 
         ```python
-        @db_guard(
-            default_return=[],
-            msg="Failed to load active coordinators."
-        )
-        def active_coordinators() -> list[str]:
-            """Get a list of active coordinator usernames from the database."""
-            records = (
-                db.session.query(AdminUserRecord)
-                .filter(AdminUserRecord.is_active)
-                .all()
-            )
-            return [u.username for u in records]
+            @db_guard(default_return=False, msg="Failed to check coordinator status")
+            def is_active_coordinator(username: str) -> bool:
+                """Check whether a single username is an active coordinator."""
+                return (
+                    db.session.query(AdminUserRecord)
+                    .filter(AdminUserRecord.username == username, AdminUserRecord.is_active)
+                    .first()
+                    is not None
+                )
         ```
 
 #### Requirements
