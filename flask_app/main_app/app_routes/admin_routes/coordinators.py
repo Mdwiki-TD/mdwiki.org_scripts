@@ -31,14 +31,14 @@ def _coordinators_dashboard() -> str:
         coordinators = []
 
     total = len(coordinators)
-    active = sum(1 for coord in coordinators if coord.is_active)
+    total_active = sum(1 for coord in coordinators if coord.is_active)
 
     return render_template(
         "admins/coordinators.html",
         coordinators=coordinators,
         total_coordinators=total,
-        active_coordinators=active,
-        inactive_coordinators=total - active,
+        total_active_coordinators=total_active,
+        inactive_coordinators=total - total_active,
     )
 
 

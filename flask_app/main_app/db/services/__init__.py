@@ -1,5 +1,4 @@
 from .admin_service import (
-    active_coordinators,
     is_active_coordinator,
 )
 from .jobs_service import (
@@ -49,6 +48,5 @@ __all__ = [
     "get_user_jobs_stats",
     "cancel_job_db",
     "is_job_cancelled",
-    "active_coordinators",
     "is_active_coordinator",
 ]

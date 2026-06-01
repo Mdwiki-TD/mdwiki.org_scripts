@@ -10,7 +10,6 @@ from ...new_jobs.workers_list import jobs_data
 
 logger = logging.getLogger(__name__)
 
-
 def _is_admin(user: Any) -> bool:
     """Check if user is an active coordinator (admin)."""
     return bool(user and getattr(user, "is_active_admin", False))
@@ -33,7 +32,6 @@ def context_user(wiki_domain: str, static_server: str) -> dict[str, Any]:
         "wiki_domain": wiki_domain,
         "static_server": static_server,
     }
-
 
 def load_auth_payload(user: Any | None) -> Dict[str, Any]:
     if user and hasattr(user, "to_auth_payload"):
