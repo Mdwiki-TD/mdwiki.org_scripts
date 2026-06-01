@@ -5,19 +5,24 @@ from __future__ import annotations
 import logging
 import urllib.parse
 
-from flask import Blueprint, flash, g, render_template, request
+from flask import Blueprint, flash, g, redirect, render_template, request, url_for
 
 from ...shared import newupdater_service as svc
 from ..auth.utils import oauth_required
+from ..utils.routes_utils import can_run_jobs
 
 bp_newupdater = Blueprint("newupdater", __name__, url_prefix="/newupdater")
 
 logger = logging.getLogger(__name__)
 
-def _prase_title(title: str) -> str:
+
+def _parse_title(title: str) -> str:
     title = title.replace("+", " ").replace("_", " ").strip()
     title = urllib.parse.unquote(title)
+    while title.endswith("/"):
+        title = title.removesuffix("/")
     return title
+
 
 def _newupdater(title: str, save: bool) -> str:
     if not title:
@@ -30,6 +35,16 @@ def _newupdater(title: str, save: bool) -> str:
         )
 
     user = getattr(g, "_current_user", None)
+
+    if not can_run_jobs(user):
+        flash("You do not have permission to run synchronous edit jobs.", "danger")
+        return render_template(
+            "newupdater.html",
+            title="Medical content updater",
+            form_title=title,
+            outcome=None,
+            save=save,
+        )
 
     try:
         outcome = svc.newupdater_one_title(
@@ -57,28 +72,48 @@ def _newupdater(title: str, save: bool) -> str:
         save=save,
     )
 
-@bp_newupdater.route("/", methods=["GET"])
-@oauth_required
-def newupdater() -> str:
-    title = _prase_title(request.args.get("title") or "")
-    save = int(request.args.get("save", "0")) == 1
-    return _newupdater(title, save)
-
 
 @bp_newupdater.route("/<path:title>", methods=["GET"])
 @oauth_required
 def worker(title: str) -> str:
-    title = _prase_title(title)
-    title = urllib.parse.unquote(title)
+    title = _parse_title(title)
     return _newupdater(title, False)
 
 
 @bp_newupdater.route("/save/<path:title>", methods=["GET"])
 @oauth_required
 def auto_save(title: str) -> str:
-    title = _prase_title(title)
-    title = urllib.parse.unquote(title)
+    """
+    Process a title string and trigger a new update with auto-save enabled.
+    NOTE: this route already used in https://mdwiki.org/wiki/MediaWiki:Sidebars:
+        `**https://mdw.toolforge.org/newupdater/save/{{urlencode:{{PAGENAME}}}}|Med updater`
+
+    Args:
+        title (str): The raw title string to be processed.
+
+    Returns:
+        str: The result returned by the `_newupdater` function after processing the title.
+    """
+    title = _parse_title(title)
     return _newupdater(title, True)
+
+
+@bp_newupdater.route("/update", methods=["GET"])
+@oauth_required
+def newupdater() -> str:
+    title = _parse_title(request.args.get("title") or "")
+    save = int(request.args.get("save", "0")) == 1
+
+    # If the title is empty, just render the default page without redirecting
+    if not title:
+        return _newupdater("", False)
+
+    if save:
+        # Redirect to auto_save route: /save/<path:title>
+        return redirect(url_for("newupdater.auto_save", title=title))
+    else:
+        # Redirect to worker route: /<path:title>
+        return redirect(url_for("newupdater.worker", title=title))
 
 
 @bp_newupdater.route("/", methods=["GET"])
@@ -92,4 +127,6 @@ def index() -> str:
     )
 
 
-__all__ = ["bp_newupdater"]
+__all__ = [
+    "bp_newupdater",
+]

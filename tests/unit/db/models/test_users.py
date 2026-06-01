@@ -1,11 +1,12 @@
 from __future__ import annotations
 
+from flask.app import Flask
 from flask_app.main_app.core.crypto import encrypt_value
 from flask_app.main_app.db.models.users import AdminUserRecord, UsersRecord, UserTokenRecord
 from flask_app.main_app.extensions import db
 
 
-def test_users_record(app):
+def test_users_record(app: Flask) -> None:
     with app.app_context():
         user = UsersRecord(user_id=42, username="model_test_user")
         db.session.add(user)
@@ -16,7 +17,7 @@ def test_users_record(app):
         assert user.created_at is not None
 
 
-def test_admin_user_record(app):
+def test_admin_user_record(app: Flask) -> None:
     with app.app_context():
         user = UsersRecord(user_id=1, username="model_admin_user")
         db.session.add(user)
@@ -31,7 +32,7 @@ def test_admin_user_record(app):
         assert admin.is_active is True
 
 
-def test_user_token_record(app):
+def test_user_token_record(app: Flask) -> None:
     with app.app_context():
         user = UsersRecord(user_id=123, username="model_token_user")
         db.session.add(user)
@@ -51,7 +52,7 @@ def test_user_token_record(app):
         assert user_token.access_secret != b"access_secret_val"
 
 
-def test_user_token_record_validation(app):
+def test_user_token_record_validation(app: Flask) -> None:
     with app.app_context():
         user = UsersRecord(user_id=456, username="model_validation_user")
         db.session.add(user)

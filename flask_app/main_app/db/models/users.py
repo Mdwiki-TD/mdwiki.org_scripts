@@ -15,9 +15,11 @@ class UsersRecord(db.Model):
     """Stable user identity — source of truth for user_id and username.
 
     CREATE TABLE `users` (
-        `user_id` int NOT NULL,
+        `user_id` int NOT NULL AUTO_INCREMENT,
         `username` varchar(255) NOT NULL,
         `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        `can_run_jobs` tinyint(1) NOT NULL DEFAULT '0',
+        `can_run_bg_jobs` tinyint(1) NOT NULL DEFAULT '0',
         PRIMARY KEY (`user_id`),
         UNIQUE KEY `uq_users_username` (`username`)
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -25,8 +27,10 @@ class UsersRecord(db.Model):
 
     __tablename__ = "users"
 
-    user_id = Column(Integer, primary_key=True)
+    user_id = Column(Integer, primary_key=True, autoincrement=True)
     username = Column(String(255), unique=True, nullable=False)
+    can_run_jobs = Column(Boolean, nullable=False, default=False, server_default="0")
+    can_run_bg_jobs = Column(Boolean, nullable=False, default=False, server_default="0")
 
     created_at = Column(DateTime, nullable=False, server_default=func.current_timestamp())
 
@@ -43,7 +47,7 @@ class AdminUserRecord(db.Model):
         PRIMARY KEY (`id`),
         UNIQUE KEY `username` (`username`),
         CONSTRAINT `admin_users_ibfk_1` FOREIGN KEY (`username`)
-            REFERENCES `users` (`username`) ON DELETE CASCADE
+            REFERENCES `users` (`username`) ON DELETE CASCADE ON UPDATE CASCADE
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
     """
 
@@ -80,7 +84,7 @@ class UserTokenRecord(db.Model):
         rotated_at datetime DEFAULT NULL,
         PRIMARY KEY (user_id),
         CONSTRAINT `user_tokens_ibfk_1` FOREIGN KEY (`user_id`)
-            REFERENCES `users` (`user_id`) ON DELETE CASCADE
+            REFERENCES `users` (`user_id`) ON DELETE CASCADE ON UPDATE CASCADE
     )
     """
 

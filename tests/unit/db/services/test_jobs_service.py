@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import pytest
+from flask.app import Flask
 from flask_app.main_app.db.services.jobs_service import (
     cancel_job_db,
     create_job,
@@ -12,7 +13,7 @@ from flask_app.main_app.db.services.jobs_service import (
 )
 
 
-def test_jobs_service_lifecycle(app):
+def test_jobs_service_lifecycle(app: Flask) -> None:
     with app.app_context():
         # Create
         job = create_job(job_type="test_type", username="user")
@@ -50,23 +51,23 @@ def test_jobs_service_lifecycle(app):
             get_job(job_id, job_type="test_type")
 
 
-def test_get_job_not_found(app):
+def test_get_job_not_found(app: Flask) -> None:
     with app.app_context():
         with pytest.raises(LookupError):
             get_job(999, "any")
 
 
-def test_update_status_not_found(app):
+def test_update_status_not_found(app: Flask) -> None:
     with app.app_context():
         with pytest.raises(LookupError):
             update_job_status(999, "running", job_type="any")
 
 
-def test_cancel_non_existent(app):
+def test_cancel_non_existent(app: Flask) -> None:
     with app.app_context():
         assert cancel_job_db(999, "any") is False
 
 
-def test_delete_non_existent(app):
+def test_delete_non_existent(app: Flask) -> None:
     with app.app_context():
         assert delete_job(999, "any") is False

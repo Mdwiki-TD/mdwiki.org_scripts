@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from typing import Any, Dict
 
+from flask.app import Flask
 from flask_app.main_app.db.models.jobs import JobRecord
 from flask_app.main_app.db.services.jobs_service import create_job, is_job_cancelled
 from flask_app.main_app.extensions import db
@@ -25,7 +26,7 @@ class MockWorker(BaseObjectsJobWorker):
         return self.result_object.to_json()
 
 
-def test_before_run_updates_status(app):
+def test_before_run_updates_status(app: Flask) -> None:
     with app.app_context():
         job = create_job("mock_job", "test_user")
         worker = MockWorker(job.id)
@@ -36,7 +37,7 @@ def test_before_run_updates_status(app):
         assert worker.result_object.status == "running"
 
 
-def test_is_job_cancelled_detects_external_change(app):
+def test_is_job_cancelled_detects_external_change(app: Flask) -> None:
     with app.app_context():
         job = create_job("mock_job", "test_user")
 
@@ -69,7 +70,7 @@ def test_is_job_cancelled_detects_external_change(app):
         assert job_after.status == "cancelled"
 
 
-def test_is_cancelled_sets_cancelled_at(app):
+def test_is_cancelled_sets_cancelled_at(app: Flask) -> None:
     with app.app_context():
         job = create_job("mock_job", "test_user")
         worker = MockWorker(job.id)
