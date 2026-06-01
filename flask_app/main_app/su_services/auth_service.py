@@ -37,7 +37,14 @@ def extract_token_credentials(access_token: Any) -> Tuple[str, str]:
 
 def extract_identity_fields(identity: dict[str, Any]) -> Tuple[int, str]:
     """Extract user_id and username from an OAuth identity dict."""
-    user_identifier = identity.get("sub") or identity.get("id") or identity.get("central_id") or identity.get("user_id")
+    user_identifier = None
+    user_identifier_keys = {"sub", "id", "central_id", "user_id"}
+    for key in user_identifier_keys:
+        user_identifier = identity.get(key)
+        if user_identifier:
+            logger.debug("Found user identifier in OAuth identity: %s", key)
+            break
+
     if not user_identifier:
         raise OAuthCallbackError("Missing user id")
 

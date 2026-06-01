@@ -6,6 +6,7 @@ import logging
 from typing import Optional
 
 from ..db.services import create_user, get_authenticated_user_token, get_user_token, upsert_user_token
+from ..db.services.users_service import UsersRecord
 from .current_user import CurrentUser
 
 logger = logging.getLogger(__name__)
@@ -24,7 +25,7 @@ class UserService:
             username = (username or "").strip()
 
             # Ensure user identity row exists
-            create_user(user_id, username)
+            user: UsersRecord = create_user(user_id, username)
 
             # 1. Update or insert into database via repository
             upsert_user_token(
