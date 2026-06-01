@@ -18,10 +18,6 @@ from ..models import UsersRecord, UserTokenRecord
 
 logger = logging.getLogger(__name__)
 
-
-# ── SELECT ───────────────────────────────────────────────
-
-
 def get_authenticated_user_token(user_id: int) -> None | UserTokenRecord:
     """Fetch the CurrentUser composite for session restoration."""
     try:
@@ -60,9 +56,6 @@ def get_user_token_by_username(username: str) -> Optional[UserTokenRecord]:
     return db.session.query(UserTokenRecord).join(UsersRecord).filter(UsersRecord.username == username).first()
 
 
-# ── INSERT, UPDATE, SET ──────────────────────────────────
-
-
 def upsert_user_token(*, user_id: int, access_key: str, access_secret: str) -> None:
     """Insert or update the encrypted OAuth credentials for a user.
 
@@ -92,9 +85,6 @@ def upsert_user_token(*, user_id: int, access_key: str, access_secret: str) -> N
         db.session.add(orm_obj)
 
     db.session.commit()
-
-
-# ── DELETE ───────────────────────────────────────────────
 
 
 def delete_user_token(user_id: int) -> bool:
