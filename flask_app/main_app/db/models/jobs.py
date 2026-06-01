@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import logging
 
-from sqlalchemy import Column, DateTime, Integer, String, func
+from sqlalchemy import Column, DateTime, Index, Integer, String, func
 
 from ...extensions import db
 
@@ -28,6 +28,14 @@ class JobRecord(db.Model):
     """
 
     __tablename__ = "jobs"
+    __table_args__ = (
+        Index(
+            "idx_unique_active_job",
+            "job_type",
+            unique=True,
+            sqlite_where=Column("status").in_(["pending", "running"]),
+        ),
+    )
 
     id = Column(Integer, primary_key=True, autoincrement=True)
     job_type = Column(String(255), nullable=False)

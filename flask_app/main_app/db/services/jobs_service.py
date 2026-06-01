@@ -4,8 +4,10 @@ import logging
 from datetime import UTC, datetime
 
 from sqlalchemy import func
+from sqlalchemy.exc import IntegrityError
 
 from ...extensions import db
+from ..exceptions import DuplicateJobError
 from ..models.jobs import JobRecord
 from .utils import db_guard
 
@@ -179,7 +181,14 @@ def create_job(job_type: str, username: str | None = None) -> JobRecord:
     """
     job = JobRecord(job_type=job_type, username=username, status="pending")
     db.session.add(job)
-    db.session.commit()
+    try:
+        db.session.commit()
+    except IntegrityError:
+        db.session.rollback()
+        logger.warning("Duplicate active job detected for job_type=%s", job_type)
+        raise DuplicateJobError(
+            f"A job of type '{job_type}' is already active (pending or running)."
+        )
     db.session.refresh(job)
     return job
 
