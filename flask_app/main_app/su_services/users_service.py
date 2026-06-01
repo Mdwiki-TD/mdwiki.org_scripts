@@ -11,7 +11,7 @@ from ..db.services import (
     get_user_by_username,
     get_user_token,
     is_active_coordinator,
-    update_user_token,
+    upsert_user_token,
 )
 from ..db.services.users_service import UsersRecord
 from .current_user import CurrentUser
@@ -44,7 +44,7 @@ class UserService:
 
         try:
             # 1. Update or insert into database via repository
-            update_user_token(
+            upsert_user_token(
                 user_id=user_id,
                 access_key=access_key,
                 access_secret=access_secret,
