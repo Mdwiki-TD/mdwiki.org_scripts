@@ -1,0 +1,14 @@
+{
+  "task_id": "task-prevent-duplicate-jobs",
+  "task_description": "Prevent simultaneous background jobs of the same type by adding a partial unique index on the jobs table, catching IntegrityError in create_job, raising a DuplicateJobError, and handling it gracefully in the worker and route layers with appropriate logging and user feedback.",
+  "status": "completed",
+  "feature_order": ["FEAT-001"],
+  "blocked_reason": null,
+  "verification": {
+    "build": "pass",
+    "tests": "pass",
+    "test_quality": "pass",
+    "docker_build": "skipped",
+    "summary": "All 584 tests pass including 6 new tests covering duplicate job prevention. New tests exercise real code paths through the partial unique index constraint in SQLite."
+  }
+}

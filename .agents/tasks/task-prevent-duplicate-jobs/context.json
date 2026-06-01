@@ -1,0 +1,27 @@
+{
+  "project_type": "Python Flask web app with SQLAlchemy ORM, background job system",
+  "language": "Python 3.13",
+  "build_system": "pip with requirements.txt, no Makefile",
+  "test_framework": "pytest with pytest-socket (blocks network by default), SQLite in-memory for testing",
+  "build_command": "pip install -r requirements.txt && pip install -r requirements-dev.txt",
+  "test_command": "python -m pytest tests/ -v",
+  "verification_instructions": "Run python -m pytest tests/ -v and ensure all tests pass. No docker or CI steps needed locally.",
+  "snapshot_or_generated_files": null,
+  "setup_instructions": "pip install -r requirements.txt && pip install -r requirements-dev.txt",
+  "environment_constraints": "OPEN_INTERNET network mode. Python 3.13 available via pyenv. No Docker needed.",
+  "contribution_requirements": "Line length 120 chars, ruff for linting, isort with Black profile, type hints used. Tests use pytest fixtures from tests/conftest.py. The app uses TestingConfig with SQLite in-memory for tests.",
+  "key_patterns": "- SQLAlchemy models in flask_app/main_app/db/models/ use Column() declarative style\n- Services in flask_app/main_app/db/services/ handle DB operations\n- IntegrityError is caught in admin_service.py with rollback pattern\n- Custom exceptions in flask_app/main_app/db/exceptions.py\n- db_guard decorator in services/utils.py catches exceptions and rolls back\n- Tests use app fixture from conftest.py with app_context()\n- Integration tests use _clean_db fixture to reset tables between tests",
+  "relevant_files": [
+    "flask_app/main_app/db/models/jobs.py",
+    "flask_app/main_app/db/services/jobs_service.py",
+    "flask_app/main_app/db/exceptions.py",
+    "flask_app/main_app/new_jobs/jobs_worker.py",
+    "flask_app/main_app/app_routes/new_jobs.py",
+    "flask_app/main_app/db/services/__init__.py",
+    "flask_app/main_app/db/services/admin_service.py",
+    "tests/unit/db/services/test_jobs_service.py",
+    "tests/integration/app_routes/test_jobs_routes.py",
+    "tests/conftest.py"
+  ],
+  "directory_structure": "flask_app/main_app/ - main application code\nflask_app/main_app/db/models/ - SQLAlchemy models\nflask_app/main_app/db/services/ - DB service layer (CRUD operations)\nflask_app/main_app/db/exceptions.py - custom DB exceptions\nflask_app/main_app/new_jobs/ - background job system\nflask_app/main_app/app_routes/ - Flask blueprint routes\ntests/unit/ - unit tests\ntests/integration/ - integration tests"
+}

@@ -171,6 +171,22 @@ def get_user_jobs_stats(username: str) -> dict[str, dict[str, int] | list[JobRec
 # ── INSERT, UPDATE, SET ──────────────────────────────────
 
 
+def has_active_job(job_type: str) -> bool:
+    """
+    Check if there is an active (pending or running) job of the given type.
+
+    This application-level check works on all database backends (MySQL, SQLite,
+    PostgreSQL) and is the primary enforcement mechanism for preventing duplicate
+    concurrent jobs of the same type.
+    """
+    result = (
+        db.session.query(JobRecord.id)
+        .filter(JobRecord.job_type == job_type, JobRecord.status.in_(["pending", "running"]))
+        .first()
+    )
+    return result is not None
+
+
 def create_job(job_type: str, username: str | None = None) -> JobRecord:
     """
     Create a new job record.
@@ -179,16 +195,24 @@ def create_job(job_type: str, username: str | None = None) -> JobRecord:
         INSERT INTO jobs (job_type, status, username) VALUES (%s, %s, %s)
         (job_type, "pending", username),
     """
+    # Application-level check (works on all DB backends including MySQL)
+    if has_active_job(job_type):
+        raise DuplicateJobError(
+            f"A job of type '{job_type}' is already active (pending or running)."
+        )
+
     job = JobRecord(job_type=job_type, username=username, status="pending")
     db.session.add(job)
     try:
         db.session.commit()
-    except IntegrityError:
+    except IntegrityError as exc:
         db.session.rollback()
-        logger.warning("Duplicate active job detected for job_type=%s", job_type)
-        raise DuplicateJobError(
-            f"A job of type '{job_type}' is already active (pending or running)."
-        )
+        if "idx_unique_active_job" in str(exc.orig) or "UNIQUE constraint failed" in str(exc.orig):
+            logger.warning("Duplicate active job detected for job_type=%s", job_type)
+            raise DuplicateJobError(
+                f"A job of type '{job_type}' is already active (pending or running)."
+            ) from exc
+        raise  # Re-raise unexpected IntegrityError
     db.session.refresh(job)
     return job
 
@@ -257,6 +281,7 @@ def delete_job(job_id: int, job_type: str) -> bool:
 __all__ = [
     "create_job",
     "get_job",
+    "has_active_job",
     "list_jobs",
     "update_job_status",
     "cancel_job_db",

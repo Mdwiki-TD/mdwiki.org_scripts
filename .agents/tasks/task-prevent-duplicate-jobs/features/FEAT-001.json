@@ -1,0 +1,33 @@
+{
+  "id": "FEAT-001",
+  "type": "feat",
+  "description": "Add a partial unique index on the jobs table to prevent concurrent active jobs of the same type, add DuplicateJobError exception, update create_job to catch IntegrityError and raise DuplicateJobError, update jobs_worker.start_job to handle DuplicateJobError, and update the route to flash an appropriate message. Add tests covering all new behavior.",
+  "status": "completed",
+  "steps": [
+    "1. Add DuplicateJobError exception class to flask_app/main_app/db/exceptions.py following the existing exception pattern.",
+    "2. Add a partial unique index to the JobRecord model in flask_app/main_app/db/models/jobs.py using SQLAlchemy's Index with a WHERE clause filtering on status IN ('pending', 'running'). Add it via __table_args__ on the model. Import Index from sqlalchemy.",
+    "3. Update flask_app/main_app/db/services/jobs_service.py: In the create_job function, wrap the db.session.commit() call in a try-except block that catches sqlalchemy.exc.IntegrityError. On IntegrityError, rollback the session and raise DuplicateJobError with a descriptive message including the job_type. Add appropriate logging.",
+    "4. Update flask_app/main_app/new_jobs/jobs_worker.py: In the start_job function, catch DuplicateJobError from the create_job call (in addition to the existing generic Exception catch). Log a warning when a duplicate is detected and re-raise it so the caller (route) can handle it.",
+    "5. Update flask_app/main_app/app_routes/new_jobs.py: In the _start_job function, catch DuplicateJobError specifically (before the generic Exception catch) and flash a user-friendly message like 'A job of this type is already running. Please wait for it to complete.' with category 'warning'. Return None so the route redirects to the jobs list.",
+    "6. Export DuplicateJobError from flask_app/main_app/db/services/__init__.py so it can be imported by jobs_worker and the route.",
+    "7. Add unit tests in tests/unit/db/services/test_jobs_service.py: (a) Test that creating a second job of the same type while one is 'pending' raises DuplicateJobError. (b) Test that creating a second job of the same type while one is 'running' raises DuplicateJobError. (c) Test that creating a job of the same type after the first is 'completed' succeeds. (d) Test that creating a job of the same type after the first is 'cancelled' succeeds. (e) Test that creating a job of a different type while one is active succeeds.",
+    "8. Add a unit test in tests/unit/new_jobs/test_jobs_worker.py: Test that start_job raises DuplicateJobError when create_job raises DuplicateJobError (mock create_job to raise DuplicateJobError and verify it propagates).",
+    "9. Verify all existing tests still pass by running: python -m pytest tests/ -v"
+  ],
+  "acceptance_criteria": [
+    "DuplicateJobError exception exists in flask_app/main_app/db/exceptions.py",
+    "JobRecord model has a partial unique index on job_type WHERE status IN ('pending', 'running')",
+    "create_job raises DuplicateJobError when a duplicate active job is detected via IntegrityError",
+    "start_job in jobs_worker propagates DuplicateJobError to callers",
+    "The _start_job route handler catches DuplicateJobError and flashes a user-friendly warning",
+    "Unit tests cover: duplicate pending, duplicate running, different type allowed, completed allows re-creation, cancelled allows re-creation",
+    "All existing tests continue to pass"
+  ],
+  "verification": [
+    "python -m pytest tests/unit/db/services/test_jobs_service.py -v",
+    "python -m pytest tests/unit/new_jobs/ -v",
+    "python -m pytest tests/ -v"
+  ],
+  "blocked_reason": null,
+  "findings": "Tests share a session-scoped SQLite DB without per-test cleanup (no _clean_db fixture in unit tests). Integration tests have a _clean_db fixture but unit tests do not. To avoid conflicts with the new partial unique index, each test must use a unique job_type string. Updated existing tests in test_job_lifecycle_updates.py to use unique job_type names and made MockWorker accept a configurable job_type parameter. Integration tests that created multiple jobs of the same type were updated to complete the first job before creating the second."
+}

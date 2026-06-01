@@ -1,0 +1,26 @@
+{
+  "id": "FEAT-002",
+  "type": "fix",
+  "description": "Address review feedback: add application-level duplicate check for MySQL compatibility, make IntegrityError catch more specific, and add integration test for DuplicateJobError route handling.",
+  "status": "in_progress",
+  "steps": [
+    "1. Add has_active_job(job_type) function in jobs_service.py that checks for existing active jobs before insert.",
+    "2. Update create_job to call has_active_job before insert and raise DuplicateJobError if active.",
+    "3. Make the IntegrityError catch more specific by checking constraint name in the error message.",
+    "4. Add integration test for DuplicateJobError route handling in test_jobs_routes.py."
+  ],
+  "acceptance_criteria": [
+    "has_active_job function exists and queries for pending/running jobs of the same type",
+    "create_job calls has_active_job before inserting and raises DuplicateJobError if active",
+    "IntegrityError catch checks for idx_unique_active_job constraint name before raising DuplicateJobError",
+    "Integration test verifies DuplicateJobError flashes warning and redirects",
+    "All existing tests continue to pass"
+  ],
+  "verification": [
+    "python -m pytest tests/unit/db/services/test_jobs_service.py -v",
+    "python -m pytest tests/integration/app_routes/test_jobs_routes.py -v",
+    "python -m pytest tests/ -v"
+  ],
+  "blocked_reason": null,
+  "findings": null
+}
