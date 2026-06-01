@@ -7,6 +7,8 @@ Users table is the stable identity layer. Tokens are a child of users.
 from __future__ import annotations
 
 import logging
+from typing import Optional
+
 from sqlalchemy import func
 from sqlalchemy.orm import joinedload
 
@@ -33,26 +35,6 @@ def get_authenticated_user_token(user_id: int) -> None | UserTokenRecord:
         logger.error("Error loading user for ID %s: %s", user_id, e)
         return None
 
-def get_user_token(user_id: str | int) -> None | UserTokenRecord:
-    """Fetch the encrypted OAuth credentials for a user."""
-    if not user_id:
-        return None
-
-    user_id = int(user_id)
-    return db.session.get(UserTokenRecord, user_id)
-
-
-def get_user_token_by_username(username: str) -> None | UserTokenRecord:
-    """Fetch the encrypted OAuth credentials for a user by username.
-
-    Joins through the ``users`` table since username lives there.
-    """
-    username = (username or "").strip()
-    if not username:
-        return None
-
-    return db.session.query(UserTokenRecord).join(UsersRecord).filter(UsersRecord.username == username).first()
-
 
 def upsert_user_token(*, user_id: int, access_key: str, access_secret: str) -> None:
     """Insert or update the encrypted OAuth credentials for a user.
@@ -63,7 +45,7 @@ def upsert_user_token(*, user_id: int, access_key: str, access_secret: str) -> N
     encrypted_secret = encrypt_value(access_secret)
     now = func.current_timestamp()
 
-    orm_obj = db.session.get(UserTokenRecord, user_id)
+    orm_obj = db.session.query(UserTokenRecord).filter(UserTokenRecord.user_id == user_id).first()
     if orm_obj:
         orm_obj.access_token = encrypted_token
         orm_obj.access_secret = encrypted_secret
@@ -85,6 +67,15 @@ def upsert_user_token(*, user_id: int, access_key: str, access_secret: str) -> N
     db.session.commit()
 
 
+def get_user_token(user_id: str | int) -> Optional[UserTokenRecord]:
+    """Fetch the encrypted OAuth credentials for a user."""
+    if not user_id:
+        return None
+
+    user_id = int(user_id)
+    return db.session.query(UserTokenRecord).filter(UserTokenRecord.user_id == user_id).first()
+
+
 def delete_user_token(user_id: int) -> bool:
     """Delete the stored OAuth token only. User identity row persists."""
     if not user_id:
@@ -95,6 +86,19 @@ def delete_user_token(user_id: int) -> bool:
     )
     db.session.commit()
     return affected_rows > 0
+
+
+def get_user_token_by_username(username: str) -> Optional[UserTokenRecord]:
+    """Fetch the encrypted OAuth credentials for a user by username.
+
+    Joins through the ``users`` table since username lives there.
+    """
+    username = (username or "").strip()
+    if not username:
+        return None
+
+    return db.session.query(UserTokenRecord).join(UsersRecord).filter(UsersRecord.username == username).first()
+
 
 __all__ = [
     "delete_user_token",

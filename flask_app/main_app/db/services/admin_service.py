@@ -40,7 +40,7 @@ def get_coordinator_by_id(coordinator_id: int) -> AdminUserRecord:
     """
     Get a coordinator by ID.
     """
-    record = db.session.get(AdminUserRecord, coordinator_id)
+    record = db.session.query(AdminUserRecord).filter(AdminUserRecord.id == coordinator_id).first()
     if not record:
         raise LookupError(f"Coordinator id {coordinator_id} was not found")
     return record
@@ -73,7 +73,7 @@ def add_coordinator(username: str) -> AdminUserRecord:
 def set_coordinator_active(coordinator_id: int, is_active: bool) -> AdminUserRecord:
     """Toggle coordinator activity."""
     # record = get_coordinator_by_id(coordinator_id)
-    record = db.session.get(AdminUserRecord, coordinator_id)
+    record = db.session.query(AdminUserRecord).filter(AdminUserRecord.id == coordinator_id).first()
     if record:
         record.is_active = is_active
         db.session.commit()
