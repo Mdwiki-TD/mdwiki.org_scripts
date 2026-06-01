@@ -19,6 +19,9 @@ from ..models import UsersRecord, UserTokenRecord
 logger = logging.getLogger(__name__)
 
 
+# ── SELECT ───────────────────────────────────────────────
+
+
 def get_authenticated_user_token(user_id: int) -> None | UserTokenRecord:
     """Fetch the CurrentUser composite for session restoration."""
     try:
@@ -57,9 +60,31 @@ def get_user_token_by_username(username: str) -> Optional[UserTokenRecord]:
     return db.session.query(UserTokenRecord).join(UsersRecord).filter(UsersRecord.username == username).first()
 
 
+# ── INSERT, UPDATE, SET ──────────────────────────────────
+
+
+def create_user_token(user_id: int, access_key: str, access_secret: str) -> UserTokenRecord:
+    """
+    """
+    encrypted_token = encrypt_value(access_key)
+    encrypted_secret = encrypt_value(access_secret)
+
+    orm_obj = UserTokenRecord(
+        user_id=user_id,
+        access_token=encrypted_token,
+        access_secret=encrypted_secret,
+    )
+    db.session.add(orm_obj)
+
+    db.session.commit()
+    db.session.refresh(orm_obj)
+
+    return orm_obj
+
 def update_user_token(user_id: int, access_key: str, access_secret: str) -> UserTokenRecord:
     """
-    update the encrypted OAuth credentials for a user.
+    Upsert the encrypted OAuth credentials for a user.
+    Creates a new token row if one does not exist.
     """
     encrypted_token = encrypt_value(access_key)
     encrypted_secret = encrypt_value(access_secret)
@@ -77,6 +102,24 @@ def update_user_token(user_id: int, access_key: str, access_secret: str) -> User
         db.session.refresh(orm_obj)
     return orm_obj
 
+def upsert_user_token(user_id: int, access_key: str, access_secret: str) -> UserTokenRecord:
+    """
+    Upsert the encrypted OAuth credentials for a user.
+    Creates a new token row if one does not exist.
+    """
+
+    record = db.session.get(UserTokenRecord, user_id)
+    if record:
+        orm_obj = update_user_token(user_id, access_key, access_secret)
+    else:
+        orm_obj = create_user_token(user_id, access_key, access_secret)
+
+    return orm_obj
+
+
+# ── DELETE ───────────────────────────────────────────────
+
+
 def delete_user_token(user_id: int) -> bool:
     """Delete the stored OAuth token only. User identity row persists."""
     if not user_id:
@@ -90,6 +133,7 @@ def delete_user_token(user_id: int) -> bool:
 
 
 __all__ = [
+    "upsert_user_token",
     "delete_user_token",
     "get_user_token",
     "get_user_token_by_username",

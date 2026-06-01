@@ -11,7 +11,7 @@ from unittest.mock import Mock
 import pytest
 from flask_app.main_app.db.services import (
     is_active_coordinator,
-    update_user_token,
+    upsert_user_token,
 )
 from flask_app.main_app.db.services.admin_service import (
     add_coordinator,
@@ -23,7 +23,7 @@ from flask_app.main_app.db.services.users_service import create_user
 
 def _upsert_u_token(username: str, access_key: str, access_secret: str) -> int:
     user = create_user(username)
-    update_user_token(
+    upsert_user_token(
         user_id=user.user_id,
         access_key=access_key,
         access_secret=access_secret,
