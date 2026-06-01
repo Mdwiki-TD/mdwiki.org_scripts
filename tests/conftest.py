@@ -16,6 +16,7 @@ from pathlib import Path
 
 import pytest
 from cryptography.fernet import Fernet
+from flask.app import Flask
 from pytest_socket import disable_socket
 
 # Make the flask_app/ directory importable as `main_app`. The repo's prod
@@ -57,7 +58,7 @@ def app():
 
 
 @pytest.fixture()
-def mock_client(app):
+def mock_client(app: Flask) -> None:
     """Fresh test client per test."""
 
     return app.test_client()

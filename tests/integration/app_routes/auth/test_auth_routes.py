@@ -10,6 +10,7 @@ from __future__ import annotations
 from unittest.mock import MagicMock, patch
 
 import pytest
+from flask.app import Flask
 from flask_app.main_app.config import settings
 from flask_app.main_app.db.services import upsert_user_token
 
@@ -19,7 +20,7 @@ _REQ_TOKEN_KEY = settings.sessions.request_token_key  # "state"
 
 
 @pytest.fixture(autouse=True)
-def _clean_db(app):
+def _clean_db(app: Flask):
     """Clean all tables after each test to prevent state leaking."""
     yield
     with app.app_context():

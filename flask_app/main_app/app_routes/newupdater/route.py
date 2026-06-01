@@ -5,7 +5,7 @@ from __future__ import annotations
 import logging
 import urllib.parse
 
-from flask import Blueprint, flash, g, render_template, request, redirect, url_for
+from flask import Blueprint, flash, g, redirect, render_template, request, url_for
 
 from ...shared import newupdater_service as svc
 from ..auth.utils import oauth_required
@@ -14,12 +14,14 @@ bp_newupdater = Blueprint("newupdater", __name__, url_prefix="/newupdater")
 
 logger = logging.getLogger(__name__)
 
+
 def _parse_title(title: str) -> str:
     title = title.replace("+", " ").replace("_", " ").strip()
     title = urllib.parse.unquote(title)
     while title.endswith("/"):
         title = title.removesuffix("/")
     return title
+
 
 def _newupdater(title: str, save: bool) -> str:
     if not title:
@@ -59,6 +61,7 @@ def _newupdater(title: str, save: bool) -> str:
         save=save,
     )
 
+
 @bp_newupdater.route("/<path:title>", methods=["GET"])
 @oauth_required
 def worker(title: str) -> str:
@@ -83,6 +86,7 @@ def auto_save(title: str) -> str:
     title = _parse_title(title)
     return _newupdater(title, True)
 
+
 @bp_newupdater.route("/update", methods=["GET"])
 @oauth_required
 def newupdater() -> str:
@@ -100,6 +104,7 @@ def newupdater() -> str:
         # Redirect to worker route: /<path:title>
         return redirect(url_for("newupdater.worker", title=title))
 
+
 @bp_newupdater.route("/", methods=["GET"])
 def index() -> str:
     return render_template(
@@ -113,4 +118,4 @@ def index() -> str:
 
 __all__ = [
     "bp_newupdater",
-    ]
+]

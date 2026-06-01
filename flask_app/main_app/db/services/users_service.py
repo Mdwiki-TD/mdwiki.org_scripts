@@ -70,6 +70,7 @@ def list_users() -> list[UsersRecord]:
     """Return all user identity records."""
     return db.session.query(UsersRecord).all()
 
+
 __all__ = [
     "create_user",
     "delete_user",

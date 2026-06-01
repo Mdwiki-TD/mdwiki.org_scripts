@@ -35,6 +35,7 @@ def get_authenticated_user_token(user_id: int) -> None | UserTokenRecord:
         logger.error("Error loading user for ID %s: %s", user_id, e)
         return None
 
+
 def upsert_user_token(*, user_id: int, username: str, access_key: str, access_secret: str) -> None:
     """Insert or update the encrypted OAuth credentials for a user.
 

@@ -13,6 +13,7 @@ from flask import (
     url_for,
 )
 from flask.typing import ResponseReturnValue
+
 from ...db.services import user_token_service
 from ..admin.admins_required import admin_required
 
@@ -23,7 +24,7 @@ def _dashboard() -> str:
     """Render the user management dashboard."""
     try:
         users = user_token_service.list_users()
-    except Exception as e: # pragma: no cover - defensive guard
+    except Exception as e:  # pragma: no cover - defensive guard
         logger.error(f"Error listing users: {e}")
         flash("Error listing users", "error")
         users = []
@@ -55,6 +56,7 @@ def _update_user_active(user_id: int) -> ResponseReturnValue:
 
     return redirect(url_for("admin.users.dashboard"))
 
+
 class UsersRoutes:
     """Jobs management routes."""
 
@@ -72,7 +74,6 @@ class UsersRoutes:
         @admin_required
         def update_active(user_id: int) -> ResponseReturnValue:
             return _update_user_active(user_id)
-
 
         @self.bp.post("/<int:user_id>/can_run_jobs")
         @admin_required

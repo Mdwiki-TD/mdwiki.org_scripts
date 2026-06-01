@@ -1,10 +1,11 @@
 from __future__ import annotations
 
+from flask.app import Flask
 from flask_app.main_app.db.models.jobs import JobRecord
 from flask_app.main_app.extensions import db
 
 
-def test_job_record_creation(app):
+def test_job_record_creation(app: Flask) -> None:
     with app.app_context():
         job = JobRecord(job_type="test_job", username="test_user")
         db.session.add(job)

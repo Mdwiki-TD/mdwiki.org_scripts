@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from flask.app import Flask
 from flask_app.main_app.db.services.users_service import (
     create_user,
     delete_user,
@@ -10,7 +11,7 @@ from flask_app.main_app.db.services.users_service import (
 from flask_app.main_app.extensions import db
 
 
-def test_create_user(app):
+def test_create_user(app: Flask) -> None:
     with app.app_context():
         user = create_user(1001, "svc_alice")
         assert user.user_id == 1001
@@ -22,7 +23,7 @@ def test_create_user(app):
         assert user2.username == "svc_alice_renamed"
 
 
-def test_get_user(app):
+def test_get_user(app: Flask) -> None:
     with app.app_context():
         create_user(1010, "svc_bob")
         user = get_user(1010)
@@ -32,7 +33,7 @@ def test_get_user(app):
         assert get_user(999999) is None
 
 
-def test_get_user_by_username(app):
+def test_get_user_by_username(app: Flask) -> None:
     with app.app_context():
         create_user(1020, "svc_charlie")
         user = get_user_by_username("svc_charlie")
@@ -42,13 +43,14 @@ def test_get_user_by_username(app):
         assert get_user_by_username("nonexistent_svc_user") is None
 
 
-def test_delete_user_cascades(app):
+def test_delete_user_cascades(app: Flask) -> None:
     with app.app_context():
         create_user(1030, "svc_dave")
         delete_user(1030)
         assert get_user(1030) is None
 
-def test_list_users(app):
+
+def test_list_users(app: Flask) -> None:
     with app.app_context():
         # Clean slate
         db.session.execute(db.text("DELETE FROM user_tokens"))

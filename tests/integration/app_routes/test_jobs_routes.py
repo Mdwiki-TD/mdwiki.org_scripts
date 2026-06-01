@@ -10,6 +10,7 @@ from __future__ import annotations
 from unittest.mock import patch
 
 import pytest
+from flask.app import Flask
 from flask_app.main_app.db.services import (
     create_job,
     get_job,
@@ -23,7 +24,7 @@ ANOTHER_VALID_JOB_TYPE = "create_redirects"
 
 
 @pytest.fixture(autouse=True)
-def _clean_db(app):
+def _clean_db(app: Flask):
     """Clean all tables after each test to prevent state leaking."""
     yield
     with app.app_context():
