@@ -14,7 +14,7 @@ bp_newupdater = Blueprint("newupdater", __name__, url_prefix="/newupdater")
 
 logger = logging.getLogger(__name__)
 
-def _prase_title(title: str) -> str:
+def _parse_title(title: str) -> str:
     title = title.replace("+", " ").replace("_", " ").strip()
     title = urllib.parse.unquote(title)
     while title.endswith("/"):
@@ -62,22 +62,31 @@ def _newupdater(title: str, save: bool) -> str:
 @bp_newupdater.route("/<path:title>", methods=["GET"])
 @oauth_required
 def worker(title: str) -> str:
-    title = _prase_title(title)
-    title = urllib.parse.unquote(title)
+    title = _parse_title(title)
     return _newupdater(title, False)
 
 
 @bp_newupdater.route("/save/<path:title>", methods=["GET"])
 @oauth_required
 def auto_save(title: str) -> str:
-    title = _prase_title(title)
-    title = urllib.parse.unquote(title)
+    """
+    Process a title string and trigger a new update with auto-save enabled.
+    NOTE: this route already used in https://mdwiki.org/wiki/MediaWiki:Sidebars:
+        `**https://mdw.toolforge.org/newupdater/save/{{urlencode:{{PAGENAME}}}}|Med updater`
+
+    Args:
+        title (str): The raw title string to be processed.
+
+    Returns:
+        str: The result returned by the `_newupdater` function after processing the title.
+    """
+    title = _parse_title(title)
     return _newupdater(title, True)
 
-@bp_newupdater.route("/", methods=["GET"])
+@bp_newupdater.route("/update", methods=["GET"])
 @oauth_required
 def newupdater() -> str:
-    title = _prase_title(request.args.get("title") or "")
+    title = _parse_title(request.args.get("title") or "")
     save = int(request.args.get("save", "0")) == 1
 
     # If the title is empty, just render the default page without redirecting
@@ -102,4 +111,6 @@ def index() -> str:
     )
 
 
-__all__ = ["bp_newupdater"]
+__all__ = [
+    "bp_newupdater",
+    ]
