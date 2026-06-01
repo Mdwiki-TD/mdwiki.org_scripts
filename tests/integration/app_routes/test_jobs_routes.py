@@ -11,6 +11,7 @@ from unittest.mock import Mock, patch
 
 import pytest
 from flask.app import Flask
+from flask_app.main_app.db.exceptions import JobAlreadyRunningError
 from flask_app.main_app.db.services import (
     create_job,
     get_job,
@@ -120,6 +121,33 @@ class TestJobDetail:
         """A non-existent job should redirect to the jobs list."""
         resp = mock_client.get(f"/new_jobs/{VALID_JOB_TYPE}/99999")
         assert resp.status_code == 302
+
+
+    def test_start_fails_if_job_already_running(self, app, mock_client, monkeypatch):
+        """Starting a job should fail if one of the same type is already running."""
+        uid = _seed_user(app, can_run_bg_jobs=True)
+        _login_user(mock_client, uid)
+
+        mock_flash = Mock()
+        monkeypatch.setattr("flask_app.main_app.app_routes.new_jobs.flash", mock_flash)
+
+        with (
+            patch(
+                "flask_app.main_app.app_routes.new_jobs.load_auth_payload",
+                return_value={"id": uid, "username": "JobUser"},
+            ),
+            patch(
+                "flask_app.main_app.app_routes.new_jobs.jobs_worker.start_job",
+                side_effect=JobAlreadyRunningError("A job of type 'fixref' is already running."),
+            ),
+        ):
+            resp = mock_client.post(
+                f"/new_jobs/{VALID_JOB_TYPE}/start",
+                follow_redirects=False,
+            )
+
+        assert resp.status_code == 302
+        mock_flash.assert_called_once_with("A job of type 'fixref' is already running.", "warning")
 
     def test_job_detail_wrong_type_redirects(self, app, mock_client):
         """Looking up a job with the wrong type should redirect."""

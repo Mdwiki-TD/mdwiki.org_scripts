@@ -116,6 +116,20 @@ def list_jobs(limit: int = 100, job_type: str | None = None) -> list[JobRecord]:
 
 
 @db_guard(default_return=False)
+def has_running_job(job_type: str) -> bool:
+    """
+    Check if there are any jobs of the given type with status 'pending' or 'running'.
+    """
+    exists = (
+        db.session.query(JobRecord.id)
+        .filter(JobRecord.job_type == job_type, JobRecord.status.in_(["pending", "running"]))
+        .first()
+        is not None
+    )
+    return exists
+
+
+@db_guard(default_return=False)
 def is_job_cancelled(job_id: int, job_type: str) -> bool:
     """
     Check if a job is marked as cancelled.
@@ -251,6 +265,7 @@ __all__ = [
     "list_jobs",
     "update_job_status",
     "cancel_job_db",
+    "has_running_job",
     "is_job_cancelled",
     "delete_job",
     "get_user_jobs_stats",

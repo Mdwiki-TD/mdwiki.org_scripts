@@ -8,8 +8,9 @@ from typing import Any, Dict
 
 from flask import Flask, current_app
 
+from ..db.exceptions import JobAlreadyRunningError
 from ..db.models import JobRecord
-from ..db.services import cancel_job_db, create_job
+from ..db.services import cancel_job_db, create_job, has_running_job
 from ..su_services.jobs_files_service import create_job_cancelled_file
 from .workers_list import JobData, jobs_data
 
@@ -98,6 +99,10 @@ def start_job(
         raise ValueError(f"Unknown job type: {job_type}")
 
     username = user.get("username") if user else None
+
+    if has_running_job(job_type):
+        logger.warning(f"Attempted to start job of type {job_type} but one is already running.")
+        raise JobAlreadyRunningError(f"A job of type '{job_type}' is already running.")
 
     try:
         # Create job record

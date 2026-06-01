@@ -7,6 +7,7 @@ from flask_app.main_app.db.services.jobs_service import (
     create_job,
     delete_job,
     get_job,
+    has_running_job,
     is_job_cancelled,
     list_jobs,
     update_job_status,
@@ -71,3 +72,24 @@ def test_cancel_non_existent(app: Flask) -> None:
 def test_delete_non_existent(app: Flask) -> None:
     with app.app_context():
         assert delete_job(999, "any") is False
+
+
+def test_has_running_job(app: Flask) -> None:
+    with app.app_context():
+        job_type = "test_running"
+        assert has_running_job(job_type) is False
+
+        job = create_job(job_type=job_type, username="user")
+        assert has_running_job(job_type) is True
+
+        update_job_status(job.id, "running", job_type=job_type)
+        assert has_running_job(job_type) is True
+
+        update_job_status(job.id, "completed", job_type=job_type)
+        assert has_running_job(job_type) is False
+
+        job2 = create_job(job_type=job_type, username="user")
+        assert has_running_job(job_type) is True
+
+        cancel_job_db(job2.id, job_type)
+        assert has_running_job(job_type) is False

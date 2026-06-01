@@ -7,6 +7,7 @@ from .jobs_service import (
     delete_job,
     get_job,
     get_user_jobs_stats,
+    has_running_job,
     is_job_cancelled,
     list_jobs,
     update_job_status,
@@ -49,6 +50,7 @@ __all__ = [
     "update_job_status",
     "get_user_jobs_stats",
     "cancel_job_db",
+    "has_running_job",
     "is_job_cancelled",
     "is_active_coordinator",
 ]
