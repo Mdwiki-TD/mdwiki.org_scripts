@@ -1,7 +1,6 @@
 """
-SQLAlchemy-based service for managing coordinators.
 
-only active_coordinators need db_guard
+SQLAlchemy-based service for managing coordinators.
 
 """
 
@@ -20,13 +19,6 @@ from .utils import db_guard
 logger = logging.getLogger(__name__)
 
 # ── SELECT ───────────────────────────────────────────────
-
-
-@db_guard(default_return=[], msg="Failed to active coordinators")
-def active_coordinators() -> list[str]:
-    """Get a list of active coordinator usernames from the database."""
-    records = db.session.query(AdminUserRecord).filter(AdminUserRecord.is_active).all()
-    return [u.username for u in records]
 
 
 @db_guard(default_return=False, msg="Failed to check coordinator status")
@@ -114,7 +106,6 @@ def delete_coordinator(coordinator_id: int) -> bool:
 
 
 __all__ = [
-    "active_coordinators",
     "add_coordinator",
     "delete_coordinator",
     "get_coordinator_by_id",

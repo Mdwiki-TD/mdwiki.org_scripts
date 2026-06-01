@@ -10,7 +10,7 @@ from unittest.mock import Mock
 
 import pytest
 from flask_app.main_app.db.services import (
-    active_coordinators,
+    is_active_coordinator,
     upsert_user_token,
 )
 from flask_app.main_app.db.services.admin_service import (
@@ -196,8 +196,8 @@ class TestCoordinatorRoutes:
         assert resp.status_code == 200
 
         with app.app_context():
-            coords = active_coordinators()
-            assert "NewCoord" in coords
+            result = is_active_coordinator("NewCoord")
+            assert result is True
 
     def test_add_coordinator_empty_username_flash(self, app, mock_client, monkeypatch):
         """Adding coordinator with empty username should flash error."""
@@ -255,8 +255,8 @@ class TestCoordinatorRoutes:
         assert resp.status_code == 200
 
         with app.app_context():
-            coords = active_coordinators()
-            assert "ToggleCoord" not in coords
+            result = is_active_coordinator("ToggleCoord")
+            assert result is False
 
     def test_toggle_coordinator_reactivate(self, app, mock_client):
         """Admin should be able to reactivate a coordinator."""
@@ -279,8 +279,8 @@ class TestCoordinatorRoutes:
         assert resp.status_code == 200
 
         with app.app_context():
-            coords = active_coordinators()
-            assert "ReactivateCoord" in coords
+            result = is_active_coordinator("ReactivateCoord")
+            assert result is True
 
     def test_delete_coordinator(self, app, mock_client):
         """Admin should be able to delete a coordinator."""
@@ -344,7 +344,8 @@ class TestAdminRouteIntegration:
             follow_redirects=True,
         )
         with app.app_context():
-            assert "LifecycleCoord" in active_coordinators()
+            result = is_active_coordinator("LifecycleCoord")
+            assert result is True
 
         # Get the coordinator ID
         with app.app_context():
@@ -358,7 +359,8 @@ class TestAdminRouteIntegration:
             follow_redirects=True,
         )
         with app.app_context():
-            assert "LifecycleCoord" not in active_coordinators()
+            result = is_active_coordinator("LifecycleCoord")
+            assert result is False
 
         # Reactivate
         mock_client.post(
@@ -367,7 +369,8 @@ class TestAdminRouteIntegration:
             follow_redirects=True,
         )
         with app.app_context():
-            assert "LifecycleCoord" in active_coordinators()
+            result = is_active_coordinator("LifecycleCoord")
+            assert result is True
 
         # Delete
         mock_client.post(
