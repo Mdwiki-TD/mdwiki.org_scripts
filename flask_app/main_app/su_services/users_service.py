@@ -5,7 +5,7 @@ from __future__ import annotations
 import logging
 from typing import Optional
 
-from ..db.services import get_authenticated_user_token, get_user_token, upsert_user_token
+from ..db.services import create_user, get_authenticated_user_token, get_user_token, upsert_user_token
 from .current_user import CurrentUser
 
 logger = logging.getLogger(__name__)
@@ -21,6 +21,11 @@ class UserService:
     ) -> Optional[CurrentUser]:
         """Upsert OAuth credentials and return a CurrentUser composite."""
         try:
+            username = (username or "").strip()
+
+            # Ensure user identity row exists
+            create_user(user_id, username)
+
             # 1. Update or insert into database via repository
             upsert_user_token(
                 user_id=user_id,
@@ -28,10 +33,12 @@ class UserService:
                 access_key=access_key,
                 access_secret=access_secret,
             )
+
             # 2. Get the fresh record
             token = get_user_token(user_id)
             if not token:
                 return None
+
             return CurrentUser(
                 user_id=user_id,
                 username=username,
