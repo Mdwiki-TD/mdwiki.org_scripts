@@ -51,6 +51,7 @@ def _update_can_run_jobs(user_id: int, desired: int) -> ResponseReturnValue:
         flash("Unable to update user permissions. Please try again.", "danger")
     else:
         flash(f"User '{record.username}' permissions updated.", "success")
+        logger.info(f"User '{record.username}' [can_run_jobs]={desired} updated.")
 
     return redirect(url_for("admin.users.dashboard"))
 
@@ -67,6 +68,7 @@ def _update_can_run_bg_jobs(user_id: int, desired: int) -> ResponseReturnValue:
         flash("Unable to update user permissions. Please try again.", "danger")
     else:
         flash(f"User '{record.username}' permissions updated.", "success")
+        logger.info(f"User '{record.username}' [can_run_bg_jobs]={desired} updated.")
 
     return redirect(url_for("admin.users.dashboard"))
 
@@ -87,13 +89,13 @@ class UsersRoutes:
         @self.bp.post("/<int:user_id>/can_run_jobs")
         @admin_required
         def update_can_run_jobs(user_id: int) -> ResponseReturnValue:
-            desired = 1 if request.form.get("can_run", "0") == "1" else 0
+            desired = 1 if request.form.get("can_run_jobs", "0") == "1" else 0
             return _update_can_run_jobs(user_id, desired)
 
         @self.bp.post("/<int:user_id>/can_run_bg_jobs")
         @admin_required
         def update_can_run_bg_jobs(user_id: int) -> ResponseReturnValue:
-            desired = 1 if request.form.get("can_run", "0") == "1" else 0
+            desired = 1 if request.form.get("can_run_bg_jobs", "0") == "1" else 0
             return _update_can_run_bg_jobs(user_id, desired)
 
 
