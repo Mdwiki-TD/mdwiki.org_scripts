@@ -30,7 +30,6 @@ class CurrentUser:
             "access_secret": self.access_secret,
         }
 
-
 __all__ = [
     "CurrentUser",
 ]

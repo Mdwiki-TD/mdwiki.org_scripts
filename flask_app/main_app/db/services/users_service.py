@@ -39,7 +39,7 @@ def get_user(user_id: int) -> Optional[UsersRecord]:
     """Fetch a user by user_id."""
     if not user_id:
         return None
-    return db.session.query(UsersRecord).filter(UsersRecord.user_id == int(user_id)).first()
+    return db.session.get(UsersRecord, int(user_id))
 
 
 def get_user_by_username(username: str) -> Optional[UsersRecord]:
