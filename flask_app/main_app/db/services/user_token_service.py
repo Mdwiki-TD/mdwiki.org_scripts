@@ -18,6 +18,7 @@ from ..models import UsersRecord, UserTokenRecord
 
 logger = logging.getLogger(__name__)
 
+
 def get_authenticated_user_token(user_id: int) -> None | UserTokenRecord:
     """Fetch the CurrentUser composite for session restoration."""
     try:
