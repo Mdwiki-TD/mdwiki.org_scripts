@@ -38,7 +38,7 @@ def get_user_by_username(username: str) -> Optional[UsersRecord]:
     return db.session.query(UsersRecord).filter(UsersRecord.username == username).first()
 
 
-# ── INSERT, UPDATE, SET ───────────────────────────────────────────────
+# ── INSERT, UPDATE, SET ──────────────────────────────────
 
 
 def create_user(username: str) -> UsersRecord:

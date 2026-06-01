@@ -60,7 +60,7 @@ def get_user_token_by_username(username: str) -> Optional[UserTokenRecord]:
     return db.session.query(UserTokenRecord).join(UsersRecord).filter(UsersRecord.username == username).first()
 
 
-# ── INSERT, UPDATE, SET ───────────────────────────────────────────────
+# ── INSERT, UPDATE, SET ──────────────────────────────────
 
 
 def upsert_user_token(*, user_id: int, access_key: str, access_secret: str) -> None:
