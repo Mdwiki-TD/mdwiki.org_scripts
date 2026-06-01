@@ -132,8 +132,7 @@ class TestCallbackRoute:
         """Successful callback should set session uid and username."""
         self._setup_session(mock_client)
 
-        fake_identity = {"sub": 42, "username": "TestUser"}
-        fake_access = MagicMock(key="acc_key", secret="acc_secret")
+        fake_user_record = MagicMock(user_id=42, username="TestUser")
 
         with (
             patch(
@@ -141,8 +140,8 @@ class TestCallbackRoute:
                 return_value="my_nonce",
             ),
             patch(
-                "flask_app.main_app.su_services.auth_service.complete_login",
-                return_value=(fake_access, fake_identity),
+                "flask_app.main_app.app_routes.auth.routes.complete_oauth_callback",
+                return_value=fake_user_record,
             ),
         ):
             resp = mock_client.get(
@@ -160,8 +159,11 @@ class TestCallbackRoute:
         """Successful callback should upsert encrypted credentials in DB."""
         self._setup_session(mock_client)
 
-        fake_identity = {"sub": 99, "username": "DbUser"}
-        fake_access = MagicMock(key="new_key", secret="new_secret")
+        def _fake_complete_oauth_callback(request_token, query_string):
+            with app.app_context():
+                user = create_user("DbUser")
+                upsert_user_token(user.user_id, "new_key", "new_secret")
+            return MagicMock(user_id=user.user_id, username="DbUser")
 
         with (
             patch(
@@ -169,8 +171,8 @@ class TestCallbackRoute:
                 return_value="my_nonce",
             ),
             patch(
-                "flask_app.main_app.su_services.auth_service.complete_login",
-                return_value=(fake_access, fake_identity),
+                "flask_app.main_app.app_routes.auth.routes.complete_oauth_callback",
+                side_effect=_fake_complete_oauth_callback,
             ),
         ):
             mock_client.get(
@@ -189,8 +191,7 @@ class TestCallbackRoute:
         """Successful callback should set the auth cookie in response headers."""
         self._setup_session(mock_client)
 
-        fake_identity = {"sub": 42, "username": "CookieUser"}
-        fake_access = MagicMock(key="k", secret="s")
+        fake_user_record = MagicMock(user_id=42, username="CookieUser")
 
         with (
             patch(
@@ -198,8 +199,8 @@ class TestCallbackRoute:
                 return_value="my_nonce",
             ),
             patch(
-                "flask_app.main_app.su_services.auth_service.complete_login",
-                return_value=(fake_access, fake_identity),
+                "flask_app.main_app.app_routes.auth.routes.complete_oauth_callback",
+                return_value=fake_user_record,
             ),
         ):
             resp = mock_client.get(
@@ -209,7 +210,8 @@ class TestCallbackRoute:
 
         set_cookie_headers = resp.headers.getlist("Set-Cookie")
         cookie_names = [h.split("=")[0] for h in set_cookie_headers]
-        assert settings.cookie.name in cookie_names
+        name = settings.cookie.name
+        assert name in cookie_names
 
     def test_callback_success_redirects_to_index(self, app, mock_client):
         """After successful login, redirect should go to index."""
@@ -243,8 +245,7 @@ class TestCallbackRoute:
         with mock_client.session_transaction() as sess:
             sess["post_login_redirect"] = "/profile/"
 
-        fake_identity = {"sub": 42, "username": "PostRedirUser"}
-        fake_access = MagicMock(key="k", secret="s")
+        fake_user_record = MagicMock(user_id=42, username="PostRedirUser")
 
         with (
             patch(
@@ -252,8 +253,8 @@ class TestCallbackRoute:
                 return_value="my_nonce",
             ),
             patch(
-                "flask_app.main_app.su_services.auth_service.complete_login",
-                return_value=(fake_access, fake_identity),
+                "flask_app.main_app.app_routes.auth.routes.complete_oauth_callback",
+                return_value=fake_user_record,
             ),
         ):
             resp = mock_client.get(
@@ -352,8 +353,11 @@ class TestAuthRouteIntegration:
             sess[_REQ_TOKEN_KEY] = ["rk", "rs"]
 
         # Step 3: Callback
-        fake_identity = {"sub": 77, "username": "FlowUser"}
-        fake_access = MagicMock(key="ak", secret="as")
+        def _fake_complete_oauth_callback(request_token, query_string):
+            with app.app_context():
+                user = create_user("FlowUser")
+                upsert_user_token(user.user_id, "ak", "as")
+            return MagicMock(user_id=user.user_id, username="FlowUser")
 
         with (
             patch(
@@ -361,8 +365,8 @@ class TestAuthRouteIntegration:
                 return_value="my_nonce",
             ),
             patch(
-                "flask_app.main_app.su_services.auth_service.complete_login",
-                return_value=(fake_access, fake_identity),
+                "flask_app.main_app.app_routes.auth.routes.complete_oauth_callback",
+                side_effect=_fake_complete_oauth_callback,
             ),
         ):
             resp = mock_client.get(
