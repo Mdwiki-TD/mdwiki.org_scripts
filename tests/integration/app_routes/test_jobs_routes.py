@@ -217,10 +217,10 @@ class TestStartJob:
         ):
             resp = mock_client.post(
                 f"/new_jobs/{VALID_JOB_TYPE}/start",
-                follow_redirects=False,
+                follow_redirects=True,
             )
 
-        assert resp.status_code == 302
+        assert b"A job of this type is already running" in resp.data
 
 
 @pytest.mark.usefixtures("app")

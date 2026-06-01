@@ -33,8 +33,9 @@ class JobRecord(db.Model):
             "idx_unique_active_job",
             "job_type",
             unique=True,
-            sqlite_where=Column("status").in_(["pending", "running"]),
+            sqlite_where=text("status IN ('pending', 'running')"),
         ),
+        Index("idx_jobs_type_status", "job_type", "status"),
     )
 
     id = Column(Integer, primary_key=True, autoincrement=True)
