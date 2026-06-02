@@ -176,9 +176,10 @@ def has_active_job(job_type: str) -> bool:
     """
     Check if there is an active (pending or running) job of the given type.
 
-    This application-level check works on all database backends (MySQL, SQLite,
-    PostgreSQL) and is the primary enforcement mechanism for preventing duplicate
-    concurrent jobs of the same type.
+    This is an auxiliary application-level check that works on all database backends
+    (MySQL, SQLite, PostgreSQL). Note that the primary enforcement mechanism for
+    preventing duplicate concurrent jobs is the database-level unique constraint
+    idx_unique_active_job.
     """
     result = (
         db.session.query(JobRecord.id)
@@ -191,7 +192,7 @@ def has_active_job(job_type: str) -> bool:
 # ── INSERT, UPDATE, SET ──────────────────────────────────
 
 
-def create_job(job_type: str, username: str | None = None) -> JobRecord:
+def create_job(job_type: str, username: str) -> JobRecord:
     """
     Create a new job record.
 

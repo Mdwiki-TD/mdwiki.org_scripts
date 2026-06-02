@@ -45,7 +45,7 @@ def test_is_job_cancelled_detects_external_change(app: Flask) -> None:
         # Load the job record into the session's identity map
         # is_job_cancelled currently uses scalar query which MIGHT avoid identity map,
         # but let's see if we can make it fail by loading the record.
-        _ = db.session.query(JobRecord).get(job.id)
+        _ = db.session.get(JobRecord, job.id)
 
         assert is_job_cancelled(job.id, "mock_job_cancel_detect") is False
 
@@ -62,7 +62,7 @@ def test_is_job_cancelled_detects_external_change(app: Flask) -> None:
         # Actually, scalar query usually DOES go to the DB, but let's see.
         # IF it passes, it means scalar() bypasses the identity map or it's not in it.
         # But let's try to get the record again via ORM.
-        job_after = db.session.query(JobRecord).get(job.id)
+        job_after = db.session.get(JobRecord, job.id)
         assert job_after.status == "pending"  # It is stale here!
 
         assert is_job_cancelled(job.id, "mock_job_cancel_detect") is True

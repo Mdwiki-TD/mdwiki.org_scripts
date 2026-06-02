@@ -107,7 +107,7 @@ def _start_job(job_type: str, args: dict[str, Any]) -> int | None:
         auth_payload = load_auth_payload(user)
     except Exception:
         logger.exception("Failed to load auth payload")
-        flash("Failed to load auth payload. Please try again.")
+        flash("Failed to load auth payload. Please try again.", "danger")
         return None
 
     try:
