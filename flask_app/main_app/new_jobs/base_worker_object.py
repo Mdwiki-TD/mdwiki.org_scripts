@@ -12,7 +12,6 @@ from typing import Any, Dict, Final, Optional
 from sqlalchemy.orm.exc import StaleDataError
 
 from ..config.main_settings import settings
-
 from ..db.services import (
     is_job_cancelled,
     update_job_status,
