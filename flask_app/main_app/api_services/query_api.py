@@ -47,6 +47,7 @@ def is_pages_exists(
         group = titles[i : i + 50]
 
         json1 = site.get("query", titles="|".join(group))
+
         query_data = json1.get("query", {})
 
         normalized = {red["to"]: red["from"] for red in query_data.get("normalized", [])}
