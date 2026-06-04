@@ -15,12 +15,12 @@ from .workers.import_history.worker import import_history_worker_entry
 class JobData:
     job_type: str
     job_name: str
-    job_details_template: Optional[str] = "jobs_templates/_help_templates/shared_details.html"
     job_list_template: str
 
     job_callable: Callable
     job_args: list | None = None
     start_confirm_message: str | None = None
+    job_details_template: Optional[str] = "jobs_templates/_help_templates/shared_details.html"
 
 
 jobs_data = {
