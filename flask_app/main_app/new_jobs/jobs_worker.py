@@ -4,13 +4,16 @@ from __future__ import annotations
 
 import logging
 import threading
-from typing import Any, Dict
+from typing import Any
 
 from flask import Flask, current_app
 
 from ..db.exceptions import DuplicateJobError
 from ..db.models import JobRecord
-from ..db.services import cancel_job_db, create_job
+from ..db.services import (
+    cancel_job_db,
+    create_job,
+)
 from ..su_services.jobs_files_service import create_job_cancelled_file
 from .workers_list import JobData, jobs_data
 
@@ -38,15 +41,23 @@ def _get_jobs_cancel_event(job_id: int) -> threading.Event | None:
 
 def _runner(
     job_id: int,
-    user: Dict[str, Any] | None,
+    user: dict[str, Any] | None,
     cancel_event: threading.Event,
     target_func: Any,
     flask_app: Flask,
-    args: Dict[str, Any] | None = None,
+    args: dict[str, Any] | None = None,
 ) -> None:
+    """
+    args=(job.id, user, cancel_event, target_func, flask_app, args),
+    """
     with flask_app.app_context():
         try:
-            target_func(job_id, user, cancel_event=cancel_event, args=args)
+            target_func(
+                job_id=job_id,
+                user=user,
+                cancel_event=cancel_event,
+                args=args,
+            )
         finally:
             _pop_cancel_event(job_id)
 
@@ -79,9 +90,9 @@ def cancel_job_worker(job_id: int, job_type: str | None = None, job: JobRecord |
 
 
 def start_job(
-    user: Dict[str, Any] | None,
+    user: dict[str, Any] | None,
     job_type: str,
-    args: Dict[str, Any],
+    args: dict[str, Any] | None = None,
 ) -> int:
     """
     Start a background job.
@@ -93,9 +104,9 @@ def start_job(
         args: Optional arguments to pass to the worker
     """
     job_data: JobData = jobs_data.get(job_type)
-    job_func = job_data.job_callable
+    target_func = job_data.job_callable if job_data else None
 
-    if not job_func:
+    if not target_func:
         raise ValueError(f"Unknown job type: {job_type}")
 
     username = user.get("username") if user else None
@@ -121,7 +132,7 @@ def start_job(
     # Start background thread
     thread = threading.Thread(
         target=_runner,
-        args=(job.id, user, cancel_event, job_func, flask_app, args),
+        args=(job.id, user, cancel_event, target_func, flask_app, args),
         daemon=True,
     )
     thread.start()

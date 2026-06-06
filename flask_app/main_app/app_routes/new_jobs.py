@@ -9,7 +9,6 @@ from flask import (
     Blueprint,
     abort,
     flash,
-    g,
     jsonify,
     redirect,
     render_template,
@@ -28,6 +27,7 @@ from ..db.services import (
 from ..new_jobs import jobs_worker
 from ..new_jobs.workers_list import jobs_data
 from ..su_services import load_job_result
+from .auth.utils import load_user
 from .utils.routes_utils import can_run_bg_jobs, load_auth_payload
 
 logger = logging.getLogger(__name__)
@@ -50,7 +50,7 @@ def _can_manage_job(job: Any, user: Any) -> bool:
 
 def _cancel_job(job_id: int, job_type: str) -> Response:
     """Cancel a running job."""
-    user = getattr(g, "_current_user", None)
+    user = load_user()
     if not user:
         flash("You must be logged in to cancel jobs.", "danger")
         return redirect(url_for("new_jobs.job_detail", job_type=job_type, job_id=job_id))
@@ -81,18 +81,20 @@ def _delete_job(job_id: int, job_type: str) -> Response:
         if jobs_worker.cancel_job_worker(job_id, job_type):
             logger.info(f"Cancelled running job {job_id} before deletion")
 
-        delete_job(job_id, job_type)
-        flash(f"Job {job_id} deleted successfully.", "success")
-    except Exception as exc:
+        if delete_job(job_id, job_type):
+            flash(f"Job {job_id} deleted successfully.", "success")
+        else:
+            flash(f"Failed to delete job {job_id}", "danger")
+    except Exception:
         logger.exception("Failed to delete job")
-        flash(f"Failed to delete job {job_id}: {str(exc)}", "danger")
+        flash(f"Failed to delete job {job_id}", "danger")
 
     return redirect(url_for("new_jobs.jobs_list", job_type=job_type))
 
 
 def _start_job(job_type: str, args: dict[str, Any]) -> int | None:
     """Start a job."""
-    user = getattr(g, "_current_user", None)
+    user = load_user()
 
     if not user:
         flash("You must be logged in to start this job.", "danger")
@@ -156,7 +158,7 @@ def _jobs_list(job_type: str) -> str:
     )
 
 
-def _job_detail(job_id: int, job_type: str) -> Response | str:
+def _job_detail(job_id: int, job_type: str, expand_all: bool = False) -> Response | str:
     """Render the job detail page for any job type."""
 
     try:
@@ -171,6 +173,7 @@ def _job_detail(job_id: int, job_type: str) -> Response | str:
     if job.result_file:
         result_data = load_job_result(job.result_file)
 
+    # Load template data
     template_data = jobs_data.get(job_type)
 
     if not template_data:
@@ -185,6 +188,7 @@ def _job_detail(job_id: int, job_type: str) -> Response | str:
         result_data=result_data,
         detail_title=template_data.job_name,
         detail_headline=template_data.job_name,
+        expand_all=expand_all,
     )
 
 
@@ -238,6 +242,10 @@ class JobsPublicRoutes:
         def job_detail(job_type: str, job_id: int) -> Response | str:
             return _job_detail(job_id, job_type)
 
+        @self.bp.get("/<string:job_type>/<int:job_id>")
+        def job_detail_expand(job_type: str, job_id: int) -> Response | str:
+            return _job_detail(job_id, job_type, expand_all=True)
+
         # ================================
         # Start Job routes
         # ================================
@@ -274,3 +282,7 @@ class JobsPublicRoutes:
 
 
 jobs_module = JobsPublicRoutes()
+
+__all__ = [
+    "jobs_module",
+]
