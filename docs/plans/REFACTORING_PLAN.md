@@ -45,8 +45,8 @@ This is a well-architected Flask application with a clean layered structure (Con
 
 #### Issues Found:
 
--   [ ] **Controller imports model directly** — `flask_app/main_app/app_routes/new_jobs.py` (line 18) imports `JobRecord` from `..db.models`. Controllers should never import models.
--   [ ] **Controller imports db services directly** — `flask_app/main_app/app_routes/new_jobs.py` (lines 21-25) imports `active_coordinators`, `delete_job`, `get_job`, `list_jobs` from `..db.services`. These should be accessed through `su_services` or a dedicated service layer.
+-   [ ] **Controller imports model directly** — `flask_app/main_app/app_routes/public_jobs.py` (line 18) imports `JobRecord` from `..db.models`. Controllers should never import models.
+-   [ ] **Controller imports db services directly** — `flask_app/main_app/app_routes/public_jobs.py` (lines 21-25) imports `active_coordinators`, `delete_job`, `get_job`, `list_jobs` from `..db.services`. These should be accessed through `su_services` or a dedicated service layer.
 -   [ ] **Admin controller bypasses service layer** — `flask_app/main_app/app_routes/admin/routes.py` (line 21) imports `list_users` from `..db.services` directly.
 -   [ ] **`create_app()` factory imports db services** — `flask_app/main_app/__init__.py` (line 18) imports `active_coordinators` from `.db.services`. This couples the app factory to the database layer.
 -   [ ] **Service-layer logic in route utils** — `flask_app/main_app/app_routes/utils/routes_utils.py::load_auth_payload()` constructs auth payload dicts, which is business logic in a "utils" file.
@@ -71,7 +71,7 @@ This is a well-architected Flask application with a clean layered structure (Con
 -   [ ] **Stub workers** — `add_r_column` and `add_unlinkedwikibase` workers contain `TODO: import logic from ...` comments. They are essentially empty shells.
 -   [x] **Commented-out blueprint registrations** — `flask_app/main_app/app_routes/admin/routes.py` (lines 103-108) has 5 commented-out blueprint registrations.
 -   [ ] **Disabled teardown** — `flask_app/main_app/__init__.py` (lines 131-145) has a `_cleanup_connections` teardown function where the entire body is commented out with a pass statement.
--   [ ] **Empty `__init__.py` files** — `flask_app/main_app/app_routes/newupdater/__init__.py`, `flask_app/main_app/shared/fixref_shared/__init__.py`, `flask_app/main_app/new_jobs/__init__.py` are all empty (though some serve package marker purposes).
+-   [ ] **Empty `__init__.py` files** — `flask_app/main_app/app_routes/newupdater/__init__.py`, `flask_app/main_app/shared/fixref_shared/__init__.py`, `flask_app/main_app/public_jobs/__init__.py` are all empty (though some serve package marker purposes).
 -   [ ] **Commented template code** — `flask_app/templates/jobs_templates/base_list2.html` and `base_details2.html` have commented-out `status_icon()` calls.
 -   [ ] **Commented-out filter logic** — `create_redirects/worker.py` (line ~100) has `# if page.get("title") != title: continue` commented out.
 -   [ ] **`flask_app/__init__.py`** — The root `flask_app/__init__.py` exists but is empty/trivial. Consider if needed.
@@ -117,7 +117,7 @@ This is a well-architected Flask application with a clean layered structure (Con
 #### Issues Found:
 
 -   [ ] **`su_services/` name is cryptic** — "su" likely means "service-user" or "super-user" but is not documented. This should be renamed to something clear like `auth_services/` or `user_services/`.
--   [ ] **`new_jobs/` naming** — Implies there are "old jobs" somewhere. The directory houses the entire background job system. Should be renamed to `jobs/` or `workers/`.
+-   [ ] **`public_jobs/` naming** — Implies there are "old jobs" somewhere. The directory houses the entire background job system. Should be renamed to `jobs/` or `workers/`.
 -   [ ] **`app_routes/admin/` vs `app_routes/admin_routes/`** — There are TWO admin-related directories: `admin/` (sidecar pattern) and `admin_routes/` (coordinators blueprint). This is confusing and non-standard.
 -   [ ] **`shared/` package is a grab-bag** — Contains fixred logic, new_updater logic, decode_bytes, shared_classes. It's not clear what unifies these.
 -   [ ] **`core/` package naming overlap** — `core/cookies.py` (test client) vs `app_routes/auth/cookie.py` (signing). These are related but separated.
@@ -126,7 +126,7 @@ This is a well-architected Flask application with a clean layered structure (Con
 #### Recommendations:
 
 1. [ ] Rename `su_services/` to `auth_services/` or `user_services/` with a deprecation alias
-2. [ ] Rename `new_jobs/` to `jobs/` (update all imports accordingly)
+2. [ ] Rename `public_jobs/` to `jobs/` (update all imports accordingly)
 3. [ ] Consolidate `admin/` and `admin_routes/` into a single structure
 4. [ ] Split `shared/` into more focused packages (e.g., `wikitext/`, `redirects/`)
 5. [ ] Consolidate cookie-related code
@@ -141,12 +141,12 @@ This is a well-architected Flask application with a clean layered structure (Con
 
 #### Issues Found:
 
--   [ ] **No worker implementation tests** — The 8 workers in `new_jobs/workers/` have no unit tests for their actual logic (only infrastructure tests in `tests/unit/new_jobs/`).
+-   [ ] **No worker implementation tests** — The 8 workers in `public_jobs/workers/` have no unit tests for their actual logic (only infrastructure tests in `tests/unit/public_jobs/`).
 -   [ ] **No API service tests** — `tests/unit/api_services/` has no test files (the directory only has `__pycache__`).
 -   [ ] **14 `# pragma: no cover` exclusions** — Many are legitimate (network interactions, teardowns), but several in route handlers indicate complex error paths without test coverage.
 -   [ ] **`stub_service` fixture is underutilized** — It exists in `conftest.py` but virtually no tests use it.
 -   [ ] **No integration tests for OAuth flow** — The OAuth flow has no integration test coverage (though this is hard without a real MW instance).
--   [ ] **`test_new_jobs_utils.py` and `test_utils.py`** — Need to check if they actually test anything meaningful or are just placeholder files.
+-   [ ] **`test_public_jobs_utils.py` and `test_utils.py`** — Need to check if they actually test anything meaningful or are just placeholder files.
 -   [ ] **No tests for `shared/new_updater/` complex logic** — The medical content updater has extensive wikitext processing with no test coverage.
 
 #### Recommendations:
@@ -209,7 +209,7 @@ This is a well-architected Flask application with a clean layered structure (Con
 #### Issues Found:
 
 -   [ ] **Retry logic sleeps before first attempt** — `flask_app/main_app/api_services/mwclient_page.py::_edit_with_retry()` (lines 56-67) iterates through `_RETRY_DELAYS = (5, 15, 30)` and always sleeps for 5 seconds BEFORE making the first API call. The first attempt should not sleep.
--   [ ] **`raise e` instead of `raise`** — `flask_app/main_app/new_jobs/jobs_worker.py` (line 103) uses `raise e` which loses the original traceback. Should use bare `raise`.
+-   [ ] **`raise e` instead of `raise`** — `flask_app/main_app/public_jobs/jobs_worker.py` (line 103) uses `raise e` which loses the original traceback. Should use bare `raise`.
 -   [ ] **`resolve_redirects()` in `query_api.py` appears incomplete** — The function signature suggests it returns a dict, but the code shown was truncated. The `normalized` dict and `from_to` dict are used in `fixred_worker.py` — ensure they align.
 -   [ ] **`_get_current_object()` usage** — `jobs_worker.py` (line ~110) captures `current_app._get_current_object()` which is a green flag for potential context issues.
 
@@ -260,11 +260,11 @@ This is a well-architected Flask application with a clean layered structure (Con
 ### Phase 2: Structural Improvements
 
 -   [ ] **Fix layering violations in controllers**:
-    -   [ ] Remove `JobRecord` imports from `new_jobs.py`
+    -   [ ] Remove `JobRecord` imports from `public_jobs.py`
     -   [ ] Move `load_auth_payload()` to `su_services/`
     -   [ ] Replace direct `db.services` imports in routes with service-layer calls
 -   [ ] **Rename `su_services/`** to `user_services/` (add deprecation shim)
--   [ ] **Rename `new_jobs/`** to `jobs/` (update all imports)
+-   [ ] **Rename `public_jobs/`** to `jobs/` (update all imports)
 -   [ ] **Consolidate admin blueprints** — merge `admin/` and `admin_routes/`
 -   [ ] **Remove or implement stub workers** — Either implement `add_r_column` and `add_unlinkedwikibase`, or remove them from the registry
 -   [ ] **Unify `app.py` and `app1.py`** — Single entry point with env-based config selection
@@ -322,7 +322,7 @@ This is a well-architected Flask application with a clean layered structure (Con
 -   **Issues**: Imports `active_coordinators` from `db.services` (layering violation); disabled teardown handler
 -   **Priority**: Phase 2
 
-### `flask_app/main_app/app_routes/new_jobs.py`
+### `flask_app/main_app/app_routes/public_jobs.py`
 
 -   **Issues**: Imports `JobRecord` model directly; imports `db.services` directly; has `_can_manage_job()` business logic
 -   **Priority**: Phase 2 (Critical)
@@ -360,7 +360,7 @@ This is a well-architected Flask application with a clean layered structure (Con
 -   **Strengths**: Clean model definitions, good service separation, `db_guard` decorator
 -   **Minor**: `utils.py::db_guard` catches all exceptions — consider being more specific
 
-### `flask_app/main_app/new_jobs/`
+### `flask_app/main_app/public_jobs/`
 
 -   **Strengths**: Well-designed worker lifecycle; clean registry in `workers_list.py`
 -   **Issues**: Two stub workers; `utils.py` is just one function; `__init__.py` is empty

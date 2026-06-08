@@ -49,7 +49,7 @@ class DbConfig:
 class Paths:
     log_dir: str
     jobs_path: str
-    new_jobs_path: str
+    public_jobs_path: str
 
 
 @dataclass(frozen=True)
@@ -80,10 +80,16 @@ class OAuthConfig:
 
 
 @dataclass(frozen=True)
+class CorsConfig:
+    allowed_domains: list[str]
+
+
+@dataclass(frozen=True)
 class SecurityConfig:
     """Security configuration for Flask 3.1+ features."""
 
     secret_key: str
+    salt: str
     max_content_length: int  # Maximum request size in bytes
     max_form_memory_size: int  # Maximum form data in memory in bytes
     max_form_parts: int  # Maximum number of form fields
@@ -103,6 +109,7 @@ class Settings:
     security: SecurityConfig
     other: OtherConfig
     jobs: JobsConfig
+    # cors: CorsConfig
 
 
 __all__ = [
@@ -115,4 +122,5 @@ __all__ = [
     "Settings",
     "OtherConfig",
     "SecurityConfig",
+    "CorsConfig",
 ]
