@@ -21,7 +21,7 @@
 
 {# {%- from "_macros/_jobs_macros.html" import template_pages_changed -%} #}
 
-{% macro template_pages_changed(domain, title, data, job_id, job_type, expand_all, title_columns={"title": "Title"}) %}
+{% macro template_pages_changed(domain, title, data, job_id, job_type, expand_all=False, title_columns={"title": "Title"}) %}
 {% if data|length > 100 and not expand_all %}
 {{ table_header_to_expand(data, title, job_id, job_type) }}
 {% else %}
