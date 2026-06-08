@@ -8,7 +8,6 @@ from __future__ import annotations
 
 import logging
 import threading
-from datetime import datetime
 from typing import Any, Dict
 
 import mwclient
@@ -52,9 +51,7 @@ class FixRedAllWorker(BaseObjectsJobWorker):
         self.site = get_user_site(self.user)
         if not self.site:
             logger.warning(f"Job {self.job_id}: No site authentication available")
-            self.result.status = "failed"
-            self.result.error = "No authenticated user site available. Please log in via OAuth."
-            self.result.failed_at = datetime.now().isoformat()
+            self.log_no_site_error()
             return self.result
 
         state = RunState()

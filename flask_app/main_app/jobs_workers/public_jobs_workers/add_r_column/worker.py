@@ -120,7 +120,7 @@ class AddRColumnWorker(BaseObjectsJobWorker):
         self.site = get_user_site(self.user)
         if not self.site:
             logger.warning(f"Job {self.job_id}: No site authentication available")
-            self._set_status_failed("No authenticated user site available. Please log in via OAuth.")
+            self.log_no_site_error()
             self._set_steps_skipped()
             return self.result
 
@@ -139,7 +139,7 @@ class AddRColumnWorker(BaseObjectsJobWorker):
 
         return self.result
 
-    def _start(self) -> None:
+    def _start(self) -> bool:
         """Start the job."""
         self.result.status = "running"
 
