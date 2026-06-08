@@ -45,8 +45,8 @@ if __name__ == "__main__":
     main_dir = Path(__file__).parent.parent
     SOURCE = main_dir / "flask_app/main_app"
     TARGETS = [
-        # main_dir / "teskt/integration",
-        main_dir / "tests/unit",
+        # Path(main_dir / "teskt/integration"),
+        Path(main_dir / "tests/unit"),
     ]
 
     replicate_test_structure(SOURCE, TARGETS)
