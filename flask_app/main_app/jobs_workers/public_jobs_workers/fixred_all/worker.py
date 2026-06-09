@@ -12,8 +12,8 @@ from typing import Any, Dict
 
 import mwclient
 
+from ....api_services import MwClientPage
 from ....api_services.clients import get_user_site
-from ....api_services.pages_api import edit_page, get_page_text, is_page_exists
 from ....jobs_workers.base_worker_object import BaseObjectsJobWorker
 from ....shared.fixref_shared.fixred_worker import work_on_text
 from ....shared.fixref_shared.objects import RunState
@@ -126,11 +126,11 @@ class FixRedAllWorker(BaseObjectsJobWorker):
     # ------------------------------------------------------------------
 
     def _process_one(self, title: str, state: RunState) -> UpdaterOutcome:
-        if not is_page_exists(title, self.site):
+        if not MwClientPage(title, self.site).exists():
             logger.info(f"Job {self.job_id}: {title!r}: missing!")
             return UpdaterOutcome(kind="missing")
 
-        text = get_page_text(title, self.site)
+        text = MwClientPage(title, self.site).get_text()
         if not text or not text.strip():
             return UpdaterOutcome(kind="skipped", msg="Page is empty")
 
@@ -139,7 +139,7 @@ class FixRedAllWorker(BaseObjectsJobWorker):
         if new_text == text:
             return UpdaterOutcome(kind="skipped", msg="No changes")
 
-        result = edit_page(self.site, title, new_text, summary)
+        result = MwClientPage(title, self.site).edit(new_text, summary)
 
         if result.get("success"):
             return UpdaterOutcome(kind="changed", newrevid=result.get("newrevid", 0))

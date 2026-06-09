@@ -14,8 +14,8 @@ from __future__ import annotations
 
 import logging
 
+from ..api_services import MwClientPage
 from ..api_services.clients.wiki_client import get_user_site
-from ..api_services.pages_api import edit_page, get_page_text
 from ..su_services.current_user import CurrentUser
 from .new_updater import med_updater_one
 from .shared_classes import UpdaterTextOutcome
@@ -41,7 +41,7 @@ def newupdater_one_title(
 
     site = get_user_site(user.to_auth_payload())
 
-    old_text = get_page_text(title, site)
+    old_text = MwClientPage(title, site).get_text()
 
     if not old_text or not old_text.strip():
         return UpdaterTextOutcome(kind="notext", old_text=old_text)
@@ -59,7 +59,7 @@ def newupdater_one_title(
         return UpdaterTextOutcome(kind="skipped", msg="No changes")
 
     if save:
-        result = edit_page(site, title, new_text, summary)
+        result = MwClientPage(title, site).edit(new_text, summary)
         if result.get("success"):
             return UpdaterTextOutcome(kind="saved", newrevid=result.get("newrevid", 0))
 

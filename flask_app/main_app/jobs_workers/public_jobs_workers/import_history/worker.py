@@ -13,12 +13,8 @@ from typing import Any, Dict
 
 import mwclient
 
+from ....api_services import MwClientPage
 from ....api_services.clients import get_user_site
-from ....api_services.pages_api import (
-    edit_page,
-    get_page_text,
-    is_page_exists,
-)
 from ....api_services.query_api import import_page_from_wiki
 from ....jobs_workers.base_worker_object import BaseObjectsJobWorker
 from .objects import ImportHistoryWorkerObject, UpdaterOutcome
@@ -128,11 +124,11 @@ class ImportHistoryWorker(BaseObjectsJobWorker):
     # ------------------------------------------------------------------
 
     def _process_one(self, title: str) -> UpdaterOutcome:
-        if not is_page_exists(title, self.site):
+        if not MwClientPage(title, self.site).exists():
             logger.info(f"Job {self.job_id}: {title!r}: missing!")
             return UpdaterOutcome(kind="missing")
 
-        text = get_page_text(title, self.site)
+        text = MwClientPage(title, self.site).get_text()
         if not text or not text.strip():
             return UpdaterOutcome(kind="skipped", msg="Page is empty")
 
@@ -151,7 +147,7 @@ class ImportHistoryWorker(BaseObjectsJobWorker):
         # Re-save the original body so the page content matches what the operator
         # saw before the import.
         if text is not None:
-            saved = edit_page(self.site, title, text, "")
+            saved = MwClientPage(title, self.site).edit(text, "")
             if saved.get("success"):
                 return UpdaterOutcome(kind="imported", newrevid=saved.get("newrevid", 0))
 
@@ -159,9 +155,7 @@ class ImportHistoryWorker(BaseObjectsJobWorker):
             fallback_title = f"User:{username}/{title}"
             logger.info(f"Job {self.job_id}: {title!r}: top-level save failed; writing to {fallback_title!r}")
 
-            fallback_result = edit_page(
-                self.site,
-                fallback_title,
+            fallback_result = MwClientPage(fallback_title, self.site).edit(
                 text,
                 "Returns the article text after importing the history",
             )
