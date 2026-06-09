@@ -19,6 +19,7 @@ def is_page_exists(page_title: str, site: mwclient.Site) -> bool:
 def is_redirect(page_title: str, site: mwclient.Site) -> bool:
     return MwClientPage(page_title, site).is_redirect()
 
+
 def edit_page(site: mwclient.Site, title: str, text: str, summary: str) -> dict[str, Any]:
     return MwClientPage(title, site).edit(text, summary)
 

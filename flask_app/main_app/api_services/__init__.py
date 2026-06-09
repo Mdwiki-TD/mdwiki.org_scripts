@@ -3,7 +3,6 @@
 from .category import get_category_members_api
 from .clients import get_user_site
 from .mwclient_page import MwClientPage
-
 from .query_api import (
     get_page_links,
     get_template_pages,
