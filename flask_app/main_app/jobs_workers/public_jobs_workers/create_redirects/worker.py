@@ -13,9 +13,9 @@ from typing import Any, Dict
 
 import mwclient
 
+from ....api_services import MwClientPage
 from ....api_services.clients import get_user_site
 from ....api_services.enwiki_api import get_redirects_for
-from ....api_services.pages_api import create_page, is_page_exists
 from ....api_services.query_api import is_pages_exists
 from ....jobs_workers.base_worker_object import BaseObjectsJobWorker
 from .objects import CreateRedirectsWorkerObject
@@ -137,7 +137,7 @@ class CreateRedirectsWorker(BaseObjectsJobWorker):
         """Copy missing redirects for one source title; return per-title counts."""
         counts = {"target_missing": 0, "created": 0, "already_exists": 0, "skipped": 0, "errors": 0, "msg": ""}
 
-        if not is_page_exists(title, self.site):
+        if not MwClientPage(title, self.site).exists():
             logger.info(f"Job {self.job_id}: {title!r}: missing!")
             counts["msg"] = "target page missing"
             counts["target_missing"] = 1
@@ -161,7 +161,7 @@ class CreateRedirectsWorker(BaseObjectsJobWorker):
                 counts["skipped"] += 1
                 continue
 
-            result = create_page(r_title, redirect_text, self.site, summary)
+            result = MwClientPage(r_title, self.site).create(redirect_text, summary)
             if result.get("success"):
                 counts["created"] += 1
                 logger.info(f"Job {self.job_id}: created {r_title!r} -> {title!r}")
