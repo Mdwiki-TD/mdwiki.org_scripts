@@ -16,7 +16,9 @@ def _is_admin(user: Any) -> bool:
     return bool(user and getattr(user, "is_active_admin", False))
 
 
-def context_user(wiki_domain: str, static_server: str, tool_title: str = "Mdwiki.org Tools (UNDER TESTING)") -> dict[str, Any]:
+def context_user(
+    wiki_domain: str, static_server: str, tool_title: str = "Mdwiki.org Tools (UNDER TESTING)"
+) -> dict[str, Any]:
     """
     Used in @app.context_processor to inject variables into templates.
     """

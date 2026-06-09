@@ -14,8 +14,7 @@ from typing import Any, Dict
 
 import mwclient
 
-from ....api_services import MwClientPage
-from ....api_services.category import get_category_members_api
+from ....api_services import MwClientPage, get_category_members
 from ....api_services.clients import get_user_site
 from ....jobs_workers.base_worker_object import BaseObjectsJobWorker
 from ....shared.fixref_shared.fixref_text_new import fix_ref_template
@@ -64,7 +63,15 @@ class FixRefWorker(BaseObjectsJobWorker):
 
         self._save_progress()
 
-        pages = self._resolve_targets(titles_raw, category, number)
+        pages = []
+
+        if titles_raw:
+            pages = self._resolve_targets(titles_raw)
+        elif category:
+            pages = self._resolve_targets_category(category)
+        elif number:
+            pages = self._resolve_targets_number(number)
+
         if not pages:
             self.result.status = "failed"
             self.result.error = "Provide at least one of: titles, category, number."
@@ -127,52 +134,56 @@ class FixRefWorker(BaseObjectsJobWorker):
             page_record["status"] = outcome.kind
             self.result.pages_processed.append(page_record)
 
+    def _resolve_targets_category(self, category) -> list:
+        cat = category.strip()
+        if not cat.lower().startswith("category:"):
+            cat = f"Category:{cat}"
+
+        members = get_category_members(
+            site=self.site,
+            category_title=cat,
+            limit=500,
+        )
+
+        return [m for m in members if not m.startswith("Category:")][:MAX_PAGES_FIXREF]
+
+    def _resolve_targets_number(self, number) -> list[str]:
+        try:
+            capped = min(int(number), MAX_PAGES_FIXREF)
+        except ValueError:
+            capped = MAX_PAGES_FIXREF
+
+        titles = list(
+            self.site.allpages(
+                start="!",
+                namespace=0,
+                filterredir="nonredirects",
+                dir="ascending",
+                generator=True,
+                limit=capped,
+            )
+        )
+        return [p.name for p in titles]
+
     def _resolve_targets(
         self,
         titles: str | list[str] | None,
-        category: str | None,
-        number: int | str | None,
     ) -> list[str]:
         """Resolve which pages to process given the input options."""
-        if titles:
-            if isinstance(titles, str):
-                titles = [t.strip() for t in titles.splitlines() if t.strip()]
-            cleaned: list[str] = []
-            seen: set[str] = set()
-            for t in titles:
-                t = t.replace("_", " ").strip()
-                if not t or t in seen:
-                    continue
-                seen.add(t)
-                cleaned.append(t)
-            return cleaned[:MAX_PAGES_FIXREF]
+        if isinstance(titles, str):
+            titles = [t.strip() for t in titles.splitlines() if t.strip()]
 
-        if category:
-            cat = category.strip()
-            if not cat.lower().startswith("category:"):
-                cat = f"Category:{cat}"
-            members = get_category_members_api(cat, "www.mdwiki.org", limit=500)
-            return [m for m in members if not m.startswith("Category:")][:MAX_PAGES_FIXREF]
+        cleaned: list[str] = []
+        seen: set[str] = set()
 
-        if number:
-            try:
-                capped = min(int(number), MAX_PAGES_FIXREF)
-            except ValueError:
-                capped = MAX_PAGES_FIXREF
+        for t in titles:
+            t = t.replace("_", " ").strip()
+            if not t or t in seen:
+                continue
+            seen.add(t)
+            cleaned.append(t)
 
-            titles = list(
-                self.site.allpages(
-                    start="!",
-                    namespace=0,
-                    filterredir="nonredirects",
-                    dir="ascending",
-                    generator=True,
-                    limit=capped,
-                )
-            )
-            return [p.name for p in titles]
-
-        return []
+        return cleaned[:MAX_PAGES_FIXREF]
 
     # ------------------------------------------------------------------
     # Internal helpers
