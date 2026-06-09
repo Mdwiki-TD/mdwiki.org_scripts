@@ -126,6 +126,7 @@ def update_page_text(
 
     return _edit_page(site, page_name, updated_text, summary, nocreate=True)
 
+
 def get_page_text(
     page_title: str,
     site: mwclient.Site | None,
@@ -157,6 +158,7 @@ def get_page_text(
     except Exception as exc:
         logger.exception(f"Failed to retrieve wikitext for {page_title}", exc_info=exc)
         return ""
+
 
 def import_page_from_wiki(
     site: mwclient.Site,
