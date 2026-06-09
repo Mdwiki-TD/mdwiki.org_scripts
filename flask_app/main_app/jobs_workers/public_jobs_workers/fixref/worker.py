@@ -14,9 +14,9 @@ from typing import Any, Dict
 
 import mwclient
 
+from ....api_services import MwClientPage
 from ....api_services.category import get_category_members_api
 from ....api_services.clients import get_user_site
-from ....api_services.pages_api import edit_page, get_page_text, is_page_exists
 from ....jobs_workers.base_worker_object import BaseObjectsJobWorker
 from ....shared.fixref_shared.fixref_text_new import fix_ref_template
 from ...shared_objects import SharedworkerObject, UpdaterOutcome
@@ -179,11 +179,12 @@ class FixRefWorker(BaseObjectsJobWorker):
     # ------------------------------------------------------------------
 
     def _process_one(self, title: str) -> UpdaterOutcome:
-        if not is_page_exists(title, self.site):
+        page = MwClientPage(title, self.site)
+        if not page.exists():
             logger.info(f"Job {self.job_id}: {title!r}: missing!")
             return UpdaterOutcome(kind="missing")
 
-        text = get_page_text(title, self.site)
+        text = page.get_text()
         if not text or not text.strip():
             return UpdaterOutcome(kind="skipped", msg="Page is empty")
 
@@ -192,7 +193,7 @@ class FixRefWorker(BaseObjectsJobWorker):
         if new_text == text:
             return UpdaterOutcome(kind="skipped", msg="No changes")
 
-        result = edit_page(self.site, title, new_text, summary)
+        result = page.edit(new_text, summary)
 
         if result.get("success"):
             return UpdaterOutcome(kind="changed", newrevid=result.get("newrevid", 0))

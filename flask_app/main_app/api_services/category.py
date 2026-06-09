@@ -7,7 +7,7 @@ from ..config import settings
 logger = logging.getLogger(__name__)
 
 
-def get_category_members_api(category, project, limit=500):
+def get_category_members_api(category, project, limit=None):
     """
     Fetch all pages belonging to a given category from a Wikimedia project.
 
@@ -28,9 +28,9 @@ def get_category_members_api(category, project, limit=500):
         "action": "query",
         "list": "categorymembers",
         "cmtitle": category,
-        "cmlimit": limit,
         "format": "json",
     }
+    params["cmlimit"] = limit if limit is not None else "max"
 
     pages = []
     try:
