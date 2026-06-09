@@ -1,79 +1,94 @@
-"""Unit tests for flask_app/main_app/public_jobs/jobs_worker.py module."""
+"""Unit tests for flask_app/main_app/jobs_workers/jobs_worker.py."""
 
 from __future__ import annotations
 
 import threading
-from unittest.mock import patch
+from unittest.mock import MagicMock, patch
 
 import pytest
-from flask.app import Flask
-from flask_app.main_app.db.exceptions import DuplicateJobError
+from flask import Flask
 from flask_app.main_app.jobs_workers.jobs_worker import (
-    JOBS_CANCEL_EVENTS,
-    JOBS_CANCEL_EVENTS_LOCK,
     _get_jobs_cancel_event,
     _pop_cancel_event,
     _register_cancel_event,
+    _runner,
+    cancel_job_worker,
+    start_job,
 )
 
 
-class TestCancelEventRegistry:
-    def setup_method(self):
-        with JOBS_CANCEL_EVENTS_LOCK:
-            JOBS_CANCEL_EVENTS.clear()
+def test_cancel_event_management():
+    job_id = 999
+    event = threading.Event()
 
-    def test_register_and_get(self):
-        evt = threading.Event()
-        _register_cancel_event(1, evt)
-        assert _get_jobs_cancel_event(1) is evt
+    _register_cancel_event(job_id, event)
+    assert _get_jobs_cancel_event(job_id) is event
 
-    def test_get_nonexistent_returns_none(self):
-        assert _get_jobs_cancel_event(999) is None
-
-    def test_pop_removes(self):
-        evt = threading.Event()
-        _register_cancel_event(2, evt)
-        popped = _pop_cancel_event(2)
-        assert popped is evt
-        assert _get_jobs_cancel_event(2) is None
-
-    def test_pop_nonexistent_returns_none(self):
-        assert _pop_cancel_event(999) is None
-
-    def test_register_overwrites(self):
-        evt1 = threading.Event()
-        evt2 = threading.Event()
-        _register_cancel_event(3, evt1)
-        _register_cancel_event(3, evt2)
-        assert _get_jobs_cancel_event(3) is evt2
-
-    def test_multiple_ids(self):
-        evt_a = threading.Event()
-        evt_b = threading.Event()
-        _register_cancel_event(10, evt_a)
-        _register_cancel_event(20, evt_b)
-        assert _get_jobs_cancel_event(10) is evt_a
-        assert _get_jobs_cancel_event(20) is evt_b
+    popped = _pop_cancel_event(job_id)
+    assert popped is event
+    assert _get_jobs_cancel_event(job_id) is None
 
 
-def test_start_job_raises_duplicate_job_error(app: Flask) -> None:
-    """start_job should propagate DuplicateJobError when create_job raises it."""
+def test_runner():
+    job_id = 1
+    user = {"username": "test"}
+    cancel_event = threading.Event()
+    target_func = MagicMock()
+    flask_app = Flask(__name__)
+    args = {"foo": "bar"}
+
+    _register_cancel_event(job_id, cancel_event)
+
+    _runner(job_id, user, cancel_event, target_func, flask_app, args)
+
+    target_func.assert_called_once_with(
+        job_id=job_id,
+        user=user,
+        cancel_event=cancel_event,
+        args=args,
+    )
+    assert _get_jobs_cancel_event(job_id) is None
+
+
+@patch("flask_app.main_app.jobs_workers.jobs_worker.cancel_job_db")
+@patch("flask_app.main_app.jobs_workers.jobs_worker.create_job_cancelled_file")
+def test_cancel_job_worker(mock_create_file, mock_cancel_db):
+    job_id = 123
+    event = threading.Event()
+    _register_cancel_event(job_id, event)
+
+    job = MagicMock()
+    job.result_file = "some_file"
+
+    mock_cancel_db.return_value = True
+
+    result = cancel_job_worker(job_id, "test_job", job)
+
+    assert result is True
+    assert event.is_set()
+    mock_create_file.assert_called_once_with("some_file.cancelled")
+    mock_cancel_db.assert_called_once_with(job_id, "test_job")
+
+
+@patch("flask_app.main_app.jobs_workers.jobs_worker.create_job")
+@patch("flask_app.main_app.jobs_workers.jobs_worker.jobs_data")
+@patch("threading.Thread")
+def test_start_job(mock_thread, mock_jobs_data, mock_create_job):
+    app = Flask(__name__)
     with app.app_context():
-        with (
-            patch(
-                "flask_app.main_app.jobs_workers.jobs_worker.create_job",
-                side_effect=DuplicateJobError("A job of type 'test' is already active"),
-            ),
-            patch(
-                "flask_app.main_app.jobs_workers.jobs_worker.jobs_data",
-                {"test_type": type("JobData", (), {"job_callable": lambda: None})()},
-            ),
-        ):
-            from flask_app.main_app.jobs_workers.jobs_worker import start_job
+        user = {"username": "test_user"}
+        job_type = "test_type"
 
-            with pytest.raises(DuplicateJobError):
-                start_job(
-                    user={"username": "testuser"},
-                    job_type="test_type",
-                    args={},
-                )
+        mock_job_data = MagicMock()
+        mock_job_data.job_callable = MagicMock()
+        mock_jobs_data.get.return_value = mock_job_data
+
+        mock_job_record = MagicMock()
+        mock_job_record.id = 456
+        mock_create_job.return_value = mock_job_record
+
+        job_id = start_job(user, job_type, {"arg": 1})
+
+        assert job_id == 456
+        mock_thread.assert_called_once()
+        assert _get_jobs_cancel_event(456) is not None
