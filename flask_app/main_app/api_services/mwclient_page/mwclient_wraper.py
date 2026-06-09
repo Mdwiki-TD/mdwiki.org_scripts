@@ -124,7 +124,7 @@ class MwClientPage:
         try:
             return page.text()
         except Exception as exc:
-            logger.exception(f"Failed to retrieve wikitext for {self.title}", exc_info=exc)
+            logger.exception(f"Failed to retrieve wikitext for {self.title}")
         return ""
 
     def get_redirect_target(self) -> str | None:
