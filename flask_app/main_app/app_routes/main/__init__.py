@@ -18,6 +18,7 @@ from ...jobs_workers.public_jobs_workers.workers_list_public import (
 bp_main = Blueprint("main", __name__)
 logger = logging.getLogger(__name__)
 
+
 @bp_main.route("/", methods=["GET"])
 def index():
     return render_template(

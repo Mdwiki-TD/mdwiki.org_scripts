@@ -42,6 +42,7 @@ class SharedworkerObject(WorkerObject):
     pages_missing: list[str] = field(default_factory=list)
     note: str = ""
 
+
 __all__ = [
     "Summary",
     "SharedworkerObject",
