@@ -15,11 +15,11 @@ def register_blueprints(app: Flask) -> None:
     app.register_blueprint(bp_main)
     app.register_blueprint(bp_auth)
     app.register_blueprint(bp_admin)
+    app.register_blueprint(bp_profile)
 
     app.register_blueprint(jobs_module.bp)
     app.register_blueprint(bp_newupdater)
     app.register_blueprint(bp_fixred)
-    app.register_blueprint(bp_profile)
 
 
 __all__ = [
