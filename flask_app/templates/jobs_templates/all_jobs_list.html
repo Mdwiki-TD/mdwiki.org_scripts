@@ -38,7 +38,7 @@
                             </td>
                             <td>
                                 {% if job.username %}
-                                <a href="{{ url_for('profile.user_dashboard', user_name=job.username) }}">
+                                <a href="{{ url_for('profile.dashboard', user_name=job.username) }}">
                                     <span class="">{{ job.username }}</span>
                                 </a>
                                 {% else %}

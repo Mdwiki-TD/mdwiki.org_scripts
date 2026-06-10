@@ -51,7 +51,7 @@
                     <tr>
                         <td> {{ loop.index }} </td>
                         <td>
-                            <a href="{{ url_for('profile.user_dashboard', user_name=user.username) }}" target="_blank">
+                            <a href="{{ url_for('profile.dashboard', user_name=user.username) }}" target="_blank">
                                 {{ user.username }}
                             </a>
                         </td>

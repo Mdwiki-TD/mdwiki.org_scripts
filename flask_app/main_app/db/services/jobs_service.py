@@ -137,7 +137,7 @@ def list_jobs(limit: int = 100, job_type: str | None = None) -> list[JobRecord]:
     return query.order_by(JobRecord.created_at.desc()).limit(limit).all()
 
 
-def get_user_jobs_stats(username: str) -> dict[str, dict[str, int] | list[JobRecord]]:
+def get_all_user_jobs_stats(username: str) -> dict[str, dict[str, int] | list[JobRecord]]:
     """
     Get user jobs
     """
@@ -296,5 +296,5 @@ __all__ = [
     "cancel_job_db",
     "is_job_cancelled",
     "delete_job",
-    "get_user_jobs_stats",
+    "get_all_user_jobs_stats",
 ]
