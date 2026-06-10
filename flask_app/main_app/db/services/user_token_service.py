@@ -15,7 +15,7 @@ from sqlalchemy.orm import joinedload
 from ...core.crypto import encrypt_value
 from ...extensions import db
 from ..models import UsersRecord, UserTokenRecord
-from .utils import db_guard_rollback
+from .utils import db_guard, db_guard_rollback
 
 logger = logging.getLogger(__name__)
 
@@ -125,7 +125,7 @@ def upsert_user_token(user_id: int, access_key: str, access_secret: str) -> User
 # ── DELETE ───────────────────────────────────────────────
 
 
-@db_guard_rollback
+@db_guard(default_return=False)
 def delete_user_token(user_id: int) -> bool:
     """
     Delete the stored OAuth token only. User identity row persists.
