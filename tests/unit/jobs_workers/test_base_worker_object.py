@@ -1,52 +1,82 @@
-"""Unit tests for flask_app/main_app/public_jobs/base_worker_object.py module."""
+"""Unit tests for flask_app/main_app/jobs_workers/base_worker_object.py."""
 
 from __future__ import annotations
 
-from flask_app.main_app.jobs_workers.base_worker_object import WorkerObject
+import threading
+from unittest.mock import MagicMock, patch
+
+import pytest
+from flask_app.main_app.jobs_workers.base_worker_object import (
+    BaseObjectsJobWorker,
+    WorkerObject,
+)
 
 
-class TestWorkerObject:
-    def test_default_status(self):
-        obj = WorkerObject()
-        assert obj.status == "pending"
+class MockWorker(BaseObjectsJobWorker):
+    def get_job_type(self) -> str:
+        return "mock_job"
 
-    def test_started_at_is_set(self):
-        obj = WorkerObject()
-        assert obj.started_at is not None
-        assert "T" in obj.started_at  # ISO format
+    def process(self) -> WorkerObject:
+        return self.result
 
-    def test_completed_at_none_by_default(self):
-        obj = WorkerObject()
-        assert obj.completed_at is None
 
-    def test_cancelled_at_none_by_default(self):
-        obj = WorkerObject()
-        assert obj.cancelled_at is None
+class TestBaseObjectsJobWorker:
+    @pytest.fixture
+    def worker(self):
+        worker = MockWorker(job_id=1, user={"username": "test"}, cancel_event=threading.Event())
+        worker.result = WorkerObject()
+        return worker
 
-    def test_error_none_by_default(self):
-        obj = WorkerObject()
-        assert obj.error is None
-        assert obj.error_type is None
+    @patch("flask_app.main_app.jobs_workers.base_worker_object.update_job_status")
+    @patch("flask_app.main_app.jobs_workers.base_worker_object.save_job_result_by_name")
+    def test_before_run(self, mock_save, mock_update, worker):
+        assert worker.before_run() is True
+        mock_update.assert_called_once_with(1, "running", worker.result_file, job_type="mock_job")
+        assert worker.result.status == "running"
+        mock_save.assert_called_once()
 
-    def test_to_json(self):
-        obj = WorkerObject(status="running")
-        d = obj.to_json()
-        assert d["status"] == "running"
-        assert "started_at" in d
-        assert "completed_at" in d
-        assert "cancelled_at" in d
-        assert "error" in d
-        assert "error_type" in d
+    @patch("flask_app.main_app.jobs_workers.base_worker_object.update_job_status")
+    @patch("flask_app.main_app.jobs_workers.base_worker_object.save_job_result_by_name")
+    def test_after_run(self, mock_save, mock_update, worker):
+        worker.result.status = "running"
+        worker.after_run()
+        assert worker.result.status == "completed"
+        assert worker.result.completed_at is not None
+        mock_update.assert_called_once_with(1, "completed", worker.result_file, job_type="mock_job")
 
-    def test_to_json_with_error(self):
-        obj = WorkerObject(status="failed", error="boom", error_type="RuntimeError")
-        d = obj.to_json()
-        assert d["error"] == "boom"
-        assert d["error_type"] == "RuntimeError"
+    @patch("flask_app.main_app.jobs_workers.base_worker_object.is_job_cancelled_file_exist")
+    def test_is_cancelled_local(self, mock_file_exists, worker):
+        mock_file_exists.return_value = False
+        assert worker.is_cancelled() is False
 
-    def test_mutable(self):
-        obj = WorkerObject()
-        obj.status = "completed"
-        obj.completed_at = "2025-01-01T00:00:00"
-        assert obj.status == "completed"
-        assert obj.completed_at == "2025-01-01T00:00:00"
+        worker.cancel_event.set()
+        assert worker.is_cancelled() is True
+        assert worker.result.status == "cancelled"
+
+    @patch("flask_app.main_app.jobs_workers.base_worker_object.is_job_cancelled")
+    @patch("flask_app.main_app.jobs_workers.base_worker_object.is_job_cancelled_file_exist")
+    def test_is_cancelled_db(self, mock_file_exists, mock_db_cancelled, worker):
+        mock_file_exists.return_value = False
+        mock_db_cancelled.return_value = True
+        assert worker.is_cancelled(check_db=True) is True
+        assert worker.result.status == "cancelled"
+
+    def test_handle_error(self, worker):
+        error = ValueError("test error")
+        worker.handle_error(error, context="doing something")
+        assert worker.result.status == "failed"
+        assert worker.result.failed_at is not None
+        assert len(worker.result.errors) == 1
+        assert worker.result.errors[0]["error"] == "test error"
+
+    @patch("flask_app.main_app.jobs_workers.base_worker_object.update_job_status")
+    @patch("flask_app.main_app.jobs_workers.base_worker_object.save_job_result_by_name")
+    def test_run_success(self, mock_save, mock_update, worker):
+        worker.process = MagicMock(return_value=worker.result)
+        result = worker.run()
+        assert result["status"] == "completed"
+        worker.process.assert_called_once()
+
+    def test_get_priority(self, worker):
+        assert worker.get_priority(5) == 1
+        assert worker.get_priority(100) == 10

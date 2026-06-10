@@ -10,7 +10,7 @@
     <link rel="icon" href="/favicon.svg" type="image/svg+xml">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>mdwiki.org Tools</title>
+    <title>{{ tool_title }}</title>
     <link rel='stylesheet' href='{{ static_server }}/ajax/libs/font-awesome/5.15.3/css/all.min.css'>
     <link rel='stylesheet' href='{{ static_server }}/ajax/libs/bootstrap/5.3.3/css/bootstrap.min.css'>
     <link rel='stylesheet' href='{{ static_server }}/ajax/libs/jqueryui/1.14.1/themes/base/jquery-ui.min.css'>
@@ -26,7 +26,7 @@
         <nav class="navbar navbar-expand-lg shadow">
             <div class="container-fluid">
                 <a class="navbar-brand mb-0 h1" href="/">
-                    mdwiki.org tools (UNDER TESTING)
+                    {{ tool_title }}
                 </a>
                 <div class="d-flex align-items-center order-lg-last">
                     <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
@@ -60,7 +60,7 @@
             {{ flash_messages() }}
             <div class="card">
                 <div class="card-header" style="font-weight:bold;">
-                    <h3>{{ title or "mdwiki.org Tools (UNDER TESTING)" }}</h3>
+                    <h3>{{ title or tool_title }}</h3>
                 </div>
                 <div class="card-body">
                     <div class="flash-messages mt-2 mb-2">

@@ -99,7 +99,7 @@ Fixes redirect links in all mdwiki mainspace pages. Walks non-redirect pages via
 
 #### fixref
 
-Normalizes cite-template formatting. Accepts three input modes: explicit titles, category members (via `get_category_members_api`), or random N pages. Has a `MAX_PAGES_FIXREF = 20000` cap. Delegates to `fix_ref_template()` from `shared.fixref_shared.fixref_text_new`.
+Normalizes cite-template formatting. Accepts three input modes: explicit titles, category members (via `get_category_members`), or random N pages. Has a `MAX_PAGES_FIXREF = 20000` cap. Delegates to `fix_ref_template()` from `shared.fixref_shared.fixref_text_new`.
 
 #### import_history
 
@@ -109,7 +109,7 @@ Imports revision history from English Wikipedia to mdwiki using `action=import`.
 
 -   **mwclient** (`get_user_site`): All workers use authenticated mwclient for mdwiki operations
 -   **Raw requests**: `create_redirects` uses `requests.Session` for enwiki API calls
--   **Service layer wrappers**: `edit_page`, `get_page_text`, `is_page_exists`, `is_pages_exists`, `create_page`, `import_page_from_wiki`, `get_category_members_api`, `get_double_redirects`, `get_template_pages`
+-   **Service layer wrappers**: `edit_page`, `get_page_text`, `is_page_exists`, `is_pages_exists`, `create_page`, `import_page_from_wiki`, `get_category_members`, `get_double_redirects`, `get_template_pages`
 -   **Direct mwclient**: `find_and_replace` uses `site.search()` and `site.allpages()` directly
 
 ### Error Handling

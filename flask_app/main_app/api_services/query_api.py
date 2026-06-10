@@ -29,7 +29,7 @@ def get_template_pages(
     query_data = result.get("query", {})
     query_pages = query_data.get("pages", {})
 
-    # { "pageid": 2973452, "ns": 100, "title": "بوابة:سباق الدراجات الهوائية" }
+    # { "pageid": 2973452, "ns": 100, "title": "title" }
     pages = [x["title"] for x in query_pages]
     # ---
     logger.info(f"find {len(pages)} pages.")

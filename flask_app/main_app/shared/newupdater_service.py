@@ -17,6 +17,7 @@ import logging
 from ..api_services import MwClientPage
 from ..api_services.clients.wiki_client import get_user_site
 from ..su_services.current_user import CurrentUser
+from .named_param import add_param_named
 from .new_updater import med_updater_one
 from .shared_classes import UpdaterTextOutcome
 
@@ -49,6 +50,7 @@ def newupdater_one_title(
 
     try:
         new_text = med_updater_one(title, old_text)
+        new_text = add_param_named(new_text)
     except Exception:
         logger.exception("work_on_text failed for %s", title)
         raise

@@ -1,6 +1,6 @@
 """"""
 
-from .category import get_category_members_api
+from .category import get_category_members
 from .clients import get_user_site
 from .mwclient_page import MwClientPage
 from .query_api import (
@@ -19,5 +19,5 @@ __all__ = [
     "is_pages_exists",
     "resolve_redirects",
     "search_pages",
-    "get_category_members_api",
+    "get_category_members",
 ]

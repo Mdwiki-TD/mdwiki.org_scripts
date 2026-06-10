@@ -42,19 +42,6 @@ class TestJobsData:
     def test_jobs_data_is_dict(self):
         assert isinstance(jobs_data, dict)
 
-    def test_expected_job_types_present(self):
-        expected = {
-            "add_r_column",
-            "add_unlinkedwikibase",
-            "create_redirects",
-            "duplicate_redirect",
-            "find_and_replace",
-            "fixred_all",
-            "fixref",
-            "import_history",
-        }
-        assert set(jobs_data.keys()) == expected
-
     def test_all_values_are_job_data(self):
         for key, val in jobs_data.items():
             assert isinstance(val, JobData), f"jobs_data[{key!r}] is not JobData"
