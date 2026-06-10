@@ -1,6 +1,10 @@
-from ..exceptions import DuplicateJobError
 from .admin_service import (
+    add_coordinator,
+    delete_coordinator,
+    get_coordinator_by_id,
     is_active_coordinator,
+    list_coordinators,
+    set_coordinator_active,
 )
 from .jobs_service import (
     cancel_job_db,
@@ -8,6 +12,7 @@ from .jobs_service import (
     delete_job,
     get_all_user_jobs_stats,
     get_job,
+    get_user_jobs_stats,
     is_job_cancelled,
     list_jobs,
     update_job_status,
@@ -16,7 +21,6 @@ from .user_token_service import (
     delete_user_token,
     get_authenticated_user_token,
     get_user_token,
-    get_user_token_by_username,
     update_user_token,
     upsert_user_token,
 )
@@ -29,10 +33,7 @@ from .users_service import (
 )
 
 __all__ = [
-    # exceptions
-    "DuplicateJobError",
     # users_service
-    "get_authenticated_user_token",
     "create_user",
     "get_user",
     "get_user_by_username",
@@ -41,9 +42,16 @@ __all__ = [
     "upsert_user_token",
     "update_user_token",
     "get_user_token",
+    "get_authenticated_user_token",
     "delete_user_token",
-    "get_user_token_by_username",
     "list_users",
+    # admin_service
+    "list_coordinators",
+    "is_active_coordinator",
+    "add_coordinator",
+    "set_coordinator_active",
+    "get_coordinator_by_id",
+    "delete_coordinator",
     # jobs_service
     "delete_job",
     "create_job",
@@ -51,7 +59,7 @@ __all__ = [
     "list_jobs",
     "update_job_status",
     "get_all_user_jobs_stats",
+    "get_user_jobs_stats",
     "cancel_job_db",
     "is_job_cancelled",
-    "is_active_coordinator",
 ]
