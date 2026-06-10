@@ -197,7 +197,8 @@ class AddRttTemplateWorker(BaseObjectsJobWorker):
         if not text or not text.strip():
             return UpdaterOutcome(kind="skipped", msg="Page is empty")
 
-        if text.find("{{RTT}}") != -1:
+        parsed = wtp.parse(text)
+        if any(str(t.normal_name()).strip().lower().replace("_", " ") == "rtt" for t in parsed.templates):
             return UpdaterOutcome(kind="skipped", msg="Already has RTT template")
 
         new_text = add_rtt_to_text(text, title)
@@ -205,7 +206,11 @@ class AddRttTemplateWorker(BaseObjectsJobWorker):
         if new_text == text:
             return UpdaterOutcome(kind="skipped", msg="No changes")
 
-        result = page.edit(new_text, "Added {{RTT}}")
+        result = page.edit(
+            text=new_text,
+            summary="Added {{RTT}}",
+            nocreate=1,
+        )
 
         if result.get("success"):
             return UpdaterOutcome(kind="changed", newrevid=result.get("newrevid", 0))
