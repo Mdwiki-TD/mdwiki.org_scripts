@@ -89,3 +89,8 @@ class FixChembox:
             self.newchembox_list.append(param_value.strip())
 
         self.newchembox_list.append("}}")
+
+
+__all__ = [
+    "FixChembox",
+]

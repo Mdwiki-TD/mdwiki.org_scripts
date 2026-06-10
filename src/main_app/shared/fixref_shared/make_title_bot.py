@@ -91,3 +91,8 @@ def make_title(url: str, cache: Dict[str, str] | None = None) -> str:
         logger.info(f"<<green>> make_title_bot: newtitle: ({title})")
 
     return title
+
+
+__all__ = [
+    "make_title",
+]

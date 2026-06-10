@@ -59,3 +59,9 @@ def add_param_named(text: str) -> str:
     newtext = parsed.string
 
     return newtext
+
+
+__all__ = [
+    "gt_arg",
+    "add_param_named",
+]
