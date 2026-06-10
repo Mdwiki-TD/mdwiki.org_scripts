@@ -1,8 +1,8 @@
-"""Unit tests for flask_app/main_app/shared/new_updater/resources_new.py."""
+"""Unit tests for src/main_app/shared/new_updater/resources_new.py."""
 
 from __future__ import annotations
 
-from flask_app.main_app.shared.new_updater.resources_new import move_resources
+from src.main_app.shared.new_updater.resources_new import move_resources
 
 
 class TestMoveResources:

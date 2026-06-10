@@ -9,7 +9,7 @@ This document details the migration strategy for replacing the legacy `_api` →
 -   **7 worker modules** in `public_jobs_workers/` that call `get_api()` from `_api.py`
 -   **1 shared factory** (`_api.py`) that wraps `newapi.AllAPIS` with username/password auth
 -   **1 existing `api_services` module** already using `mwclient.Site` with OAuth
--   **113 Python files** total in `flask_app/`; ~20 are directly affected
+-   **113 Python files** total in `src/`; ~20 are directly affected
 
 ### Key Findings
 
@@ -736,7 +736,7 @@ Already uses `api_services` for `resolve_redirects` and `get_user_site`. Remaini
 -   Remove `from .._api import get_api` from all 7 workers
 -   Remove `from ...newapi import AllAPIS` from `fixred` and `fix_duplicate`
 
-**Validation**: `grep -r "from.*_api import\|from.*newapi import" flask_app/` returns no results.
+**Validation**: `grep -r "from.*_api import\|from.*newapi import" src/` returns no results.
 
 ---
 

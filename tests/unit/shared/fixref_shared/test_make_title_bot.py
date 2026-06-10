@@ -1,10 +1,10 @@
-"""Unit tests for flask_app/main_app/shared/fixref_shared/make_title_bot.py module."""
+"""Unit tests for src/main_app/shared/fixref_shared/make_title_bot.py module."""
 
 from __future__ import annotations
 
 from unittest.mock import patch
 
-from flask_app.main_app.shared.fixref_shared.make_title_bot import make_title
+from src.main_app.shared.fixref_shared.make_title_bot import make_title
 
 
 class TestMakeTitle:
@@ -12,25 +12,25 @@ class TestMakeTitle:
         assert make_title("") == ""
         assert make_title("   ") == ""
 
-    @patch("flask_app.main_app.shared.fixref_shared.make_title_bot.get_citation_title")
+    @patch("src.main_app.shared.fixref_shared.make_title_bot.get_citation_title")
     def test_valid_response_returns_title(self, mock_get_citation):
         mock_get_citation.return_value = "Aspirin"
         result = make_title("https://example.com/article")
         assert result == "Aspirin"
 
-    @patch("flask_app.main_app.shared.fixref_shared.make_title_bot.get_citation_title")
+    @patch("src.main_app.shared.fixref_shared.make_title_bot.get_citation_title")
     def test_empty_response_returns_empty(self, mock_get_citation):
         mock_get_citation.return_value = ""
         result = make_title("https://example.com/empty")
         assert result == ""
 
-    @patch("flask_app.main_app.shared.fixref_shared.make_title_bot.get_citation_title")
+    @patch("src.main_app.shared.fixref_shared.make_title_bot.get_citation_title")
     def test_not_found_title_returns_empty(self, mock_get_citation):
         mock_get_citation.return_value = "Not found."
         result = make_title("https://example.com/404")
         assert result == ""
 
-    @patch("flask_app.main_app.shared.fixref_shared.make_title_bot.get_citation_title")
+    @patch("src.main_app.shared.fixref_shared.make_title_bot.get_citation_title")
     def test_caching(self, mock_get_citation):
         mock_get_citation.return_value = "Cached Title"
         cache = {}

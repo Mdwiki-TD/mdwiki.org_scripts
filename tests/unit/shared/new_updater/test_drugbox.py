@@ -1,8 +1,8 @@
-"""Unit tests for flask_app/main_app/shared/new_updater/drugbox.py."""
+"""Unit tests for src/main_app/shared/new_updater/drugbox.py."""
 
 from __future__ import annotations
 
-from flask_app.main_app.shared.new_updater.drugbox import TextProcessor
+from src.main_app.shared.new_updater.drugbox import TextProcessor
 
 
 class TestTextProcessor:

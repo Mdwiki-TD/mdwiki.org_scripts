@@ -1,4 +1,4 @@
-"""Unit tests for flask_app/main_app/app_routes/admin_routes/coordinators.py."""
+"""Unit tests for src/main_app/app_routes/admin_routes/coordinators.py."""
 
 from __future__ import annotations
 

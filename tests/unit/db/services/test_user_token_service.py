@@ -1,13 +1,13 @@
 from __future__ import annotations
 
 from flask.app import Flask
-from flask_app.main_app.db.services.user_token_service import (
+from src.main_app.db.services.user_token_service import (
     delete_user_token,
     get_user_token,
     get_user_token_by_username,
     upsert_user_token,
 )
-from flask_app.main_app.db.services.users_service import create_user
+from src.main_app.db.services.users_service import create_user
 
 
 def test_delete_user_cascades(app: Flask) -> None:

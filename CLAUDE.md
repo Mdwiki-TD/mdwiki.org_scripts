@@ -11,7 +11,7 @@ Flask web application providing batch maintenance tools for [mdwiki.org](https:/
 ### Development Server
 
 ```bash
-python flask_app/app1.py          # Development server (loads .env, debug mode)
+python src/app1.py          # Development server (loads .env, debug mode)
 ```
 
 ### Testing
@@ -28,30 +28,30 @@ python -m pytest tests/unit/test_file.py::test_name -v  # Single test
 ### Linting & Formatting
 
 ```bash
-ruff check flask_app/ tests/      # Lint with Ruff
-ruff format flask_app/ tests/     # Format with Ruff
-black flask_app/ tests/           # Format with Black
-isort flask_app/ tests/           # Sort imports
+ruff check src/ tests/      # Lint with Ruff
+ruff format src/ tests/     # Format with Ruff
+black src/ tests/           # Format with Black
+isort src/ tests/           # Sort imports
 ```
 
 ## Architecture
 
 ### Application Factory Pattern
 
-`flask_app/main_app/__init__.py` contains `create_app(config_class)` which initializes Flask, registers extensions, blueprints, and database.
+`src/main_app/__init__.py` contains `create_app(config_class)` which initializes Flask, registers extensions, blueprints, and database.
 
 ### Entry Points
 
--   `flask_app/app.py` — Production WSGI entry (ProductionConfig)
--   `flask_app/app1.py` — Development entry (DevelopmentConfig, loads `.env`)
+-   `src/app.py` — Production WSGI entry (ProductionConfig)
+-   `src/app1.py` — Development entry (DevelopmentConfig, loads `.env`)
 
 ### Configuration
 
-Environment-based via frozen dataclasses in `flask_app/main_app/config/`. Settings loaded from env vars into a singleton `settings` object in `main_settings.py`. See `.env.example` for required variables.
+Environment-based via frozen dataclasses in `src/main_app/config/`. Settings loaded from env vars into a singleton `settings` object in `main_settings.py`. See `.env.example` for required variables.
 
 ### Blueprint Structure
 
-Routes registered in `flask_app/main_app/app_routes/__init__.py`:
+Routes registered in `src/main_app/app_routes/__init__.py`:
 
 -   `bp_main` — Index page
 -   `bp_auth` — OAuth login/callback/logout, rate limiting
@@ -61,7 +61,7 @@ Routes registered in `flask_app/main_app/app_routes/__init__.py`:
 
 ### Background Job System
 
-Jobs run in daemon threads via `flask_app/main_app/public_jobs/`:
+Jobs run in daemon threads via `src/main_app/public_jobs/`:
 
 -   `base_worker_object.py` — Abstract `BaseObjectsJobWorker` with lifecycle hooks (`before_run`, `process`, `after_run`)
 -   `jobs_worker.py` — Job runner with `start_job()`, `cancel_job()`, threading infrastructure

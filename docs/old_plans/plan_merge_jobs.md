@@ -2,7 +2,7 @@
 
 ## Goal
 
-Migrate 6 jobs from `flask_app/main_app/jobs/` into `flask_app/main_app/public_jobs/` using the `BaseJobWorker` pattern. Old `jobs/` folder stays untouched for reference.
+Migrate 6 jobs from `src/main_app/jobs/` into `src/main_app/public_jobs/` using the `BaseJobWorker` pattern. Old `jobs/` folder stays untouched for reference.
 
 ## Jobs to Migrate
 
@@ -21,7 +21,7 @@ Migrate 6 jobs from `flask_app/main_app/jobs/` into `flask_app/main_app/public_j
 
 ### Step 1: Create Worker Folder
 
-Create `flask_app/main_app/public_jobs/workers/<job_type>/` with:
+Create `src/main_app/public_jobs/workers/<job_type>/` with:
 
 **`__init__.py`** — re-export the entry function:
 
@@ -48,7 +48,7 @@ __all__ = [
 
 ### Step 2: Create Templates
 
-Create `flask_app/templates/public_jobs_templates/<job_type>/` with:
+Create `src/templates/public_jobs_templates/<job_type>/` with:
 
 **`list.html`** — extends `base_list2.html`:
 
@@ -69,7 +69,7 @@ Create `flask_app/templates/public_jobs_templates/<job_type>/` with:
 
 ### Step 3: Register in `workers_list.py`
 
-Edit `flask_app/main_app/public_jobs/workers_list.py`:
+Edit `src/main_app/public_jobs/workers_list.py`:
 
 1. Add import: `from .workers.<job_type>.worker import <job_type>_worker_entry`
 2. Add an entry to `jobs_data`:
@@ -169,16 +169,16 @@ Edit `flask_app/main_app/public_jobs/workers_list.py`:
 
 For each of the 6 jobs, create:
 
--   `flask_app/main_app/public_jobs/workers/<job_type>/__init__.py`
--   `flask_app/main_app/public_jobs/workers/<job_type>/worker.py`
--   `flask_app/templates/public_jobs_templates/<job_type>/list.html`
--   `flask_app/templates/public_jobs_templates/<job_type>/details.html`
+-   `src/main_app/public_jobs/workers/<job_type>/__init__.py`
+-   `src/main_app/public_jobs/workers/<job_type>/worker.py`
+-   `src/templates/public_jobs_templates/<job_type>/list.html`
+-   `src/templates/public_jobs_templates/<job_type>/details.html`
 
 Total: 24 new files.
 
 Edit:
 
--   `flask_app/main_app/public_jobs/workers_list.py` (add 6 imports + 6 entries in each of 3 dicts)
+-   `src/main_app/public_jobs/workers_list.py` (add 6 imports + 6 entries in each of 3 dicts)
 
 ---
 

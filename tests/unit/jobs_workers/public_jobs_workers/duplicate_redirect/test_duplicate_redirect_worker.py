@@ -1,11 +1,11 @@
-"""Unit tests for flask_app/main_app/jobs_workers/public_jobs_workers/duplicate_redirect/worker.py."""
+"""Unit tests for src/main_app/jobs_workers/public_jobs_workers/duplicate_redirect/worker.py."""
 
 from __future__ import annotations
 
 from unittest.mock import MagicMock, patch
 
 import pytest
-from flask_app.main_app.jobs_workers.public_jobs_workers.duplicate_redirect.worker import (
+from src.main_app.jobs_workers.public_jobs_workers.duplicate_redirect.worker import (
     DuplicateRedirectWorker,
     resolve_redirect_chains,
 )
@@ -35,12 +35,10 @@ class TestDuplicateRedirectWorker:
     def worker(self):
         return DuplicateRedirectWorker(job_id=1, args={}, user={"username": "test_user"})
 
-    @patch("flask_app.main_app.jobs_workers.public_jobs_workers.duplicate_redirect.worker.get_user_site")
-    @patch("flask_app.main_app.jobs_workers.public_jobs_workers.duplicate_redirect.worker.get_double_redirects")
-    @patch("flask_app.main_app.jobs_workers.public_jobs_workers.duplicate_redirect.worker.MwClientPage")
-    @patch(
-        "flask_app.main_app.jobs_workers.public_jobs_workers.duplicate_redirect.worker.replace_wikilink_destinations"
-    )
+    @patch("src.main_app.jobs_workers.public_jobs_workers.duplicate_redirect.worker.get_user_site")
+    @patch("src.main_app.jobs_workers.public_jobs_workers.duplicate_redirect.worker.get_double_redirects")
+    @patch("src.main_app.jobs_workers.public_jobs_workers.duplicate_redirect.worker.MwClientPage")
+    @patch("src.main_app.jobs_workers.public_jobs_workers.duplicate_redirect.worker.replace_wikilink_destinations")
     def test_process_success(self, mock_replace, mock_mw_client_page, mock_get_double, mock_get_user_site, worker):
         mock_site = MagicMock()
         mock_get_user_site.return_value = mock_site
@@ -65,7 +63,7 @@ class TestDuplicateRedirectWorker:
         assert result.pages_changed[0]["from_title"] == "A"
         assert result.pages_changed[0]["newrevid"] == 456
 
-    @patch("flask_app.main_app.jobs_workers.public_jobs_workers.duplicate_redirect.worker.get_user_site")
+    @patch("src.main_app.jobs_workers.public_jobs_workers.duplicate_redirect.worker.get_user_site")
     def test_process_no_site(self, mock_get_user_site, worker):
         mock_get_user_site.return_value = None
         result = worker.process()

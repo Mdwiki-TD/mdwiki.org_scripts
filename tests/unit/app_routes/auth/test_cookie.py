@@ -1,8 +1,8 @@
-"""Unit tests for flask_app/main_app/app_routes/auth/cookie.py."""
+"""Unit tests for src/main_app/app_routes/auth/cookie.py."""
 
 from __future__ import annotations
 
-from flask_app.main_app.app_routes.auth.cookie import (
+from src.main_app.app_routes.auth.cookie import (
     extract_user_id,
     sign_state_token,
     sign_user_id,

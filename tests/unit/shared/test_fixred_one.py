@@ -1,11 +1,11 @@
-"""Unit tests for flask_app/main_app/shared/test_fixred_one.py."""
+"""Unit tests for src/main_app/shared/test_fixred_one.py."""
 
 from __future__ import annotations
 
 from unittest.mock import MagicMock
 
-from flask_app.main_app.shared.fixred_one import work_on_title
-from flask_app.main_app.shared.shared_classes import UpdaterTextOutcome
+from src.main_app.shared.fixred_one import work_on_title
+from src.main_app.shared.shared_classes import UpdaterTextOutcome
 
 
 class TestWorkOnTitle:

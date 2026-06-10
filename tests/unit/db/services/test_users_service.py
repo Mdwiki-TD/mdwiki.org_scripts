@@ -1,14 +1,14 @@
 from __future__ import annotations
 
 from flask.app import Flask
-from flask_app.main_app.db.services.users_service import (
+from src.main_app.db.services.users_service import (
     create_user,
     delete_user,
     get_user,
     get_user_by_username,
     list_users,
 )
-from flask_app.main_app.extensions import db
+from src.main_app.extensions import db
 
 
 def test_create_user(app: Flask) -> None:

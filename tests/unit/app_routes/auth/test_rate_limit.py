@@ -1,10 +1,10 @@
-"""Unit tests for flask_app/main_app/app_routes/auth/rate_limit.py."""
+"""Unit tests for src/main_app/app_routes/auth/rate_limit.py."""
 
 from __future__ import annotations
 
 from datetime import timedelta
 
-from flask_app.main_app.app_routes.auth.rate_limit import RateLimiter
+from src.main_app.app_routes.auth.rate_limit import RateLimiter
 
 
 class TestRateLimiter:

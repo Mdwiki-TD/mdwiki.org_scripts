@@ -1,8 +1,8 @@
-"""Unit tests for flask_app/main_app/shared/new_updater/bots/old_params.py."""
+"""Unit tests for src/main_app/shared/new_updater/bots/old_params.py."""
 
 from __future__ import annotations
 
-from flask_app.main_app.shared.new_updater.bots.old_params import rename_params
+from src.main_app.shared.new_updater.bots.old_params import rename_params
 
 
 class TestRenameParams:

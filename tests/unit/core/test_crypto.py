@@ -1,9 +1,9 @@
-"""Unit tests for flask_app/main_app/core/crypto.py module."""
+"""Unit tests for src/main_app/core/crypto.py module."""
 
 from __future__ import annotations
 
 import pytest
-from flask_app.main_app.core.crypto import decrypt_value, encrypt_value
+from src.main_app.core.crypto import decrypt_value, encrypt_value
 
 
 class TestEncryptDecrypt:

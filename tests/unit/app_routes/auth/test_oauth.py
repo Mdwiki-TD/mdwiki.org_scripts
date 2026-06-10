@@ -1,8 +1,8 @@
-"""Unit tests for flask_app/main_app/app_routes/auth/oauth.py."""
+"""Unit tests for src/main_app/app_routes/auth/oauth.py."""
 
 from __future__ import annotations
 
-from flask_app.main_app.app_routes.auth.oauth import (
+from src.main_app.app_routes.auth.oauth import (
     IDENTITY_ERROR_MESSAGE,
     OAuthIdentityError,
 )

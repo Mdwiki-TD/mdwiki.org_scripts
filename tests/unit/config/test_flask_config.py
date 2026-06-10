@@ -1,9 +1,9 @@
-"""Unit tests for flask_app/main_app/config/flask_config.py module."""
+"""Unit tests for src/main_app/config/flask_config.py module."""
 
 from __future__ import annotations
 
-from flask_app.main_app.config.classes import DbConfig
-from flask_app.main_app.config.flask_config import (
+from src.main_app.config.classes import DbConfig
+from src.main_app.config.flask_config import (
     Config,
     DevelopmentConfig,
     ProductionConfig,

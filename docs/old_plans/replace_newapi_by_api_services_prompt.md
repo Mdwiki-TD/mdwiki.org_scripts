@@ -1,25 +1,25 @@
 You are a senior Python software architect and migration engineer.
 
-Your task is to analyze the codebase inside the `flask_app` folder only and create a comprehensive migration plan to replace all usages of `_api` and `newapi` with `api_services` built on `mwclient`.
+Your task is to analyze the codebase inside the `src` folder only and create a comprehensive migration plan to replace all usages of `_api` and `newapi` with `api_services` built on `mwclient`.
 
 ## Scope Restriction
 
 ONLY analyze files and dependencies inside:
 
 ```text
-flask_app/
+src/
 ```
 
 Ignore:
 
 -   external services
 -   infrastructure repositories
--   deployment configs outside `flask_app`
+-   deployment configs outside `src`
 -   unrelated monorepo packages
 -   vendor libraries
 -   generated files
 
-All findings, dependency graphs, migration steps, and risk analysis must be limited to the `flask_app` directory.
+All findings, dependency graphs, migration steps, and risk analysis must be limited to the `src` directory.
 
 ---
 
@@ -99,7 +99,7 @@ Document all required behavioral adjustments when replacing legacy calls.
 
 ## Objectives
 
-Perform a deep architectural and implementation analysis of the `flask_app` codebase and produce a fully detailed migration strategy.
+Perform a deep architectural and implementation analysis of the `src` codebase and produce a fully detailed migration strategy.
 
 ---
 
@@ -107,7 +107,7 @@ Perform a deep architectural and implementation analysis of the `flask_app` code
 
 ### 1. Full Dependency Mapping
 
-Inside `flask_app` only:
+Inside `src` only:
 
 Identify every file importing or referencing:
 
@@ -186,7 +186,7 @@ Identify all places requiring auth refactoring.
 
 ### 4. mwclient Integration Review
 
-Analyze how `mwclient.Site` should be integrated across `flask_app`:
+Analyze how `mwclient.Site` should be integrated across `src`:
 
 -   Flask request lifecycle integration
 -   singleton vs per-request creation

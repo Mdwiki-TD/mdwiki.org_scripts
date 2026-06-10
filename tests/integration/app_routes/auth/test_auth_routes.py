@@ -1,4 +1,4 @@
-"""Integration tests for flask_app/main_app/app_routes/auth/routes.py module.
+"""Integration tests for src/main_app/app_routes/auth/routes.py module.
 
 Tests the full OAuth login/logout flow through the Flask test client with
 a real SQLite database (via TestingConfig). OAuth external calls are stubbed
@@ -11,10 +11,10 @@ from unittest.mock import MagicMock, Mock, patch
 
 import pytest
 from flask.app import Flask
-from flask_app.main_app.config import settings
-from flask_app.main_app.db.services import get_user_by_username, get_user_token, upsert_user_token
-from flask_app.main_app.db.services.users_service import create_user
-from flask_app.main_app.extensions import db
+from src.main_app.config import settings
+from src.main_app.db.services import get_user_by_username, get_user_token, upsert_user_token
+from src.main_app.db.services.users_service import create_user
+from src.main_app.extensions import db
 
 # Session key names from settings
 _STATE_KEY = settings.sessions.state_key  # "oauth_state_nonce"
@@ -39,7 +39,7 @@ class TestLoginRoute:
 
     def test_login_redirects_to_oauth(self, mock_client):
         """Login should redirect (302) after initiating OAuth flow."""
-        with patch("flask_app.main_app.app_routes.auth.routes.start_login") as mock_start:
+        with patch("src.main_app.app_routes.auth.routes.start_login") as mock_start:
             mock_start.return_value = (
                 "https://example.org/oauth/authorize",
                 MagicMock(key="req_key", secret="req_secret"),
@@ -50,7 +50,7 @@ class TestLoginRoute:
 
     def test_login_stores_request_token_in_session(self, mock_client):
         """After login, the session should contain the OAuth request token."""
-        with patch("flask_app.main_app.app_routes.auth.routes.start_login") as mock_start:
+        with patch("src.main_app.app_routes.auth.routes.start_login") as mock_start:
             token = MagicMock(key="req_key", secret="req_secret")
             mock_start.return_value = (
                 "https://example.org/oauth/authorize",
@@ -64,10 +64,10 @@ class TestLoginRoute:
     def test_login_flash_on_failure(self, mock_client, monkeypatch):
         """If start_login raises, a danger flash message should appear."""
         mock_flash = Mock()
-        monkeypatch.setattr("flask_app.main_app.app_routes.auth.routes.flash", mock_flash)
+        monkeypatch.setattr("src.main_app.app_routes.auth.routes.flash", mock_flash)
 
         with patch(
-            "flask_app.main_app.app_routes.auth.routes.start_login",
+            "src.main_app.app_routes.auth.routes.start_login",
             side_effect=RuntimeError("OAuth down"),
         ):
             resp = mock_client.get("/login", follow_redirects=True)
@@ -88,7 +88,7 @@ class TestCallbackRoute:
     def test_callback_missing_state_flash(self, mock_client, monkeypatch):
         """Callback without state in session should flash error."""
         mock_flash = Mock()
-        monkeypatch.setattr("flask_app.main_app.app_routes.auth.routes.flash", mock_flash)
+        monkeypatch.setattr("src.main_app.app_routes.auth.routes.flash", mock_flash)
 
         resp = mock_client.get("/callback", follow_redirects=True)
         assert resp.status_code == 200
@@ -97,11 +97,11 @@ class TestCallbackRoute:
     def test_callback_state_mismatch_flash(self, mock_client, monkeypatch):
         """Callback with wrong state should flash mismatch error."""
         mock_flash = Mock()
-        monkeypatch.setattr("flask_app.main_app.app_routes.auth.routes.flash", mock_flash)
+        monkeypatch.setattr("src.main_app.app_routes.auth.routes.flash", mock_flash)
 
         self._setup_session(mock_client)
         with patch(
-            "flask_app.main_app.app_routes.auth.routes.verify_state_token",
+            "src.main_app.app_routes.auth.routes.verify_state_token",
             return_value="wrong_nonce",
         ):
             resp = mock_client.get(
@@ -114,11 +114,11 @@ class TestCallbackRoute:
     def test_callback_missing_verifier_flash(self, mock_client, monkeypatch):
         """Callback without oauth_verifier should flash error."""
         mock_flash = Mock()
-        monkeypatch.setattr("flask_app.main_app.app_routes.auth.routes.flash", mock_flash)
+        monkeypatch.setattr("src.main_app.app_routes.auth.routes.flash", mock_flash)
 
         self._setup_session(mock_client)
         with patch(
-            "flask_app.main_app.app_routes.auth.routes.verify_state_token",
+            "src.main_app.app_routes.auth.routes.verify_state_token",
             return_value="my_nonce",
         ):
             resp = mock_client.get(
@@ -136,11 +136,11 @@ class TestCallbackRoute:
 
         with (
             patch(
-                "flask_app.main_app.app_routes.auth.routes.verify_state_token",
+                "src.main_app.app_routes.auth.routes.verify_state_token",
                 return_value="my_nonce",
             ),
             patch(
-                "flask_app.main_app.app_routes.auth.routes.complete_oauth_callback",
+                "src.main_app.app_routes.auth.routes.complete_oauth_callback",
                 return_value=fake_user_record,
             ),
         ):
@@ -167,11 +167,11 @@ class TestCallbackRoute:
 
         with (
             patch(
-                "flask_app.main_app.app_routes.auth.routes.verify_state_token",
+                "src.main_app.app_routes.auth.routes.verify_state_token",
                 return_value="my_nonce",
             ),
             patch(
-                "flask_app.main_app.app_routes.auth.routes.complete_oauth_callback",
+                "src.main_app.app_routes.auth.routes.complete_oauth_callback",
                 side_effect=_fake_complete_oauth_callback,
             ),
         ):
@@ -195,11 +195,11 @@ class TestCallbackRoute:
 
         with (
             patch(
-                "flask_app.main_app.app_routes.auth.routes.verify_state_token",
+                "src.main_app.app_routes.auth.routes.verify_state_token",
                 return_value="my_nonce",
             ),
             patch(
-                "flask_app.main_app.app_routes.auth.routes.complete_oauth_callback",
+                "src.main_app.app_routes.auth.routes.complete_oauth_callback",
                 return_value=fake_user_record,
             ),
         ):
@@ -222,11 +222,11 @@ class TestCallbackRoute:
 
         with (
             patch(
-                "flask_app.main_app.app_routes.auth.routes.verify_state_token",
+                "src.main_app.app_routes.auth.routes.verify_state_token",
                 return_value="my_nonce",
             ),
             patch(
-                "flask_app.main_app.su_services.auth_service.complete_login",
+                "src.main_app.su_services.auth_service.complete_login",
                 return_value=(fake_access, fake_identity),
             ),
         ):
@@ -249,11 +249,11 @@ class TestCallbackRoute:
 
         with (
             patch(
-                "flask_app.main_app.app_routes.auth.routes.verify_state_token",
+                "src.main_app.app_routes.auth.routes.verify_state_token",
                 return_value="my_nonce",
             ),
             patch(
-                "flask_app.main_app.app_routes.auth.routes.complete_oauth_callback",
+                "src.main_app.app_routes.auth.routes.complete_oauth_callback",
                 return_value=fake_user_record,
             ),
         ):
@@ -303,7 +303,7 @@ class TestLogoutRoute:
     def test_logout_flash_messages(self, mock_client, login, monkeypatch):
         """Logout should display flash messages."""
         mock_flash = Mock()
-        monkeypatch.setattr("flask_app.main_app.app_routes.auth.routes.flash", mock_flash)
+        monkeypatch.setattr("src.main_app.app_routes.auth.routes.flash", mock_flash)
 
         login("FlashLogout")
         resp = mock_client.get("/logout", follow_redirects=True)
@@ -340,7 +340,7 @@ class TestAuthRouteIntegration:
     def test_login_then_callback_full_flow(self, app, mock_client):
         """Full round-trip: login -> callback -> user in database."""
         # Step 1: Login
-        with patch("flask_app.main_app.app_routes.auth.routes.start_login") as mock_start:
+        with patch("src.main_app.app_routes.auth.routes.start_login") as mock_start:
             mock_start.return_value = (
                 "https://example.org/oauth/authorize",
                 MagicMock(key="rk", secret="rs"),
@@ -361,11 +361,11 @@ class TestAuthRouteIntegration:
 
         with (
             patch(
-                "flask_app.main_app.app_routes.auth.routes.verify_state_token",
+                "src.main_app.app_routes.auth.routes.verify_state_token",
                 return_value="my_nonce",
             ),
             patch(
-                "flask_app.main_app.app_routes.auth.routes.complete_oauth_callback",
+                "src.main_app.app_routes.auth.routes.complete_oauth_callback",
                 side_effect=_fake_complete_oauth_callback,
             ),
         ):

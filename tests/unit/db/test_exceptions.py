@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import pytest
-from flask_app.main_app.db.exceptions import (
+from src.main_app.db.exceptions import (
     InsufficientDatabaseConfigError,
     MaxUserConnectionsError,
 )

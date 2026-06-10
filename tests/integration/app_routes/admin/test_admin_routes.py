@@ -1,4 +1,4 @@
-"""Integration tests for flask_app/main_app/app_routes/admin/routes.py module.
+"""Integration tests for src/main_app/app_routes/admin/routes.py module.
 
 Tests the admin dashboard, users listing, and coordinator management through
 the Flask test client with a real SQLite database (via TestingConfig).
@@ -9,16 +9,16 @@ from __future__ import annotations
 from unittest.mock import Mock
 
 import pytest
-from flask_app.main_app.db.services import (
+from src.main_app.db.services import (
     is_active_coordinator,
     upsert_user_token,
 )
-from flask_app.main_app.db.services.admin_service import (
+from src.main_app.db.services.admin_service import (
     add_coordinator,
     list_coordinators,
     set_coordinator_active,
 )
-from flask_app.main_app.db.services.users_service import create_user
+from src.main_app.db.services.users_service import create_user
 
 
 def _upsert_u_token(username: str, access_key: str, access_secret: str) -> int:
@@ -202,7 +202,7 @@ class TestCoordinatorRoutes:
     def test_add_coordinator_empty_username_flash(self, app, mock_client, monkeypatch):
         """Adding coordinator with empty username should flash error."""
         mock_flash = Mock()
-        monkeypatch.setattr("flask_app.main_app.app_routes.admin_routes.coordinators.flash", mock_flash)
+        monkeypatch.setattr("src.main_app.app_routes.admin_routes.coordinators.flash", mock_flash)
 
         _login_admin(app, mock_client)
         resp = mock_client.post(
@@ -216,7 +216,7 @@ class TestCoordinatorRoutes:
     def test_add_duplicate_coordinator_flash(self, app, mock_client, monkeypatch):
         """Adding a duplicate coordinator should flash warning."""
         mock_flash = Mock()
-        monkeypatch.setattr("flask_app.main_app.app_routes.admin_routes.coordinators.flash", mock_flash)
+        monkeypatch.setattr("src.main_app.app_routes.admin_routes.coordinators.flash", mock_flash)
 
         _login_admin(app, mock_client)
         mock_client.post(
@@ -308,7 +308,7 @@ class TestCoordinatorRoutes:
     def test_delete_nonexistent_coordinator_flash(self, app, mock_client, monkeypatch):
         """Deleting a non-existent coordinator should flash warning."""
         mock_flash = Mock()
-        monkeypatch.setattr("flask_app.main_app.app_routes.admin_routes.coordinators.flash", mock_flash)
+        monkeypatch.setattr("src.main_app.app_routes.admin_routes.coordinators.flash", mock_flash)
 
         _login_admin(app, mock_client)
         resp = mock_client.post(

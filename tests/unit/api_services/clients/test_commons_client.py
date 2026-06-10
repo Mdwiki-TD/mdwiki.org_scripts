@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from flask_app.main_app.api_services.clients.commons_client import create_commons_session
+from src.main_app.api_services.clients.commons_client import create_commons_session
 
 
 def test_create_commons_session():

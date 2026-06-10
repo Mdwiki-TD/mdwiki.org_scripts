@@ -1,4 +1,4 @@
-"""Unit tests for flask_app/main_app/app_routes/profile.py module."""
+"""Unit tests for src/main_app/app_routes/profile.py module."""
 
 from __future__ import annotations
 

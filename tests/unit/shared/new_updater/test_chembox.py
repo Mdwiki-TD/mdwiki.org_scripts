@@ -1,8 +1,8 @@
-"""Unit tests for flask_app/main_app/shared/new_updater/chembox.py."""
+"""Unit tests for src/main_app/shared/new_updater/chembox.py."""
 
 from __future__ import annotations
 
-from flask_app.main_app.shared.new_updater.chembox import FixChembox
+from src.main_app.shared.new_updater.chembox import FixChembox
 
 
 class TestFixChembox:

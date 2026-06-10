@@ -1,9 +1,9 @@
-"""Unit tests for flask_app/main_app/public_jobs/base_worker.py (test_base_worker.py)."""
+"""Unit tests for src/main_app/public_jobs/base_worker.py (test_base_worker.py)."""
 
 from __future__ import annotations
 
 import pytest
-from flask_app.main_app.jobs_workers.base_worker_object import BaseObjectsJobWorker
+from src.main_app.jobs_workers.base_worker_object import BaseObjectsJobWorker
 
 
 class TestBaseObjectsJobWorkerAbstract:

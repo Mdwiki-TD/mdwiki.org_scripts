@@ -1,4 +1,4 @@
-"""Unit tests for flask_app/main_app/jobs_workers/jobs_worker.py."""
+"""Unit tests for src/main_app/jobs_workers/jobs_worker.py."""
 
 from __future__ import annotations
 
@@ -7,7 +7,7 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 from flask import Flask
-from flask_app.main_app.jobs_workers.jobs_worker import (
+from src.main_app.jobs_workers.jobs_worker import (
     _get_jobs_cancel_event,
     _pop_cancel_event,
     _register_cancel_event,
@@ -34,12 +34,12 @@ def test_runner():
     user = {"username": "test"}
     cancel_event = threading.Event()
     target_func = MagicMock()
-    flask_app = Flask(__name__)
+    src = Flask(__name__)
     args = {"foo": "bar"}
 
     _register_cancel_event(job_id, cancel_event)
 
-    _runner(job_id, user, cancel_event, target_func, flask_app, args)
+    _runner(job_id, user, cancel_event, target_func, src, args)
 
     target_func.assert_called_once_with(
         job_id=job_id,
@@ -50,8 +50,8 @@ def test_runner():
     assert _get_jobs_cancel_event(job_id) is None
 
 
-@patch("flask_app.main_app.jobs_workers.jobs_worker.cancel_job_db")
-@patch("flask_app.main_app.jobs_workers.jobs_worker.create_job_cancelled_file")
+@patch("src.main_app.jobs_workers.jobs_worker.cancel_job_db")
+@patch("src.main_app.jobs_workers.jobs_worker.create_job_cancelled_file")
 def test_cancel_job_worker(mock_create_file, mock_cancel_db):
     job_id = 123
     event = threading.Event()
@@ -70,8 +70,8 @@ def test_cancel_job_worker(mock_create_file, mock_cancel_db):
     mock_cancel_db.assert_called_once_with(job_id, "test_job")
 
 
-@patch("flask_app.main_app.jobs_workers.jobs_worker.create_job")
-@patch("flask_app.main_app.jobs_workers.jobs_worker.jobs_data")
+@patch("src.main_app.jobs_workers.jobs_worker.create_job")
+@patch("src.main_app.jobs_workers.jobs_worker.jobs_data")
 @patch("threading.Thread")
 def test_start_job(mock_thread, mock_jobs_data, mock_create_job):
     app = Flask(__name__)

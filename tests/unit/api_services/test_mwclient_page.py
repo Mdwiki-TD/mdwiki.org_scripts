@@ -1,10 +1,10 @@
-"""Unit tests for flask_app/main_app/api_services/mwclient_page.py."""
+"""Unit tests for src/main_app/api_services/mwclient_page.py."""
 
 from __future__ import annotations
 
 from unittest.mock import MagicMock
 
-from flask_app.main_app.api_services.mwclient_page import _RETRY_DELAYS, MwClientPage
+from src.main_app.api_services.mwclient_page import _RETRY_DELAYS, MwClientPage
 
 
 class TestMwClientPageInit:

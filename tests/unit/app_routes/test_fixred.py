@@ -1,9 +1,9 @@
-"""Unit tests for flask_app/main_app/app_routes/fixred.py module."""
+"""Unit tests for src/main_app/app_routes/fixred.py module."""
 
 from __future__ import annotations
 
 import pytest
-from flask_app.main_app.app_routes.fixred import _normalize_title
+from src.main_app.app_routes.fixred import _normalize_title
 
 
 class TestNormalizeTitle:

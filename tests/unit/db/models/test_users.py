@@ -1,9 +1,9 @@
 from __future__ import annotations
 
 from flask.app import Flask
-from flask_app.main_app.core.crypto import encrypt_value
-from flask_app.main_app.db.models.users import AdminUserRecord, UsersRecord, UserTokenRecord
-from flask_app.main_app.extensions import db
+from src.main_app.core.crypto import encrypt_value
+from src.main_app.db.models.users import AdminUserRecord, UsersRecord, UserTokenRecord
+from src.main_app.extensions import db
 
 
 def test_users_record(app: Flask) -> None:

@@ -1,12 +1,12 @@
-"""Unit tests for flask_app/main_app/app_routes/auth/utils.py."""
+"""Unit tests for src/main_app/app_routes/auth/utils.py."""
 
 from __future__ import annotations
 
 from unittest.mock import MagicMock, patch
 
 from flask import g, session
-from flask_app.main_app.app_routes.auth.utils import load_logged_in_user, load_user, oauth_required
-from flask_app.main_app.su_services.current_user import CurrentUser
+from src.main_app.app_routes.auth.utils import load_logged_in_user, load_user, oauth_required
+from src.main_app.su_services.current_user import CurrentUser
 
 
 class TestOauthRequired:
@@ -16,7 +16,7 @@ class TestOauthRequired:
             return "allowed"
 
         with app.test_request_context("/protected"):
-            with patch("flask_app.main_app.app_routes.auth.utils.load_user", return_value=None):
+            with patch("src.main_app.app_routes.auth.utils.load_user", return_value=None):
                 response = protected()
                 assert response.status_code == 302
                 assert "/login" in response.location
@@ -27,7 +27,7 @@ class TestOauthRequired:
             return "allowed"
 
         with app.test_request_context("/protected"):
-            with patch("flask_app.main_app.app_routes.auth.utils.load_user", return_value=MagicMock()):
+            with patch("src.main_app.app_routes.auth.utils.load_user", return_value=MagicMock()):
                 response = protected()
                 assert response == "allowed"
 
@@ -38,7 +38,7 @@ class TestLoadLoggedInUser:
             session["uid"] = 123
             fake_user = CurrentUser(user_id=123, username="test_user", access_token=b"t", access_secret=b"s")
             with patch(
-                "flask_app.main_app.su_services.users_service.UserService.get_authenticated_user",
+                "src.main_app.su_services.users_service.UserService.get_authenticated_user",
                 return_value=fake_user,
             ):
                 load_logged_in_user()
@@ -55,7 +55,7 @@ class TestLoadLoggedInUser:
     def test_current_user_no_session(self, app):
         with app.test_request_context():
             # No uid in session, no cookie
-            with patch("flask_app.main_app.su_services.users_service.UserService.get_authenticated_user") as mock_get:
+            with patch("src.main_app.su_services.users_service.UserService.get_authenticated_user") as mock_get:
                 user = load_user()
                 assert user is None
                 mock_get.assert_not_called()

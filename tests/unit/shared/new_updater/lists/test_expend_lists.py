@@ -1,8 +1,8 @@
-"""Unit tests for flask_app/main_app/shared/new_updater/lists/expend_lists.py."""
+"""Unit tests for src/main_app/shared/new_updater/lists/expend_lists.py."""
 
 from __future__ import annotations
 
-from flask_app.main_app.shared.new_updater.lists.expend_lists import (
+from src.main_app.shared.new_updater.lists.expend_lists import (
     IMC_params,
     dup_params,
     main_temps_list,

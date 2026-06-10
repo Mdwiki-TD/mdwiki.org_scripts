@@ -1,11 +1,11 @@
 import pytest
-from flask_app.main_app.shared.fixref_shared.fixref_text_new import fix_ref_template
+from src.main_app.shared.fixref_shared.fixref_text_new import fix_ref_template
 
 
 @pytest.fixture
 def mock_make_title(monkeypatch: pytest.MonkeyPatch):
     title = "Infectieziekten | Regionaal & Internationaal | Coronavirus (COVID-19) | Volksgezondheidenzorg.info"
-    monkeypatch.setattr("flask_app.main_app.shared.fixref_shared.make_title_bot.get_citation_title", lambda x: title)
+    monkeypatch.setattr("src.main_app.shared.fixref_shared.make_title_bot.get_citation_title", lambda x: title)
 
 
 def test_fix_ref_template(mock_make_title):

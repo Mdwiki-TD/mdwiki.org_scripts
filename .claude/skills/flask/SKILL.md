@@ -1018,7 +1018,7 @@ def configure_logging(app):
 
         # File handler with rotation
         file_handler = RotatingFileHandler(
-            'logs/flask_app.log',
+            'logs/src.log',
             maxBytes=10240000,  # 10MB
             backupCount=10
         )

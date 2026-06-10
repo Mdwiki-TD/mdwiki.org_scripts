@@ -45,11 +45,11 @@ This is a well-architected Flask application with a clean layered structure (Con
 
 #### Issues Found:
 
--   [ ] **Controller imports model directly** — `flask_app/main_app/app_routes/public_jobs.py` (line 18) imports `JobRecord` from `..db.models`. Controllers should never import models.
--   [ ] **Controller imports db services directly** — `flask_app/main_app/app_routes/public_jobs.py` (lines 21-25) imports `active_coordinators`, `delete_job`, `get_job`, `list_jobs` from `..db.services`. These should be accessed through `su_services` or a dedicated service layer.
--   [ ] **Admin controller bypasses service layer** — `flask_app/main_app/app_routes/admin/routes.py` (line 21) imports `list_users` from `..db.services` directly.
--   [ ] **`create_app()` factory imports db services** — `flask_app/main_app/__init__.py` (line 18) imports `active_coordinators` from `.db.services`. This couples the app factory to the database layer.
--   [ ] **Service-layer logic in route utils** — `flask_app/main_app/app_routes/utils/routes_utils.py::load_auth_payload()` constructs auth payload dicts, which is business logic in a "utils" file.
+-   [ ] **Controller imports model directly** — `src/main_app/app_routes/public_jobs.py` (line 18) imports `JobRecord` from `..db.models`. Controllers should never import models.
+-   [ ] **Controller imports db services directly** — `src/main_app/app_routes/public_jobs.py` (lines 21-25) imports `active_coordinators`, `delete_job`, `get_job`, `list_jobs` from `..db.services`. These should be accessed through `su_services` or a dedicated service layer.
+-   [ ] **Admin controller bypasses service layer** — `src/main_app/app_routes/admin/routes.py` (line 21) imports `list_users` from `..db.services` directly.
+-   [ ] **`create_app()` factory imports db services** — `src/main_app/__init__.py` (line 18) imports `active_coordinators` from `.db.services`. This couples the app factory to the database layer.
+-   [ ] **Service-layer logic in route utils** — `src/main_app/app_routes/utils/routes_utils.py::load_auth_payload()` constructs auth payload dicts, which is business logic in a "utils" file.
 
 #### Recommendations:
 
@@ -67,14 +67,14 @@ This is a well-architected Flask application with a clean layered structure (Con
 
 #### Issues Found:
 
--   [x] **Dead API wrapper** — `flask_app/main_app/api_services/query_api.py::get_template_pages_newapi()` (line 10) references `api.NewApi()` which doesn't exist. The function is unused anywhere.
+-   [x] **Dead API wrapper** — `src/main_app/api_services/query_api.py::get_template_pages_newapi()` (line 10) references `api.NewApi()` which doesn't exist. The function is unused anywhere.
 -   [ ] **Stub workers** — `add_r_column` and `add_unlinkedwikibase` workers contain `TODO: import logic from ...` comments. They are essentially empty shells.
--   [x] **Commented-out blueprint registrations** — `flask_app/main_app/app_routes/admin/routes.py` (lines 103-108) has 5 commented-out blueprint registrations.
--   [ ] **Disabled teardown** — `flask_app/main_app/__init__.py` (lines 131-145) has a `_cleanup_connections` teardown function where the entire body is commented out with a pass statement.
--   [ ] **Empty `__init__.py` files** — `flask_app/main_app/app_routes/newupdater/__init__.py`, `flask_app/main_app/shared/fixref_shared/__init__.py`, `flask_app/main_app/public_jobs/__init__.py` are all empty (though some serve package marker purposes).
--   [ ] **Commented template code** — `flask_app/templates/jobs_templates/base_list2.html` and `base_details2.html` have commented-out `status_icon()` calls.
+-   [x] **Commented-out blueprint registrations** — `src/main_app/app_routes/admin/routes.py` (lines 103-108) has 5 commented-out blueprint registrations.
+-   [ ] **Disabled teardown** — `src/main_app/__init__.py` (lines 131-145) has a `_cleanup_connections` teardown function where the entire body is commented out with a pass statement.
+-   [ ] **Empty `__init__.py` files** — `src/main_app/app_routes/newupdater/__init__.py`, `src/main_app/shared/fixref_shared/__init__.py`, `src/main_app/public_jobs/__init__.py` are all empty (though some serve package marker purposes).
+-   [ ] **Commented template code** — `src/templates/jobs_templates/base_list2.html` and `base_details2.html` have commented-out `status_icon()` calls.
 -   [ ] **Commented-out filter logic** — `create_redirects/worker.py` (line ~100) has `# if page.get("title") != title: continue` commented out.
--   [ ] **`flask_app/__init__.py`** — The root `flask_app/__init__.py` exists but is empty/trivial. Consider if needed.
+-   [ ] **`src/__init__.py`** — The root `src/__init__.py` exists but is empty/trivial. Consider if needed.
 -   [ ] **Unreferenced CSS files** — `static/css/navbar.css` is referenced in `<link>` but navbar is built with Bootstrap classes. Check if it's still needed.
 
 #### Recommendations:
@@ -95,8 +95,8 @@ This is a well-architected Flask application with a clean layered structure (Con
 
 #### Issues Found:
 
--   [ ] **Duplicate bytes coercion** — `flask_app/main_app/api_services/clients/wiki_client.py::coerce_encrypted()` (lines 27-38) duplicates the same logic as `flask_app/main_app/shared/decode_bytes.py::coerce_bytes()`. Both handle bytes, bytearray, memoryview. The `coerce_encrypted` variant also handles str→bytes.
--   [ ] **Two app entry points** — `flask_app/app.py` (production) and `flask_app/app1.py` (development) are nearly identical. The only differences are `load_dotenv()` call and `use_colorlog` setting.
+-   [ ] **Duplicate bytes coercion** — `src/main_app/api_services/clients/wiki_client.py::coerce_encrypted()` (lines 27-38) duplicates the same logic as `src/main_app/shared/decode_bytes.py::coerce_bytes()`. Both handle bytes, bytearray, memoryview. The `coerce_encrypted` variant also handles str→bytes.
+-   [ ] **Two app entry points** — `src/app.py` (production) and `src/app1.py` (development) are nearly identical. The only differences are `load_dotenv()` call and `use_colorlog` setting.
 -   [ ] **Duplicate flash/redirect patterns** — Almost every controller function follows the same `try/except: logger.exception(); flash()/redirect()` pattern — ~14 instances of `# pragma: no cover - defensive guard`.
 -   [ ] **Duplicate template structure** — `all_jobs_list.html`, `base_list2.html`, and per-worker list templates share very similar table structures.
 
@@ -208,8 +208,8 @@ This is a well-architected Flask application with a clean layered structure (Con
 
 #### Issues Found:
 
--   [ ] **Retry logic sleeps before first attempt** — `flask_app/main_app/api_services/mwclient_page.py::_edit_with_retry()` (lines 56-67) iterates through `_RETRY_DELAYS = (5, 15, 30)` and always sleeps for 5 seconds BEFORE making the first API call. The first attempt should not sleep.
--   [ ] **`raise e` instead of `raise`** — `flask_app/main_app/public_jobs/jobs_worker.py` (line 103) uses `raise e` which loses the original traceback. Should use bare `raise`.
+-   [ ] **Retry logic sleeps before first attempt** — `src/main_app/api_services/mwclient_page.py::_edit_with_retry()` (lines 56-67) iterates through `_RETRY_DELAYS = (5, 15, 30)` and always sleeps for 5 seconds BEFORE making the first API call. The first attempt should not sleep.
+-   [ ] **`raise e` instead of `raise`** — `src/main_app/public_jobs/jobs_worker.py` (line 103) uses `raise e` which loses the original traceback. Should use bare `raise`.
 -   [ ] **`resolve_redirects()` in `query_api.py` appears incomplete** — The function signature suggests it returns a dict, but the code shown was truncated. The `normalized` dict and `from_to` dict are used in `fixred_worker.py` — ensure they align.
 -   [ ] **`_get_current_object()` usage** — `jobs_worker.py` (line ~110) captures `current_app._get_current_object()` which is a green flag for potential context issues.
 
@@ -316,71 +316,71 @@ This is a well-architected Flask application with a clean layered structure (Con
 
 ## Appendix: File-by-File Notes
 
-### `flask_app/main_app/__init__.py`
+### `src/main_app/__init__.py`
 
 -   **Strengths**: Clean factory pattern, good error handling, well-documented
 -   **Issues**: Imports `active_coordinators` from `db.services` (layering violation); disabled teardown handler
 -   **Priority**: Phase 2
 
-### `flask_app/main_app/app_routes/public_jobs.py`
+### `src/main_app/app_routes/public_jobs.py`
 
 -   **Issues**: Imports `JobRecord` model directly; imports `db.services` directly; has `_can_manage_job()` business logic
 -   **Priority**: Phase 2 (Critical)
 
-### `flask_app/main_app/app_routes/fixred.py`
+### `src/main_app/app_routes/fixred.py`
 
 -   Clean, well-structured route handler. `_normalize_title()` extracted as pure function (good).
 
-### `flask_app/main_app/app_routes/newupdater/route.py`
+### `src/main_app/app_routes/newupdater/route.py`
 
 -   Clean, mirrors `fixred.py` pattern. Good separation.
 
-### `flask_app/main_app/app_routes/auth/`
+### `src/main_app/app_routes/auth/`
 
 -   Well-structured OAuth module with `cookie.py`, `oauth.py`, `rate_limit.py` separation. Good.
 
-### `flask_app/main_app/app_routes/admin/`
+### `src/main_app/app_routes/admin/`
 
 -   **Issues**: Routes import `db.services` directly; commented-out blueprint registrations
 -   **Priority**: Phase 2
 
-### `flask_app/main_app/config/`
+### `src/main_app/config/`
 
 -   **Strengths**: Excellent design — frozen dataclasses, singleton pattern, clear hierarchy
 -   **Issues**: Minor — `Config.__init__()` re-assigns settings already set at class level (redundant)
 -   **Priority**: Phase 2 (minor)
 
-### `flask_app/main_app/api_services/`
+### `src/main_app/api_services/`
 
 -   **Issues**: `category.py` mixes API and filtering logic; `query_api.py` has dead function; `mwclient_page.py` retry bug
 -   **Priority**: Phase 1 (retry bug), Phase 3 (refactor)
 
-### `flask_app/main_app/db/`
+### `src/main_app/db/`
 
 -   **Strengths**: Clean model definitions, good service separation, `db_guard` decorator
 -   **Minor**: `utils.py::db_guard` catches all exceptions — consider being more specific
 
-### `flask_app/main_app/public_jobs/`
+### `src/main_app/public_jobs/`
 
 -   **Strengths**: Well-designed worker lifecycle; clean registry in `workers_list.py`
 -   **Issues**: Two stub workers; `utils.py` is just one function; `__init__.py` is empty
 -   **Priority**: Phase 2
 
-### `flask_app/main_app/shared/`
+### `src/main_app/shared/`
 
 -   **Issues**: Grab-bag package; complex undocumented regex logic; `fixred_worker.py` doesn't use wikitextparser
 -   **Priority**: Phase 3
 
-### `flask_app/main_app/su_services/`
+### `src/main_app/su_services/`
 
 -   **Issues**: Cryptic name; good functionality otherwise
 -   **Priority**: Phase 2 (rename)
 
-### `flask_app/main_app/core/`
+### `src/main_app/core/`
 
 -   Clean utilities. `cookies.py` (test client) could be in `tests/` instead.
 
-### `flask_app/templates/`
+### `src/templates/`
 
 -   Clean Bootstrap 5 templates with good inheritance. Minor issues: redundant CDN, dual icon libraries, global Ace editor.
 

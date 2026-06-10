@@ -1,11 +1,11 @@
-"""Unit tests for flask_app/main_app/jobs_workers/public_jobs_workers/create_redirects/worker.py."""
+"""Unit tests for src/main_app/jobs_workers/public_jobs_workers/create_redirects/worker.py."""
 
 from __future__ import annotations
 
 from unittest.mock import MagicMock, patch
 
 import pytest
-from flask_app.main_app.jobs_workers.public_jobs_workers.create_redirects.worker import (
+from src.main_app.jobs_workers.public_jobs_workers.create_redirects.worker import (
     CreateRedirectsWorker,
     _valid_title,
 )
@@ -24,10 +24,10 @@ class TestCreateRedirectsWorker:
     def worker(self):
         return CreateRedirectsWorker(job_id=1, args={"titles": ["Aspirin"]}, user={"username": "test_user"})
 
-    @patch("flask_app.main_app.jobs_workers.public_jobs_workers.create_redirects.worker.get_user_site")
-    @patch("flask_app.main_app.jobs_workers.public_jobs_workers.create_redirects.worker.MwClientPage")
-    @patch("flask_app.main_app.jobs_workers.public_jobs_workers.create_redirects.worker.get_redirects_for")
-    @patch("flask_app.main_app.jobs_workers.public_jobs_workers.create_redirects.worker.is_pages_exists")
+    @patch("src.main_app.jobs_workers.public_jobs_workers.create_redirects.worker.get_user_site")
+    @patch("src.main_app.jobs_workers.public_jobs_workers.create_redirects.worker.MwClientPage")
+    @patch("src.main_app.jobs_workers.public_jobs_workers.create_redirects.worker.get_redirects_for")
+    @patch("src.main_app.jobs_workers.public_jobs_workers.create_redirects.worker.is_pages_exists")
     def test_process_success(
         self, mock_is_pages_exists, mock_get_redirects_for, mock_mw_client_page, mock_get_user_site, worker
     ):
@@ -53,7 +53,7 @@ class TestCreateRedirectsWorker:
         assert result.summary.created == 1
         assert result.summary.scanned == 1
 
-    @patch("flask_app.main_app.jobs_workers.public_jobs_workers.create_redirects.worker.get_user_site")
+    @patch("src.main_app.jobs_workers.public_jobs_workers.create_redirects.worker.get_user_site")
     def test_process_no_site(self, mock_get_user_site, worker):
         mock_get_user_site.return_value = None
         result = worker.process()

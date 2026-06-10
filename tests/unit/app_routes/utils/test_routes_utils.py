@@ -1,11 +1,11 @@
-"""Unit tests for flask_app/main_app/app_routes/utils/routes_utils.py module."""
+"""Unit tests for src/main_app/app_routes/utils/routes_utils.py module."""
 
 from __future__ import annotations
 
 from unittest.mock import MagicMock
 
-from flask_app.main_app.app_routes.utils.routes_utils import load_auth_payload
-from flask_app.main_app.su_services.current_user import CurrentUser
+from src.main_app.app_routes.utils.routes_utils import load_auth_payload
+from src.main_app.su_services.current_user import CurrentUser
 
 
 class TestLoadAuthPayload:

@@ -11,13 +11,13 @@
 
 Replace the existing PHP entry points (`php/*.php`) and CLI-shaped Python
 scripts (`python/*.py`) with **first-class Flask blueprints** under
-`flask_app/main_app/app_routes/<tool>/` that:
+`src/main_app/app_routes/<tool>/` that:
 
 -   accept the same form parameters the PHP files used;
 -   call backend logic **in-process** (no `shell_exec`, no `toolforge jobs run`,
     no `python3 …` subprocesses);
 -   run long jobs through a single, uniform background-job mechanism;
--   talk to MediaWiki through the existing `flask_app/main_app/newapi`
+-   talk to MediaWiki through the existing `src/main_app/newapi`
     package (no parallel `mdapi.py` / `mdwiki_page.py` clients);
 -   ship reusable templates that extend a shared base layout and use
     Flask-WTF + CSRF for forms.
@@ -63,7 +63,7 @@ scripts (`python/*.py`) with **first-class Flask blueprints** under
 ## 3. Target Architecture
 
 ```
-flask_app/
+src/
 ├── app.py                       # WSGI entry (unchanged)
 ├── main_app/
 │   ├── __init__.py              # app factory (extended for new bps & error pages)
@@ -339,7 +339,7 @@ small JS poller hitting `/jobs/<id>.json`.
 
 The fastest, safest path is a **lift-and-shim** rather than a clean rewrite:
 
-1. Create `flask_app/main_app/services/<tool>.py`.
+1. Create `src/main_app/services/<tool>.py`.
 2. Copy the relevant functions from `python/<tool>.py` into the service. Drop
    any module-level `sys.argv` reads; promote those values to parameters of a
    new `run(...)` entry point.
@@ -443,38 +443,38 @@ wins after the auth + service pattern is set).
 **Add**
 
 -   `docs/merge-plan.md` (this file)
--   `flask_app/main_app/auth/__init__.py`
--   `flask_app/main_app/auth/current_user.py`
--   `flask_app/main_app/auth/decorators.py`
--   `flask_app/main_app/jobs/__init__.py`
--   `flask_app/main_app/jobs/models.py`
--   `flask_app/main_app/jobs/store.py`
--   `flask_app/main_app/jobs/runner.py`
--   `flask_app/main_app/services/__init__.py`
--   `flask_app/main_app/services/fix_duplicate.py`
--   `flask_app/main_app/app_routes/jobs/__init__.py` (status + json endpoints)
--   `flask_app/templates/base.html`
--   `flask_app/templates/_macros.html`
--   `flask_app/templates/jobs/status.html`
+-   `src/main_app/auth/__init__.py`
+-   `src/main_app/auth/current_user.py`
+-   `src/main_app/auth/decorators.py`
+-   `src/main_app/jobs/__init__.py`
+-   `src/main_app/jobs/models.py`
+-   `src/main_app/jobs/store.py`
+-   `src/main_app/jobs/runner.py`
+-   `src/main_app/services/__init__.py`
+-   `src/main_app/services/fix_duplicate.py`
+-   `src/main_app/app_routes/jobs/__init__.py` (status + json endpoints)
+-   `src/templates/base.html`
+-   `src/templates/_macros.html`
+-   `src/templates/jobs/status.html`
 
 **Edit**
 
--   `flask_app/main_app/__init__.py` — register `bp_jobs`, expose
+-   `src/main_app/__init__.py` — register `bp_jobs`, expose
     `current_user` to templates via context processor.
--   `flask_app/main_app/config.py` — add new settings, soften OAuth check.
--   `flask_app/main_app/app_routes/__init__.py` — register `bp_jobs`; verify
+-   `src/main_app/config.py` — add new settings, soften OAuth check.
+-   `src/main_app/app_routes/__init__.py` — register `bp_jobs`; verify
     unique blueprint names.
--   `flask_app/main_app/app_routes/dup/__init__.py` — wire to service + jobs.
--   `flask_app/main_app/app_routes/<other>/__init__.py` — rename Blueprint
+-   `src/main_app/app_routes/dup/__init__.py` — wire to service + jobs.
+-   `src/main_app/app_routes/<other>/__init__.py` — rename Blueprint
     name from `"main"` to something unique (no behaviour change yet).
--   `flask_app/templates/dup.html` — extend `base.html`, use `url_for`, csrf,
+-   `src/templates/dup.html` — extend `base.html`, use `url_for`, csrf,
     flash.
 
 **Untouched (Phase 1)**
 
 -   `python/*` (will be progressively shrunk in later phases).
 -   `php/*` (will be removed in Phase 5).
--   `flask_app/main_app/newapi/*`.
+-   `src/main_app/newapi/*`.
 
 ---
 

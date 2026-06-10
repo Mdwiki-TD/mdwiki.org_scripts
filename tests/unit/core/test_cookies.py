@@ -1,8 +1,8 @@
-"""Unit tests for flask_app/main_app/core/cookies.py module."""
+"""Unit tests for src/main_app/core/cookies.py module."""
 
 from __future__ import annotations
 
-from flask_app.main_app.core.cookies import CookieHeaderClient
+from src.main_app.core.cookies import CookieHeaderClient
 
 
 class TestCookieHeaderClient:

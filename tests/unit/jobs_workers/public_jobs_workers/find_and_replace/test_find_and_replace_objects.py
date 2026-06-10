@@ -1,9 +1,9 @@
-"""Unit tests for flask_app/main_app/public_jobs/workers/find_and_replace/objects.py."""
+"""Unit tests for src/main_app/public_jobs/workers/find_and_replace/objects.py."""
 
 from __future__ import annotations
 
-from flask_app.main_app.jobs_workers.base_worker_object import WorkerObject
-from flask_app.main_app.jobs_workers.public_jobs_workers.find_and_replace.objects import (
+from src.main_app.jobs_workers.base_worker_object import WorkerObject
+from src.main_app.jobs_workers.public_jobs_workers.find_and_replace.objects import (
     FindAndReplaceWorkerObject,
 )
 

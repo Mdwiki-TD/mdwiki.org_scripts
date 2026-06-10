@@ -1,8 +1,8 @@
-"""Unit tests for flask_app/main_app/shared/new_updater/mv_section.py."""
+"""Unit tests for src/main_app/shared/new_updater/mv_section.py."""
 
 from __future__ import annotations
 
-from flask_app.main_app.shared.new_updater.mv_section import MoveExternalLinksSection
+from src.main_app.shared.new_updater.mv_section import MoveExternalLinksSection
 
 
 class TestMoveExternalLinksSection:

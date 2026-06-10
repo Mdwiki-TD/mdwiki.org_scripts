@@ -1,11 +1,11 @@
-"""Unit tests for flask_app/main_app/db/services/utils.py module."""
+"""Unit tests for src/main_app/db/services/utils.py module."""
 
 from __future__ import annotations
 
 from unittest.mock import patch
 
-from flask_app.main_app.db.services.utils import db_guard
 from sqlalchemy.exc import SQLAlchemyError
+from src.main_app.db.services.utils import db_guard
 
 
 class TestDbGuard:
@@ -17,7 +17,7 @@ class TestDbGuard:
         assert my_func() == 42
 
     def test_returns_default_on_exception_with_mock_db(self):
-        with patch("flask_app.main_app.db.services.utils.db") as mock_db:
+        with patch("src.main_app.db.services.utils.db") as mock_db:
 
             @db_guard(default_return=None)
             def my_func():
@@ -31,7 +31,7 @@ class TestDbGuard:
         def my_func():
             raise SQLAlchemyError("stmt", "params", Exception("db down"))
 
-        with patch("flask_app.main_app.db.services.utils.db") as mock_db:
+        with patch("src.main_app.db.services.utils.db") as mock_db:
             assert my_func() is False
             mock_db.session.rollback.assert_called_once()
 
@@ -40,7 +40,7 @@ class TestDbGuard:
         def my_func():
             raise SQLAlchemyError("something went wrong")
 
-        with patch("flask_app.main_app.db.services.utils.db") as mock_db:
+        with patch("src.main_app.db.services.utils.db") as mock_db:
             result = my_func()
             assert result == "fallback"
             mock_db.session.rollback.assert_called_once()
@@ -60,7 +60,7 @@ class TestDbGuard:
         assert add(1, 2, extra=10) == 13
 
     def test_default_return_type_can_be_anything(self):
-        with patch("flask_app.main_app.db.services.utils.db"):
+        with patch("src.main_app.db.services.utils.db"):
 
             @db_guard(default_return={"error": True})
             def my_func():

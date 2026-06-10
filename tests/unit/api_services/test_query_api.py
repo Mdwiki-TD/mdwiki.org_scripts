@@ -1,11 +1,11 @@
-"""Unit tests for flask_app/main_app/api_services/query_api.py module."""
+"""Unit tests for src/main_app/api_services/query_api.py module."""
 
 from __future__ import annotations
 
 from unittest.mock import MagicMock
 
 import pytest
-from flask_app.main_app.api_services.query_api import (
+from src.main_app.api_services.query_api import (
     get_page_links,
     get_template_pages,
     is_pages_exists,

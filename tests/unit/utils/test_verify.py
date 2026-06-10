@@ -1,8 +1,8 @@
-"""Unit tests for flask_app/main_app/utils/verify.py module."""
+"""Unit tests for src/main_app/utils/verify.py module."""
 
 from __future__ import annotations
 
-from flask_app.main_app.utils.verify import verify_required_fields
+from src.main_app.utils.verify import verify_required_fields
 
 
 class TestVerifyRequiredFields:

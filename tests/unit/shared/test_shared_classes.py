@@ -1,9 +1,9 @@
-"""Unit tests for flask_app/main_app/shared/shared_classes.py module."""
+"""Unit tests for src/main_app/shared/shared_classes.py module."""
 
 from __future__ import annotations
 
 import pytest
-from flask_app.main_app.shared.shared_classes import UpdaterTextOutcome
+from src.main_app.shared.shared_classes import UpdaterTextOutcome
 
 
 class TestUpdaterTextOutcome:

@@ -12,19 +12,19 @@
 
 يوجد لدينا أيضًا قوالب `templates` تعكس حالة ملفات php قبل التعامل مع اي بيانات وهي بحاجة لتطوير وتحديث:
 
--   `flask_app/templates/dup.html`
--   `flask_app/templates/fixred.html`
--   `flask_app/templates/fixref.html`
--   `flask_app/templates/import-history.html`
--   `flask_app/templates/newupdater.html`
--   `flask_app/templates/redirect.html`
--   `flask_app/templates/replace.html`
+-   `src/templates/dup.html`
+-   `src/templates/fixred.html`
+-   `src/templates/fixref.html`
+-   `src/templates/import-history.html`
+-   `src/templates/newupdater.html`
+-   `src/templates/redirect.html`
+-   `src/templates/replace.html`
 
 الاختلاف فقط في `find_replace_bot` حيث يقوم بكتابة المعطيات الى ملفات ويحتاج لتعديل ليتلقى المعطيات مباشرة
 
 لكل قالب templates يوجد ملف route python
 
-مثال `flask_app/main_app/app_routes/dup.py` لـ `dup.html`
+مثال `src/main_app/app_routes/dup.py` لـ `dup.html`
 
 ```python
 from __future__ import annotations

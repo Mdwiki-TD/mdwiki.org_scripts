@@ -2,7 +2,7 @@
 
 from pathlib import Path
 
-from flask_app.main_app.shared.new_updater.chembox import FixChembox
+from src.main_app.shared.new_updater.chembox import FixChembox
 
 
 def test_1():

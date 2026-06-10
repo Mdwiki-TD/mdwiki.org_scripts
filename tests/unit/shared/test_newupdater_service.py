@@ -1,10 +1,10 @@
-"""Unit tests for flask_app/main_app/app_routes/newupdater/worker.py."""
+"""Unit tests for src/main_app/app_routes/newupdater/worker.py."""
 
 from __future__ import annotations
 
 from unittest.mock import MagicMock
 
-from flask_app.main_app.shared.newupdater_service import newupdater_one_title
+from src.main_app.shared.newupdater_service import newupdater_one_title
 
 
 class TestWorkOnTitle:

@@ -1,6 +1,6 @@
 """ """
 
-from flask_app.main_app.shared.new_updater.bots.Remove import portal_remove
+from src.main_app.shared.new_updater.bots.Remove import portal_remove
 
 
 def test_it():

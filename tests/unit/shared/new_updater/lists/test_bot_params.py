@@ -1,8 +1,8 @@
-"""Unit tests for flask_app/main_app/shared/new_updater/lists/bot_params.py."""
+"""Unit tests for src/main_app/shared/new_updater/lists/bot_params.py."""
 
 from __future__ import annotations
 
-from flask_app.main_app.shared.new_updater.lists.bot_params import (
+from src.main_app.shared.new_updater.lists.bot_params import (
     all_params,
     params_placeholders,
     params_to_add,

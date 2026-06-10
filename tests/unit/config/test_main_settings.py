@@ -1,10 +1,10 @@
-"""Unit tests for flask_app/main_app/config/main_settings.py module."""
+"""Unit tests for src/main_app/config/main_settings.py module."""
 
 from __future__ import annotations
 
 import pytest
-from flask_app.main_app.config.classes import CookieConfig, OtherConfig
-from flask_app.main_app.config.main_settings import (
+from src.main_app.config.classes import CookieConfig, OtherConfig
+from src.main_app.config.main_settings import (
     _env_bool,
     _env_int,
     load_cookie_config,
@@ -102,7 +102,7 @@ class TestLoadCookieConfig:
 
 class TestSettingsSingleton:
     def test_settings_is_settings_instance(self):
-        from flask_app.main_app.config.classes import Settings
+        from src.main_app.config.classes import Settings
 
         assert isinstance(settings, Settings)
 

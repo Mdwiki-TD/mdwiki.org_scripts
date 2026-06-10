@@ -11,14 +11,14 @@ from unittest.mock import Mock, patch
 
 import pytest
 from flask.app import Flask
-from flask_app.main_app.db.services import (
+from src.main_app.db.services import (
     create_job,
     get_job,
     list_jobs,
     upsert_user_token,
 )
-from flask_app.main_app.db.services.admin_service import add_coordinator
-from flask_app.main_app.db.services.users_service import create_user
+from src.main_app.db.services.admin_service import add_coordinator
+from src.main_app.db.services.users_service import create_user
 
 VALID_JOB_TYPE = "fixref"
 ANOTHER_VALID_JOB_TYPE = "create_redirects"
@@ -29,7 +29,7 @@ def _clean_db(app: Flask):
     """Clean all tables after each test to prevent state leaking."""
     yield
     with app.app_context():
-        from flask_app.main_app.extensions import db
+        from src.main_app.extensions import db
 
         meta = db.metadata
         with db.engine.begin() as conn:
@@ -42,7 +42,7 @@ def _seed_user(app, username="JobUser", *, can_run_bg_jobs=False) -> int:
     with app.app_context():
         user = create_user(username)
         if can_run_bg_jobs:
-            from flask_app.main_app.db.services.users_service import toggle_can_run_bg_jobs
+            from src.main_app.db.services.users_service import toggle_can_run_bg_jobs
 
             toggle_can_run_bg_jobs(user.user_id, True)
         upsert_user_token(
@@ -98,7 +98,7 @@ class TestJobsListByType:
 
     def test_all_valid_job_types_load(self, mock_client):
         """Every registered job type should return 200."""
-        from flask_app.main_app.jobs_workers.public_jobs_workers.workers_list_public import jobs_data
+        from src.main_app.jobs_workers.public_jobs_workers.workers_list_public import jobs_data
 
         for job_type in jobs_data:
             resp = mock_client.get(f"/public_jobs/{job_type}")
@@ -160,11 +160,11 @@ class TestStartJob:
 
         with (
             patch(
-                "flask_app.main_app.app_routes.public_jobs.load_auth_payload",
+                "src.main_app.app_routes.public_jobs.load_auth_payload",
                 return_value={"id": uid, "username": "JobUser"},
             ),
             patch(
-                "flask_app.main_app.app_routes.public_jobs.jobs_worker.start_job",
+                "src.main_app.app_routes.public_jobs.jobs_worker.start_job",
                 return_value=1,
             ),
         ):
@@ -182,11 +182,11 @@ class TestStartJob:
 
         with (
             patch(
-                "flask_app.main_app.app_routes.public_jobs.load_auth_payload",
+                "src.main_app.app_routes.public_jobs.load_auth_payload",
                 return_value={"id": uid, "username": "JobUser"},
             ),
             patch(
-                "flask_app.main_app.app_routes.public_jobs.jobs_worker.start_job",
+                "src.main_app.app_routes.public_jobs.jobs_worker.start_job",
                 return_value=1,
             ),
         ):
@@ -200,18 +200,18 @@ class TestStartJob:
 
     def test_start_duplicate_job_flashes_warning(self, app, mock_client):
         """Starting a duplicate job should flash a warning and redirect."""
-        from flask_app.main_app.db.exceptions import DuplicateJobError
+        from src.main_app.db.exceptions import DuplicateJobError
 
         uid = _seed_user(app, can_run_bg_jobs=True)
         _login_user(mock_client, uid)
 
         with (
             patch(
-                "flask_app.main_app.app_routes.public_jobs.load_auth_payload",
+                "src.main_app.app_routes.public_jobs.load_auth_payload",
                 return_value={"id": uid, "username": "JobUser"},
             ),
             patch(
-                "flask_app.main_app.app_routes.public_jobs.jobs_worker.start_job",
+                "src.main_app.app_routes.public_jobs.jobs_worker.start_job",
                 side_effect=DuplicateJobError("A job of type 'fixref' is already active"),
             ),
         ):
@@ -259,7 +259,7 @@ class TestCancelJob:
         job_id = _seed_job(app, VALID_JOB_TYPE, username="Owner")
 
         with patch(
-            "flask_app.main_app.app_routes.public_jobs.jobs_worker.cancel_job_worker",
+            "src.main_app.app_routes.public_jobs.jobs_worker.cancel_job_worker",
             return_value=True,
         ):
             resp = mock_client.post(
@@ -272,7 +272,7 @@ class TestCancelJob:
     def test_cancel_other_user_job_blocked(self, app, mock_client, monkeypatch):
         """Non-owner, non-admin should not be able to cancel another user's job."""
         mock_flash = Mock()
-        monkeypatch.setattr("flask_app.main_app.app_routes.public_jobs.flash", mock_flash)
+        monkeypatch.setattr("src.main_app.app_routes.public_jobs.flash", mock_flash)
 
         _seed_user(app, username="Owner")
         other_uid = _seed_user(app, username="Other")
@@ -297,7 +297,7 @@ class TestCancelJob:
         _login_user(mock_client, admin_uid, username="AdminCancel")
 
         with patch(
-            "flask_app.main_app.app_routes.public_jobs.jobs_worker.cancel_job_worker",
+            "src.main_app.app_routes.public_jobs.jobs_worker.cancel_job_worker",
             return_value=True,
         ):
             resp = mock_client.post(
@@ -326,7 +326,7 @@ class TestDeleteJob:
         job_id = _seed_job(app, VALID_JOB_TYPE, username="Owner")
 
         with patch(
-            "flask_app.main_app.app_routes.public_jobs.jobs_worker.cancel_job_worker",
+            "src.main_app.app_routes.public_jobs.jobs_worker.cancel_job_worker",
             return_value=False,
         ):
             resp = mock_client.post(
@@ -346,7 +346,7 @@ class TestDeleteJob:
         _login_user(mock_client, uid)
 
         with patch(
-            "flask_app.main_app.app_routes.public_jobs.jobs_worker.cancel_job_worker",
+            "src.main_app.app_routes.public_jobs.jobs_worker.cancel_job_worker",
             return_value=False,
         ):
             resp = mock_client.post(
@@ -385,13 +385,13 @@ class TestJobsRouteIntegration:
 
         # Verify cancelled in DB
         with app.app_context():
-            from flask_app.main_app.db.services import is_job_cancelled
+            from src.main_app.db.services import is_job_cancelled
 
             assert is_job_cancelled(job_id, VALID_JOB_TYPE) is True
 
     def test_multiple_jobs_listed_by_type(self, app, mock_client):
         """Multiple jobs of the same type should all appear in the list."""
-        from flask_app.main_app.db.services import update_job_status
+        from src.main_app.db.services import update_job_status
 
         _seed_user(app)
         with app.app_context():
@@ -412,7 +412,7 @@ class TestJobsRouteIntegration:
 
     def test_delete_then_list_shows_remaining(self, app, mock_client):
         """After deleting one job, the list should show remaining jobs."""
-        from flask_app.main_app.db.services import update_job_status
+        from src.main_app.db.services import update_job_status
 
         owner_uid = _seed_user(app, username="Owner")
         _login_user(mock_client, owner_uid, username="Owner")
@@ -426,7 +426,7 @@ class TestJobsRouteIntegration:
             job2_id = job2.id
 
         with patch(
-            "flask_app.main_app.app_routes.public_jobs.jobs_worker.cancel_job_worker",
+            "src.main_app.app_routes.public_jobs.jobs_worker.cancel_job_worker",
             return_value=False,
         ):
             mock_client.post(

@@ -1,10 +1,10 @@
-"""Unit tests for flask_app/main_app/public_jobs/shared_objects.py module."""
+"""Unit tests for src/main_app/public_jobs/shared_objects.py module."""
 
 from __future__ import annotations
 
 import pytest
-from flask_app.main_app.jobs_workers.base_worker_object import WorkerObject
-from flask_app.main_app.jobs_workers.shared_objects import (
+from src.main_app.jobs_workers.base_worker_object import WorkerObject
+from src.main_app.jobs_workers.shared_objects import (
     SharedworkerObject,
     Summary,
     UpdaterOutcome,

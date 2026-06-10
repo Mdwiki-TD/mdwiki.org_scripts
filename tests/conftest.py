@@ -19,10 +19,10 @@ from cryptography.fernet import Fernet
 from flask.app import Flask
 from pytest_socket import disable_socket
 
-# Make the flask_app/ directory importable as `main_app`. The repo's prod
-# entrypoint flask_app/app.py does the same trick.
+# Make the src/ directory importable as `main_app`. The repo's prod
+# entrypoint src/app.py does the same trick.
 _REPO = Path(__file__).resolve().parents[1]
-sys.path.insert(0, str(_REPO / "flask_app"))
+sys.path.insert(0, str(_REPO / "src"))
 
 # ── Set ALL env vars before any src.* import ─────────────────────────────────
 # config.py executes get_settings() at module level and raises RuntimeError
@@ -55,8 +55,8 @@ def stop_nets(request):
 def app():
     """Create the Flask app once per test session."""
 
-    from flask_app.main_app import create_app
-    from flask_app.main_app.config import TestingConfig
+    from src.main_app import create_app
+    from src.main_app.config import TestingConfig
 
     application = create_app(TestingConfig)
     application.config.update(TESTING=True)

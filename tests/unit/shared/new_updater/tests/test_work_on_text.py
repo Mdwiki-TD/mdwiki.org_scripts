@@ -2,7 +2,7 @@
 
 from pathlib import Path
 
-from flask_app.main_app.shared.new_updater import med_updater_one
+from src.main_app.shared.new_updater import med_updater_one
 
 
 def test_1():

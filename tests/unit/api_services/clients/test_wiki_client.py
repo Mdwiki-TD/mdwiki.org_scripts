@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from unittest.mock import MagicMock, patch
 
-from flask_app.main_app.api_services.clients.wiki_client import (
+from src.main_app.api_services.clients.wiki_client import (
     coerce_encrypted,
     get_user_site,
 )
@@ -17,9 +17,9 @@ def test_coerce_encrypted():
     assert coerce_encrypted(123) is None
 
 
-@patch("flask_app.main_app.api_services.clients.wiki_client.settings")
-@patch("flask_app.main_app.api_services.clients.wiki_client.mwclient.Site")
-@patch("flask_app.main_app.api_services.clients.wiki_client.decrypt_value")
+@patch("src.main_app.api_services.clients.wiki_client.settings")
+@patch("src.main_app.api_services.clients.wiki_client.mwclient.Site")
+@patch("src.main_app.api_services.clients.wiki_client.decrypt_value")
 def test_get_user_site(mock_decrypt, mock_site, mock_settings, app):
     mock_settings.oauth = MagicMock()
     mock_settings.other = MagicMock()

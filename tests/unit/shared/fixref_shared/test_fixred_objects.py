@@ -1,8 +1,8 @@
-"""Unit tests for flask_app/main_app/shared/fixref_shared/objects.py."""
+"""Unit tests for src/main_app/shared/fixref_shared/objects.py."""
 
 from __future__ import annotations
 
-from flask_app.main_app.shared.fixref_shared.objects import RunState
+from src.main_app.shared.fixref_shared.objects import RunState
 
 
 class TestRunStateIsolation:

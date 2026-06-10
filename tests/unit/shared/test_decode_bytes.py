@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import pytest
-from flask_app.main_app.shared.decode_bytes import coerce_bytes
+from src.main_app.shared.decode_bytes import coerce_bytes
 
 
 def test_coerce_bytes_bytes():

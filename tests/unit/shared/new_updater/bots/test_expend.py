@@ -1,8 +1,8 @@
-"""Unit tests for flask_app/main_app/shared/new_updater/bots/expend.py."""
+"""Unit tests for src/main_app/shared/new_updater/bots/expend.py."""
 
 from __future__ import annotations
 
-from flask_app.main_app.shared.new_updater.bots.expend import expend_infoboxs_and_fix
+from src.main_app.shared.new_updater.bots.expend import expend_infoboxs_and_fix
 
 
 class TestExpendInfoboxsAndFix:

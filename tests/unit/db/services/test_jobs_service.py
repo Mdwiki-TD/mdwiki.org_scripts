@@ -2,8 +2,8 @@ from __future__ import annotations
 
 import pytest
 from flask.app import Flask
-from flask_app.main_app.db.exceptions import DuplicateJobError
-from flask_app.main_app.db.services.jobs_service import (
+from src.main_app.db.exceptions import DuplicateJobError
+from src.main_app.db.services.jobs_service import (
     cancel_job_db,
     create_job,
     delete_job,

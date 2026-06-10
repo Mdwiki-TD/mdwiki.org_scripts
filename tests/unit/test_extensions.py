@@ -3,8 +3,8 @@ from __future__ import annotations
 from datetime import datetime
 
 from flask.app import Flask
-from flask_app.main_app.extensions import db
 from sqlalchemy import Column, DateTime, Integer, String
+from src.main_app.extensions import db
 
 
 class MockModel(db.Model):

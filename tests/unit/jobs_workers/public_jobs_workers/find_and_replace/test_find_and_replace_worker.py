@@ -1,11 +1,11 @@
-"""Unit tests for flask_app/main_app/jobs_workers/public_jobs_workers/find_and_replace/worker.py."""
+"""Unit tests for src/main_app/jobs_workers/public_jobs_workers/find_and_replace/worker.py."""
 
 from __future__ import annotations
 
 from unittest.mock import MagicMock, patch
 
 import pytest
-from flask_app.main_app.jobs_workers.public_jobs_workers.find_and_replace.worker import (
+from src.main_app.jobs_workers.public_jobs_workers.find_and_replace.worker import (
     FindAndReplaceWorker,
 )
 
@@ -19,8 +19,8 @@ class TestFindAndReplaceWorker:
             user={"username": "test_user"},
         )
 
-    @patch("flask_app.main_app.jobs_workers.public_jobs_workers.find_and_replace.worker.get_user_site")
-    @patch("flask_app.main_app.jobs_workers.public_jobs_workers.find_and_replace.worker.MwClientPage")
+    @patch("src.main_app.jobs_workers.public_jobs_workers.find_and_replace.worker.get_user_site")
+    @patch("src.main_app.jobs_workers.public_jobs_workers.find_and_replace.worker.MwClientPage")
     def test_process_success(self, mock_mw_client_page, mock_get_user_site, worker):
         mock_site = MagicMock()
         mock_get_user_site.return_value = mock_site
@@ -41,13 +41,13 @@ class TestFindAndReplaceWorker:
         assert result.pages_changed[0]["title"] == "Page 1"
         assert result.pages_changed[0]["newrevid"] == 789
 
-    @patch("flask_app.main_app.jobs_workers.public_jobs_workers.find_and_replace.worker.get_user_site")
+    @patch("src.main_app.jobs_workers.public_jobs_workers.find_and_replace.worker.get_user_site")
     def test_process_no_site(self, mock_get_user_site, worker):
         mock_get_user_site.return_value = None
         result = worker.process()
         assert result.status == "failed"
 
-    @patch("flask_app.main_app.jobs_workers.public_jobs_workers.find_and_replace.worker.get_user_site")
+    @patch("src.main_app.jobs_workers.public_jobs_workers.find_and_replace.worker.get_user_site")
     def test_process_missing_str_find(self, mock_get_user_site, worker):
         mock_get_user_site.return_value = MagicMock()
         worker.args["str_find"] = ""

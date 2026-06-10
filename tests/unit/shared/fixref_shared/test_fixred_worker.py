@@ -1,8 +1,8 @@
-"""Unit tests for flask_app/main_app/shared/fixref_shared/fixred_worker.py."""
+"""Unit tests for src/main_app/shared/fixref_shared/fixred_worker.py."""
 
 from __future__ import annotations
 
-from flask_app.main_app.shared.fixref_shared.fixred_worker import (
+from src.main_app.shared.fixref_shared.fixred_worker import (
     _replace_links,
     replace_in_text,
 )

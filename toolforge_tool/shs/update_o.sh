@@ -7,7 +7,7 @@ REPO_URL="https://github.com/MrIbrahem/mdwiki.org_scripts.git"
 TARGET_DIR="$HOME/www/python/src"
 CLONE_DIR="$HOME/temp_clone_path"
 backup_dir="$HOME/www/python/src_backup_$(date +%Y%m%d_%H%M%S)"
-CLONE_DIR_SRC="$CLONE_DIR/flask_app";
+CLONE_DIR_SRC="$CLONE_DIR/src";
 
 # Navigate to the project directory
 cd "$HOME" || exit

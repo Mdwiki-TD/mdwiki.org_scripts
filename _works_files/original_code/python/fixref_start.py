@@ -8,8 +8,8 @@ import logging
 import os
 import sys
 
-from flask_app.main_app.shared.fixref_shared.fixref_text_new import fix_ref_template
 from python.mdwiki_page import CatDepth, NewApi, load_main_api
+from src.main_app.shared.fixref_shared.fixref_text_new import fix_ref_template
 
 logger = logging.getLogger(__name__)
 

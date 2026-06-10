@@ -1,6 +1,6 @@
 write a plan to merge old jobs into public_jobs, while keeping old `jobs` as its for `refernces`
 
-all jobs in `flask_app/main_app/jobs`
+all jobs in `src/main_app/jobs`
 
 -   create_redirects
 -   duplicate_redirect
@@ -9,9 +9,9 @@ all jobs in `flask_app/main_app/jobs`
 -   fixref
 -   import_history
 
-should use `flask_app/main_app/public_jobs/jobs_worker.py`
+should use `src/main_app/public_jobs/jobs_worker.py`
 
-start by creating folder for each job in `flask_app/main_app/public_jobs/workers`:
+start by creating folder for each job in `src/main_app/public_jobs/workers`:
 
 -   `__init__.py` placeholder:
 
@@ -132,5 +132,5 @@ __all__ = [
 ]
 ```
 
--   job html templates at `flask_app/templates/public_jobs_templates/`
--   register in `flask_app/main_app/public_jobs/workers_list.py` by adding a `JobData` entry to `jobs_data`
+-   job html templates at `src/templates/public_jobs_templates/`
+-   register in `src/main_app/public_jobs/workers_list.py` by adding a `JobData` entry to `jobs_data`

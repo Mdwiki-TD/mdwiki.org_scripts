@@ -1,8 +1,8 @@
-"""Unit tests for flask_app/main_app/shared/new_updater/test_MedWorkNew.py."""
+"""Unit tests for src/main_app/shared/new_updater/test_MedWorkNew.py."""
 
 from __future__ import annotations
 
-from flask_app.main_app.shared.new_updater.MedWorkNew import med_updater_one
+from src.main_app.shared.new_updater.MedWorkNew import med_updater_one
 
 
 class TestWorkOnText:
