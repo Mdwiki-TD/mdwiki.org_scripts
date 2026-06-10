@@ -39,6 +39,9 @@ class UserService:
             if not user:
                 user: UsersRecord = create_user(username)
 
+            if not user:
+                return None
+
             user_id = user.user_id
 
         except Exception as e:

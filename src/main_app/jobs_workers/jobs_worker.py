@@ -15,7 +15,8 @@ from ..db.services import (
     create_job,
 )
 from ..su_services.jobs_files_service import create_job_cancelled_file
-from .public_jobs_workers.workers_list_public import JobData, jobs_data
+from .objects import JobData
+from .public_jobs_workers.workers_list_public import jobs_data
 
 logger = logging.getLogger(__name__)
 
@@ -44,13 +45,13 @@ def _runner(
     user: dict[str, Any] | None,
     cancel_event: threading.Event,
     target_func: Any,
-    src: Flask,
+    flask_app: Flask,
     args: dict[str, Any] | None = None,
 ) -> None:
     """
-    args=(job.id, user, cancel_event, target_func, src, args),
+    args=(job.id, user, cancel_event, target_func, flask_app, args),
     """
-    with src.app_context():
+    with flask_app.app_context():
         try:
             target_func(
                 job_id=job_id,
@@ -132,12 +133,12 @@ def start_job(
     _register_cancel_event(job.id, cancel_event)
 
     # Capture the Flask app for the background thread (requires app context)
-    src = current_app._get_current_object()
+    flask_app = current_app._get_current_object()
 
     # Start background thread
     thread = threading.Thread(
         target=_runner,
-        args=(job.id, user, cancel_event, target_func, src, args),
+        args=(job.id, user, cancel_event, target_func, flask_app, args),
         daemon=True,
     )
     thread.start()
@@ -186,12 +187,12 @@ def start_job_cli(
     _register_cancel_event(job.id, cancel_event)
 
     # Capture the Flask app for the background thread (requires app context)
-    src = app or current_app._get_current_object()
+    flask_app = app or current_app._get_current_object()
 
     # Start background thread
     thread = threading.Thread(
         target=_runner,
-        args=(job.id, user, cancel_event, target_func, src, args),
+        args=(job.id, user, cancel_event, target_func, flask_app, args),
     )
     thread.start()
 

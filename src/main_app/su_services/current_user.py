@@ -17,9 +17,9 @@ class CurrentUser:
     username: str
     access_token: bytes = field(repr=False)
     access_secret: bytes = field(repr=False)
+    is_active_admin: bool = False
     can_run_jobs: bool = False
     can_run_bg_jobs: bool = False
-    is_active_admin: bool = False
 
     def to_auth_payload(self) -> dict[str, int | str | bytes]:
         """Return the dict expected by ``api_services/clients/wiki_client``."""

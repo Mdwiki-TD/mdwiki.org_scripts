@@ -17,7 +17,9 @@ def _is_admin(user: Any) -> bool:
 
 
 def context_user(
-    wiki_domain: str, static_server: str, tool_title: str = "Mdwiki.org Tools (UNDER TESTING)"
+    wiki_domain: str,
+    static_server: str,
+    tool_title: str = "Mdwiki.org Tools (UNDER TESTING)",
 ) -> dict[str, Any]:
     """
     Used in @app.context_processor to inject variables into templates.

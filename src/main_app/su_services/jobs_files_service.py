@@ -20,7 +20,7 @@ def get_jobs_data_dir() -> Path:
     # Use public_jobs_path from settings paths
     jobs_dir = getattr(settings.paths, "public_jobs_path", None)
     if not jobs_dir:
-        raise RuntimeError("MAIN_DIR/public_jobs_path environment variable is required for job result storage")
+        raise RuntimeError("public_jobs_path configuration is required for job result storage")
     jobs_dir = Path(jobs_dir)
     jobs_dir.mkdir(parents=True, exist_ok=True)
     return jobs_dir
