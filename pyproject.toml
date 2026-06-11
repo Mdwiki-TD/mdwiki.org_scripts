@@ -171,7 +171,7 @@ disable = [
 [tool.pyright]
 # Target Python version for type analysis
 pythonVersion = "3.13"
-
+stubPath = "typings"
 # Paths to include and exclude from checking
 include = ["src"]
 exclude = ["**/node_modules", "**/__pycache__", ".venv"]
