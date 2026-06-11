@@ -13,7 +13,6 @@ from ..db.services import (
     is_active_coordinator,
     upsert_user_token,
 )
-from ..db.services.users_service import UsersRecord
 from .current_user import CurrentUser
 
 logger = logging.getLogger(__name__)
