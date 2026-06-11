@@ -1,0 +1,18 @@
+{
+  "stubPath": "typings",
+  "pythonVersion": "3.13",
+  "include": [
+    "src"
+  ],
+  "exclude": [
+    "**/node_modules",
+    "**/__pycache__",
+    ".venv"
+  ],
+  "typeCheckingMode": "basic",
+  "venvPath": ".",
+  "venv": ".venv",
+  "reportMissingTypeStubs": false,
+  "reportGeneralTypeIssues": false,
+  "reportUnknownMemberType": "warning"
+}
