@@ -1,5 +1,5 @@
 from _typeshed import Incomplete
-from mwclient.util import handle_limit as handle_limit, parse_timestamp as parse_timestamp
+from .util import handle_limit as handle_limit, parse_timestamp as parse_timestamp
 
 class Page:
     site: Incomplete

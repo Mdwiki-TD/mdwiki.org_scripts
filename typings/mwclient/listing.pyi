@@ -1,7 +1,7 @@
 import mwclient.page
 from _typeshed import Incomplete
 from collections.abc import Generator
-from mwclient.util import handle_limit as handle_limit, parse_timestamp as parse_timestamp
+from .util import handle_limit as handle_limit, parse_timestamp as parse_timestamp
 
 class List:
     site: Incomplete

@@ -1,8 +1,8 @@
-import mwclient.page
+from . import page
 from _typeshed import Incomplete
-from mwclient.util import handle_limit as handle_limit
+from .util import handle_limit as handle_limit
 
-class Image(mwclient.page.Page):
+class Image(page.Page):
     imagerepository: Incomplete
     imageinfo: Incomplete
     def __init__(self, site, name, info=None) -> None: ...

@@ -1,5 +1,5 @@
 from _typeshed import Incomplete
-from mwclient.errors import MaximumRetriesExceeded as MaximumRetriesExceeded
+from .errors import MaximumRetriesExceeded as MaximumRetriesExceeded
 
 log: Incomplete
 

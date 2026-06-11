@@ -1,7 +1,7 @@
 from _typeshed import Incomplete
 from collections.abc import Generator
-from mwclient.sleep import Sleepers as Sleepers
-from mwclient.util import handle_limit as handle_limit, parse_timestamp as parse_timestamp, read_in_chunks as read_in_chunks
+from .sleep import Sleepers as Sleepers
+from .util import handle_limit as handle_limit, parse_timestamp as parse_timestamp, read_in_chunks as read_in_chunks
 
 __version__: str
 log: Incomplete
