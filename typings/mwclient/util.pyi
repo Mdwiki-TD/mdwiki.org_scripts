@@ -1,5 +1,6 @@
-from _typeshed import Incomplete
 from collections.abc import Generator
+
+from _typeshed import Incomplete
 
 def parse_timestamp(t): ...
 def read_in_chunks(stream, chunk_size) -> Generator[Incomplete]: ...

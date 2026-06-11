@@ -1,7 +1,10 @@
+from collections.abc import Generator
+
 import mwclient.page
 from _typeshed import Incomplete
-from collections.abc import Generator
-from .util import handle_limit as handle_limit, parse_timestamp as parse_timestamp
+
+from .util import handle_limit as handle_limit
+from .util import parse_timestamp as parse_timestamp
 
 class List:
     site: Incomplete
@@ -14,7 +17,18 @@ class List:
     last: bool
     result_member: Incomplete
     return_values: Incomplete
-    def __init__(self, site, list_name, prefix, limit=None, return_values=None, max_items=None, api_chunk_size=None, *args, **kwargs) -> None: ...
+    def __init__(
+        self,
+        site,
+        list_name,
+        prefix,
+        limit=None,
+        return_values=None,
+        max_items=None,
+        api_chunk_size=None,
+        *args,
+        **kwargs,
+    ) -> None: ...
     def __iter__(self): ...
     def __next__(self): ...
     def load_chunk(self) -> None: ...
@@ -41,11 +55,20 @@ class GeneratorList(List):
 
 class Category(mwclient.page.Page, GeneratorList):
     def __init__(self, site, name, info=None, namespace=None) -> None: ...
-    def members(self, prop: str = 'ids|title', namespace=None, sort: str = 'sortkey', dir: str = 'asc', start=None, end=None, generator: bool = True): ...
+    def members(
+        self,
+        prop: str = "ids|title",
+        namespace=None,
+        sort: str = "sortkey",
+        dir: str = "asc",
+        start=None,
+        end=None,
+        generator: bool = True,
+    ): ...
 
 class PageList(GeneratorList):
     namespace: Incomplete
-    def __init__(self, site, prefix=None, start=None, namespace: int = 0, redirects: str = 'all', end=None) -> None: ...
+    def __init__(self, site, prefix=None, start=None, namespace: int = 0, redirects: str = "all", end=None) -> None: ...
     def __getitem__(self, name): ...
     def get(self, name, info=()): ...
     def guess_namespace(self, name): ...

@@ -1,9 +1,8 @@
 import logging
 import re
+from typing import Any, Dict, List, Optional
 
 import wikitextparser as wtp
-
-from typing import Any, Dict, List, Optional
 
 from .lists.bot_params import all_formola_params, all_params, params_placeholders, params_to_add
 
