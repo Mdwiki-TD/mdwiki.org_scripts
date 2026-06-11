@@ -96,6 +96,7 @@ def update_user_token(user_id: int, access_key: str, access_secret: str) -> User
         return orm_obj
     return None
 
+
 @db_guard_rollback
 def upsert_user_token(user_id: int, access_key: str, access_secret: str) -> UserTokenRecord:
     """

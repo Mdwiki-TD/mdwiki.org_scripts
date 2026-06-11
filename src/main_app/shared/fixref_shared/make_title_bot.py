@@ -8,8 +8,8 @@ from md_core.mdpy.bots import make_title_bot
 
 import logging
 import re
-from urllib.parse import quote
 from typing import Dict
+from urllib.parse import quote
 
 from ...api_services.citation_api import get_citation_title
 

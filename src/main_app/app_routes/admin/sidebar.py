@@ -77,8 +77,7 @@ def create_side(active_route, path: str | None = None):
                 icon="bi-person",
             ),
         ],
-        "Main": [
-        ],
+        "Main": [],
     }
 
     sidebar = ["<ul class='list-unstyled'>"]

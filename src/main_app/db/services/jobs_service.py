@@ -160,10 +160,7 @@ def get_all_user_jobs_stats(username: str, limit: int | None = 100) -> dict[str,
         .group_by(JobRecord.status)
         .all()
     )
-    status_counts: dict[str, int] = {
-        row[0]: row[1]
-        for row in records
-    }
+    status_counts: dict[str, int] = {row[0]: row[1] for row in records}
 
     recent_jobs = base_query.order_by(JobRecord.created_at.desc()).limit(limit).all()
 
@@ -210,10 +207,7 @@ def get_user_jobs_stats(
         .group_by(JobRecord.status)
         .all()
     )
-    status_counts = {
-        row[0]: row[1]
-        for row in records
-    }
+    status_counts = {row[0]: row[1] for row in records}
 
     recent_jobs = base_query.order_by(JobRecord.created_at.desc()).limit(limit).all()
 
