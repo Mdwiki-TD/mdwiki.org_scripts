@@ -5,6 +5,7 @@ from __future__ import annotations
 import functools
 import json
 import logging
+import os
 from pathlib import Path
 from typing import Any, Dict
 
@@ -43,15 +44,15 @@ def save_job_result_by_name(filename: str, result_data: Dict[str, Any]) -> Path:
 def load_job_result(result_file: str) -> Dict[str, Any] | None:
     """Load job result from a JSON file."""
     jobs_dir: Path = get_jobs_data_dir()
-    filepath = jobs_dir / result_file
-    if not filepath.exists():
+    result_file = jobs_dir / result_file  # type: ignore
+    if not result_file or not os.path.exists(result_file):
         return None
 
     try:
-        with open(filepath, "r", encoding="utf-8") as f:
+        with open(result_file, "r", encoding="utf-8") as f:
             return json.load(f)
     except Exception as e:
-        logger.error(f"Error loading job result from {filepath}: {e}")
+        logger.error(f"Error loading job result from {result_file}: {e}")
         return None
 
 

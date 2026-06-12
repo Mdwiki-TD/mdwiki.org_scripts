@@ -26,7 +26,6 @@ class AddUnlinkedWikibaseWorker(BaseObjectsJobWorker):
         user: dict[str, Any] | None,
         cancel_event: threading.Event | None = None,
     ) -> None:
-        self.job_id = job_id
         self.args = args or {}
 
         super().__init__(job_id, user, cancel_event)
@@ -36,7 +35,7 @@ class AddUnlinkedWikibaseWorker(BaseObjectsJobWorker):
     def get_job_type(self) -> str:
         return "add_unlinkedwikibase"
 
-    def process(self) -> Dict[str, Any]:
+    def process(self) -> SharedworkerObject:
         """
         Placeholder process method.
         """

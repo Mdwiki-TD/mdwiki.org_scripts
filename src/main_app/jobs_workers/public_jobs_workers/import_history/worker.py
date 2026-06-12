@@ -32,7 +32,6 @@ class ImportHistoryWorker(BaseObjectsJobWorker):
         user: dict[str, Any] | None,
         cancel_event: threading.Event | None = None,
     ) -> None:
-        self.job_id = job_id
         self.args = args
         self.site: Site | None = None
 
@@ -47,7 +46,7 @@ class ImportHistoryWorker(BaseObjectsJobWorker):
     def get_job_type(self) -> str:
         return "import_history"
 
-    def process(self) -> Dict[str, Any]:
+    def process(self) -> ImportHistoryWorkerObject:
         self.site = get_user_site(self.user)
         if not self.site:
             logger.warning(f"Job {self.job_id}: No site authentication available")
@@ -152,6 +151,7 @@ class ImportHistoryWorker(BaseObjectsJobWorker):
             if saved.get("success"):
                 return UpdaterOutcome(kind="imported", newrevid=saved.get("newrevid", 0))
 
+            assert self.site is not None
             username = self.site.username or "Mr._Ibrahem"
             fallback_title = f"User:{username}/{title}"
             logger.info(f"Job {self.job_id}: {title!r}: top-level save failed; writing to {fallback_title!r}")

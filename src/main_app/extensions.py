@@ -23,12 +23,17 @@ class BaseModel(Model):
 
     def to_dict(self) -> dict[str, Any]:
         data: dict[str, Any] = {}
-        for column in self.__table__.columns:
-            value = getattr(self, column.name)
+        for column in self.__table__.columns:  # type: ignore
+            value = getattr(self, column.name)  # type: ignore
             if hasattr(value, "isoformat"):
                 value = value.isoformat()
-            data[column.name] = value
+            data[column.name] = value  # type: ignore
         return data
+
+    def __init__(self, **kwargs: dict[str, Any]) -> None:
+        for key, value in kwargs.items():
+            if hasattr(self, key):
+                setattr(self, key, value)
 
 
 def _commit(db: SQLAlchemy) -> None:

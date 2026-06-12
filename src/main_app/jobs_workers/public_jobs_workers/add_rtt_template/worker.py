@@ -69,7 +69,6 @@ class AddRttTemplateWorker(BaseObjectsJobWorker):
         user: dict[str, Any] | None,
         cancel_event: threading.Event | None = None,
     ) -> None:
-        self.job_id = job_id
         self.args = args
         self.site: Site | None = None
 
@@ -84,7 +83,7 @@ class AddRttTemplateWorker(BaseObjectsJobWorker):
     def get_job_type(self) -> str:
         return "add_rtt_template"
 
-    def process(self) -> Dict[str, Any]:
+    def process(self) -> SharedworkerObject:
         self.site = get_user_site(self.user)
         if not self.site:
             logger.warning(f"Job {self.job_id}: No site authentication available")
