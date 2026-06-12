@@ -15,3 +15,5 @@ coverage.xml
 _works_files/add_all.py
 /.mypy_cache
 monkeytype.sqlite3
+righttyper.log
+run_tests.py
