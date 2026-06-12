@@ -30,13 +30,13 @@ class TextProcessor:
         # ---
         self.run()
 
-    def get_new_temp(self):
+    def get_new_temp(self) -> str:
         return self.newdrugbox
 
-    def get_old_temp(self):
+    def get_old_temp(self) -> str:
         return self.olddrugbox
 
-    def get_txt_params(self, text: str):
+    def get_txt_params(self, text: str) -> tuple[str, dict]:
         # ---
         logger.debug("get_txt_params")
         # ---
@@ -91,7 +91,7 @@ class TextProcessor:
         # create self.newdrugbox
         self.new_temp()
 
-    def add_section_title_to_sec_text2(self, section_title, sec_text):
+    def add_section_title_to_sec_text2(self, section_title, sec_text) -> str:
         # ---
         if self.newdrugbox.strip().endswith(section_title) or self.newdrugbox.find(section_title) != -1:
             logger.debug(f"({section_title}) already in self.newdrugbox \n")
@@ -100,7 +100,7 @@ class TextProcessor:
         # ---
         return sec_text
 
-    def add_section_title_to_sec_text(self, section_title, sec_text):
+    def add_section_title_to_sec_text(self, section_title, sec_text) -> str:
         # ---
         if self.newdrugbox.strip().endswith(section_title):
             # ---
@@ -138,7 +138,7 @@ class TextProcessor:
         # ---
         self.newdrugbox += s_text
 
-    def get_combo(self):
+    def get_combo(self) -> tuple[str, list]:
         # ---
         logger.debug("get_combo")
         # ---
@@ -182,7 +182,7 @@ class TextProcessor:
         # ---
         return sec_title, sec_params
 
-    def get_chemical(self):
+    def get_chemical(self) -> tuple:
         # ---
         logger.debug("get_chemical")
         # ---

@@ -125,7 +125,7 @@ class MoveExternalLinksSection:
                 # ---
                 self.text_to_work = self.text_to_work.replace(str(self.last_sec).strip(), l_c2.strip())
 
-    def make_new_txt(self):
+    def make_new_txt(self) -> str:
         # ---
         logger.debug("make_new_txt")
         # ---
