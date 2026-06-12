@@ -49,7 +49,6 @@ class CreateRedirectsWorker(BaseObjectsJobWorker):
         user: dict[str, Any] | None,
         cancel_event: threading.Event | None = None,
     ) -> None:
-        self.job_id = job_id
         self.args = args
         self.site: Site | None = None
 
@@ -64,7 +63,7 @@ class CreateRedirectsWorker(BaseObjectsJobWorker):
     def get_job_type(self) -> str:
         return "create_redirects"
 
-    def process(self) -> Dict[str, Any]:
+    def process(self) -> CreateRedirectsWorkerObject:
         self.site = get_user_site(self.user)
         if not self.site:
             logger.warning(f"Job {self.job_id}: No site authentication available")

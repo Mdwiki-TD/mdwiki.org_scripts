@@ -56,7 +56,10 @@ def rename_params(temptext: str) -> str:
         # Replace the old parameter with the new parameter
         for old, new in to_replace.items():
             if temp.has_arg(old):
-                value = temp.get_arg(old).value
+                arg = temp.get_arg(old)
+                if arg is None:
+                    continue
+                value = arg.value
                 logger.debug(f"value: {value}")
                 temp.set_arg(new, value, before=old)
                 temp.del_arg(old)

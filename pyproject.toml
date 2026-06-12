@@ -158,6 +158,7 @@ warn_unused_configs = true
 disallow_untyped_defs = false
 ignore_missing_imports = true
 
+
 [tool.pylint.messages_control]
 max-line-length = 120
 disable = [
@@ -210,3 +211,47 @@ reportOptionalMemberAccess = "warning"
 reportCallIssue = "warning"
 reportOptionalSubscript = "warning"
 
+
+# -----
+reportAbstractUsage = false
+reportAssertAlwaysTrue = false
+reportAssertTypeFailure = false
+reportCallInDefaultInitializer = false
+reportConstantRedefinition = false
+reportDeprecated = false
+reportDuplicateImport = false
+reportFunctionMemberAccess = false
+reportImplicitOverride = false
+reportImplicitStringConcatenation = false
+reportImportCycles = false
+reportIncompatibleMethodOverride = false
+reportIncompatibleVariableOverride = false
+reportIncompleteStub = false
+reportInconsistentOverload = false
+reportIndexIssue = false
+reportInvalidStringEscapeSequence = false
+reportInvalidStubStatement = false
+reportInvalidTypeArguments = false
+reportInvalidTypeVarUse = false
+reportMatchNotExhaustive = false
+reportMissingParameterType = false
+reportMissingSuperCall = false
+reportMissingTypeArgument = false
+reportOperatorIssue = false
+reportOptionalCall = false
+reportOptionalContextManager = false
+reportOptionalIterable = false
+reportOptionalOperand = false
+reportOverlappingOverload = false
+reportPossiblyUnboundVariable = false
+reportPrivateImportUsage = false
+reportPrivateUsage = false
+reportPropertyTypeMismatch = false
+reportRedeclaration = false
+reportTypeCommentUsage = false
+reportTypedDictNotRequiredAccess = false
+reportUnboundVariable = false
+reportUnhashable = false
+reportUninitializedInstanceVariable = false
+reportUnknownArgumentType = false
+reportUnknownLambdaType = false

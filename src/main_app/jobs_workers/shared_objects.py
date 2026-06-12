@@ -27,6 +27,8 @@ class UpdaterOutcome:
 class Summary:
     scanned: int = 0
     total: int = 0
+    changed: int = 0
+    errors: int = 0
 
 
 @dataclass

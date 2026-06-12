@@ -8,7 +8,7 @@ from sqlalchemy.exc import IntegrityError
 
 from ...extensions import db
 from ..exceptions import DuplicateJobError
-from ..models.jobs import JobRecord
+from ..models import JobRecord
 from .utils import db_guard, db_guard_rollback
 
 logger = logging.getLogger(__name__)

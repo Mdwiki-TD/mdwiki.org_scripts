@@ -35,7 +35,6 @@ class FixRefWorker(BaseObjectsJobWorker):
         user: dict[str, Any] | None,
         cancel_event: threading.Event | None = None,
     ) -> None:
-        self.job_id = job_id
         self.args = args
         self.site: Site | None = None
 
@@ -50,7 +49,7 @@ class FixRefWorker(BaseObjectsJobWorker):
     def get_job_type(self) -> str:
         return "fixref"
 
-    def process(self) -> Dict[str, Any]:
+    def process(self) -> SharedworkerObject:
         self.site = get_user_site(self.user)
         if not self.site:
             logger.warning(f"Job {self.job_id}: No site authentication available")
@@ -148,6 +147,7 @@ class FixRefWorker(BaseObjectsJobWorker):
         return [m for m in members if not m.startswith("Category:")][:MAX_PAGES_FIXREF]
 
     def _resolve_targets_number(self, number: int) -> list[str]:
+        assert self.site is not None
         try:
             capped = min(int(number), MAX_PAGES_FIXREF)
         except ValueError:

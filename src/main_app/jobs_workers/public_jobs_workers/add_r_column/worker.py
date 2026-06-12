@@ -92,9 +92,8 @@ class AddRColumnWorker(BaseObjectsJobWorker):
         user: dict[str, Any] | None,
         cancel_event: threading.Event | None = None,
     ) -> None:
-        self.job_id = job_id
         self.args = args or {}
-        self.page = None
+        self.page: MwClientPage | None = None
 
         super().__init__(job_id, user, cancel_event)
 
@@ -114,7 +113,7 @@ class AddRColumnWorker(BaseObjectsJobWorker):
         self.result.error = error
         self.result.failed_at = datetime.now().isoformat()
 
-    def process(self) -> Dict[str, Any]:
+    def process(self) -> AddRColumnWorkerObject:
         """
         process method.
         """
@@ -148,7 +147,7 @@ class AddRColumnWorker(BaseObjectsJobWorker):
 
         # step 1 load page
         self.page = MwClientPage(title, self.site)
-        self._page: Page = self.page.load_page()
+        self._page: Page | None = self.page.load_page()
 
         if not self._page:
             self._set_step_status("load_page", "failed", "Failed to load page")
@@ -246,6 +245,7 @@ class AddRColumnWorker(BaseObjectsJobWorker):
         return True
 
     def _save_text(self, new_text: str, summary: str, step) -> bool:
+        assert self.page is not None
         saved = self.page.edit_page(text=new_text, summary=summary, nocreate=1)
 
         if saved.get("success"):
@@ -256,7 +256,7 @@ class AddRColumnWorker(BaseObjectsJobWorker):
         logger.error(f"Failed to save text for {self.page.title}")
 
         error_code: str = saved.get("error", "")
-        details: str = saved.get("details")
+        details: str = saved.get("details", "")
         logger.warning(f"Error code: {error_code}, details: {details}")
         return False
 

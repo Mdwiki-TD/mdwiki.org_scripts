@@ -3,14 +3,12 @@ import sys
 from typing import Any
 
 import wikitextparser as wtp
-
 from .make_title_bot import make_title
 
 
-def change_lay_source(temp) -> tuple[str, Any]:
+def change_lay_source(temp: wtp.Template) -> tuple[str, Any]:
     # ---
-    temp_name = "cite press release"
-    # ---
+    # temp_name = "cite press release"
     temp_name = str(temp.normal_name()).strip()
     # ---
     tab = {
@@ -48,7 +46,7 @@ def change_lay_source(temp) -> tuple[str, Any]:
     return lay_temp, temp
 
 
-def add_title(temp):
+def add_title(temp: wtp.Template):
     title = ""
     # ---
     title_arg = temp.get_arg("title")

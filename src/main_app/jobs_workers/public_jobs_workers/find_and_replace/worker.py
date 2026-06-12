@@ -34,7 +34,6 @@ class FindAndReplaceWorker(BaseObjectsJobWorker):
         user: dict[str, Any] | None,
         cancel_event: threading.Event | None = None,
     ) -> None:
-        self.job_id = job_id
         self.args = args
         self.site: Site | None = None
 
@@ -49,7 +48,7 @@ class FindAndReplaceWorker(BaseObjectsJobWorker):
     def get_job_type(self) -> str:
         return "find_and_replace"
 
-    def process(self) -> Dict[str, Any]:
+    def process(self) -> FindAndReplaceWorkerObject:
         self.site = get_user_site(self.user)
         if not self.site:
             logger.warning(f"Job {self.job_id}: No site authentication available")
@@ -149,6 +148,7 @@ class FindAndReplaceWorker(BaseObjectsJobWorker):
         listtype: str,
     ) -> list[str]:
         """Pick the page list to walk based on *listtype*."""
+        assert self.site is not None
         if listtype == "newlist":
             # return search_pages(str_find, self.site, namespace=0, limit="max")
             """ """
