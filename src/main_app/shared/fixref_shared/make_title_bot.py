@@ -59,7 +59,6 @@ globalbadtitles = r"""
 
 @functools.lru_cache(maxsize=10000)
 def make_title(url: str) -> str:
-
     url = url.strip()
     if not url:
         logger.info("<<red>> url = '' return False")
