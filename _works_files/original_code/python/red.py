@@ -8,6 +8,7 @@
 import functools
 import logging
 import sys
+from typing import Any
 
 import requests
 from python.mdwiki_page import MainPage, NewApi
@@ -245,10 +246,10 @@ def main():
             # python red.py -start:all
             #
             # ---
-            list = api_new.Get_All_pages(start="", namespace=namespaces, limit=limite)
+            page_list = api_new.Get_All_pages(start="", namespace=namespaces, limit=limite)
             start_done = starts
-            for num, page in enumerate(list, start=1):
-                work(page, num, len(list))
+            for num, page in enumerate(page_list, start=1):
+                work(page, num, len(page_list))
                 # ---
                 starts = page
     # ---
@@ -258,16 +259,16 @@ def main():
             work(page, num, len(listen))
             # ---
     # ---
-    list: list[Any] = []
+    page_list: list[Any] = []
     # ---
     if newpages != "":
-        list = api_new.Get_Newpages(limit=newpages, namespace=namespaces)
+        page_list = api_new.Get_Newpages(limit=newpages, namespace=namespaces)
     elif user != "":
-        list = api_new.UserContribs(user, limit=user_limit, namespace=namespaces, ucshow="new")
+        page_list = api_new.UserContribs(user, limit=user_limit, namespace=namespaces, ucshow="new")
     elif pages != []:
-        list = pages
-    for num, page in enumerate(list, start=1):
-        work(page, num, len(list))
+        page_list = pages
+    for num, page in enumerate(page_list, start=1):
+        work(page, num, len(page_list))
     # ---
     # '''
     # ---
@@ -280,10 +281,10 @@ def main():
             # python red.py -start:all
             #
             # ---
-            list = api_new.Get_All_pages(start="", namespace=namespaces, limit=limite)
+            page_list = api_new.Get_All_pages(start="", namespace=namespaces, limit=limite)
             start_done = starts
-            for num, page in enumerate(list, start=1):
-                work(page, num, len(list))
+            for num, page in enumerate(page_list, start=1):
+                work(page, num, len(page_list))
                 # ---
                 starts = page
     elif starts != "":
@@ -296,10 +297,10 @@ def main():
             # python red.py -start:! -limit:3
             #
             # ---
-            list = api_new.Get_All_pages(start=starts, namespace=namespaces, limit=limite)
+            page_list = api_new.Get_All_pages(start=starts, namespace=namespaces, limit=limite)
             start_done = starts
-            for num, page in enumerate(list, start=1):
-                work(page, num, len(list))
+            for num, page in enumerate(page_list, start=1):
+                work(page, num, len(page_list))
                 # ---
                 starts = page
 
