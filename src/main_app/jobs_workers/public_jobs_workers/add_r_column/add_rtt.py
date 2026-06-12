@@ -35,7 +35,7 @@ def header_has_r(text: str, table: bool = False) -> bool:
     return False
 
 
-def add_header_r(text: str, table: bool = False):
+def add_header_r(text: str, table: bool = False) -> str:
     if not table:
         parsed = wtp.parse(text)
         table = parsed.tables[0]

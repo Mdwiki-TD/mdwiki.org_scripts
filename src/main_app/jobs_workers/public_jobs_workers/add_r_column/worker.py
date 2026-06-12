@@ -59,8 +59,8 @@ def add_to_tables(
 def get_titles_redirects(
     titles: list[str],
     site: Site,
-) -> dict[str, bool]:
-    from_to: dict[str, Any] = {}
+) -> dict[str, str]:
+    from_to: dict[str, str] = {}
 
     params = {
         # "action": "query",
@@ -260,7 +260,7 @@ class AddRColumnWorker(BaseObjectsJobWorker):
         logger.warning(f"Error code: {error_code}, details: {details}")
         return False
 
-    def _get_text_wikilinks(self, text: str) -> list:
+    def _get_text_wikilinks(self, text: str) -> list[str]:
         to_f = "== List =="
 
         mdwiki_pages: list[Any] = []

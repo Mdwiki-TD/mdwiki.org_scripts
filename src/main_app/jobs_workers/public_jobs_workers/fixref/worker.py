@@ -63,7 +63,7 @@ class FixRefWorker(BaseObjectsJobWorker):
 
         self._save_progress()
 
-        pages: list[Any] = []
+        pages: list[str] = []
 
         if titles_raw:
             pages = self._resolve_targets(titles_raw)
@@ -214,7 +214,7 @@ class FixRefWorker(BaseObjectsJobWorker):
 
         return UpdaterOutcome(kind="error", msg=result.get("error", "Unknown error"))
 
-    def make_new_text(self, text: str) -> tuple:
+    def make_new_text(self, text: str) -> tuple[str, str]:
         new_text, summary = fix_ref_template(text, returnsummary=True)
         summary = summary or "Normalize references"
         return new_text, summary
