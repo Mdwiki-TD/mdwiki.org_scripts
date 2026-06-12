@@ -260,7 +260,7 @@ class AddRColumnWorker(BaseObjectsJobWorker):
         logger.warning(f"Error code: {error_code}, details: {details}")
         return False
 
-    def _get_text_wikilinks(self, text):
+    def _get_text_wikilinks(self, text: str):
         to_f = "== List =="
 
         mdwiki_pages: list[Any] = []
@@ -275,7 +275,7 @@ class AddRColumnWorker(BaseObjectsJobWorker):
         mdwiki_pages = list(set(mdwiki_pages))
         return mdwiki_pages
 
-    def _newtext_step(self, text) -> str:
+    def _newtext_step(self, text: str) -> str:
         # pages = CatDepth("Category:RTT", sitecode="www", family="mdwiki", depth=0, ns=0)
         template_pages = get_template_pages(
             title="Template:RTT",

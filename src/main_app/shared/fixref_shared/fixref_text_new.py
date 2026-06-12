@@ -74,7 +74,7 @@ def add_title(temp):
     return temp
 
 
-def fix_ref_template(text, returnsummary=False):
+def fix_ref_template(text: str, returnsummary: bool=False):
     # ---
     summary = "Normalize references"
     # ---

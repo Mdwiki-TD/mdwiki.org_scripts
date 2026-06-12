@@ -38,7 +38,7 @@ def _replace_links(
     return str(parsed)
 
 
-def replace_in_text(text, new_targets):
+def replace_in_text(text: str, new_targets):
     newtext = text
 
     for oldlink, target in new_targets.items():

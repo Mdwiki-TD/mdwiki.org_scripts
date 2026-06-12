@@ -10,7 +10,7 @@ logger = logging.getLogger(__name__)
 
 
 class FixChembox:
-    def __init__(self, text) -> None:
+    def __init__(self, text: str) -> None:
         self.text = text
         self.new_text = text
 
