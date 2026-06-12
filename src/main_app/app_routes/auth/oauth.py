@@ -5,11 +5,9 @@ from __future__ import annotations
 import logging
 from typing import Tuple
 
-
-from mwoauth.handshaker import Handshaker
-
 import mwoauth
 from flask import url_for
+from mwoauth.handshaker import Handshaker
 
 from ...config import settings
 

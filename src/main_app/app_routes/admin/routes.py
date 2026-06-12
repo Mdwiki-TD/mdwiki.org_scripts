@@ -3,10 +3,7 @@
 from __future__ import annotations
 
 import logging
-
-
 from typing import Any
-
 
 from flask import (
     Blueprint,
@@ -24,6 +21,7 @@ from .sidebar import create_side
 logger = logging.getLogger(__name__)
 
 bp_admin = Blueprint("admin", __name__, url_prefix="/admin")
+
 
 @bp_admin.app_context_processor
 def inject_sidebar() -> dict[str, Any]:

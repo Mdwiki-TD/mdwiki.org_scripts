@@ -4,14 +4,12 @@ from __future__ import annotations
 
 import logging
 
-
-from werkzeug.wrappers.response import Response
-
 from flask import (
     Blueprint,
     render_template,
     send_from_directory,
 )
+from werkzeug.wrappers.response import Response
 
 from ...jobs_workers.public_jobs_workers.workers_list_public import (
     jobs_data_for_all_pages,
