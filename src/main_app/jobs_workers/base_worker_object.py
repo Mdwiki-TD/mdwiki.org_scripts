@@ -227,7 +227,6 @@ class BaseObjectsJobWorker(ABC):
             prefix += f": {context}"
         logger.exception(prefix)
 
-
         self.result.status = "failed"
         self.result.failed_at = datetime.now().isoformat()
 
@@ -272,7 +271,6 @@ class BaseObjectsJobWorker(ABC):
         finally:
             # Post-processing cleanup
             self.after_run()
-
 
         return self.result.to_json()
 

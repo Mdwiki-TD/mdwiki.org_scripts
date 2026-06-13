@@ -3,6 +3,7 @@ import sys
 from typing import Any
 
 import wikitextparser as wtp
+
 from .make_title_bot import make_title
 
 
