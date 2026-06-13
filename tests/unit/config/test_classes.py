@@ -100,9 +100,10 @@ class TestJobsConfig:
 
 
 class TestPaths:
-    def test_fields(self):
-        p = Paths(log_dir="/tmp/logs", jobs_path="/tmp/jobs", public_jobs_path="/tmp/public_jobs")
-        assert p.log_dir == "/tmp/logs"
+    def test_fields(self, tmp_path):
+        _tmp_path = str(tmp_path)
+        p = Paths(log_dir=f"/{_tmp_path}/logs", jobs_path=f"/{_tmp_path}/jobs", public_jobs_path=f"/{_tmp_path}/public_jobs")
+        assert str(p.log_dir) == f"/{_tmp_path}/logs"
 
 
 class TestSettings:

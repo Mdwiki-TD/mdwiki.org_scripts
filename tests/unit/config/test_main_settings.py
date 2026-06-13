@@ -61,10 +61,10 @@ class TestResolvePath:
         assert "~" not in str(result)
         assert "data" in str(result)
 
-    def test_returns_path_object(self):
+    def test_returns_path_object(self, tmp_path):
         from pathlib import Path
 
-        result = resolve_path("/tmp/test")
+        result = resolve_path(str(tmp_path / "test"))
         assert isinstance(result, Path)
 
 
