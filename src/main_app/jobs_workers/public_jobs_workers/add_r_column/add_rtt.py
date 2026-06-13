@@ -25,7 +25,7 @@ def header_has_r(text: str, table: wtp.Table | bool = False) -> bool:
 
     # for table in parsed.tables:
 
-    for x in table.cells():
+    for x in table.cells():  # type: ignore
         if x[1].is_header:
             for numb, v in enumerate(x, 1):
                 if v.value.strip() == "R":
@@ -40,17 +40,20 @@ def add_header_r(text: str, table: wtp.Table | bool = False) -> str:
         parsed = wtp.parse(text)
         table = parsed.tables[0]
 
+    if not table:
+        return ""
+
     # for table in parsed.tables:
 
     # Check if R column already exists
     if header_has_r(text, table):
         logger.info("R column already exists in table header")
-        return table.string
+        return table.string  # type: ignore
 
     count = 0
 
     # add R to header in 2nd column
-    for x in table.cells():
+    for x in table.cells():  # type: ignore
         if x[0].is_header:
             x[0].value = x[0].value + "\n! R"
         else:
@@ -60,7 +63,7 @@ def add_header_r(text: str, table: wtp.Table | bool = False) -> str:
 
     logger.info(f"Added R column to table header in {count} cells")
 
-    return table.string
+    return table.string  # type: ignore
 
 
 def work_one_table(table_text, redirects, pages):

@@ -23,8 +23,9 @@ def change_lay_source(temp: wtp.Template) -> tuple[str, Any]:
     # ---
     for x, ys in tab.items():
         for param in ys:
-            if temp.has_arg(param):
-                val = temp.get_arg(param).value
+            has_param = temp.get_arg(param)
+            if has_param:
+                val = has_param.value
                 if val.strip() != "":
                     new_tab[x] = val.strip()
                 temp.del_arg(param)
@@ -47,14 +48,20 @@ def change_lay_source(temp: wtp.Template) -> tuple[str, Any]:
     return lay_temp, temp
 
 
-def add_title(temp: wtp.Template):
+def add_title(temp: wtp.Template) -> wtp.Template:
+    # ---
     title = ""
+    url = ""
     # ---
     title_arg = temp.get_arg("title")
     # ---
     if title_arg:
         title = str(title_arg.value).strip()
-    url = temp.get_arg("url").value if temp.has_arg("url") else ""
+    # ---
+    # ---
+    _url_param = temp.get_arg("url")
+    if temp.has_arg("url") and _url_param:
+        url = _url_param.value
     # ---
     if title != "" or url == "":
         return temp
