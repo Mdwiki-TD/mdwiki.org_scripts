@@ -21,7 +21,7 @@ class TestDbConfig:
     def test_frozen(self):
         cfg = DbConfig(db_name="x", db_host="h", db_user="u", db_password="p")
         with pytest.raises(AttributeError):
-            cfg.db_name = "y"
+            cfg.db_name = "y"  # type: ignore
 
     def test_to_dict(self):
         cfg = DbConfig(db_name="mydb", db_host="localhost", db_user="user", db_password="pass")
@@ -38,7 +38,7 @@ class TestCookieConfig:
     def test_frozen(self):
         cfg = CookieConfig(name="c", max_age=100, secure=True, httponly=True, samesite="Lax")
         with pytest.raises(AttributeError):
-            cfg.name = "other"
+            cfg.name = "other"  # type: ignore
 
     def test_fields(self):
         cfg = CookieConfig(name="uid", max_age=3600, secure=False, httponly=True, samesite="Strict")
@@ -100,9 +100,12 @@ class TestJobsConfig:
 
 
 class TestPaths:
-    def test_fields(self):
-        p = Paths(log_dir="/tmp/logs", jobs_path="/tmp/jobs", public_jobs_path="/tmp/public_jobs")
-        assert p.log_dir == "/tmp/logs"
+    def test_fields(self, tmp_path):
+        _tmp_path = str(tmp_path)
+        p = Paths(
+            log_dir=f"/{_tmp_path}/logs", jobs_path=f"/{_tmp_path}/jobs", public_jobs_path=f"/{_tmp_path}/public_jobs"
+        )
+        assert str(p.log_dir) == f"/{_tmp_path}/logs"
 
 
 class TestSettings:

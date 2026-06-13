@@ -31,7 +31,7 @@ class TestAdminRequired:
             user.username = "regular_user"
             user.is_active_admin = False
             with patch("src.main_app.app_routes.admin.admins_required.load_user", return_value=user):
-                with pytest.raises(Exception):
+                with pytest.raises(Exception):  # noqa: B017
                     view()
 
     def test_admin_passes_through(self, app):

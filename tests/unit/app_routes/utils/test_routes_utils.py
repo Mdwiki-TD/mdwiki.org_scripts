@@ -10,9 +10,9 @@ from __future__ import annotations
 
 from unittest.mock import MagicMock
 
+from src.main_app.app_routes.utils.routes_utils import context_user  # noqa: F401
+from src.main_app.app_routes.utils.routes_utils import get_job_detail_url  # noqa: F401
 from src.main_app.app_routes.utils.routes_utils import (
-    context_user,
-    get_job_detail_url,
     load_auth_payload,
 )
 from src.main_app.su_services.current_user import CurrentUser

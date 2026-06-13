@@ -78,7 +78,7 @@ class BaseObjectsJobWorker(ABC):
         self.result_file_cancelled: str = f"{self.result_file}.cancelled"
         self._edit_count: int = 0
 
-        self.result: WorkerObject | None = None
+        self.result: WorkerObject = WorkerObject()
 
     @abstractmethod
     def get_job_type(self) -> str:
@@ -107,7 +107,7 @@ class BaseObjectsJobWorker(ABC):
         Returns:
             True to continue with processing, False to abort
         """
-        assert self.result is not None
+
         try:
             update_job_status(self.job_id, "running", self.result_file, job_type=self.job_type)
             self.result.status = "running"
@@ -121,7 +121,7 @@ class BaseObjectsJobWorker(ABC):
 
     def after_run(self) -> None:
         """Called after processing completes (success or failure)."""
-        assert self.result is not None
+
         # Finalize timestamps
         self.result.completed_at = datetime.now().isoformat()
         final_status = self.result.status or "completed"
@@ -145,7 +145,7 @@ class BaseObjectsJobWorker(ABC):
         logger.info(f"Job {self.job_id}: Finished with status {final_status}")
 
     def _save_progress(self, insert_last_update: bool = True) -> None:
-        assert self.result is not None
+
         if insert_last_update:
             self.result.last_update = datetime.now().isoformat()
         result = self.result.to_json()
@@ -199,7 +199,7 @@ class BaseObjectsJobWorker(ABC):
 
     def _mark_as_cancelled_in_result(self) -> None:
         """Standardize the result dictionary for a cancelled job."""
-        assert self.result is not None
+
         self.result.status = "cancelled"
         if self.result.cancelled_at is None:
             self.result.cancelled_at = datetime.now().isoformat()
@@ -227,7 +227,6 @@ class BaseObjectsJobWorker(ABC):
             prefix += f": {context}"
         logger.exception(prefix)
 
-        assert self.result is not None
         self.result.status = "failed"
         self.result.failed_at = datetime.now().isoformat()
 
@@ -235,13 +234,13 @@ class BaseObjectsJobWorker(ABC):
 
     def log_errors(self, error: str, error_type: str = "") -> None:
         """ """
-        assert self.result is not None
+
         if error:
             self.result.errors.append({"error": error, "error_type": error_type})
 
     def log_no_site_error(self) -> None:
         """ """
-        assert self.result is not None
+
         self.result.status = "failed"
         self.result.failed_at = datetime.now().isoformat()
         self.log_errors("No authenticated user site available.")
@@ -260,7 +259,7 @@ class BaseObjectsJobWorker(ABC):
         try:
             # Pre-processing setup
             if not self.before_run():
-                assert self.result is not None
+
                 return self.result.to_json()
 
             # Main processing
@@ -273,7 +272,6 @@ class BaseObjectsJobWorker(ABC):
             # Post-processing cleanup
             self.after_run()
 
-        assert self.result is not None
         return self.result.to_json()
 
 
