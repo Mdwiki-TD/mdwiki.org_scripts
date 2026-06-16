@@ -4,10 +4,10 @@ import pytest
 from flask.app import Flask
 
 from src.main_app.db.exceptions import DuplicateJobError
+from src.main_app.db.services.delete_service import delete_job
 from src.main_app.db.services.jobs_service import (
     cancel_job_db,
     create_job,
-    delete_job,
     get_job,
     is_job_cancelled,
     list_jobs,

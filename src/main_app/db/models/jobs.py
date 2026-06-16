@@ -66,6 +66,29 @@ class JobRecord(db.Model):
             if hasattr(self, key):
                 setattr(self, key, value)
 
+    def to_dict(self) -> dict[str, Any]:
+        """Serializes the pure model instance into a dictionary."""
+        data: dict[str, Any] = {}
+        table_keys = [
+            "id",
+            "job_type",
+            "username",
+            "status",
+            "started_at",
+            "completed_at",
+            "result_file",
+            "created_at",
+            "updated_at",
+            "is_running",
+        ]
+        for column in table_keys:
+            value = getattr(self, column)
+            if hasattr(value, "isoformat"):
+                value = value.isoformat()
+            data[column] = value
+
+        return data
+
 
 __all__ = [
     "JobRecord",
