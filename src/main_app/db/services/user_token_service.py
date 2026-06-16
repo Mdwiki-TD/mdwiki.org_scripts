@@ -15,7 +15,7 @@ from sqlalchemy.orm import joinedload
 from ...core.crypto import encrypt_value
 from ...extensions import db
 from ..models import UserTokenRecord
-from .utils import db_guard, db_guard_rollback
+from .utils import db_guard_rollback
 
 logger = logging.getLogger(__name__)
 
@@ -116,32 +116,8 @@ def upsert_user_token(user_id: int, access_key: str, access_secret: str) -> User
     return orm_obj
 
 
-# ── DELETE ───────────────────────────────────────────────
-
-
-@db_guard(default_return=False)
-def delete_user_token(user_id: int) -> bool:
-    """
-    Delete the stored OAuth token only. User identity row persists.
-
-    TODO: call .delete() on UserTokenRecord, so logout now removes the entire persisted user record.
-        That contradicts the docstring and can wipe identity/admin state instead of only clearing OAuth secrets.
-        Clear the token fields in-place, or move credentials into a separate token table,
-        but don't delete the user row here.
-    """
-    if not user_id:
-        return False
-
-    affected_rows = (
-        db.session.query(UserTokenRecord).filter(UserTokenRecord.user_id == user_id).delete(synchronize_session=False)
-    )
-    db.session.commit()
-    return affected_rows > 0
-
-
 __all__ = [
     "upsert_user_token",
-    "delete_user_token",
     "get_user_token",
     "update_user_token",
 ]
