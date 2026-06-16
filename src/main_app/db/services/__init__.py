@@ -63,6 +63,6 @@ __all__ = [
     # delete
     "delete_coordinator",
     "delete_job",
-    "delete_user_token",
     "delete_user",
+    "delete_user_token",
 ]

@@ -16,7 +16,7 @@ from ..models import (
 logger = logging.getLogger(__name__)
 
 
-def delete_record_by_pk(model: Type[db.Model], pk_value: Any) -> bool:
+def delete_record_by_pk(model: Type[db.Model], pk_value: Any) -> bool:  # type: ignore
     """
     Generic helper to delete a record by its primary key.
     Returns True if deleted, False otherwise.
@@ -69,8 +69,8 @@ def delete_job(job_id: int, job_type: str) -> bool:
 
 
 __all__ = [
+    "delete_user",
+    "delete_user_token",
     "delete_coordinator",
     "delete_job",
-    "delete_user_token",
-    "delete_user",
 ]

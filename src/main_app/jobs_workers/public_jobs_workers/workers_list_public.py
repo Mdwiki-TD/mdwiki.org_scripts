@@ -10,7 +10,7 @@ from .fixref.worker import fixref_worker_entry
 from .import_history.worker import import_history_worker_entry
 from .newupdater_all.worker import newupdater_all_worker_entry
 
-jobs_data_for_all_pages = {
+jobs_data_for_all_pages: dict[str, JobData] = {
     "newupdater_all": JobData(
         job_type="newupdater_all",
         job_name="Medical content updater (Category:RTT)",

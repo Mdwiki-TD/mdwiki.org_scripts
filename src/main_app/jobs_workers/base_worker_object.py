@@ -5,9 +5,8 @@ from __future__ import annotations
 import logging
 import threading
 from abc import ABC, abstractmethod
-from dataclasses import asdict, dataclass, field
 from datetime import datetime
-from typing import Any, Dict, Final, List, Optional
+from typing import Any, Final
 
 from sqlalchemy.orm.exc import StaleDataError
 
@@ -17,31 +16,10 @@ from ..db.services import (
     update_job_status,
 )
 from ..su_services import is_job_cancelled_file_exist, save_job_result_by_name
+from .shared_objects import WorkerObject
 from .utils import generate_result_file_name
 
 logger = logging.getLogger(__name__)
-
-WorkerError = Dict[str, Any]
-
-
-@dataclass
-class WorkerObject:
-    status: str = "pending"
-    started_at: str = field(default_factory=lambda: datetime.now().isoformat())
-    completed_at: Optional[str] = None
-    cancelled_at: Optional[str] = None
-    last_update: Optional[str] = ""
-    failed_at: Optional[str] = None
-    errors: List[WorkerError] = field(default_factory=list)
-    error: Optional[str] = None
-    error_type: Optional[str] = None
-
-    def to_json(self) -> Dict[str, Any]:
-        """
-        Converts the dataclass instance back to its original dictionary format.
-        """
-
-        return asdict(self)
 
 
 class BaseObjectsJobWorker(ABC):
@@ -70,7 +48,7 @@ class BaseObjectsJobWorker(ABC):
         cancel_event: threading.Event | None = None,
     ) -> None:
         self.job_id: Final[int] = job_id
-        self.user: Final[Dict[str, Any] | None] = user
+        self.user: Final[dict[str, Any] | None] = user
         self.cancel_event: Final[threading.Event | None] = cancel_event
         self.job_type: str = self.get_job_type()
         self.result_file: str = generate_result_file_name(job_id, self.job_type)
@@ -115,13 +93,13 @@ class BaseObjectsJobWorker(ABC):
             return True
         except LookupError:
             logger.exception(
-                f"Job {self.job_id}: Could not update status to running, job record might have been deleted."
+                "Job %s: Could not update status to running, job record might have been deleted.",
+                self.job_id,
             )
             return False
 
     def after_run(self) -> None:
         """Called after processing completes (success or failure)."""
-
         # Finalize timestamps
         self.result.completed_at = datetime.now().isoformat()
         final_status = self.result.status or "completed"
@@ -138,11 +116,11 @@ class BaseObjectsJobWorker(ABC):
         try:
             update_job_status(self.job_id, final_status, self.result_file, job_type=self.job_type)
         except (StaleDataError, LookupError):
-            logger.error(f"Job {self.job_id}: Could not update final status, job record might have been deleted.")
+            logger.error("Job %s: Could not update final status, job record might have been deleted.", self.job_id)
         except Exception:
-            logger.error(f"Job {self.job_id}: Failed to update final status")
+            logger.error("Job %s: Failed to update final status", self.job_id)
 
-        logger.info(f"Job {self.job_id}: Finished with status {final_status}")
+        logger.info("Job %s: Finished with status %s", self.job_id, final_status)
 
     def _save_progress(self, insert_last_update: bool = True) -> None:
 
@@ -152,7 +130,7 @@ class BaseObjectsJobWorker(ABC):
         try:
             save_job_result_by_name(self.result_file, result)
         except Exception:
-            logger.exception(f"Job {self.job_id}: Failed to save job result")
+            logger.exception("Job %s: Failed to save job result", self.job_id)
 
     def is_cancelled(self, check_db: bool = False) -> bool:
         """Check if the job has been cancelled.
@@ -161,19 +139,19 @@ class BaseObjectsJobWorker(ABC):
             True if cancelled, False otherwise
         """
         if self.cancel_event and self.cancel_event.is_set():
-            logger.info(f"Job {self.job_id}: Local cancellation detected, stopping.")
+            logger.info("Job %s: Local cancellation detected, stopping.", self.job_id)
             self._mark_as_cancelled_in_result()
             return True
 
         if is_job_cancelled_file_exist(self.result_file_cancelled):
-            logger.info(f"Job {self.job_id}: Cancelled file detected, stopping.")
+            logger.info("Job %s: Cancelled file detected, stopping.", self.job_id)
             self._mark_as_cancelled_in_result()
             return True
 
         if check_db:
             # Optimize is_cancelled DB check frequency, by reducing the check frequency (to occur every N cycles).
             if is_job_cancelled(self.job_id, job_type=self.job_type):
-                logger.info(f"Job {self.job_id}: Global cancellation detected, stopping.")
+                logger.info("Job %s: Global cancellation detected, stopping.", self.job_id)
                 self._mark_as_cancelled_in_result()
                 return True
 
@@ -245,7 +223,7 @@ class BaseObjectsJobWorker(ABC):
         self.result.failed_at = datetime.now().isoformat()
         self.log_errors("No authenticated user site available.")
 
-    def run(self) -> Dict[str, Any]:
+    def run(self) -> dict[str, Any]:
         """Execute the complete job lifecycle.
 
         This method orchestrates the entire job lifecycle:

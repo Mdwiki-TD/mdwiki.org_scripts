@@ -23,7 +23,7 @@ def prepare_log_file(log_file: str | None, project_logger: logging.Logger) -> Pa
     try:
         log_file_path.parent.mkdir(parents=True, exist_ok=True)
     except Exception as e:
-        project_logger.error(f"Failed to create log directory: {e}")
+        project_logger.error("Failed to create log directory: %s", e)
         log_file_path = None
     return log_file_path
 
@@ -72,7 +72,7 @@ def setup_logging(
     console_handler.setLevel(numeric_level)
     project_logger.addHandler(console_handler)
 
-    project_logger.debug(f"Setting up logging for '{name}' with level '{level}'")
+    project_logger.debug("Setting up logging for '%s' with level '%s'", name, level)
 
     if log_file:
         log_file_path = prepare_log_file(log_file, project_logger)
@@ -121,3 +121,15 @@ def configure_logging(
                 "Falling back to console logging; could not create log directory %s: %s", log_dir, exc
             )
             return
+
+    # Define paths
+    all_log_path = str(log_dir / "app.log")
+    error_log_path = str(log_dir / "errors.log")
+
+    setup_logging(
+        level=level,
+        name="main_app",
+        log_file=all_log_path,
+        error_log_file=error_log_path,
+        use_colorlog=use_colorlog,
+    )
