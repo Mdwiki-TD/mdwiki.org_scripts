@@ -2,9 +2,9 @@ from __future__ import annotations
 
 from flask.app import Flask
 
+from src.main_app.db.services.delete_service import delete_user
 from src.main_app.db.services.users_service import (
     create_user,
-    delete_user,
     get_user,
     get_user_by_username,
     list_users,

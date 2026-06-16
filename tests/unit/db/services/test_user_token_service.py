@@ -2,8 +2,8 @@ from __future__ import annotations
 
 from flask.app import Flask
 
+from src.main_app.db.services.delete_service import delete_user_token
 from src.main_app.db.services.user_token_service import (
-    delete_user_token,
     get_user_token,
     upsert_user_token,
 )
