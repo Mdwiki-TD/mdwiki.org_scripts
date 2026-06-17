@@ -74,7 +74,7 @@ def is_job_cancelled(job_id: int, job_type: str) -> bool:
     if record:
         # Refresh from database to ensure we don't use a stale cached status
         db.session.refresh(record)
-        return record.status.lower() == "cancelled"
+        return (record.status or "").lower() == "cancelled"
     return False
 
 
