@@ -4,7 +4,7 @@ import logging
 from datetime import UTC, datetime
 
 from sqlalchemy import func
-from sqlalchemy.exc import IntegrityError
+from sqlalchemy.exc import IntegrityError, OperationalError
 
 from ...extensions import db
 from ..exceptions import DuplicateJobError
@@ -24,8 +24,6 @@ def _normalize_limit(limit: int | None, *, default: int = 100, max_limit: int = 
 # private API
 # ------------------
 
-
-@db_guard_rollback
 def _update_status(job_id: int, status: str, result_file: str | None, job_type: str) -> JobRecord:
     """
     Update job status and result file.
@@ -37,10 +35,13 @@ def _update_status(job_id: int, status: str, result_file: str | None, job_type: 
 
     if not job:
         raise LookupError(f"Job id {job_id} was not found")
+    status_lower = status.lower()
+    job.status = status_lower
 
-    job.status = status
+    if status_lower == "running" and not job.started_at:
+        job.started_at = datetime.now(UTC)
 
-    if status in ("completed", "failed", "cancelled", "skipped"):
+    if status_lower in ("completed", "failed", "cancelled", "skipped"):
         job.completed_at = datetime.now(UTC)
         job.is_running = None
 
@@ -48,28 +49,8 @@ def _update_status(job_id: int, status: str, result_file: str | None, job_type: 
         job.result_file = result_file
 
     db.session.commit()
-
     db.session.refresh(job)
 
-    return job
-
-
-@db_guard_rollback
-def _update_running_status(job_id: int, result_file: str | None = None, *, job_type: str) -> JobRecord:
-    """
-    Update running job status and optional result file.
-    """
-    job = db.session.query(JobRecord).filter(JobRecord.id == job_id, JobRecord.job_type == job_type).first()
-    if not job:
-        raise LookupError(f"Job id {job_id} was not found")
-
-    job.status = "running"
-    if not job.started_at:
-        job.started_at = datetime.now(UTC)
-    if result_file:
-        job.result_file = result_file
-    db.session.commit()
-    db.session.refresh(job)
     return job
 
 
@@ -93,7 +74,7 @@ def is_job_cancelled(job_id: int, job_type: str) -> bool:
     if record:
         # Refresh from database to ensure we don't use a stale cached status
         db.session.refresh(record)
-        return record.status == "cancelled"
+        return record.status.lower() == "cancelled"
     return False
 
 
@@ -280,17 +261,59 @@ def create_job(job_type: str, username: str) -> JobRecord:
     return job
 
 
-def update_job_status(job_id: int, status: str, result_file: str | None = None, *, job_type: str) -> JobRecord:
+def update_job_status(
+    job_id: int,
+    status: str,
+    result_file: str | None = None,
+    *,
+    job_type: str,
+    _retry_count: int = 0,
+) -> JobRecord:
     """
     Update job status and optional result file.
 
     Query to match:
-
     """
-    if status == "running":
-        return _update_running_status(job_id, result_file, job_type=job_type)
+    # Define a reasonable max retry limit to prevent infinite loops
+    MAX_RETRIES = 3
 
-    return _update_status(job_id, status, result_file, job_type)
+    try:
+        return _update_status(job_id, status, result_file, job_type=job_type)
+
+    except OperationalError as e:
+        if getattr(e, "connection_invalidated", False) or "MySQL server has gone away" in str(e):
+            if _retry_count < MAX_RETRIES:
+                logger.warning(
+                    "Job %s: MySQL server has gone away. Rolling back and retrying update (Attempt %s/%s).",
+                    job_id,
+                    _retry_count + 1,
+                    MAX_RETRIES,
+                )
+
+                # 1. Rollback the failed transaction to clean up the session state
+                try:
+                    db.session.rollback()
+                except Exception:
+                    # Ignore errors during rollback if the connection is completely dead
+                    pass
+
+                # 2. Remove the current session so the next call gets a fresh connection from the pool
+                db.session.remove()
+
+                # 3. Retry with an incremented counter
+                return update_job_status(
+                    job_id,
+                    status,
+                    result_file,
+                    job_type=job_type,
+                    _retry_count=_retry_count + 1,
+                )
+            else:
+                logger.error("Job %s: Failed to update status after %s retries.", job_id, MAX_RETRIES)
+                raise
+        else:
+            logger.exception("Job %s: Failed to update final status", job_id)
+            raise
 
 
 @db_guard_rollback

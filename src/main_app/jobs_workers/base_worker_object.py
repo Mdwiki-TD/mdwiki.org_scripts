@@ -104,7 +104,7 @@ class BaseObjectsJobWorker(ABC):
         self.result.completed_at = datetime.now().isoformat()
         final_status = self.result.status or "completed"
 
-        if final_status in ["running", "pending"]:
+        if final_status.lower() in ["running", "pending"]:
             final_status = "completed"
 
         self.result.status = final_status
@@ -118,7 +118,7 @@ class BaseObjectsJobWorker(ABC):
         except (StaleDataError, LookupError):
             logger.error("Job %s: Could not update final status, job record might have been deleted.", self.job_id)
         except Exception:
-            logger.error("Job %s: Failed to update final status", self.job_id)
+            logger.exception("Job %s: Failed to update final status", self.job_id)
 
         logger.info("Job %s: Finished with status %s", self.job_id, final_status)
 

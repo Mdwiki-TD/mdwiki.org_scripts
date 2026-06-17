@@ -135,6 +135,9 @@ def start_job(
     # Capture the Flask app for the background thread (requires app context)
     flask_app = current_app._get_current_object()  # type: ignore[attr-defined]
 
+    if args and "csrf_token" in args:
+        del args["csrf_token"]
+
     # Start background thread
     thread = threading.Thread(
         target=_runner,
@@ -188,6 +191,9 @@ def start_job_cli(
 
     # Capture the Flask app for the background thread (requires app context)
     flask_app = app or current_app._get_current_object()  # type: ignore[attr-defined]
+
+    if args and "csrf_token" in args:
+        del args["csrf_token"]
 
     # Start background thread
     thread = threading.Thread(
