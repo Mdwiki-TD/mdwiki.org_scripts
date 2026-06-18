@@ -69,8 +69,12 @@ class JobsPublicRoutes:
                 flash("Job type not found.", "warning")
                 abort(404)
 
-            return cancel_job_handler(job_id, job_type, bp_name=JOBS_BP)
+            result = cancel_job_handler(job_id, job_type, bp_name=JOBS_BP)
 
+            if result == "job_detail" :
+                return redirect(url_for(f"{JOBS_BP}.job_detail", job_type=job_type, job_id=job_id))
+
+            return redirect(url_for(f"{JOBS_BP}.jobs_list", job_type=job_type))
         # ================================
         # Jobs List routes
         # ================================
@@ -139,7 +143,6 @@ class JobsPublicRoutes:
                 return redirect(url_for(f"{JOBS_BP}.job_detail", job_type=job_type, job_id=job_id))
 
             return redirect(url_for(f"{JOBS_BP}.jobs_list", job_type=job_type))
-
 
         @self.bp.get("/job-file/<string:result_file>/<string:job_type>")
         def read_job_result_file(result_file: str, job_type: str) -> ResponseReturnValue:

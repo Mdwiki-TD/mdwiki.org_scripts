@@ -35,22 +35,22 @@ def can_manage_job(job: Any, user: Any) -> bool:
     return False
 
 
-def cancel_job_handler(job_id: int, job_type: str, bp_name: str) -> Response:
+def cancel_job_handler(job_id: int, job_type: str, bp_name: str) -> str:
     """Cancel a running job."""
     user = load_user()
     if not user:
         flash("You must be logged in to cancel jobs.", "danger")
-        return redirect(url_for(f"{bp_name}.job_detail", job_type=job_type, job_id=job_id))
+        return "job_detail"
 
     try:
         job = get_job(job_id, job_type)
     except LookupError:
         flash("Job not found.", "warning")
-        return redirect(url_for(f"{bp_name}.jobs_list", job_type=job_type))
+        return "jobs_list"
 
     if not can_manage_job(job, user):
         flash("You don't have permission to cancel this job.", "danger")
-        return redirect(url_for(f"{bp_name}.job_detail", job_type=job_type, job_id=job_id))
+        return "job_detail"
 
     try:
         if jobs_worker.cancel_job_worker(job_id, job_type, job):
@@ -61,7 +61,7 @@ def cancel_job_handler(job_id: int, job_type: str, bp_name: str) -> Response:
         logger.exception("Failed to cancel job")
         flash(f"Failed to cancel job {job_id}", "danger")
 
-    return redirect(url_for(f"{bp_name}.job_detail", job_type=job_type, job_id=job_id))
+    return "job_detail"
 
 
 def delete_job_handler(job_id: int, job_type: str) -> str:
