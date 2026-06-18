@@ -44,6 +44,7 @@ def _unwrap_delete_job(mock_app: Flask):
     if original is not None:
         mock_app.view_functions[endpoint] = original
 
+
 VALID_JOB_TYPE = "fixref"
 ANOTHER_VALID_JOB_TYPE = "create_redirects"
 
