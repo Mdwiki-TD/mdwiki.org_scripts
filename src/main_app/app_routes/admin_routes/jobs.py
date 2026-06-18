@@ -18,24 +18,24 @@ from flask import (
 from flask.typing import ResponseReturnValue
 from werkzeug.wrappers.response import Response
 
-from ..db.exceptions import DuplicateJobError
-from ..db.services import (
+from ...db.exceptions import DuplicateJobError
+from ...db.services import (
     delete_job,
     get_job,
     list_jobs,
 )
-from ..jobs_workers import jobs_worker
-from ..jobs_workers.objects import JobData
-from ..jobs_workers.public_jobs_workers.workers_list_public import jobs_data_public
-from ..su_services import load_job_result
-from .admin.admins_required import admin_required
-from .auth.utils import load_user
-from .jobs_routes_utils import can_manage_job
-from .utils.routes_utils import can_run_bg_jobs, load_auth_payload
+from ...jobs_workers import jobs_worker
+from ...jobs_workers.admin_jobs_workers.workers_list import jobs_data_admins
+from ...jobs_workers.objects import JobData
+from ...su_services import load_job_result
+from ..admin.admins_required import admin_required
+from ..auth.utils import load_user
+from ..jobs_routes_utils import can_manage_job
+from ..utils.routes_utils import load_auth_payload
 
 logger = logging.getLogger(__name__)
 
-JOBS_BP = "public_jobs"
+JOBS_BP = "admin.jobs"
 
 
 def _cancel_job(job_id: int, job_type: str) -> Response:
@@ -86,7 +86,6 @@ def _delete_job(job_id: int, job_type: str) -> Response:
         return redirect(url_for(f"{JOBS_BP}.job_detail", job_type=job_type, job_id=job_id))
 
     try:
-        # Cancel the job if it's running
         if jobs_worker.cancel_job_worker(job_id, job_type):
             logger.info(f"Cancelled running job {job_id} before deletion")
 
@@ -107,10 +106,6 @@ def _start_job(job_type: str, args: dict[str, Any]) -> int | None:
 
     if not user:
         flash("You must be logged in to start this job.", "danger")
-        return None
-
-    if not can_run_bg_jobs(user):
-        flash("You do not have permission to run background jobs.", "danger")
         return None
 
     try:
@@ -198,7 +193,7 @@ def _job_detail(
     )
 
 
-class JobsPublicRoutes:
+class Jobs:
     """Jobs management routes."""
 
     def __init__(self, name: str, jobs_data_infos: dict[str, JobData], url_prefix: str) -> None:
@@ -208,24 +203,11 @@ class JobsPublicRoutes:
 
     def _setup_routes(self) -> None:
         # ================================
-        # All Jobs List route
-        # ================================
-
-        @self.bp.get("/list")
-        def all_jobs_list() -> str:
-            try:
-                jobs = list_jobs(limit=100)
-            except Exception:  # pragma: no cover - defensive guard
-                logger.exception("Unable to load jobs list.")
-                flash("Unable to load jobs list.", "danger")
-                jobs: list[Any] = []
-            return render_template("jobs_templates/all_jobs_list.html", jobs=jobs)
-
-        # ================================
         # Cancel Jobs routes
         # ================================
 
         @self.bp.post("/<string:job_type>/<int:job_id>/cancel")
+        @admin_required
         def cancel_job(job_type: str, job_id: int) -> Response:
             if job_type not in self.jobs_data_infos:
                 flash("Job type not found.", "warning")
@@ -238,6 +220,7 @@ class JobsPublicRoutes:
         # ================================
 
         @self.bp.get("/<string:job_type>")
+        @admin_required
         def jobs_list(job_type: str) -> str:
             template_data: JobData | None = self.jobs_data_infos.get(job_type)
             if not template_data:
@@ -250,6 +233,7 @@ class JobsPublicRoutes:
         # ================================
 
         @self.bp.get("/<string:job_type>/<int:job_id>")
+        @admin_required
         def job_detail(job_type: str, job_id: int) -> Response | str:
             # Load template data
             template_data: JobData | None = self.jobs_data_infos.get(job_type)
@@ -260,6 +244,7 @@ class JobsPublicRoutes:
             return _job_detail(job_id, job_type, template_data)
 
         @self.bp.get("/<string:job_type>/<int:job_id>/expand")
+        @admin_required
         def job_detail_expand(job_type: str, job_id: int) -> Response | str:
             # Load template data
             template_data: JobData | None = self.jobs_data_infos.get(job_type)
@@ -274,6 +259,7 @@ class JobsPublicRoutes:
         # ================================
 
         @self.bp.post("/<string:job_type>/start")
+        @admin_required
         def start_job(job_type: str) -> ResponseReturnValue:
             if job_type not in self.jobs_data_infos:
                 abort(404)
@@ -298,6 +284,7 @@ class JobsPublicRoutes:
             return _delete_job(job_id, job_type)
 
         @self.bp.get("/job-file/<string:result_file>/<string:job_type>")
+        @admin_required
         def read_job_result_file(result_file: str, job_type: str) -> ResponseReturnValue:
             """ """
             if job_type not in self.jobs_data_infos:
@@ -307,12 +294,12 @@ class JobsPublicRoutes:
 
 
 # Public API module
-jobs_public_module = JobsPublicRoutes(
-    name="public_jobs",
-    jobs_data_infos=jobs_data_public,
+jobs_module = Jobs(
+    name="jobs",
+    jobs_data_infos=jobs_data_admins,
     url_prefix="/jobs",
 )
 
 __all__ = [
-    "jobs_public_module",
+    "jobs_module",
 ]

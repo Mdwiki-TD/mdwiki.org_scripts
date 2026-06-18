@@ -79,6 +79,15 @@ def create_side(active_route: str, path: str | None = None) -> str:
             ),
         ],
         "Main": [],
+        "Settings": [
+            SidebarItem(
+                id="settings",
+                admin=1,
+                href=_safe_url_for("admin.settings.dashboard", "/admin/settings/"),
+                title="Settings",
+                icon="bi-gear",
+            ),
+        ],
     }
 
     sidebar = ["<ul class='list-unstyled'>"]

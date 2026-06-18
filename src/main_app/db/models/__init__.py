@@ -1,4 +1,5 @@
 from .jobs import JobRecord
+from .settings import SettingRecord
 from .users import AdminUserRecord, UsersRecord, UserTokenRecord
 
 __all__ = [
@@ -6,4 +7,5 @@ __all__ = [
     "JobRecord",
     "UsersRecord",
     "UserTokenRecord",
+    "SettingRecord",
 ]

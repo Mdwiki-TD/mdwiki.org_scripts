@@ -67,7 +67,7 @@ src/
 ├── app.py                       # WSGI entry (unchanged)
 ├── main_app/
 │   ├── __init__.py              # app factory (extended for new bps & error pages)
-│   ├── config.py                # add JOBS_BACKEND, ENABLE_OAUTH
+│   ├── config.py                # add JOBS_BACKEND
 │   ├── auth/                    # NEW: thin auth surface
 │   │   ├── __init__.py
 │   │   ├── current_user.py      # current_user(), is_authenticated, is_authorized
@@ -357,16 +357,14 @@ summary=summary)` - `mdwiki_page.NewApi(...)` → `AllAPIS(...).NewApi()`
 
 Additions to `main_app/config.py` (`Settings` dataclass):
 
-| Field              | Env var            | Default | Notes                                        |
-| ------------------ | ------------------ | ------- | -------------------------------------------- |
-| `enable_oauth`     | `ENABLE_OAUTH`     | `false` | when `false`, `/auth` falls back to dev-mode |
-| `jobs_max_workers` | `JOBS_MAX_WORKERS` | `2`     | thread pool size                             |
-| `jobs_log_lines`   | `JOBS_LOG_LINES`   | `200`   | rolling per-job log buffer size              |
-| `wiki_username`    | `WIKI_USERNAME`    | –       | already used by `fix_duplicate.py`           |
-| `wiki_password`    | `WIKI_PASSWORD`    | –       | already used by `fix_duplicate.py`           |
+| Field              | Env var            | Default | Notes                              |
+| ------------------ | ------------------ | ------- | ---------------------------------- |
+| `jobs_max_workers` | `JOBS_MAX_WORKERS` | `2`     | thread pool size                   |
+| `jobs_log_lines`   | `JOBS_LOG_LINES`   | `200`   | rolling per-job log buffer size    |
+| `wiki_username`    | `WIKI_USERNAME`    | –       | already used by `fix_duplicate.py` |
+| `wiki_password`    | `WIKI_PASSWORD`    | –       | already used by `fix_duplicate.py` |
 
 The OAuth env-var hard-fail in `_load_oauth_config()` is **softened** behind
-`ENABLE_OAUTH`. When it is `false` (default for local), missing OAuth vars
 log a warning instead of raising. This unblocks `flask run` without prod
 secrets and is gated to non-prod hosts via `is_localhost`.
 
@@ -389,7 +387,7 @@ secrets and is gated to non-prod hosts via `is_localhost`.
     records calls; nothing reaches the network from CI.
 
 A minimal `conftest.py` builds the app via `create_app()` with
-`ENABLE_OAUTH=false`, `FLASK_SECRET_KEY=test`,
+`FLASK_SECRET_KEY=test`,
 `OAUTH_ENCRYPTION_KEY=test`.
 
 ---
@@ -405,7 +403,7 @@ A minimal `conftest.py` builds the app via `create_app()` with
 -   Add `base.html`, `_macros.html`, `jobs/status.html`.
 -   End-to-end migrate **one** route — `/dup/` — as the reference
     implementation (it is the simplest: one button, one job).
--   Soften OAuth requirement behind `ENABLE_OAUTH`.
+-   Soften OAuth requirement
 
 **Phase 2** — migrate `/fixred/` and `/newupdater/` (no jobs / sync, easy
 wins after the auth + service pattern is set).

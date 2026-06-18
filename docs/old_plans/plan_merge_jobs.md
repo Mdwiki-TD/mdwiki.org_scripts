@@ -2,7 +2,7 @@
 
 ## Goal
 
-Migrate 6 jobs from `src/main_app/jobs/` into `src/main_app/public_jobs/` using the `BaseJobWorker` pattern. Old `jobs/` folder stays untouched for reference.
+Migrate 6 jobs from `src/main_app/jobs/` into `src/main_app/jobs/` using the `BaseJobWorker` pattern. Old `jobs/` folder stays untouched for reference.
 
 ## Jobs to Migrate
 
@@ -21,7 +21,7 @@ Migrate 6 jobs from `src/main_app/jobs/` into `src/main_app/public_jobs/` using 
 
 ### Step 1: Create Worker Folder
 
-Create `src/main_app/public_jobs/workers/<job_type>/` with:
+Create `src/main_app/jobs/workers/<job_type>/` with:
 
 **`__init__.py`** — re-export the entry function:
 
@@ -69,7 +69,7 @@ Create `src/templates/public_jobs_templates/<job_type>/` with:
 
 ### Step 3: Register in `workers_list.py`
 
-Edit `src/main_app/public_jobs/workers_list.py`:
+Edit `src/main_app/jobs/workers_list.py`:
 
 1. Add import: `from .workers.<job_type>.worker import <job_type>_worker_entry`
 2. Add an entry to `jobs_data`:
@@ -169,8 +169,8 @@ Edit `src/main_app/public_jobs/workers_list.py`:
 
 For each of the 6 jobs, create:
 
--   `src/main_app/public_jobs/workers/<job_type>/__init__.py`
--   `src/main_app/public_jobs/workers/<job_type>/worker.py`
+-   `src/main_app/jobs/workers/<job_type>/__init__.py`
+-   `src/main_app/jobs/workers/<job_type>/worker.py`
 -   `src/templates/public_jobs_templates/<job_type>/list.html`
 -   `src/templates/public_jobs_templates/<job_type>/details.html`
 
@@ -178,7 +178,7 @@ Total: 24 new files.
 
 Edit:
 
--   `src/main_app/public_jobs/workers_list.py` (add 6 imports + 6 entries in each of 3 dicts)
+-   `src/main_app/jobs/workers_list.py` (add 6 imports + 6 entries in each of 3 dicts)
 
 ---
 
@@ -193,7 +193,7 @@ Edit:
 -   [x] Added `start_job()` to `jobs_worker.py` (delegates to `start_job_with_args` with empty args)
 -   [x] Added descriptive text to `duplicate_redirect/list.html` and `fixred_all/list.html`
 -   [x] Added `pages_processed` table + args JSON to `duplicate_redirect/details.html` and `fixred_all/details.html`
--   [x] Created `/public_jobs/list` endpoint + `all_jobs_list.html` template (shows 100 recent jobs across all types)
+-   [x] Created `/jobs/list` endpoint + `all_jobs_list.html` template (shows 100 recent jobs across all types)
 -   [x] Added "New Jobs" link to navbar in `header.html`
 -   [x] Added missing `api_services` functions: `get_page_text`, `search_pages`, `get_double_redirects`, `import_page_from_wiki`, `get_page_links`
 -   [x] Refactored `fixred_worker.py` to use `api_services` instead of `newapi`

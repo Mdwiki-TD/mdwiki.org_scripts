@@ -9,6 +9,7 @@ from ...extensions import db
 from ..models import (
     AdminUserRecord,
     JobRecord,
+    SettingRecord,
     UsersRecord,
     UserTokenRecord,
 )
@@ -46,6 +47,13 @@ def delete_user(user_id: int) -> bool:
     return delete_record_by_pk(UsersRecord, user_id)
 
 
+def delete_setting(key: str) -> bool:
+    setting = SettingRecord.query.filter_by(key=key).first()
+    if setting:
+        return delete_record_by_pk(SettingRecord, setting.id)
+    return False
+
+
 def delete_coordinator(coordinator_id: int) -> bool:
     return delete_record_by_pk(AdminUserRecord, coordinator_id)
 
@@ -69,8 +77,10 @@ def delete_job(job_id: int, job_type: str) -> bool:
 
 
 __all__ = [
+    "delete_record_by_pk",
     "delete_user",
     "delete_user_token",
     "delete_coordinator",
     "delete_job",
+    "delete_setting",
 ]

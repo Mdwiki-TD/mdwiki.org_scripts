@@ -8,6 +8,8 @@ from .admin_service import (
 from .delete_service import (
     delete_coordinator,
     delete_job,
+    delete_record_by_pk,
+    delete_setting,
     delete_user,
     delete_user_token,
 )
@@ -20,6 +22,14 @@ from .jobs_service import (
     is_job_cancelled,
     list_jobs,
     update_job_status,
+)
+from .settings_service import (
+    create_setting,
+    get_all_settings_raw,
+    get_all_settings_ready,
+    list_settings,
+    settings_update_form,
+    update_setting,
 )
 from .user_token_service import (
     get_authenticated_user_token,
@@ -60,7 +70,16 @@ __all__ = [
     "get_user_jobs_stats",
     "cancel_job_db",
     "is_job_cancelled",
+    # settings_service
+    "get_all_settings_ready",
+    "get_all_settings_raw",
+    "update_setting",
+    "create_setting",
+    "settings_update_form",
+    "list_settings",
     # delete
+    "delete_record_by_pk",
+    "delete_setting",
     "delete_coordinator",
     "delete_job",
     "delete_user",

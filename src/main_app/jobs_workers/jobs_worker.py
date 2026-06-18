@@ -13,10 +13,11 @@ from ..db.models import JobRecord
 from ..db.services import (
     cancel_job_db,
     create_job,
+    get_all_settings_ready,
 )
 from ..su_services.jobs_files_service import create_job_cancelled_file
 from .objects import JobData
-from .public_jobs_workers.workers_list_public import jobs_data
+from .public_jobs_workers.workers_list_public import jobs_data_public
 
 logger = logging.getLogger(__name__)
 
@@ -38,6 +39,23 @@ def _pop_cancel_event(job_id: int) -> threading.Event | None:
 def _get_jobs_cancel_event(job_id: int) -> threading.Event | None:
     with JOBS_CANCEL_EVENTS_LOCK:
         return JOBS_CANCEL_EVENTS.get(job_id)
+
+
+def _load_job_args(job_args: list[dict[str, str]]) -> dict:
+    if not job_args:
+        return {}
+
+    settings_ready = get_all_settings_ready()
+    _args: dict[str, Any] = {}
+
+    for item in job_args:
+        key = item["key"]
+        key_as = item["as"]
+        arg_value = settings_ready.get(key)
+        if arg_value is not None:
+            _args[key_as] = arg_value
+
+    return _args
 
 
 def _runner(
@@ -109,7 +127,7 @@ def start_job(
         job_type: The type of job to start
         args: Optional arguments to pass to the worker
     """
-    job_data: JobData | None = jobs_data.get(job_type)
+    job_data: JobData | None = jobs_data_public.get(job_type)
     target_func = job_data.job_callable if job_data else None
 
     if not job_data or not target_func:
@@ -118,6 +136,10 @@ def start_job(
     username = user.get("username") if user else None
     if not username:
         raise ValueError("User authentication data is required")
+
+    resolved_args = _load_job_args(job_data.job_args) if job_data.job_args else {}
+    if args:
+        resolved_args.update(args)
 
     try:
         # Create job record
@@ -135,13 +157,13 @@ def start_job(
     # Capture the Flask app for the background thread (requires app context)
     flask_app = current_app._get_current_object()  # type: ignore[attr-defined]
 
-    if args and "csrf_token" in args:
-        del args["csrf_token"]
+    if "csrf_token" in resolved_args:
+        del resolved_args["csrf_token"]
 
     # Start background thread
     thread = threading.Thread(
         target=_runner,
-        args=(job.id, user, cancel_event, target_func, flask_app, args),
+        args=(job.id, user, cancel_event, target_func, flask_app, resolved_args),
         daemon=True,
     )
     thread.start()
@@ -166,7 +188,7 @@ def start_job_cli(
         job_type: The type of job to start
         args: Optional arguments to pass to the worker
     """
-    job_data: JobData | None = jobs_data.get(job_type)
+    job_data: JobData | None = jobs_data_public.get(job_type)
     target_func = job_data.job_callable if job_data else None
 
     if not job_data or not target_func:
@@ -175,6 +197,10 @@ def start_job_cli(
     username = user.get("username") if user else None
     if not username:
         raise ValueError("User authentication data is required")
+
+    resolved_args = _load_job_args(job_data.job_args) if job_data.job_args else {}
+    if args:
+        resolved_args.update(args)
 
     try:
         # Create job record
@@ -192,13 +218,13 @@ def start_job_cli(
     # Capture the Flask app for the background thread (requires app context)
     flask_app = app or current_app._get_current_object()  # type: ignore[attr-defined]
 
-    if args and "csrf_token" in args:
-        del args["csrf_token"]
+    if "csrf_token" in resolved_args:
+        del resolved_args["csrf_token"]
 
     # Start background thread
     thread = threading.Thread(
         target=_runner,
-        args=(job.id, user, cancel_event, target_func, flask_app, args),
+        args=(job.id, user, cancel_event, target_func, flask_app, resolved_args),
     )
     thread.start()
 

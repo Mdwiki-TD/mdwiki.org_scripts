@@ -132,7 +132,7 @@ except Exception as e:
 ## Testing
 
 ```bash
-pytest tests/unit/public_jobs/workers --cov=src/main_app/public_jobs/workers
+pytest tests/unit/jobs/workers --cov=src/main_app/jobs/workers
 ```
 
 ## Strengths

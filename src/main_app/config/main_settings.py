@@ -5,7 +5,6 @@ from __future__ import annotations
 import os
 from functools import lru_cache
 from pathlib import Path
-from typing import Optional
 
 from .classes import (
     CookieConfig,
@@ -105,7 +104,7 @@ def _load_database_config() -> DbConfig:
     )
 
 
-def _load_oauth_config() -> Optional[OAuthConfig]:
+def _load_oauth_config() -> OAuthConfig:
     """
     Loads OAuth settings and validates them if enabled.
 
@@ -116,8 +115,15 @@ def _load_oauth_config() -> Optional[OAuthConfig]:
     consumer_key = os.getenv("OAUTH_CONSUMER_KEY", "")
     consumer_secret = os.getenv("OAUTH_CONSUMER_SECRET", "")
     encryption_key = os.getenv("OAUTH_ENCRYPTION_KEY", "")
-    if not (mw_uri and consumer_key and consumer_secret):
-        return None
+
+    # Validate mandatory fields for OAuth
+    if not all([mw_uri, consumer_key, consumer_secret]):
+        raise RuntimeError(
+            "MediaWiki OAuth configuration is incomplete. Set OAUTH_MWURI, OAUTH_CONSUMER_KEY, and OAUTH_CONSUMER_SECRET."
+        )
+
+    if not encryption_key:
+        raise RuntimeError("OAUTH_ENCRYPTION_KEY environment variable is required")
 
     return OAuthConfig(
         mw_uri=mw_uri,
@@ -134,12 +140,10 @@ def _get_paths() -> Paths:
     The paths are rooted at the MAIN_DIR environment variable if set, otherwise at the user's ~/data directory.
 
     Returns:
-        Paths: A dataclass with the following populated fields:
-            - log_dir: path for log files
-            - jobs_path: path for job files
+        Paths: A dataclass
     """
     main_dir = os.getenv("MAIN_DIR", "~/data")
-    main_dir = Path(os.path.expandvars(main_dir)).expanduser()
+    main_dir = resolve_path(main_dir)
 
     return Paths(
         log_dir=str(main_dir / "logs"),
@@ -230,14 +234,6 @@ def get_settings() -> Settings:
         raise RuntimeError("FLASK_SECRET_KEY environment variable is required")
 
     oauth_config = _load_oauth_config()
-
-    if oauth_config is None:
-        raise RuntimeError(
-            "MediaWiki OAuth configuration is incomplete. Set OAUTH_MWURI, OAUTH_CONSUMER_KEY, and OAUTH_CONSUMER_SECRET."
-        )
-
-    if not oauth_config.encryption_key:
-        raise RuntimeError("OAUTH_ENCRYPTION_KEY environment variable is required when ENABLE_OAUTH=true")
 
     cookie_config = load_cookie_config()
 

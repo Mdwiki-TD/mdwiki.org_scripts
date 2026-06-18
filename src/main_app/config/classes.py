@@ -103,7 +103,7 @@ class Settings:
     paths: Paths
     cookie: CookieConfig
     sessions: SessionConfig
-    oauth: Optional[OAuthConfig]
+    oauth: OAuthConfig
     security: SecurityConfig
     other: OtherConfig
     jobs: JobsConfig

@@ -1,6 +1,10 @@
 """Utility modules for the main application."""
 
-from .commons_client import create_commons_session, download_commons_file_core
+from .commons_client import (
+    create_commons_session,
+    download_commons_file_core,
+    download_file_rate_limit,
+)
 from .wiki_client import get_cronjob_site, get_user_site
 
 __all__ = [
@@ -8,4 +12,5 @@ __all__ = [
     "download_commons_file_core",
     "get_user_site",
     "get_cronjob_site",
+    "download_file_rate_limit",
 ]

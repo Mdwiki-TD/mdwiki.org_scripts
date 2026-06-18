@@ -4,6 +4,7 @@ from .category import get_category_members
 from .clients import (
     create_commons_session,
     download_commons_file_core,
+    download_file_rate_limit,
     get_cronjob_site,
     get_user_site,
 )
@@ -27,5 +28,6 @@ __all__ = [
     "get_category_members",
     "create_commons_session",
     "download_commons_file_core",
+    "download_file_rate_limit",
     "get_cronjob_site",
 ]

@@ -1,4 +1,4 @@
-"""Unit tests for src/main_app/public_jobs/workers/find_and_replace/objects.py."""
+"""Unit tests for src/main_app/jobs/workers/find_and_replace/objects.py."""
 
 from __future__ import annotations
 

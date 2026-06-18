@@ -1,4 +1,4 @@
-"""Integration tests for the /public_jobs/ blueprint endpoints.
+"""Integration tests for the /jobs/ blueprint endpoints.
 
 Tests the full job lifecycle through the Flask test client with a real
 SQLite database (via TestingConfig). Background worker execution is
@@ -20,6 +20,30 @@ from src.main_app.db.services import (
 )
 from src.main_app.db.services.admin_service import add_coordinator
 from src.main_app.db.services.users_service import create_user
+
+
+@pytest.fixture
+def _unwrap_delete_job(mock_app: Flask):
+    """Bypass @admin_required on delete_job by unwrapping the view function.
+
+    The ``@admin_required`` decorator is applied at module-import time
+    (when the blueprint is created), so it cannot be mocked per-test
+    through the normal patch / monkeypatch machinery.  This fixture
+    walks the ``__wrapped__`` chain of the already-wrapped view function
+    stored in the app's view-functions registry and replaces it with the
+    original (unwrapped) handler, then restores it after the test.
+    """
+    endpoint = "public_jobs.delete_job"
+    original = mock_app.view_functions.get(endpoint)
+    if original is not None:
+        unwrapped = original
+        while hasattr(unwrapped, "__wrapped__"):
+            unwrapped = unwrapped.__wrapped__
+        mock_app.view_functions[endpoint] = unwrapped
+    yield
+    if original is not None:
+        mock_app.view_functions[endpoint] = original
+
 
 VALID_JOB_TYPE = "fixref"
 ANOTHER_VALID_JOB_TYPE = "create_redirects"
@@ -70,88 +94,88 @@ def _seed_job(mock_app, job_type=VALID_JOB_TYPE, username="JobUser"):
 
 @pytest.mark.usefixtures("mock_app")
 class TestAllJobsList:
-    """GET /public_jobs/list — public listing of all jobs."""
+    """GET /jobs/list — public listing of all jobs."""
 
     def test_all_jobs_list_loads(self, mock_client):
         """The all-jobs page should load successfully."""
-        resp = mock_client.get("/public_jobs/list")
+        resp = mock_client.get("/jobs/list")
         assert resp.status_code == 200
 
     def test_all_jobs_list_empty(self, mock_client):
         """With no jobs, the page should still render."""
-        resp = mock_client.get("/public_jobs/list")
+        resp = mock_client.get("/jobs/list")
         assert resp.status_code == 200
 
 
 @pytest.mark.usefixtures("mock_app")
 class TestJobsListByType:
-    """GET /public_jobs/<job_type> — jobs list filtered by type."""
+    """GET /jobs/<job_type> — jobs list filtered by type."""
 
     def test_valid_job_type_loads(self, mock_client):
         """A valid job type should return 200."""
-        resp = mock_client.get(f"/public_jobs/{VALID_JOB_TYPE}")
+        resp = mock_client.get(f"/jobs/{VALID_JOB_TYPE}")
         assert resp.status_code == 200
 
     def test_invalid_job_type_returns_404(self, mock_client):
         """An unknown job type should return 404."""
-        resp = mock_client.get("/public_jobs/nonexistent_type")
+        resp = mock_client.get("/jobs/nonexistent_type")
         assert resp.status_code == 404
 
     def test_all_valid_job_types_load(self, mock_client):
         """Every registered job type should return 200."""
-        from src.main_app.jobs_workers.public_jobs_workers.workers_list_public import jobs_data
+        from src.main_app.jobs_workers.public_jobs_workers.workers_list_public import jobs_data_public
 
-        for job_type in jobs_data:
-            resp = mock_client.get(f"/public_jobs/{job_type}")
+        for job_type in jobs_data_public:
+            resp = mock_client.get(f"/jobs/{job_type}")
             assert resp.status_code == 200, f"Job type {job_type} failed"
 
 
 @pytest.mark.usefixtures("mock_app")
 class TestJobDetail:
-    """GET /public_jobs/<job_type>/<job_id> — single job detail page."""
+    """GET /jobs/<job_type>/<job_id> — single job detail page."""
 
     def test_job_detail_loads(self, mock_app, mock_client):
         """A valid job ID should load the detail page."""
         _seed_user(mock_app)
         job_id = _seed_job(mock_app, VALID_JOB_TYPE)
-        resp = mock_client.get(f"/public_jobs/{VALID_JOB_TYPE}/{job_id}")
+        resp = mock_client.get(f"/jobs/{VALID_JOB_TYPE}/{job_id}")
         assert resp.status_code == 200
 
     def test_job_detail_nonexistent_redirects(self, mock_app, mock_client):
         """A non-existent job should redirect to the jobs list."""
-        resp = mock_client.get(f"/public_jobs/{VALID_JOB_TYPE}/99999")
+        resp = mock_client.get(f"/jobs/{VALID_JOB_TYPE}/99999")
         assert resp.status_code == 302
 
     def test_job_detail_wrong_type_redirects(self, mock_app, mock_client):
         """Looking up a job with the wrong type should redirect."""
         _seed_user(mock_app)
         job_id = _seed_job(mock_app, VALID_JOB_TYPE)
-        resp = mock_client.get(f"/public_jobs/{ANOTHER_VALID_JOB_TYPE}/{job_id}")
+        resp = mock_client.get(f"/jobs/{ANOTHER_VALID_JOB_TYPE}/{job_id}")
         assert resp.status_code == 302
 
     def test_job_detail_invalid_type_returns_404_or_redirect(self, mock_app, mock_client):
         """An invalid job type should return 404 or redirect."""
         _seed_user(mock_app)
         job_id = _seed_job(mock_app, VALID_JOB_TYPE)
-        resp = mock_client.get(f"/public_jobs/nonexistent/{job_id}")
+        resp = mock_client.get(f"/jobs/nonexistent/{job_id}")
         # The route may 404 or redirect depending on abort handler
         assert resp.status_code in (302, 404)
 
 
 @pytest.mark.usefixtures("mock_app")
 class TestStartJob:
-    """POST /public_jobs/<job_type>/start — start a new background job."""
+    """POST /jobs/<job_type>/start — start a new background job."""
 
     def test_start_requires_login(self, mock_app, mock_client):
         """Unauthenticated user should be redirected."""
-        resp = mock_client.post(f"/public_jobs/{VALID_JOB_TYPE}/start")
+        resp = mock_client.post(f"/jobs/{VALID_JOB_TYPE}/start")
         assert resp.status_code == 302
 
     def test_start_invalid_job_type_404(self, mock_app, mock_client):
         """Starting a job with invalid type should return 404."""
         uid = _seed_user(mock_app)
         _login_user(mock_client, uid)
-        resp = mock_client.post("/public_jobs/nonexistent_type/start")
+        resp = mock_client.post("/jobs/nonexistent_type/start")
         assert resp.status_code == 404
 
     def test_start_creates_job_and_redirects(self, mock_app, mock_client):
@@ -170,7 +194,7 @@ class TestStartJob:
             ),
         ):
             resp = mock_client.post(
-                f"/public_jobs/{VALID_JOB_TYPE}/start",
+                f"/jobs/{VALID_JOB_TYPE}/start",
                 follow_redirects=False,
             )
 
@@ -192,7 +216,7 @@ class TestStartJob:
             ),
         ):
             resp = mock_client.post(
-                f"/public_jobs/{VALID_JOB_TYPE}/start",
+                f"/jobs/{VALID_JOB_TYPE}/start",
                 data={"key": "value"},
                 follow_redirects=False,
             )
@@ -217,7 +241,7 @@ class TestStartJob:
             ),
         ):
             resp = mock_client.post(
-                f"/public_jobs/{VALID_JOB_TYPE}/start",
+                f"/jobs/{VALID_JOB_TYPE}/start",
                 follow_redirects=True,
             )
 
@@ -226,13 +250,13 @@ class TestStartJob:
 
 @pytest.mark.usefixtures("mock_app")
 class TestCancelJob:
-    """POST /public_jobs/<job_type>/<job_id>/cancel — cancel a running job."""
+    """POST /jobs/<job_type>/<job_id>/cancel — cancel a running job."""
 
     def test_cancel_requires_login(self, mock_app, mock_client):
         """Unauthenticated user should be redirected."""
         _seed_user(mock_app)
         job_id = _seed_job(mock_app, VALID_JOB_TYPE)
-        resp = mock_client.post(f"/public_jobs/{VALID_JOB_TYPE}/{job_id}/cancel")
+        resp = mock_client.post(f"/jobs/{VALID_JOB_TYPE}/{job_id}/cancel")
         assert resp.status_code == 302
 
     def test_cancel_invalid_job_type_404(self, mock_app, mock_client):
@@ -240,7 +264,7 @@ class TestCancelJob:
         uid = _seed_user(mock_app)
         _login_user(mock_client, uid)
         job_id = _seed_job(mock_app, VALID_JOB_TYPE)
-        resp = mock_client.post(f"/public_jobs/nonexistent/{job_id}/cancel")
+        resp = mock_client.post(f"/jobs/nonexistent/{job_id}/cancel")
         assert resp.status_code == 404
 
     def test_cancel_nonexistent_job_redirects(self, mock_app, mock_client):
@@ -248,7 +272,7 @@ class TestCancelJob:
         uid = _seed_user(mock_app)
         _login_user(mock_client, uid)
         resp = mock_client.post(
-            f"/public_jobs/{VALID_JOB_TYPE}/99999/cancel",
+            f"/jobs/{VALID_JOB_TYPE}/99999/cancel",
             follow_redirects=False,
         )
         assert resp.status_code == 302
@@ -264,7 +288,7 @@ class TestCancelJob:
             return_value=True,
         ):
             resp = mock_client.post(
-                f"/public_jobs/{VALID_JOB_TYPE}/{job_id}/cancel",
+                f"/jobs/{VALID_JOB_TYPE}/{job_id}/cancel",
                 follow_redirects=True,
             )
 
@@ -281,7 +305,7 @@ class TestCancelJob:
         _login_user(mock_client, other_uid, username="Other")
 
         resp = mock_client.post(
-            f"/public_jobs/{VALID_JOB_TYPE}/{job_id}/cancel",
+            f"/jobs/{VALID_JOB_TYPE}/{job_id}/cancel",
             follow_redirects=True,
         )
         assert resp.status_code == 200
@@ -302,22 +326,22 @@ class TestCancelJob:
             return_value=True,
         ):
             resp = mock_client.post(
-                f"/public_jobs/{VALID_JOB_TYPE}/{job_id}/cancel",
+                f"/jobs/{VALID_JOB_TYPE}/{job_id}/cancel",
                 follow_redirects=True,
             )
 
         assert resp.status_code == 200
 
 
-@pytest.mark.usefixtures("mock_app")
+@pytest.mark.usefixtures("mock_app", "_unwrap_delete_job")
 class TestDeleteJob:
-    """POST /public_jobs/<job_type>/<job_id>/delete — delete a job."""
+    """POST /jobs/<job_type>/<job_id>/delete — delete a job."""
 
     def test_delete_invalid_job_type_404(self, mock_app, mock_client):
         """Deleting with invalid job type should return 404."""
         uid = _seed_user(mock_app)
         _login_user(mock_client, uid)
-        resp = mock_client.post("/public_jobs/nonexistent/1/delete")
+        resp = mock_client.post("/jobs/nonexistent/1/delete")
         assert resp.status_code == 404
 
     def test_delete_own_job(self, mock_app, mock_client):
@@ -331,7 +355,7 @@ class TestDeleteJob:
             return_value=False,
         ):
             resp = mock_client.post(
-                f"/public_jobs/{VALID_JOB_TYPE}/{job_id}/delete",
+                f"/jobs/{VALID_JOB_TYPE}/{job_id}/delete",
                 follow_redirects=True,
             )
 
@@ -351,7 +375,7 @@ class TestDeleteJob:
             return_value=False,
         ):
             resp = mock_client.post(
-                f"/public_jobs/{VALID_JOB_TYPE}/99999/delete",
+                f"/jobs/{VALID_JOB_TYPE}/99999/delete",
                 follow_redirects=True,
             )
 
@@ -373,12 +397,12 @@ class TestJobsRouteIntegration:
             job_id = job.id
 
         # View detail
-        resp = mock_client.get(f"/public_jobs/{VALID_JOB_TYPE}/{job_id}")
+        resp = mock_client.get(f"/jobs/{VALID_JOB_TYPE}/{job_id}")
         assert resp.status_code == 200
 
         # Cancel (no mock — let the real cancel_job_db update the DB)
         resp = mock_client.post(
-            f"/public_jobs/{VALID_JOB_TYPE}/{job_id}/cancel",
+            f"/jobs/{VALID_JOB_TYPE}/{job_id}/cancel",
             follow_redirects=True,
         )
 
@@ -411,6 +435,7 @@ class TestJobsRouteIntegration:
         assert len(redirect_jobs) == 1
         assert len(all_jobs) == 3
 
+    @pytest.mark.usefixtures("_unwrap_delete_job")
     def test_delete_then_list_shows_remaining(self, mock_app, mock_client):
         """After deleting one job, the list should show remaining jobs."""
         from src.main_app.db.services import update_job_status
@@ -431,7 +456,7 @@ class TestJobsRouteIntegration:
             return_value=False,
         ):
             mock_client.post(
-                f"/public_jobs/{VALID_JOB_TYPE}/{job1_id}/delete",
+                f"/jobs/{VALID_JOB_TYPE}/{job1_id}/delete",
                 follow_redirects=True,
             )
 

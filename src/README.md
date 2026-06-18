@@ -13,7 +13,7 @@ A Flask web application deployed on **Wikimedia Toolforge** that provides admini
 | `main_app/db/`           | SQLAlchemy models + CRUD services (users, tokens, jobs)    |
 | `main_app/api_services/` | MediaWiki API wrappers (`mwclient`)                        |
 | `main_app/app_routes/`   | Flask Blueprints (auth, jobs, updater, fixred)             |
-| `main_app/public_jobs/`     | Thread-based background job runner + 8 workers             |
+| `main_app/jobs/`     | Thread-based background job runner + 8 workers             |
 | `main_app/shared/`       | Domain logic (wikitext processing, template normalization) |
 | `main_app/su_services/`  | User auth helpers + job file I/O                           |
 | `main_app/utils/`        | Validation helpers                                         |
