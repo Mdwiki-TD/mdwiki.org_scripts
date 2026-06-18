@@ -76,7 +76,7 @@ class FixRedAllWorker(BaseObjectsJobWorker):
                 break
 
             title = page.name if hasattr(page, "name") else str(page)
-            self.result.summary.scanned += 1
+            self.result.summary.processed += 1
 
             try:
                 outcome = self._process_one(title, state)

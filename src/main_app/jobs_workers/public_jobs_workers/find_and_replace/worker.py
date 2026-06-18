@@ -96,7 +96,7 @@ class FindAndReplaceWorker(BaseObjectsJobWorker):
                 logger.info(f"Job {self.job_id}: Reached cap of {cap} modifications")
                 break
 
-            self.result.summary.scanned += 1
+            self.result.summary.processed += 1
 
             try:
                 outcome = self._process_one(title, str_find, str_replace)

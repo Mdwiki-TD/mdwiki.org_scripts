@@ -5,7 +5,7 @@
 {% block job_summary %}
 <div class="row g-3 mb-4">
     <div class="col-md-3 col-sm-6">
-        {{ stats_card('Processing', result_data.summary.scanned ~ ' / ' ~ result_data.summary.total, "primary", "") }}
+        {{ stats_card('Processing', (result_data.summary.scanned or result_data.summary.processed) ~ ' / ' ~ result_data.summary.total, "primary", "") }}
     </div>
     <div class="col-md-3 col-sm-6">
         {{ stats_card('Imported / Fallback', result_data.pages_imported|length ~ ' / ' ~ result_data.pages_imported_fallback|length, "success", "") }}

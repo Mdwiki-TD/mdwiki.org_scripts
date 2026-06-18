@@ -72,7 +72,7 @@ class ImportHistoryWorker(BaseObjectsJobWorker):
             if self.is_cancelled():
                 break
 
-            self.result.summary.scanned += 1
+            self.result.summary.processed += 1
 
             try:
                 outcome = self._process_one(title)
