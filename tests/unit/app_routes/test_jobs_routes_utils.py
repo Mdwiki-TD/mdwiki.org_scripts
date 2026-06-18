@@ -1,5 +1,5 @@
-
 from unittest.mock import MagicMock
+
 from src.main_app.app_routes.jobs_routes_utils import can_manage_job
 
 
