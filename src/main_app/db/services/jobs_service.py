@@ -24,6 +24,7 @@ def _normalize_limit(limit: int | None, *, default: int = 100, max_limit: int = 
 # private API
 # ------------------
 
+
 def _update_status(job_id: int, status: str, result_file: str | None, job_type: str) -> JobRecord:
     """
     Update job status and result file.
