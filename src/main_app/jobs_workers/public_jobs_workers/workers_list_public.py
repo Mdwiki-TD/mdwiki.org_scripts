@@ -105,10 +105,10 @@ jobs_data_one_page = {
     ),
 }
 
-jobs_data = jobs_data_for_all_pages | jobs_data_one_page
+jobs_data_public = jobs_data_for_all_pages | jobs_data_one_page
 
 __all__ = [
     "jobs_data_for_all_pages",
     "jobs_data_one_page",
-    "jobs_data",
+    "jobs_data_public",
 ]

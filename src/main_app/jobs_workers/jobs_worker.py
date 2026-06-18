@@ -17,7 +17,7 @@ from ..db.services import (
 )
 from ..su_services.jobs_files_service import create_job_cancelled_file
 from .objects import JobData
-from .public_jobs_workers.workers_list_public import jobs_data
+from .public_jobs_workers.workers_list_public import jobs_data_public
 
 logger = logging.getLogger(__name__)
 
@@ -127,7 +127,7 @@ def start_job(
         job_type: The type of job to start
         args: Optional arguments to pass to the worker
     """
-    job_data: JobData | None = jobs_data.get(job_type)
+    job_data: JobData | None = jobs_data_public.get(job_type)
     target_func = job_data.job_callable if job_data else None
 
     if not job_data or not target_func:
@@ -188,7 +188,7 @@ def start_job_cli(
         job_type: The type of job to start
         args: Optional arguments to pass to the worker
     """
-    job_data: JobData | None = jobs_data.get(job_type)
+    job_data: JobData | None = jobs_data_public.get(job_type)
     target_func = job_data.job_callable if job_data else None
 
     if not job_data or not target_func:

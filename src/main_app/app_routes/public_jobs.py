@@ -26,7 +26,7 @@ from ..db.services import (
 )
 from ..jobs_workers import jobs_worker
 from ..jobs_workers.objects import JobData
-from ..jobs_workers.public_jobs_workers.workers_list_public import jobs_data
+from ..jobs_workers.public_jobs_workers.workers_list_public import jobs_data_public
 from ..su_services import load_job_result
 from .auth.utils import load_user
 from .utils.routes_utils import can_run_bg_jobs, load_auth_payload
@@ -300,7 +300,7 @@ class JobsPublicRoutes:
 # Public API module
 jobs_module = JobsPublicRoutes(
     name="public_jobs",
-    jobs_data_infos=jobs_data,
+    jobs_data_infos=jobs_data_public,
 )
 
 __all__ = [
