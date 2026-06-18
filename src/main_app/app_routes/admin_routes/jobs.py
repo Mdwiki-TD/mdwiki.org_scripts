@@ -55,10 +55,11 @@ class Jobs:
 
             result = cancel_job_handler(job_id, job_type)
 
-            if result == "job_detail" :
+            if result == "job_detail":
                 return redirect(url_for(f"{JOBS_BP}.job_detail", job_type=job_type, job_id=job_id))
 
             return redirect(url_for(f"{JOBS_BP}.jobs_list", job_type=job_type))
+
         # ================================
         # Jobs List routes
         # ================================
@@ -127,7 +128,7 @@ class Jobs:
                 abort(404)
             result = delete_job_handler(job_id, job_type)
 
-            if result == "job_detail" :
+            if result == "job_detail":
                 return redirect(url_for(f"{JOBS_BP}.job_detail", job_type=job_type, job_id=job_id))
 
             return redirect(url_for(f"{JOBS_BP}.jobs_list", job_type=job_type))
