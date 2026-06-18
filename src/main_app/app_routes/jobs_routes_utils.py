@@ -35,7 +35,7 @@ def can_manage_job(job: Any, user: Any) -> bool:
     return False
 
 
-def cancel_job_handler(job_id: int, job_type: str, bp_name: str) -> str:
+def cancel_job_handler(job_id: int, job_type: str) -> str:
     """Cancel a running job."""
     user = load_user()
     if not user:

@@ -69,7 +69,7 @@ class JobsPublicRoutes:
                 flash("Job type not found.", "warning")
                 abort(404)
 
-            result = cancel_job_handler(job_id, job_type, bp_name=JOBS_BP)
+            result = cancel_job_handler(job_id, job_type)
 
             if result == "job_detail" :
                 return redirect(url_for(f"{JOBS_BP}.job_detail", job_type=job_type, job_id=job_id))
