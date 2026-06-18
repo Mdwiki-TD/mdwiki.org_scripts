@@ -121,7 +121,12 @@ class Jobs:
         def delete_job(job_type: str, job_id: int) -> Response:
             if job_type not in self.jobs_data_infos:
                 abort(404)
-            return delete_job_handler(job_id, job_type, bp_name=JOBS_BP)
+            result = delete_job_handler(job_id, job_type)
+
+            if result == "job_detail" :
+                return redirect(url_for(f"{JOBS_BP}.job_detail", job_type=job_type, job_id=job_id))
+
+            return redirect(url_for(f"{JOBS_BP}.jobs_list", job_type=job_type))
 
         @self.bp.get("/job-file/<string:result_file>/<string:job_type>")
         @admin_required

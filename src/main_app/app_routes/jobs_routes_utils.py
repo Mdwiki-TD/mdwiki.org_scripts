@@ -64,22 +64,22 @@ def cancel_job_handler(job_id: int, job_type: str, bp_name: str) -> Response:
     return redirect(url_for(f"{bp_name}.job_detail", job_type=job_type, job_id=job_id))
 
 
-def delete_job_handler(job_id: int, job_type: str, bp_name: str) -> Response:
+def delete_job_handler(job_id: int, job_type: str) -> str:
     """Delete a job by ID and job type."""
     user = load_user()
     if not user:
         flash("You must be logged in to delete jobs.", "danger")
-        return redirect(url_for(f"{bp_name}.job_detail", job_type=job_type, job_id=job_id))
+        return "job_detail"
 
     try:
         job = get_job(job_id, job_type)
     except LookupError:
         flash("Job not found.", "warning")
-        return redirect(url_for(f"{bp_name}.jobs_list", job_type=job_type))
+        return "jobs_list"
 
     if not can_manage_job(job, user):
         flash("You don't have permission to delete this job.", "danger")
-        return redirect(url_for(f"{bp_name}.job_detail", job_type=job_type, job_id=job_id))
+        return "job_detail"
 
     try:
         if jobs_worker.cancel_job_worker(job_id, job_type):
@@ -93,7 +93,7 @@ def delete_job_handler(job_id: int, job_type: str, bp_name: str) -> Response:
         logger.exception("Failed to delete job")
         flash(f"Failed to delete job {job_id}", "danger")
 
-    return redirect(url_for(f"{bp_name}.jobs_list", job_type=job_type))
+    return "jobs_list"
 
 
 def start_job_handler(job_type: str, args: dict[str, Any], bp_name: str) -> int | None:
