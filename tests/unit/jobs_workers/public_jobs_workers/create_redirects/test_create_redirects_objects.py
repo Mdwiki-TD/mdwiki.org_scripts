@@ -12,7 +12,7 @@ from src.main_app.jobs_workers.public_jobs_workers.create_redirects.objects impo
 class TestSummary:
     def test_defaults(self):
         s = RedirectsSummary()
-        assert s.scanned == 0
+        assert s.processed == 0
         assert s.total == 0
         assert s.created == 0
         assert s.errors == 0
@@ -41,7 +41,7 @@ class TestCreateRedirectsWorkerObject:
 
     def test_default_summary(self):
         obj = CreateRedirectsWorkerObject()
-        assert obj.summary.scanned == 0
+        assert obj.summary.processed == 0
 
     def test_lists_are_independent(self):
         a = CreateRedirectsWorkerObject()

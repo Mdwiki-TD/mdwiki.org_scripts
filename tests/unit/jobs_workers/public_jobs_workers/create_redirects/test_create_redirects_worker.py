@@ -52,7 +52,7 @@ class TestCreateRedirectsWorker:
 
         assert result.status == "completed"
         assert result.summary.created == 1
-        assert result.summary.scanned == 1
+        assert result.summary.processed == 1
 
     @patch("src.main_app.jobs_workers.public_jobs_workers.create_redirects.worker.get_user_site")
     def test_process_no_site(self, mock_get_user_site, worker):

@@ -13,7 +13,7 @@ logger = logging.getLogger(__name__)
 
 @dataclass
 class RedirectsSummary:
-    scanned: int = 0
+    processed: int = 0
     total: int = 0
 
     created: int = 0

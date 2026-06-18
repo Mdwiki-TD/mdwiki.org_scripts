@@ -115,7 +115,7 @@ class DuplicateRedirectWorker(BaseObjectsJobWorker):
             redirect_to = entry["redirect_to"]
             final_target = entry["final_target"]
 
-            self.result.summary.scanned += 1
+            self.result.summary.processed += 1
 
             try:
                 outcome = self._process_one(from_title, redirect_to, final_target)

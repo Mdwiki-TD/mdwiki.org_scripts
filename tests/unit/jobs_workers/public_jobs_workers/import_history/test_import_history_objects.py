@@ -56,7 +56,7 @@ class TestImportHistoryWorkerObject:
 
     def test_default_summary(self):
         obj = ImportHistoryWorkerObject()
-        assert obj.summary.scanned == 0
+        assert obj.summary.processed == 0
         assert obj.summary.total == 0
 
     def test_lists_are_independent(self):

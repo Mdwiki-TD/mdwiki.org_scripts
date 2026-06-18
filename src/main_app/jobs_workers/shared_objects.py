@@ -27,7 +27,7 @@ class Summary:
     total: int = 0
     changed: int = 0
     errors: int = 0
-    scanned: int = 0
+    processed: int = 0
 
 
 @dataclass

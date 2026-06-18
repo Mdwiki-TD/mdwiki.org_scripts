@@ -100,7 +100,7 @@ class AddRttTemplateWorker(BaseObjectsJobWorker):
             self.result.note = "No pages in Category:RTT"
             self.result.status = "skipped"
             self.result.summary.total = 0
-            self.result.summary.scanned = 0
+            self.result.summary.processed = 0
             return self.result
 
         logger.info(f"Job {self.job_id}: len of mdwiki_pages: {len(mdwiki_pages)}")
@@ -120,7 +120,7 @@ class AddRttTemplateWorker(BaseObjectsJobWorker):
             self.result.note = "No pages to add"
             self.result.status = "completed"
             self.result.summary.total = 0
-            self.result.summary.scanned = 0
+            self.result.summary.processed = 0
             return self.result
 
         self.result.summary.total = total
@@ -133,7 +133,7 @@ class AddRttTemplateWorker(BaseObjectsJobWorker):
             if self.is_cancelled():
                 break
 
-            self.result.summary.scanned += 1
+            self.result.summary.processed += 1
 
             try:
                 outcome = self._process_one(title)
