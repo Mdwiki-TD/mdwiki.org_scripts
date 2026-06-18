@@ -73,9 +73,8 @@ def test_cancel_job_worker(mock_create_file, mock_cancel_db):
 @patch("src.main_app.jobs_workers.jobs_worker.create_job")
 @patch("src.main_app.jobs_workers.jobs_worker.jobs_data_public")
 @patch("threading.Thread")
-def test_start_job(mock_thread, mock_jobs_data, mock_create_job):
-    app = Flask(__name__)
-    with app.app_context():
+def test_start_job(mock_thread, mock_jobs_data, mock_create_job, mock_app):
+    with mock_app.app_context():
         user = {"username": "test_user"}
         job_type = "test_type"
 

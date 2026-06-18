@@ -46,6 +46,7 @@ def delete_user_token(user_id: int) -> bool:
 def delete_user(user_id: int) -> bool:
     return delete_record_by_pk(UsersRecord, user_id)
 
+
 def delete_setting(key: str) -> bool:
     return delete_record_by_pk(SettingRecord, key)
 
