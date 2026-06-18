@@ -21,6 +21,29 @@ from src.main_app.db.services import (
 from src.main_app.db.services.admin_service import add_coordinator
 from src.main_app.db.services.users_service import create_user
 
+
+@pytest.fixture
+def _unwrap_delete_job(mock_app: Flask):
+    """Bypass @admin_required on delete_job by unwrapping the view function.
+
+    The ``@admin_required`` decorator is applied at module-import time
+    (when the blueprint is created), so it cannot be mocked per-test
+    through the normal patch / monkeypatch machinery.  This fixture
+    walks the ``__wrapped__`` chain of the already-wrapped view function
+    stored in the app's view-functions registry and replaces it with the
+    original (unwrapped) handler, then restores it after the test.
+    """
+    endpoint = "public_jobs.delete_job"
+    original = mock_app.view_functions.get(endpoint)
+    if original is not None:
+        unwrapped = original
+        while hasattr(unwrapped, "__wrapped__"):
+            unwrapped = unwrapped.__wrapped__
+        mock_app.view_functions[endpoint] = unwrapped
+    yield
+    if original is not None:
+        mock_app.view_functions[endpoint] = original
+
 VALID_JOB_TYPE = "fixref"
 ANOTHER_VALID_JOB_TYPE = "create_redirects"
 
@@ -309,7 +332,7 @@ class TestCancelJob:
         assert resp.status_code == 200
 
 
-@pytest.mark.usefixtures("mock_app")
+@pytest.mark.usefixtures("mock_app", "_unwrap_delete_job")
 class TestDeleteJob:
     """POST /jobs/<job_type>/<job_id>/delete — delete a job."""
 
@@ -411,6 +434,7 @@ class TestJobsRouteIntegration:
         assert len(redirect_jobs) == 1
         assert len(all_jobs) == 3
 
+    @pytest.mark.usefixtures("_unwrap_delete_job")
     def test_delete_then_list_shows_remaining(self, mock_app, mock_client):
         """After deleting one job, the list should show remaining jobs."""
         from src.main_app.db.services import update_job_status
