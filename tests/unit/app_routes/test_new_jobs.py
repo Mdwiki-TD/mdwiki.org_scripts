@@ -47,7 +47,7 @@ class TestCanManageJob:
         assert can_manage_job(job, user) is False
 
 
-@pytest.mark.usefixtures("app")
+@pytest.mark.usefixtures("mock_app")
 class TestNewJobsRoutes:
     def test_jobs_list_requires_valid_type(self, mock_client):
         resp = mock_client.get("/public_jobs/invalid_type")

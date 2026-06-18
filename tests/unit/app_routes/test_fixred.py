@@ -31,7 +31,7 @@ class TestNormalizeTitle:
         assert _normalize_title("_Aspirin_") == "Aspirin"
 
 
-@pytest.mark.usefixtures("app")
+@pytest.mark.usefixtures("mock_app")
 class TestFixredRoutes:
     """Tests for the fixred blueprint routes."""
 

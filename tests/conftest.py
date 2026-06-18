@@ -10,7 +10,6 @@ from __future__ import annotations
 
 import logging
 import os
-import re
 import secrets
 import sys
 from pathlib import Path
@@ -60,8 +59,11 @@ def stop_nets(request):
     disable_socket(allow_unix_socket=True)
 
 
+# ── app fixtures ───────────────────────────────────────────────────────────────────
+
+
 @pytest.fixture(scope="session")
-def app() -> Generator[Flask, Any, None]:  # noqa: UP043
+def mock_app() -> Generator[Flask, Any, None]:  # noqa: UP043
     """
     Create and configure a test Flask application.
     """
@@ -73,29 +75,14 @@ def app() -> Generator[Flask, Any, None]:  # noqa: UP043
 
 
 @pytest.fixture
-def app_mock():
-    app = Flask(__name__)
-    app.secret_key = "test"
-    return app
-
-
-@pytest.fixture
-def client(app: Flask) -> FlaskClient:
-    """
-    Create a test client for the app.
-    """
-    return app.test_client()
-
-
-@pytest.fixture
-def mock_client(app: Flask) -> FlaskClient:
+def mock_client(mock_app: Flask) -> FlaskClient:
     """Fresh test client per test."""
 
-    return app.test_client()
+    return mock_app.test_client()
 
 
 @pytest.fixture
-def login(mock_client):
+def mock_login(mock_client):
     """Helper to set ``session['username']`` to a given user."""
 
     def _login(username: str) -> None:
@@ -105,77 +92,17 @@ def login(mock_client):
     return _login
 
 
-@pytest.fixture
-def csrf_token(mock_client):
-    """Helper fixture to generate CSRF tokens for tests."""
-
-    pattern = re.compile(r'name="csrf_token" value="([^"]+)"')
-
-    def _get_csrf_token(path: str = "/") -> str:
-        body = mock_client.get(path).data.decode()
-        match = pattern.search(body)
-        if not match:
-            raise AssertionError(f"no csrf_token found in body for {path!r}")
-        return match.group(1)
-
-    return _get_csrf_token
-
-
-@pytest.fixture
-def mock_jobs_service(monkeypatch: pytest.MonkeyPatch):
-    """Mock the jobs_service.is_job_cancelled function to avoid database calls.
-
-    This fixture mocks the is_job_cancelled function to return False by default,
-    allowing worker tests to run without requiring database configuration.
-
-    Returns:
-        MagicMock: The mock is_job_cancelled function that can be configured per test.
-    """
-
-    mock_is_cancelled = MagicMock(return_value=False)
-    monkeypatch.setattr(
-        "src.main_app.db.services.jobs_service.is_job_cancelled",
-        mock_is_cancelled,
-    )
-
-    return mock_is_cancelled
-
-
-# ── mwclient_page fixtures ───────────────────────────────────────────────────────────────────
-
-
-@pytest.fixture
-def mock_site() -> MagicMock:
-    return MagicMock()
-
-
-@pytest.fixture
-def mock_page() -> MagicMock:
-    return MagicMock()
-
-
-@pytest.fixture
-def mock_site_pages(mock_site, mock_page):
-    def _factory(page_exists: bool) -> MagicMock:
-        mock_page.exists = page_exists
-
-        mock_pages = MagicMock()
-        mock_pages.__getitem__ = MagicMock(return_value=mock_page)
-
-        mock_site.pages = mock_pages
-        return mock_site
-
-    return _factory
+# ── db fixtures ───────────────────────────────────────────────────────────────────
 
 
 @pytest.fixture(autouse=True)
-def setup_db(app):
+def setup_db(mock_app):
     """Initialize an in-memory SQLite database for tests using Flask-SQLAlchemy.
 
     Creates all real tables (skipping views) and creates views manually.
     The Flask-SQLAlchemy session (db.session) is used throughout tests.
     """
-    with app.app_context():
+    with mock_app.app_context():
         # Create only real tables; skip view-backed mapped classes
         real_tables = [t for t in _db.metadata.tables.values() if not t.info.get("is_view")]
         _db.metadata.create_all(_db.engine, tables=real_tables, checkfirst=True)
@@ -220,3 +147,30 @@ def setup_db(app):
         # Drop only real tables
         real_tables = [t for t in _db.metadata.tables.values() if not t.info.get("is_view")]
         _db.metadata.drop_all(_db.engine, tables=real_tables)
+
+
+# ── mwclient_page fixtures ───────────────────────────────────────────────────────────────────
+
+
+@pytest.fixture
+def mock_site() -> MagicMock:
+    return MagicMock()
+
+
+@pytest.fixture
+def mock_page() -> MagicMock:
+    return MagicMock()
+
+
+@pytest.fixture
+def mock_site_pages(mock_site, mock_page):
+    def _factory(page_exists: bool) -> MagicMock:
+        mock_page.exists = page_exists
+
+        mock_pages = MagicMock()
+        mock_pages.__getitem__ = MagicMock(return_value=mock_page)
+
+        mock_site.pages = mock_pages
+        return mock_site
+
+    return _factory

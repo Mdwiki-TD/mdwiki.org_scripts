@@ -23,10 +23,10 @@ _REQ_TOKEN_KEY = settings.sessions.request_token_key  # "state"
 
 
 @pytest.fixture(autouse=True)
-def _clean_db(app: Flask):
+def _clean_db(mock_app: Flask):
     """Clean all tables after each test to prevent state leaking."""
     yield
-    with app.app_context():
+    with mock_app.app_context():
 
         meta = db.metadata
         with db.engine.begin() as conn:
@@ -34,7 +34,7 @@ def _clean_db(app: Flask):
                 conn.execute(table.delete())
 
 
-@pytest.mark.usefixtures("app")
+@pytest.mark.usefixtures("mock_app")
 class TestLoginRoute:
     """GET /login — initiates OAuth handshake."""
 
@@ -76,7 +76,7 @@ class TestLoginRoute:
         mock_flash.assert_called_once_with("Failed to initiate OAuth login", "danger")
 
 
-@pytest.mark.usefixtures("app")
+@pytest.mark.usefixtures("mock_app")
 class TestCallbackRoute:
     """GET /callback — completes OAuth handshake."""
 
@@ -129,7 +129,7 @@ class TestCallbackRoute:
         assert resp.status_code == 200
         mock_flash.assert_called_once_with("Invalid OAuth verifier", "danger")
 
-    def test_callback_success_sets_session(self, app, mock_client):
+    def test_callback_success_sets_session(self, mock_app, mock_client):
         """Successful callback should set session uid and username."""
         self._setup_session(mock_client)
 
@@ -156,12 +156,12 @@ class TestCallbackRoute:
             assert sess.get("uid") is not None
             assert sess.get("username") == "TestUser"
 
-    def test_callback_success_persists_user_token(self, app, mock_client):
+    def test_callback_success_persists_user_token(self, mock_app, mock_client):
         """Successful callback should upsert encrypted credentials in DB."""
         self._setup_session(mock_client)
 
         def _fake_complete_oauth_callback(request_token, query_string):
-            with app.app_context():
+            with mock_app.app_context():
                 user = create_user("DbUser")
                 upsert_user_token(user.user_id, "new_key", "new_secret")
             return MagicMock(user_id=user.user_id, username="DbUser")
@@ -181,14 +181,14 @@ class TestCallbackRoute:
                 follow_redirects=False,
             )
 
-        with app.app_context():
+        with mock_app.app_context():
 
             user = get_user_by_username("DbUser")
             assert user is not None
             token = get_user_token(user.user_id)
             assert token is not None
 
-    def test_callback_success_sets_cookie(self, app, mock_client):
+    def test_callback_success_sets_cookie(self, mock_app, mock_client):
         """Successful callback should set the auth cookie in response headers."""
         self._setup_session(mock_client)
 
@@ -214,7 +214,7 @@ class TestCallbackRoute:
         name = settings.cookie.name
         assert name in cookie_names
 
-    def test_callback_success_redirects_to_index(self, app, mock_client):
+    def test_callback_success_redirects_to_index(self, mock_app, mock_client):
         """After successful login, redirect should go to index."""
         self._setup_session(mock_client)
 
@@ -240,7 +240,7 @@ class TestCallbackRoute:
         location = resp.headers["Location"]
         assert location.endswith(("/", "/"))
 
-    def test_callback_success_redirects_to_post_login(self, app, mock_client):
+    def test_callback_success_redirects_to_post_login(self, mock_app, mock_client):
         """If post_login_redirect is set, callback redirects there."""
         self._setup_session(mock_client)
         with mock_client.session_transaction() as sess:
@@ -267,13 +267,13 @@ class TestCallbackRoute:
         assert "/profile/" in resp.headers["Location"]
 
 
-@pytest.mark.usefixtures("app")
+@pytest.mark.usefixtures("mock_app")
 class TestLogoutRoute:
     """GET /logout — clears session and credentials."""
 
-    def test_logout_clears_session(self, app, mock_client):
+    def test_logout_clears_session(self, mock_app, mock_client):
         """After logout, session uid and username should be gone."""
-        with app.app_context():
+        with mock_app.app_context():
             user = create_user("LogoutUser")
             upsert_user_token(
                 user_id=user.user_id,
@@ -290,9 +290,9 @@ class TestLogoutRoute:
             assert sess.get("uid") is None
             assert sess.get("username") is None
 
-    def test_logout_redirects_to_index(self, mock_client, login):
+    def test_logout_redirects_to_index(self, mock_client, mock_login):
         """Logout should redirect to the index page."""
-        login("RedirLogout")
+        mock_login("RedirLogout")
         resp = mock_client.get("/logout", follow_redirects=False)
         assert resp.status_code == 302
 
@@ -301,19 +301,19 @@ class TestLogoutRoute:
         resp = mock_client.get("/logout", follow_redirects=True)
         assert resp.status_code == 200
 
-    def test_logout_flash_messages(self, mock_client, login, monkeypatch):
+    def test_logout_flash_messages(self, mock_client, mock_login, monkeypatch):
         """Logout should display flash messages."""
         mock_flash = Mock()
         monkeypatch.setattr("src.main_app.app_routes.auth.routes.flash", mock_flash)
 
-        login("FlashLogout")
+        mock_login("FlashLogout")
         resp = mock_client.get("/logout", follow_redirects=True)
         assert resp.status_code == 200
         mock_flash.assert_called_once_with("Session cleared.", "info")
 
-    def test_logout_deletes_user_token_from_db(self, app, mock_client):
+    def test_logout_deletes_user_token_from_db(self, mock_app, mock_client):
         """Logout should delete the user token record from DB."""
-        with app.app_context():
+        with mock_app.app_context():
             user = create_user("TokenDelete")
             upsert_user_token(
                 user_id=user.user_id,
@@ -329,16 +329,16 @@ class TestLogoutRoute:
 
         mock_client.get("/logout", follow_redirects=True)
 
-        with app.app_context():
+        with mock_app.app_context():
 
             assert get_user_token(50) is None
 
 
-@pytest.mark.usefixtures("app")
+@pytest.mark.usefixtures("mock_app")
 class TestAuthRouteIntegration:
     """Cross-cutting integration tests for the auth blueprint."""
 
-    def test_login_then_callback_full_flow(self, app, mock_client):
+    def test_login_then_callback_full_flow(self, mock_app, mock_client):
         """Full round-trip: login -> callback -> user in database."""
         # Step 1: Login
         with patch("src.main_app.app_routes.auth.routes.start_login") as mock_start:
@@ -355,7 +355,7 @@ class TestAuthRouteIntegration:
 
         # Step 3: Callback
         def _fake_complete_oauth_callback(request_token, query_string):
-            with app.app_context():
+            with mock_app.app_context():
                 user = create_user("FlowUser")
                 upsert_user_token(user.user_id, "ak", "as")
             return MagicMock(user_id=user.user_id, username="FlowUser")
@@ -378,15 +378,15 @@ class TestAuthRouteIntegration:
         assert resp.status_code == 200
 
         # Step 4: Verify user is in the database
-        with app.app_context():
+        with mock_app.app_context():
 
             user = get_user_by_username("FlowUser")
             assert user is not None
             token = get_user_token(user.user_id)
             assert token is not None
 
-    def test_authenticated_user_can_access_profile(self, mock_client, login):
+    def test_authenticated_user_can_access_profile(self, mock_client, mock_login):
         """A logged-in user should be able to access /profile/."""
-        login("ProfileUser")
+        mock_login("ProfileUser")
         resp = mock_client.get("/profile/")
         assert resp.status_code == 200
