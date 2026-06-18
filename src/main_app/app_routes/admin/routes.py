@@ -13,6 +13,7 @@ from flask import (
 
 from ..admin_routes import (
     coordinators_module,
+    settings_module,
     users_module,
 )
 from .admins_required import admin_required
@@ -43,6 +44,7 @@ def admin_dashboard() -> str:
 def register_blueprints(bp_admin) -> None:
     bp_admin.register_blueprint(coordinators_module.bp)
     bp_admin.register_blueprint(users_module.bp)
+    bp_admin.register_blueprint(settings_module.bp)
 
 
 register_blueprints(bp_admin)
