@@ -7,7 +7,6 @@ from typing import Any
 
 logger = logging.getLogger(__name__)
 
-
 def can_manage_job(job: Any, user: Any) -> bool:
     """Check if the current user can manage (cancel/delete) a job.
 

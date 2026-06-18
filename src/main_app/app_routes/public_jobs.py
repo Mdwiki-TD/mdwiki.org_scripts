@@ -28,54 +28,61 @@ from ..jobs_workers import jobs_worker
 from ..jobs_workers.objects import JobData
 from ..jobs_workers.public_jobs_workers.workers_list_public import jobs_data_public
 from ..su_services import load_job_result
+from .admin.admins_required import admin_required
 from .auth.utils import load_user
+from .jobs_routes_utils import can_manage_job
 from .utils.routes_utils import can_run_bg_jobs, load_auth_payload
 
 logger = logging.getLogger(__name__)
 
-
-def can_manage_job(job: Any, user: Any) -> bool:
-    """Check if the current user can manage (cancel/delete) a job.
-
-    Returns True if the user is an admin (coordinator) or if the user
-    is the owner of the job.
-    """
-    if not user:
-        return False
-    if getattr(user, "is_active_admin", False):
-        return True
-    if job.username and job.username == user.username:
-        return True
-    return False
-
+JOBS_BP = "public_jobs"
 
 def _cancel_job(job_id: int, job_type: str) -> Response:
     """Cancel a running job."""
     user = load_user()
     if not user:
         flash("You must be logged in to cancel jobs.", "danger")
-        return redirect(url_for("public_jobs.job_detail", job_type=job_type, job_id=job_id))
+        return redirect(url_for(f"{JOBS_BP}.job_detail", job_type=job_type, job_id=job_id))
 
     try:
         job = get_job(job_id, job_type)
     except LookupError:
         flash("Job not found.", "warning")
-        return redirect(url_for("public_jobs.jobs_list", job_type=job_type))
+        return redirect(url_for(f"{JOBS_BP}.jobs_list", job_type=job_type))
 
     if not can_manage_job(job, user):
         flash("You don't have permission to cancel this job.", "danger")
-        return redirect(url_for("public_jobs.job_detail", job_type=job_type, job_id=job_id))
+        return redirect(url_for(f"{JOBS_BP}.job_detail", job_type=job_type, job_id=job_id))
 
-    if jobs_worker.cancel_job_worker(job_id, job_type, job):
-        flash(f"Job {job_id} cancellation requested.", "success")
-    else:
-        flash(f"Job {job_id} is not running or already cancelled.", "warning")
+    try:
+        if jobs_worker.cancel_job_worker(job_id, job_type, job):
+            flash(f"Job {job_id} cancellation requested.", "success")
+        else:
+            flash(f"Job {job_id} is not running or already cancelled.", "warning")
+    except Exception:
+        logger.exception("Failed to cancel job")
+        flash(f"Failed to cancel job {job_id}", "danger")
 
-    return redirect(url_for("public_jobs.job_detail", job_type=job_type, job_id=job_id))
+    return redirect(url_for(f"{JOBS_BP}.job_detail", job_type=job_type, job_id=job_id))
 
 
 def _delete_job(job_id: int, job_type: str) -> Response:
     """Delete a job by ID and job type."""
+
+    user = load_user()
+    if not user:
+        flash("You must be logged in to cancel jobs.", "danger")
+        return redirect(url_for(f"{JOBS_BP}.job_detail", job_type=job_type, job_id=job_id))
+
+    try:
+        job = get_job(job_id, job_type)
+    except LookupError:
+        flash("Job not found.", "warning")
+        return redirect(url_for(f"{JOBS_BP}.jobs_list", job_type=job_type))
+
+    if not can_manage_job(job, user):
+        flash("You don't have permission to cancel this job.", "danger")
+        return redirect(url_for(f"{JOBS_BP}.job_detail", job_type=job_type, job_id=job_id))
 
     try:
         # Cancel the job if it's running
@@ -90,7 +97,7 @@ def _delete_job(job_id: int, job_type: str) -> Response:
         logger.exception("Failed to delete job")
         flash(f"Failed to delete job {job_id}", "danger")
 
-    return redirect(url_for("public_jobs.jobs_list", job_type=job_type))
+    return redirect(url_for(f"{JOBS_BP}.jobs_list", job_type=job_type))
 
 
 def _start_job(job_type: str, args: dict[str, Any]) -> int | None:
@@ -169,7 +176,7 @@ def _job_detail(
     except LookupError as exc:
         logger.exception("Job not found")
         flash(str(exc), "warning")
-        return redirect(url_for("public_jobs.jobs_list", job_type=job_type))
+        return redirect(url_for(f"{JOBS_BP}.jobs_list", job_type=job_type))
 
     # Load job result if available
     result_data = None
@@ -193,8 +200,8 @@ def _job_detail(
 class JobsPublicRoutes:
     """Jobs management routes."""
 
-    def __init__(self, name: str, jobs_data_infos: dict[str, JobData]) -> None:
-        self.bp = Blueprint(name, __name__, url_prefix="/public_jobs")
+    def __init__(self, name: str, jobs_data_infos: dict[str, JobData], url_prefix: str) -> None:
+        self.bp = Blueprint(name, __name__, url_prefix=url_prefix)
         self.jobs_data_infos: dict[str, JobData] = jobs_data_infos
         self._setup_routes()
 
@@ -274,16 +281,16 @@ class JobsPublicRoutes:
 
             job_id = _start_job(job_type, args)
             if not job_id:
-                return redirect(url_for("public_jobs.jobs_list", job_type=job_type))
+                return redirect(url_for(f"{JOBS_BP}.jobs_list", job_type=job_type))
 
-            return redirect(url_for("public_jobs.job_detail", job_type=job_type, job_id=job_id))
+            return redirect(url_for(f"{JOBS_BP}.job_detail", job_type=job_type, job_id=job_id))
 
         # ================================
         # Delete Job routes
         # ================================
 
-        # @admin_required
         @self.bp.post("/<string:job_type>/<int:job_id>/delete")
+        @admin_required
         def delete_job(job_type: str, job_id: int) -> Response:
             if job_type not in self.jobs_data_infos:
                 abort(404)
@@ -294,17 +301,18 @@ class JobsPublicRoutes:
         def read_job_result_file(result_file: str, job_type: str = "") -> ResponseReturnValue:
             """ """
             if job_type not in self.jobs_data_infos:
-                return abort(404)
+                abort(404)
             result_data = load_job_result(result_file)
             return jsonify(result_data)
 
 
 # Public API module
-jobs_module = JobsPublicRoutes(
+jobs_public_module = JobsPublicRoutes(
     name="public_jobs",
     jobs_data_infos=jobs_data_public,
+    url_prefix="/jobs",
 )
 
 __all__ = [
-    "jobs_module",
+    "jobs_public_module",
 ]

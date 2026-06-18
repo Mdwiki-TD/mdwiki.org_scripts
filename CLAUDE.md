@@ -56,12 +56,12 @@ Routes registered in `src/main_app/app_routes/__init__.py`:
 -   `bp_main` — Index page
 -   `bp_auth` — OAuth login/callback/logout, rate limiting
 -   `bp_fixred` — Single-page redirect fixer (`/fixred/`)
--   `bp_public_jobs` — Admin job management (`/public_jobs/`)
+-   `bp_public_jobs` — Admin job management (`/jobs/`)
 -   `bp_newupdater` — Medical content updater (`/newupdater/`)
 
 ### Background Job System
 
-Jobs run in daemon threads via `src/main_app/public_jobs/`:
+Jobs run in daemon threads via `src/main_app/jobs/`:
 
 -   `base_worker_object.py` — Abstract `BaseObjectsJobWorker` with lifecycle hooks (`before_run`, `process`, `after_run`)
 -   `jobs_worker.py` — Job runner with `start_job()`, `cancel_job()`, threading infrastructure

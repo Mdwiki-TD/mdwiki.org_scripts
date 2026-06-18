@@ -1,4 +1,4 @@
-"""Unit tests for src/main_app/public_jobs/workers/create_redirects/objects.py."""
+"""Unit tests for src/main_app/jobs/workers/create_redirects/objects.py."""
 
 from __future__ import annotations
 

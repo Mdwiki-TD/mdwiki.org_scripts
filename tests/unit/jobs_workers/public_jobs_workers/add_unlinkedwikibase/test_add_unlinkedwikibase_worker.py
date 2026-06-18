@@ -1,4 +1,4 @@
-"""Unit tests for src/main_app/public_jobs/workers/add_unlinkedwikibase/worker.py."""
+"""Unit tests for src/main_app/jobs/workers/add_unlinkedwikibase/worker.py."""
 
 from __future__ import annotations
 

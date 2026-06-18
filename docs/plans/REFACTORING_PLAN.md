@@ -71,7 +71,7 @@ This is a well-architected Flask application with a clean layered structure (Con
 -   [ ] **Stub workers** — `add_r_column` and `add_unlinkedwikibase` workers contain `TODO: import logic from ...` comments. They are essentially empty shells.
 -   [x] **Commented-out blueprint registrations** — `src/main_app/app_routes/admin/routes.py` (lines 103-108) has 5 commented-out blueprint registrations.
 -   [ ] **Disabled teardown** — `src/main_app/__init__.py` (lines 131-145) has a `_cleanup_connections` teardown function where the entire body is commented out with a pass statement.
--   [ ] **Empty `__init__.py` files** — `src/main_app/app_routes/newupdater/__init__.py`, `src/main_app/shared/fixref_shared/__init__.py`, `src/main_app/public_jobs/__init__.py` are all empty (though some serve package marker purposes).
+-   [ ] **Empty `__init__.py` files** — `src/main_app/app_routes/newupdater/__init__.py`, `src/main_app/shared/fixref_shared/__init__.py`, `src/main_app/jobs/__init__.py` are all empty (though some serve package marker purposes).
 -   [ ] **Commented template code** — `src/templates/jobs_templates/base_list2.html` and `base_details2.html` have commented-out `status_icon()` calls.
 -   [ ] **Commented-out filter logic** — `create_redirects/worker.py` (line ~100) has `# if page.get("title") != title: continue` commented out.
 -   [ ] **`src/__init__.py`** — The root `src/__init__.py` exists but is empty/trivial. Consider if needed.
@@ -141,7 +141,7 @@ This is a well-architected Flask application with a clean layered structure (Con
 
 #### Issues Found:
 
--   [ ] **No worker implementation tests** — The 8 workers in `public_jobs/workers/` have no unit tests for their actual logic (only infrastructure tests in `tests/unit/public_jobs/`).
+-   [ ] **No worker implementation tests** — The 8 workers in `public_jobs/workers/` have no unit tests for their actual logic (only infrastructure tests in `tests/unit/jobs/`).
 -   [ ] **No API service tests** — `tests/unit/api_services/` has no test files (the directory only has `__pycache__`).
 -   [ ] **14 `# pragma: no cover` exclusions** — Many are legitimate (network interactions, teardowns), but several in route handlers indicate complex error paths without test coverage.
 -   [ ] **No integration tests for OAuth flow** — The OAuth flow has no integration test coverage (though this is hard without a real MW instance).
@@ -207,7 +207,7 @@ This is a well-architected Flask application with a clean layered structure (Con
 #### Issues Found:
 
 -   [ ] **Retry logic sleeps before first attempt** — `src/main_app/api_services/mwclient_page.py::_edit_with_retry()` (lines 56-67) iterates through `_RETRY_DELAYS = (5, 15, 30)` and always sleeps for 5 seconds BEFORE making the first API call. The first attempt should not sleep.
--   [ ] **`raise e` instead of `raise`** — `src/main_app/public_jobs/jobs_worker.py` (line 103) uses `raise e` which loses the original traceback. Should use bare `raise`.
+-   [ ] **`raise e` instead of `raise`** — `src/main_app/jobs/jobs_worker.py` (line 103) uses `raise e` which loses the original traceback. Should use bare `raise`.
 -   [ ] **`resolve_redirects()` in `query_api.py` appears incomplete** — The function signature suggests it returns a dict, but the code shown was truncated. The `normalized` dict and `from_to` dict are used in `fixred_worker.py` — ensure they align.
 -   [ ] **`_get_current_object()` usage** — `jobs_worker.py` (line ~110) captures `current_app._get_current_object()` which is a green flag for potential context issues.
 
@@ -357,7 +357,7 @@ This is a well-architected Flask application with a clean layered structure (Con
 -   **Strengths**: Clean model definitions, good service separation, `db_guard` decorator
 -   **Minor**: `utils.py::db_guard` catches all exceptions — consider being more specific
 
-### `src/main_app/public_jobs/`
+### `src/main_app/jobs/`
 
 -   **Strengths**: Well-designed worker lifecycle; clean registry in `workers_list.py`
 -   **Issues**: Two stub workers; `utils.py` is just one function; `__init__.py` is empty

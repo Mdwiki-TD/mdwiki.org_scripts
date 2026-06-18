@@ -9,9 +9,9 @@ all jobs in `src/main_app/jobs`
 -   fixref
 -   import_history
 
-should use `src/main_app/public_jobs/jobs_worker.py`
+should use `src/main_app/jobs/jobs_worker.py`
 
-start by creating folder for each job in `src/main_app/public_jobs/workers`:
+start by creating folder for each job in `src/main_app/jobs/workers`:
 
 -   `__init__.py` placeholder:
 
@@ -133,4 +133,4 @@ __all__ = [
 ```
 
 -   job html templates at `src/templates/public_jobs_templates/`
--   register in `src/main_app/public_jobs/workers_list.py` by adding a `JobData` entry to `jobs_data`
+-   register in `src/main_app/jobs/workers_list.py` by adding a `JobData` entry to `jobs_data`
