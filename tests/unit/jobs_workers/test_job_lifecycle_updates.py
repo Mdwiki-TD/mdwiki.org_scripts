@@ -28,8 +28,8 @@ class MockWorker(BaseObjectsJobWorker):
         return self.result.to_json()
 
 
-def test_before_run_updates_status(app: Flask) -> None:
-    with app.app_context():
+def test_before_run_updates_status(mock_app: Flask) -> None:
+    with mock_app.app_context():
         job = create_job("mock_job_before_run", "test_user")
         worker = MockWorker(job.id, "mock_job_before_run")
 
@@ -39,8 +39,8 @@ def test_before_run_updates_status(app: Flask) -> None:
         assert worker.result.status == "running"
 
 
-def test_is_job_cancelled_detects_external_change(app: Flask) -> None:
-    with app.app_context():
+def test_is_job_cancelled_detects_external_change(mock_app: Flask) -> None:
+    with mock_app.app_context():
         job = create_job("mock_job_cancel_detect", "test_user")
 
         # Load the job record into the session's identity map
@@ -72,8 +72,8 @@ def test_is_job_cancelled_detects_external_change(app: Flask) -> None:
         assert job_after.status == "cancelled"
 
 
-def test_is_cancelled_sets_cancelled_at(app: Flask) -> None:
-    with app.app_context():
+def test_is_cancelled_sets_cancelled_at(mock_app: Flask) -> None:
+    with mock_app.app_context():
         job = create_job("mock_job_cancelled_at", "test_user")
         worker = MockWorker(job.id, "mock_job_cancelled_at")
 

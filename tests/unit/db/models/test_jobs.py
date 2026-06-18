@@ -6,8 +6,8 @@ from src.main_app.db.models.jobs import JobRecord
 from src.main_app.extensions import db
 
 
-def test_job_record_creation(app: Flask) -> None:
-    with app.app_context():
+def test_job_record_creation(mock_app: Flask) -> None:
+    with mock_app.app_context():
         job = JobRecord(job_type="test_job", username="test_user")
         db.session.add(job)
         db.session.commit()

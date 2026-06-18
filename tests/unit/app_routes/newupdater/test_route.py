@@ -7,7 +7,7 @@ from __future__ import annotations
 import pytest
 
 
-@pytest.mark.usefixtures("app")
+@pytest.mark.usefixtures("mock_app")
 class TestNewupdaterRoute:
     def test_index_not_requires_auth(self, mock_client):
         resp = mock_client.get("/newupdater/")
@@ -17,8 +17,8 @@ class TestNewupdaterRoute:
         resp = mock_client.get("/newupdater/save/test")
         assert resp.status_code == 302
 
-    def test_get_with_login(self, mock_client, login, monkeypatch):
-        login("TestUser")
+    def test_get_with_login(self, mock_client, mock_login, monkeypatch):
+        mock_login("TestUser")
         from src.main_app.su_services.current_user import CurrentUser
 
         monkeypatch.setattr(

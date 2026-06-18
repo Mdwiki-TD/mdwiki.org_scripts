@@ -5,7 +5,7 @@ from __future__ import annotations
 import pytest
 
 
-@pytest.mark.usefixtures("app")
+@pytest.mark.usefixtures("mock_app")
 class TestAuthRoutes:
     def test_login_redirects(self, mock_client):
         resp = mock_client.get("/login")
