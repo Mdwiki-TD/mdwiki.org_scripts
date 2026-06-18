@@ -39,7 +39,7 @@ class TestLoadLoggedInUser:
             session["uid"] = 123
             fake_user = CurrentUser(user_id=123, username="test_user", access_token=b"t", access_secret=b"s")
             with patch(
-                "src.main_app.su_services.auth_users_service.UserService.get_authenticated_user",
+                "src.main_app.su_services.auth_users_service.AuthUserService.get_authenticated_user",
                 return_value=fake_user,
             ):
                 load_logged_in_user()
@@ -56,7 +56,7 @@ class TestLoadLoggedInUser:
     def test_current_user_no_session(self, app):
         with app.test_request_context():
             # No uid in session, no cookie
-            with patch("src.main_app.su_services.auth_users_service.UserService.get_authenticated_user") as mock_get:
+            with patch("src.main_app.su_services.auth_users_service.AuthUserService.get_authenticated_user") as mock_get:
                 user = load_user()
                 assert user is None
                 mock_get.assert_not_called()
