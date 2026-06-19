@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from src.main_app.app_routes.auth.oauth import (
+from src.main_app.su_services.mwoauth_handshake import (
     IDENTITY_ERROR_MESSAGE,
     OAuthIdentityError,
 )
