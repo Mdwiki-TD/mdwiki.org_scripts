@@ -33,15 +33,18 @@ from .jobs_routes_utils import (
 
 logger = logging.getLogger(__name__)
 
-JOBS_BP = "public_jobs"
-
-
-class JobsPublicRoutes:
+class PublicJobsRoutes:
     """Jobs management routes."""
 
-    def __init__(self, name: str, jobs_data_infos: dict[str, JobData], url_prefix: str) -> None:
-        self.bp = Blueprint(name, __name__, url_prefix=url_prefix)
+    def __init__(
+        self,
+        bp: Blueprint,
+        jobs_data_infos: dict[str, JobData],
+        bp_name: str,
+    ) -> None:
+        self.bp = bp
         self.jobs_data_infos: dict[str, JobData] = jobs_data_infos
+        self.bp_name = bp_name
         self._setup_routes()
 
     def _setup_routes(self) -> None:
@@ -72,9 +75,9 @@ class JobsPublicRoutes:
             result = cancel_job_handler(job_id, job_type)
 
             if result == "job_detail":
-                return redirect(url_for(f"{JOBS_BP}.job_detail", job_type=job_type, job_id=job_id))
+                return redirect(url_for(f"{self.bp_name}.job_detail", job_type=job_type, job_id=job_id))
 
-            return redirect(url_for(f"{JOBS_BP}.jobs_list", job_type=job_type))
+            return redirect(url_for(f"{self.bp_name}.jobs_list", job_type=job_type))
 
         # ================================
         # Jobs List routes
@@ -86,7 +89,7 @@ class JobsPublicRoutes:
             if not template_data:
                 abort(404)
 
-            return jobs_list_handler(job_type, template_data, bp_name=JOBS_BP)
+            return jobs_list_handler(job_type, template_data, bp_name=self.bp_name)
 
         # ================================
         # Job Detail routes
@@ -100,7 +103,7 @@ class JobsPublicRoutes:
             if not template_data:
                 abort(404)
 
-            return job_detail_handler(job_id, job_type, template_data, bp_name=JOBS_BP)
+            return job_detail_handler(job_id, job_type, template_data, bp_name=self.bp_name)
 
         @self.bp.get("/<string:job_type>/<int:job_id>/expand")
         def job_detail_expand(job_type: str, job_id: int) -> Response | str:
@@ -110,7 +113,7 @@ class JobsPublicRoutes:
             if not template_data:
                 abort(404)
 
-            return job_detail_handler(job_id, job_type, template_data, bp_name=JOBS_BP, expand_all=True)
+            return job_detail_handler(job_id, job_type, template_data, bp_name=self.bp_name, expand_all=True)
 
         # ================================
         # Start Job routes
@@ -123,11 +126,11 @@ class JobsPublicRoutes:
 
             args = request.form.to_dict()
 
-            job_id = start_job_handler(job_type, args, bp_name=JOBS_BP)
+            job_id = start_job_handler(job_type, args, bp_name=self.bp_name)
             if not job_id:
-                return redirect(url_for(f"{JOBS_BP}.jobs_list", job_type=job_type))
+                return redirect(url_for(f"{self.bp_name}.jobs_list", job_type=job_type))
 
-            return redirect(url_for(f"{JOBS_BP}.job_detail", job_type=job_type, job_id=job_id))
+            return redirect(url_for(f"{self.bp_name}.job_detail", job_type=job_type, job_id=job_id))
 
         # ================================
         # Delete Job routes
@@ -141,9 +144,9 @@ class JobsPublicRoutes:
             result = delete_job_handler(job_id, job_type)
 
             if result == "job_detail":
-                return redirect(url_for(f"{JOBS_BP}.job_detail", job_type=job_type, job_id=job_id))
+                return redirect(url_for(f"{self.bp_name}.job_detail", job_type=job_type, job_id=job_id))
 
-            return redirect(url_for(f"{JOBS_BP}.jobs_list", job_type=job_type))
+            return redirect(url_for(f"{self.bp_name}.jobs_list", job_type=job_type))
 
         @self.bp.get("/job-file/<string:result_file>/<string:job_type>")
         def read_job_result_file(result_file: str, job_type: str) -> ResponseReturnValue:
@@ -155,10 +158,10 @@ class JobsPublicRoutes:
 
 
 # Public API module
-jobs_public_module = JobsPublicRoutes(
-    name="public_jobs",
+jobs_public_module = PublicJobsRoutes(
+    bp=Blueprint("public_jobs", __name__, url_prefix="/jobs"),
     jobs_data_infos=jobs_data_public,
-    url_prefix="/jobs",
+    bp_name="public_jobs",
 )
 
 __all__ = [

@@ -173,8 +173,12 @@ def start_job(
 ) -> int:
     """Start a background job as a daemon thread. Returns the job ID."""
     return _start_job_impl(
-        user, job_type, args, daemon=True, flask_app=current_app._get_current_object()
-    )  # type: ignore[attr-defined]
+        user,
+        job_type,
+        args,
+        daemon=True,
+        flask_app=current_app._get_current_object(),  # type: ignore[attr-defined]
+    )
 
 
 def start_job_cli(
