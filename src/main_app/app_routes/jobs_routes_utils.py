@@ -3,14 +3,30 @@
 from __future__ import annotations
 
 import logging
+from abc import ABC, abstractmethod
 from typing import Any
 
-from flask import flash, redirect, render_template, url_for
+from flask import (
+    abort,
+    flash,
+    jsonify,
+    redirect,
+    render_template,
+    url_for,
+)
+from flask.typing import ResponseReturnValue
 from werkzeug.wrappers.response import Response
 
 from ..db.exceptions import DuplicateJobError
-from ..db.services import delete_job, get_job, list_jobs
-from ..jobs_workers import jobs_worker
+from ..db.services import (
+    delete_job,
+    get_job,
+    list_jobs,
+)
+from ..jobs_workers.jobs_worker import (
+    cancel_job_worker,
+    start_job,
+)
 from ..jobs_workers.objects import JobData
 from ..su_services import load_job_result
 from .auth.utils import load_user
@@ -53,7 +69,7 @@ def cancel_job_handler(job_id: int, job_type: str) -> str:
         return "job_detail"
 
     try:
-        if jobs_worker.cancel_job_worker(job_id, job_type, job):
+        if cancel_job_worker(job_id, job_type, job):
             flash(f"Job {job_id} cancellation requested.", "success")
         else:
             flash(f"Job {job_id} is not running or already cancelled.", "warning")
@@ -82,7 +98,7 @@ def delete_job_handler(job_id: int, job_type: str) -> str:
         return "job_detail"
 
     try:
-        if jobs_worker.cancel_job_worker(job_id, job_type, job):
+        if cancel_job_worker(job_id, job_type, job):
             logger.info("Cancelled running job %s before deletion", job_id)
 
         if delete_job(job_id, job_type):
@@ -96,7 +112,11 @@ def delete_job_handler(job_id: int, job_type: str) -> str:
     return "jobs_list"
 
 
-def start_job_handler(job_type: str, args: dict[str, Any], bp_name: str) -> int | None:
+def start_job_handler(
+    job_type: str,
+    args: dict[str, Any],
+    check_can_run_bg_jobs: bool = False,
+) -> int | None:
     """Start a job."""
     user = load_user()
 
@@ -104,7 +124,7 @@ def start_job_handler(job_type: str, args: dict[str, Any], bp_name: str) -> int 
         flash("You must be logged in to start this job.", "danger")
         return None
 
-    if bp_name == "public_jobs" and not can_run_bg_jobs(user):
+    if check_can_run_bg_jobs and not can_run_bg_jobs(user):
         flash("You do not have permission to run background jobs.", "danger")
         return None
 
@@ -116,7 +136,7 @@ def start_job_handler(job_type: str, args: dict[str, Any], bp_name: str) -> int 
         return None
 
     try:
-        job_id = jobs_worker.start_job(auth_payload, job_type, args)
+        job_id = start_job(auth_payload, job_type, args)
         flash(f"Job {job_id} started to {job_type}.", "success")
         return job_id
     except DuplicateJobError:
@@ -136,7 +156,7 @@ def start_job_handler(job_type: str, args: dict[str, Any], bp_name: str) -> int 
 # ================================
 
 
-def jobs_list_handler(job_type: str, template_data: JobData, bp_name: str) -> str:
+def jobs_list_handler(job_type: str, template_data: JobData) -> str:
     """Render the jobs list dashboard for any job type."""
     try:
         jobs = list_jobs(limit=100, job_type=job_type)
@@ -192,7 +212,80 @@ def job_detail_handler(
     )
 
 
+class JobsBp(ABC):
+    """Jobs management routes."""
+
+    def __init__(
+        self,
+        jobs_data_infos: dict[str, JobData],
+        bp_name: str,
+    ) -> None:
+        self.jobs_data_infos: dict[str, JobData] = jobs_data_infos
+        self.bp_name = bp_name
+        self._setup_routes()
+
+    def cancel_job(self, job_type: str, job_id: int) -> Response:
+        if job_type not in self.jobs_data_infos:
+            flash("Job type not found.", "warning")
+            abort(404)
+
+        result = cancel_job_handler(job_id, job_type)
+
+        if result == "job_detail":
+            return redirect(url_for(f"{self.bp_name}.job_detail", job_type=job_type, job_id=job_id))
+
+        return redirect(url_for(f"{self.bp_name}.jobs_list", job_type=job_type))
+
+    def jobs_list(self, job_type: str) -> str:
+        template_data: JobData | None = self.jobs_data_infos.get(job_type)
+        if not template_data:
+            abort(404)
+
+        return jobs_list_handler(job_type, template_data)
+
+    def job_detail(self, job_type: str, job_id: int, expand_all: bool = False) -> Response | str:
+        # Load template data
+        template_data: JobData | None = self.jobs_data_infos.get(job_type)
+
+        if not template_data:
+            abort(404)
+
+        return job_detail_handler(job_id, job_type, template_data, bp_name=self.bp_name, expand_all=expand_all)
+
+    def start_job(self, job_type: str, args: dict[str, Any]) -> ResponseReturnValue:
+        if job_type not in self.jobs_data_infos:
+            abort(404)
+
+        job_id = start_job_handler(job_type, args)
+        if not job_id:
+            return redirect(url_for(f"{self.bp_name}.jobs_list", job_type=job_type))
+
+        return redirect(url_for(f"{self.bp_name}.job_detail", job_type=job_type, job_id=job_id))
+
+    def delete_job(self, job_type: str, job_id: int) -> Response:
+        if job_type not in self.jobs_data_infos:
+            abort(404)
+        result = delete_job_handler(job_id, job_type)
+
+        if result == "job_detail":
+            return redirect(url_for(f"{self.bp_name}.job_detail", job_type=job_type, job_id=job_id))
+
+        return redirect(url_for(f"{self.bp_name}.jobs_list", job_type=job_type))
+
+    def read_job_result_file(self, result_file: str, job_type: str) -> ResponseReturnValue:
+        """ """
+        if job_type not in self.jobs_data_infos:
+            abort(404)
+        result_data = load_job_result(result_file)
+        return jsonify(result_data)
+
+    @abstractmethod
+    def _setup_routes(self) -> None:
+        raise NotImplementedError("This method must be implemented in the subclass")
+
+
 __all__ = [
+    "JobsBp",
     "can_manage_job",
     "cancel_job_handler",
     "delete_job_handler",

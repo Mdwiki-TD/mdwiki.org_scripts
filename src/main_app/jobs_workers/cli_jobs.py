@@ -22,7 +22,7 @@ def register_cli_jobs(app: Flask) -> None:
         flask --app src/app1.py run-job collect_templates_data
         """
         start_job_cli(
-            user={"username": "Background job"},
+            auth_payload={"username": "Background job"},
             job_type=job_type,
             args={"update_all": "false"},
             app=app,
