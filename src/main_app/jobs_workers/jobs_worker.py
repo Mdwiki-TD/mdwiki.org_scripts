@@ -26,6 +26,10 @@ JOBS_CANCEL_EVENTS: dict[int, threading.Event] = {}
 JOBS_CANCEL_EVENTS_LOCK = threading.Lock()
 
 
+def load_job_data(job_type) -> JobData | None:
+    return jobs_data_public.get(job_type)
+
+
 def _register_cancel_event(job_id: int, cancel_event: threading.Event) -> None:
     with JOBS_CANCEL_EVENTS_LOCK:
         JOBS_CANCEL_EVENTS[job_id] = cancel_event
@@ -121,7 +125,7 @@ def _start_job_impl(
     daemon: bool = False,
     flask_app: Flask | None = None,
 ) -> int:
-    job_data: JobData | None = jobs_data_public.get(job_type)
+    job_data: JobData | None = load_job_data(job_type)
     target_func = job_data.job_callable if job_data else None
 
     if not job_data or not target_func:
