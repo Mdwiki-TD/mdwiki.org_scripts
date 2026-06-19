@@ -189,7 +189,7 @@ class TestStartJob:
                 return_value={"id": uid, "username": "JobUser"},
             ),
             patch(
-                "src.main_app.app_routes.jobs_routes_utils.jobs_worker.start_job",
+                "src.main_app.app_routes.jobs_routes_utils.start_job",
                 return_value=1,
             ),
         ):
@@ -211,7 +211,7 @@ class TestStartJob:
                 return_value={"id": uid, "username": "JobUser"},
             ),
             patch(
-                "src.main_app.app_routes.jobs_routes_utils.jobs_worker.start_job",
+                "src.main_app.app_routes.jobs_routes_utils.start_job",
                 return_value=1,
             ),
         ):
@@ -236,7 +236,7 @@ class TestStartJob:
                 return_value={"id": uid, "username": "JobUser"},
             ),
             patch(
-                "src.main_app.app_routes.jobs_routes_utils.jobs_worker.start_job",
+                "src.main_app.app_routes.jobs_routes_utils.start_job",
                 side_effect=DuplicateJobError("A job of type 'fixref' is already active"),
             ),
         ):
@@ -284,7 +284,7 @@ class TestCancelJob:
         job_id = _seed_job(mock_app, VALID_JOB_TYPE, username="Owner")
 
         with patch(
-            "src.main_app.app_routes.jobs_routes_utils.jobs_worker.cancel_job_worker",
+            "src.main_app.app_routes.jobs_routes_utils.cancel_job_worker",
             return_value=True,
         ):
             resp = mock_client.post(
@@ -322,7 +322,7 @@ class TestCancelJob:
         _login_user(mock_client, admin_uid, username="AdminCancel")
 
         with patch(
-            "src.main_app.app_routes.jobs_routes_utils.jobs_worker.cancel_job_worker",
+            "src.main_app.app_routes.jobs_routes_utils.cancel_job_worker",
             return_value=True,
         ):
             resp = mock_client.post(
@@ -351,7 +351,7 @@ class TestDeleteJob:
         job_id = _seed_job(mock_app, VALID_JOB_TYPE, username="Owner")
 
         with patch(
-            "src.main_app.app_routes.jobs_routes_utils.jobs_worker.cancel_job_worker",
+            "src.main_app.app_routes.jobs_routes_utils.cancel_job_worker",
             return_value=False,
         ):
             resp = mock_client.post(
@@ -371,7 +371,7 @@ class TestDeleteJob:
         _login_user(mock_client, uid)
 
         with patch(
-            "src.main_app.app_routes.jobs_routes_utils.jobs_worker.cancel_job_worker",
+            "src.main_app.app_routes.jobs_routes_utils.cancel_job_worker",
             return_value=False,
         ):
             resp = mock_client.post(
@@ -452,7 +452,7 @@ class TestJobsRouteIntegration:
             job2_id = job2.id
 
         with patch(
-            "src.main_app.app_routes.jobs_routes_utils.jobs_worker.cancel_job_worker",
+            "src.main_app.app_routes.jobs_routes_utils.cancel_job_worker",
             return_value=False,
         ):
             mock_client.post(
