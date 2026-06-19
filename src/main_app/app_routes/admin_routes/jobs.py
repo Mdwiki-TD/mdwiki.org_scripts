@@ -30,6 +30,7 @@ from ..jobs_routes_utils import (
 
 logger = logging.getLogger(__name__)
 
+
 class AdminJobsRoutes:
     """Jobs management routes."""
 
@@ -74,7 +75,7 @@ class AdminJobsRoutes:
             if not template_data:
                 abort(404)
 
-            return jobs_list_handler(job_type, template_data, bp_name=self.bp_name)
+            return jobs_list_handler(job_type, template_data)
 
         # ================================
         # Job Detail routes
@@ -114,7 +115,7 @@ class AdminJobsRoutes:
 
             args = request.form.to_dict()
 
-            job_id = start_job_handler(job_type, args, bp_name=self.bp_name)
+            job_id = start_job_handler(job_type, args, check_can_run_bg_jobs=False)
             if not job_id:
                 return redirect(url_for(f"{self.bp_name}.jobs_list", job_type=job_type))
 

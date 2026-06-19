@@ -23,6 +23,7 @@ from ..jobs_workers.objects import JobData
 from ..jobs_workers.public_jobs_workers.workers_list_public import jobs_data_public
 from ..su_services import load_job_result
 from .admin.admins_required import admin_required
+from .auth.utils import user_login_required
 from .jobs_routes_utils import (
     cancel_job_handler,
     delete_job_handler,
@@ -32,6 +33,7 @@ from .jobs_routes_utils import (
 )
 
 logger = logging.getLogger(__name__)
+
 
 class PublicJobsRoutes:
     """Jobs management routes."""
@@ -48,10 +50,6 @@ class PublicJobsRoutes:
         self._setup_routes()
 
     def _setup_routes(self) -> None:
-        # ================================
-        # All Jobs List route
-        # ================================
-
         @self.bp.get("/list")
         def all_jobs_list() -> str:
             try:
@@ -62,11 +60,8 @@ class PublicJobsRoutes:
                 jobs: list[Any] = []
             return render_template("jobs_templates/all_jobs_list.html", jobs=jobs)
 
-        # ================================
-        # Cancel Jobs routes
-        # ================================
-
         @self.bp.post("/<string:job_type>/<int:job_id>/cancel")
+        @user_login_required
         def cancel_job(job_type: str, job_id: int) -> Response:
             if job_type not in self.jobs_data_infos:
                 flash("Job type not found.", "warning")
@@ -89,7 +84,7 @@ class PublicJobsRoutes:
             if not template_data:
                 abort(404)
 
-            return jobs_list_handler(job_type, template_data, bp_name=self.bp_name)
+            return jobs_list_handler(job_type, template_data)
 
         # ================================
         # Job Detail routes
@@ -120,13 +115,14 @@ class PublicJobsRoutes:
         # ================================
 
         @self.bp.post("/<string:job_type>/start")
+        @user_login_required
         def start_job(job_type: str) -> ResponseReturnValue:
             if job_type not in self.jobs_data_infos:
                 abort(404)
 
             args = request.form.to_dict()
 
-            job_id = start_job_handler(job_type, args, bp_name=self.bp_name)
+            job_id = start_job_handler(job_type, args, check_can_run_bg_jobs=True)
             if not job_id:
                 return redirect(url_for(f"{self.bp_name}.jobs_list", job_type=job_type))
 
