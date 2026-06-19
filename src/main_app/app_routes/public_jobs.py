@@ -3,13 +3,18 @@
 from __future__ import annotations
 
 import logging
+from typing import Any
 
 from flask import (
     Blueprint,
+    flash,
+    render_template,
     request,
 )
 from flask.typing import ResponseReturnValue
 from werkzeug.wrappers.response import Response
+
+from ..db.services import list_jobs
 
 from ..jobs_workers.objects import JobData
 from ..jobs_workers.public_jobs_workers.workers_list_public import jobs_data_public
@@ -35,6 +40,16 @@ class PublicJobsRoutes(JobsBp):
         super().__init__(jobs_data_infos, bp_name)
 
     def _setup_routes(self) -> None:
+
+        @self.bp.get("/list")
+        def all_jobs_list() -> str:
+            try:
+                jobs = list_jobs(limit=100)
+            except Exception:  # pragma: no cover - defensive guard
+                logger.exception("Unable to load jobs list.")
+                flash("Unable to load jobs list.", "danger")
+                jobs: list[Any] = []
+            return render_template("jobs_templates/all_jobs_list.html", jobs=jobs)
 
         @self.bp.post("/<string:job_type>/<int:job_id>/cancel")
         @user_login_required
