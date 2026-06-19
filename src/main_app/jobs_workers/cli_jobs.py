@@ -16,7 +16,7 @@ def register_cli_jobs(app: Flask) -> None:
 
     @app.cli.command("run-job")
     @click.argument("job_type")
-    # Adds an optional flag --update-all (default is False if not provided)س
+    # Adds an optional flag --update-all (default is False if not provided)
     @click.option("--update-all", is_flag=True, help="Set to True if you want to update all.")
     def _run_job(job_type: str, update_all: bool) -> None:
         """
