@@ -114,7 +114,7 @@ def cancel_job_worker(job_id: int, job_type: str | None = None, job: JobRecord |
 
 
 def _start_job_impl(
-    user: dict[str, Any] | None,
+    auth_payload: dict[str, Any] | None,
     job_type: str,
     args: dict[str, Any] | None = None,
     *,
@@ -127,7 +127,7 @@ def _start_job_impl(
     if not job_data or not target_func:
         raise ValueError(f"Unknown job type: {job_type}")
 
-    username = user.get("username") if user else None
+    username = auth_payload.get("username") if auth_payload else None
     if not username:
         raise ValueError("User authentication data is required")
 
@@ -156,7 +156,7 @@ def _start_job_impl(
     # Start background thread
     thread = threading.Thread(
         target=_runner,
-        args=(job.id, user, cancel_event, target_func, resolved_flask_app, resolved_args),
+        args=(job.id, auth_payload, cancel_event, target_func, resolved_flask_app, resolved_args),
         daemon=daemon,
     )
     thread.start()
@@ -167,13 +167,13 @@ def _start_job_impl(
 
 
 def start_job(
-    user: dict[str, Any] | None,
+    auth_payload: dict[str, Any] | None,
     job_type: str,
     args: dict[str, Any] | None = None,
 ) -> int:
     """Start a background job as a daemon thread. Returns the job ID."""
     return _start_job_impl(
-        user,
+        auth_payload,
         job_type,
         args,
         daemon=True,
@@ -182,7 +182,7 @@ def start_job(
 
 
 def start_job_cli(
-    user: dict[str, Any] | None,
+    auth_payload: dict[str, Any] | None,
     job_type: str,
     args: dict[str, Any] | None = None,
     app: Flask | None = None,
@@ -190,7 +190,7 @@ def start_job_cli(
     """Start a background job from CLI. Returns the job ID."""
     flask_app = app or current_app._get_current_object()  # type: ignore[attr-defined]
     return _start_job_impl(
-        user,
+        auth_payload,
         job_type,
         args,
         flask_app=flask_app,
