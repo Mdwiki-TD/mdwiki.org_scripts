@@ -23,6 +23,15 @@ class UpdaterOutcome:
 
 
 @dataclass
+class StandardAdminSummary:
+    total: int = 0
+    processed: int = 0
+    success: int = 0
+    failed: int = 0
+    skipped: int = 0
+
+
+@dataclass
 class Summary:
     total: int = 0
     changed: int = 0
@@ -34,6 +43,8 @@ class Summary:
 class WorkerObject:
     note: Optional[str] = None
     status: str = "pending"
+    job_id: int = 0
+
     started_at: str = field(default_factory=lambda: datetime.now().isoformat())
     completed_at: Optional[str] = None
     cancelled_at: Optional[str] = None
@@ -68,8 +79,21 @@ class SharedworkerObject(WorkerObject):
     note: str = ""
 
 
+@dataclass
+class StandardAdminWorkerObject(WorkerObject):
+    summary: StandardAdminSummary = field(default_factory=StandardAdminSummary)
+    pages_processed: list[dict[str, Any]] = field(default_factory=list)
+    pages_success: list[dict[str, Any]] = field(default_factory=list)
+    pages_skipped: list[dict[str, Any]] = field(default_factory=list)
+    pages_failed: list[dict[str, Any]] = field(default_factory=list)
+    note: str = ""
+    args: dict[str, Any] = field(default_factory=dict)
+
+
 __all__ = [
     "Summary",
     "SharedworkerObject",
     "UpdaterOutcome",
+    "StandardAdminSummary",
+    "StandardAdminWorkerObject",
 ]

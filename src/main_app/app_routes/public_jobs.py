@@ -15,7 +15,6 @@ from flask.typing import ResponseReturnValue
 from werkzeug.wrappers.response import Response
 
 from ..db.services import list_jobs
-
 from ..jobs_workers.objects import JobData
 from ..jobs_workers.public_jobs_workers.workers_list_public import jobs_data_public
 from .admin.admins_required import admin_required
@@ -72,7 +71,7 @@ class PublicJobsRoutes(JobsBp):
         @user_login_required
         def start_job(job_type: str) -> ResponseReturnValue:
             args = request.form.to_dict()
-            return self.start_job(job_type, args)
+            return self.start_job(job_type, args, check_can_run_bg_jobs=True)
 
         @self.bp.post("/<string:job_type>/<int:job_id>/delete")
         @admin_required
