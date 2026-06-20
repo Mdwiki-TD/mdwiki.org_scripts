@@ -11,6 +11,7 @@ from __future__ import annotations
 import logging
 import os
 import secrets
+import tempfile
 import sys
 from pathlib import Path
 from typing import Any, Generator
@@ -22,6 +23,12 @@ from flask.app import Flask
 from flask.testing import FlaskClient
 from pytest_socket import disable_socket
 from sqlalchemy import text
+
+# tempfile.gettempdir() returns the path to the system's directory for temporary files
+system_temp_dir = Path(tempfile.gettempdir())
+
+# Now correctly combine it with "test" and set the environment variable
+os.environ["MAIN_DIR"] = str(system_temp_dir / "test")
 
 # Make the src/ directory importable as `main_app`. The repo's prod
 # entrypoint src/app.py does the same trick.
