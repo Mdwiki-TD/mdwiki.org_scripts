@@ -1,4 +1,4 @@
-"""Unit tests for src/main_app/app_routes/admin/admins_required.py."""
+"""Unit tests for src/main_app/app_routes/admin/decorators.py."""
 
 from __future__ import annotations
 
@@ -6,7 +6,7 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-from src.main_app.app_routes.admin.admins_required import admin_required
+from src.main_app.app_routes.admin.decorators import admin_required
 
 
 class TestAdminRequired:
@@ -16,7 +16,7 @@ class TestAdminRequired:
             return "ok"
 
         with mock_app.test_request_context("/admin"):
-            with patch("src.main_app.app_routes.admin.admins_required.load_user", return_value=None):
+            with patch("src.main_app.app_routes.admin.decorators.load_user", return_value=None):
                 response = view()
                 assert response.status_code == 302
                 assert "/login" in response.location
@@ -30,7 +30,7 @@ class TestAdminRequired:
             user = MagicMock()
             user.username = "regular_user"
             user.is_active_admin = False
-            with patch("src.main_app.app_routes.admin.admins_required.load_user", return_value=user):
+            with patch("src.main_app.app_routes.admin.decorators.load_user", return_value=user):
                 with pytest.raises(Exception):  # noqa: B017
                     view()
 
@@ -43,7 +43,7 @@ class TestAdminRequired:
             user = MagicMock()
             user.username = "admin_user"
             user.is_active_admin = True
-            with patch("src.main_app.app_routes.admin.admins_required.load_user", return_value=user):
+            with patch("src.main_app.app_routes.admin.decorators.load_user", return_value=user):
                 result = view()
                 assert result == "ok"
 
