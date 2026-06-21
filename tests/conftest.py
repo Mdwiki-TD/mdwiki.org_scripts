@@ -11,8 +11,8 @@ from __future__ import annotations
 import logging
 import os
 import secrets
-import tempfile
 import sys
+import tempfile
 from pathlib import Path
 from typing import Any, Generator
 from unittest.mock import MagicMock
