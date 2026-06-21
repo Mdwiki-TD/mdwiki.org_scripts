@@ -285,6 +285,7 @@ def get_category_members_titles(
     logger.info(f"Finished fetching {len(all_files)} files in {page_count} pages")
     return all_files
 
+
 def import_page_from_wiki(
     site: Site,
     title: str,

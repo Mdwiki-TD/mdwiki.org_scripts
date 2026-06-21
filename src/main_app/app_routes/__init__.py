@@ -2,7 +2,7 @@
 
 from flask import Flask
 
-from .admin.routes import bp_admin
+from ..admin.route import bp_admin
 from .auth.routes import bp_auth
 from .fixred import bp_fixred
 from .main_routes import bp_main

@@ -1,4 +1,4 @@
-"""Unit tests for src/main_app/app_routes/admin/decorators.py."""
+"""Unit tests for src/main_app/admin/decorators.py."""
 
 from __future__ import annotations
 
@@ -6,7 +6,7 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-from src.main_app.app_routes.admin.decorators import admin_required
+from src.main_app.admin.decorators import admin_required
 
 
 class TestAdminRequired:
