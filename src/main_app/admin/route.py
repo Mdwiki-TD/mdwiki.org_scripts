@@ -42,7 +42,7 @@ def inject_sidebar() -> dict[str, Any]:
     return {"sidebar": sidebar_html}
 
 
-@bp_admin.get("/")
+@bp_admin.route("/", methods=["GET"])
 @admin_required
 def admin_dashboard() -> str:
     jobs = list_jobs(limit=100)

@@ -10,6 +10,4 @@ TODO: write tests
 
 from src.main_app.app_routes.main_routes import (
     bp_main,
-    favicon,
-    index,
 )
