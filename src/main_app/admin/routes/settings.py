@@ -72,8 +72,11 @@ class SettingsRoutes:
         @self.bp.route("/", methods=["GET"])
         @admin_required
         def dashboard():
-            all_settings = get_all_settings_raw()
-            return render_template("admins/settings.html", settings_list=all_settings)
+            settings_list = get_all_settings_raw()
+            return render_template(
+                "admins/settings.html",
+                settings_list=settings_list,
+            )
 
         @self.bp.post("/create")
         @admin_required
