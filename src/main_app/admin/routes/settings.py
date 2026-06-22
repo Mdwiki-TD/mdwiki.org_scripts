@@ -28,7 +28,7 @@ class SettingsRoutes:
 
         @self.bp.post("/create")
         @admin_required
-        def settings_create():
+        def create():
             key = request.form.get("key", "").strip()
             title = request.form.get("title", "").strip()
             value_type = request.form.get("value_type", "boolean").strip()
@@ -52,7 +52,7 @@ class SettingsRoutes:
 
         @self.bp.post("/update")
         @admin_required
-        def settings_update():
+        def update():
             failed_keys, deleted_keys = settings_update_form(request.form)
             # Invalidate runtime cache only if all updates succeeded
             if not failed_keys:
