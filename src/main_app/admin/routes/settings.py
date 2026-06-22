@@ -61,9 +61,7 @@ def settings_update_form(request_form) -> tuple[list[str], list[str]]:
             failed_keys.append(key)
             continue
 
-        try:
-            update_setting(key, value, v_type)
-        except Exception:
+        if not update_setting(key, value, v_type):
             failed_keys.append(key)
 
     return failed_keys, deleted_keys
