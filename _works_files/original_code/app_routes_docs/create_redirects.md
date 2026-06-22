@@ -53,7 +53,7 @@
 
 ## Flask Migration Vision
 
-### Current route: `flask_app/main_app/app_routes/redirect/__init__.py`
+### Current route: `flask_app/main_app/public/redirect/__init__.py`
 
 ```
 GET  /redirect/  → render form

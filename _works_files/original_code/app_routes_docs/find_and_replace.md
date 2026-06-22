@@ -70,7 +70,7 @@ This is the **only** PHP file that writes parameters to files instead of passing
 
 ## Flask Migration Vision
 
-### Current route: `flask_app/main_app/app_routes/replace/__init__.py`
+### Current route: `flask_app/main_app/public/replace/__init__.py`
 
 ```
 GET  /replace/  → render form

@@ -24,7 +24,7 @@
 
 لكل قالب templates يوجد ملف route python
 
-مثال `src/main_app/app_routes/dup.py` لـ `dup.html`
+مثال `src/main_app/public/dup.py` لـ `dup.html`
 
 ```python
 from __future__ import annotations

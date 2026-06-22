@@ -62,7 +62,7 @@
 
 ## Flask Migration Vision
 
-### Current route: `flask_app/main_app/app_routes/newupdater/__init__.py`
+### Current route: `flask_app/main_app/public/newupdater/__init__.py`
 
 ```
 GET /newupdater/?title=X&save=1  → process and display result

@@ -8,7 +8,7 @@ import logging
 
 from ..api_services import MwClientPage
 from ..api_services.clients.wiki_client import get_user_site
-from ..su_services.current_user import CurrentUser
+from .auth.current_user import CurrentUser
 from .fixref_shared.fixred_worker import work_on_text
 from .fixref_shared.objects import RunState
 from .shared_classes import UpdaterTextOutcome

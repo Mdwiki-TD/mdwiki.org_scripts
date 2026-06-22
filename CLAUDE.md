@@ -51,7 +51,7 @@ Environment-based via frozen dataclasses in `src/main_app/config/`. Settings loa
 
 ### Blueprint Structure
 
-Routes registered in `src/main_app/app_routes/__init__.py`:
+Routes registered in `src/main_app/public/__init__.py`:
 
 -   `bp_main` — Index page
 -   `bp_auth` — OAuth login/callback/logout, rate limiting
@@ -79,7 +79,7 @@ Jobs run in daemon threads via `src/main_app/jobs/`:
 
 Strict layering enforced — dependency flow is **Controller → Service → Repository → Database**:
 
--   **Controllers** (`app_routes/`) — Request validation, auth checks, service calls, and responses only. Must never import or call `db/services/` or SQLAlchemy models directly.
+-   **Controllers** (`public/`) — Request validation, auth checks, service calls, and responses only. Must never import or call `db/services/` or SQLAlchemy models directly.
 -   **Services** (`su_services/`, `shared/`) — Business logic and orchestration. Call repositories for data access, API services for external calls.
 -   **Repositories** (`db/services/`) — Data access only. All SQLAlchemy queries and mutations live here. No business logic.
 -   Controllers must not contain database queries, model imports, or business rules.

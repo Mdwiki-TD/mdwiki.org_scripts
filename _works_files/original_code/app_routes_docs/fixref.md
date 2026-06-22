@@ -49,7 +49,7 @@
 
 ## Flask Migration Vision
 
-### Current route: `flask_app/main_app/app_routes/fixref/__init__.py`
+### Current route: `flask_app/main_app/public/fixref/__init__.py`
 
 ```
 GET  /fixref/  → render form

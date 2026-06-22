@@ -49,7 +49,7 @@
 
 ## Flask Migration Vision
 
-### Current route: `flask_app/main_app/app_routes/fixred/__init__.py`
+### Current route: `flask_app/main_app/public/fixred/__init__.py`
 
 ```
 GET /fixred/?title=X  → process and display result

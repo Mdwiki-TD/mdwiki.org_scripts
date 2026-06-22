@@ -45,11 +45,11 @@ This is a well-architected Flask application with a clean layered structure (Con
 
 #### Issues Found:
 
--   [ ] **Controller imports model directly** — `src/main_app/app_routes/public_jobs.py` (line 18) imports `JobRecord` from `..db.models`. Controllers should never import models.
--   [ ] **Controller imports db services directly** — `src/main_app/app_routes/public_jobs.py` (lines 21-25) imports `active_coordinators`, `delete_job`, `get_job`, `list_jobs` from `..db.services`. These should be accessed through `su_services` or a dedicated service layer.
--   [ ] **Admin controller bypasses service layer** — `src/main_app/app_routes/admin/routes.py` (line 21) imports `list_users` from `..db.services` directly.
+-   [ ] **Controller imports model directly** — `src/main_app/public/public_jobs.py` (line 18) imports `JobRecord` from `..db.models`. Controllers should never import models.
+-   [ ] **Controller imports db services directly** — `src/main_app/public/public_jobs.py` (lines 21-25) imports `active_coordinators`, `delete_job`, `get_job`, `list_jobs` from `..db.services`. These should be accessed through `su_services` or a dedicated service layer.
+-   [ ] **Admin controller bypasses service layer** — `src/main_app/public/admin/routes.py` (line 21) imports `list_users` from `..db.services` directly.
 -   [ ] **`create_app()` factory imports db services** — `src/main_app/__init__.py` (line 18) imports `active_coordinators` from `.db.services`. This couples the app factory to the database layer.
--   [ ] **Service-layer logic in route utils** — `src/main_app/app_routes/utils/routes_utils.py::load_auth_payload()` constructs auth payload dicts, which is business logic in a "utils" file.
+-   [ ] **Service-layer logic in route utils** — `src/main_app/public/utils/routes_utils.py::load_auth_payload()` constructs auth payload dicts, which is business logic in a "utils" file.
 
 #### Recommendations:
 
@@ -69,9 +69,9 @@ This is a well-architected Flask application with a clean layered structure (Con
 
 -   [x] **Dead API wrapper** — `src/main_app/api_services/query_api.py::get_template_pages_newapi()` (line 10) references `api.NewApi()` which doesn't exist. The function is unused anywhere.
 -   [ ] **Stub workers** — `add_r_column` and `add_unlinkedwikibase` workers contain `TODO: import logic from ...` comments. They are essentially empty shells.
--   [x] **Commented-out blueprint registrations** — `src/main_app/app_routes/admin/routes.py` (lines 103-108) has 5 commented-out blueprint registrations.
+-   [x] **Commented-out blueprint registrations** — `src/main_app/public/admin/routes.py` (lines 103-108) has 5 commented-out blueprint registrations.
 -   [ ] **Disabled teardown** — `src/main_app/__init__.py` (lines 131-145) has a `_cleanup_connections` teardown function where the entire body is commented out with a pass statement.
--   [ ] **Empty `__init__.py` files** — `src/main_app/app_routes/newupdater/__init__.py`, `src/main_app/shared/fixref_shared/__init__.py`, `src/main_app/jobs/__init__.py` are all empty (though some serve package marker purposes).
+-   [ ] **Empty `__init__.py` files** — `src/main_app/public/newupdater/__init__.py`, `src/main_app/shared/fixref_shared/__init__.py`, `src/main_app/jobs/__init__.py` are all empty (though some serve package marker purposes).
 -   [ ] **Commented template code** — `src/templates/jobs_templates/base_list2.html` and `base_details2.html` have commented-out `status_icon()` calls.
 -   [ ] **Commented-out filter logic** — `create_redirects/worker.py` (line ~100) has `# if page.get("title") != title: continue` commented out.
 -   [ ] **`src/__init__.py`** — The root `src/__init__.py` exists but is empty/trivial. Consider if needed.
@@ -118,9 +118,9 @@ This is a well-architected Flask application with a clean layered structure (Con
 
 -   [ ] **`su_services/` name is cryptic** — "su" likely means "service-user" or "super-user" but is not documented. This should be renamed to something clear like `auth_services/` or `user_services/`.
 -   [ ] **`public_jobs/` naming** — Implies there are "old jobs" somewhere. The directory houses the entire background job system. Should be renamed to `jobs/` or `workers/`.
--   [ ] **`app_routes/admin/` vs `app_routes/admin_routes/`** — There are TWO admin-related directories: `admin/` (sidecar pattern) and `admin_routes/` (coordinators blueprint). This is confusing and non-standard.
+-   [ ] **`public/admin/` vs `public/admin_routes/`** — There are TWO admin-related directories: `admin/` (sidecar pattern) and `admin_routes/` (coordinators blueprint). This is confusing and non-standard.
 -   [ ] **`shared/` package is a grab-bag** — Contains fixred logic, new_updater logic, decode_bytes, shared_classes. It's not clear what unifies these.
--   [ ] **`core/` package naming overlap** — `core/cookies.py` (test client) vs `app_routes/auth/cookie.py` (signing). These are related but separated.
+-   [ ] **`core/` package naming overlap** — `core/cookies.py` (test client) vs `public/auth/cookie.py` (signing). These are related but separated.
 -   [ ] **`utils/` as dumping ground** — `main_app/utils/` contains one `verify.py` file. `api_services/utils/` has an empty `__init__.py`. Route `utils/` has `routes_utils.py`. Multiple `utils` directories dilute the concept.
 
 #### Recommendations:
@@ -319,24 +319,24 @@ This is a well-architected Flask application with a clean layered structure (Con
 -   **Issues**: Imports `active_coordinators` from `db.services` (layering violation); disabled teardown handler
 -   **Priority**: Phase 2
 
-### `src/main_app/app_routes/public_jobs.py`
+### `src/main_app/public/public_jobs.py`
 
 -   **Issues**: Imports `JobRecord` model directly; imports `db.services` directly; has `_can_manage_job()` business logic
 -   **Priority**: Phase 2 (Critical)
 
-### `src/main_app/app_routes/fixred.py`
+### `src/main_app/public/fixred.py`
 
 -   Clean, well-structured route handler. `_normalize_title()` extracted as pure function (good).
 
-### `src/main_app/app_routes/newupdater/route.py`
+### `src/main_app/public/newupdater/route.py`
 
 -   Clean, mirrors `fixred.py` pattern. Good separation.
 
-### `src/main_app/app_routes/auth/`
+### `src/main_app/public/auth/`
 
 -   Well-structured OAuth module with `cookie.py`, `oauth.py`, `rate_limit.py` separation. Good.
 
-### `src/main_app/app_routes/admin/`
+### `src/main_app/public/admin/`
 
 -   **Issues**: Routes import `db.services` directly; commented-out blueprint registrations
 -   **Priority**: Phase 2

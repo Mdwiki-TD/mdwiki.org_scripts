@@ -1,51 +1,54 @@
 ```
 tests/
 ├── integration/
-│   └── app_routes/
+│   └── public/
 │       ├── admin/
+│       │   ├── admin_routes/
+│       │   │   └── test_settings_integration.py
 │       │   └── test_admin_routes.py
 │       ├── auth/
 │       │   └── test_auth_routes.py
 │       └── test_jobs_routes.py
 ├── unit/
+│   ├── admin/
+│   │   ├── routes/
+│   │   │   ├── test_coordinators.py
+│   │   │   └── test_settings.py
+│   │   ├── test_admins_required.py
+│   │   └── test_sidebar.py
 │   ├── api_services/
 │   │   ├── clients/
 │   │   │   ├── test_commons_client.py
 │   │   │   └── test_wiki_client.py
+│   │   ├── utils/
 │   │   ├── test_category.py
 │   │   ├── test_mwclient_page.py
-│   │   ├── test_pages_api.py
 │   │   └── test_query_api.py
-│   ├── app_routes/
-│   │   ├── admin/
-│   │   │   ├── test_admins_required.py
-│   │   │   └── test_sidebar.py
-│   │   ├── admin_routes/
-│   │   │   └── test_coordinators.py
+│   ├── public/
 │   │   ├── auth/
 │   │   │   ├── test_auth_utils.py
-│   │   │   ├── test_cookie.py
-│   │   │   ├── test_oauth.py
 │   │   │   ├── test_rate_limit.py
 │   │   │   └── test_routes.py
-│   │   ├── main/
+│   │   ├── main_routes/
 │   │   │   └── test_main_init.py
 │   │   ├── newupdater/
-│   │   │   ├── test_app_routes_worker.py
 │   │   │   ├── test_newupdater_worker.py
 │   │   │   └── test_route.py
 │   │   ├── utils/
 │   │   │   └── test_routes_utils.py
-│   │   ├── test_app_routes_init.py
+│   │   ├── test_public_init.py
 │   │   ├── test_fixred.py
-│   │   ├── test_public_jobs.py
+│   │   ├── test_jobs_routes_utils.py
+│   │   ├── test_new_jobs.py
 │   │   └── test_profile.py
 │   ├── config/
 │   │   ├── test_classes.py
 │   │   ├── test_flask_config.py
 │   │   └── test_main_settings.py
 │   ├── core/
-│   │   ├── test_cookies.py
+│   │   ├── cookies/
+│   │   │   ├── test_cookie.py
+│   │   │   └── test_cookie_header_client.py
 │   │   ├── test_crypto.py
 │   │   └── test_jinja_filters.py
 │   ├── db/
@@ -53,14 +56,19 @@ tests/
 │   │   │   ├── test_jobs.py
 │   │   │   └── test_users.py
 │   │   ├── services/
+│   │   │   ├── utils/
+│   │   │   │   ├── test_db_guard_model.py
+│   │   │   │   ├── test_detachedinstanceerror.py
+│   │   │   │   └── test_retry_on_disconnect.py
 │   │   │   ├── test_admin_service.py
 │   │   │   ├── test_jobs_service.py
-│   │   │   ├── test_services_utils.py
-│   │   │   └── test_user_token_service.py
+│   │   │   ├── test_settings_service.py
+│   │   │   ├── test_user_token_service.py
+│   │   │   └── test_users_service.py
 │   │   ├── test_db_init.py
 │   │   └── test_exceptions.py
-│   ├── public_jobs/
-│   │   ├── workers/
+│   ├── jobs_workers/
+│   │   ├── public_jobs_workers/
 │   │   │   ├── add_r_column/
 │   │   │   │   ├── test_add_r_column_objects.py
 │   │   │   │   ├── test_add_r_column_worker.py
@@ -79,14 +87,16 @@ tests/
 │   │   │   │   └── test_fixred_all_worker.py
 │   │   │   ├── fixref/
 │   │   │   │   └── test_fixref_worker.py
-│   │   │   └── import_history/
-│   │   │       ├── test_import_history_objects.py
-│   │   │       └── test_import_history_worker.py
+│   │   │   ├── import_history/
+│   │   │   │   ├── test_import_history_objects.py
+│   │   │   │   └── test_import_history_worker.py
+│   │   │   └── newupdater_all/
+│   │   │       └── test_newupdater_all_worker.py
 │   │   ├── test_base_worker.py
 │   │   ├── test_base_worker_object.py
 │   │   ├── test_job_lifecycle_updates.py
 │   │   ├── test_jobs_worker.py
-│   │   ├── test_public_jobs_utils.py
+│   │   ├── test_new_jobs_utils.py
 │   │   ├── test_shared_objects.py
 │   │   ├── test_utils.py
 │   │   └── test_workers_list.py
@@ -107,9 +117,31 @@ tests/
 │   │   │   │   ├── test_chem_params.py
 │   │   │   │   ├── test_expend_lists.py
 │   │   │   │   └── test_identifier_params.py
+│   │   │   ├── tests/
+│   │   │   │   ├── texts/
+│   │   │   │   │   ├── chembox/
+│   │   │   │   │   │   ├── work_on_text_expected.wiki
+│   │   │   │   │   │   ├── work_on_text_result.wiki
+│   │   │   │   │   │   └── work_on_text_source.wiki
+│   │   │   │   │   ├── test1/
+│   │   │   │   │   │   ├── work_on_text_expected.wiki
+│   │   │   │   │   │   ├── work_on_text_result.wiki
+│   │   │   │   │   │   └── work_on_text_source.wiki
+│   │   │   │   │   ├── test2/
+│   │   │   │   │   │   ├── work_on_text_expected.wiki
+│   │   │   │   │   │   ├── work_on_text_result.wiki
+│   │   │   │   │   │   └── work_on_text_source.wiki
+│   │   │   │   │   └── test3/
+│   │   │   │   │       ├── work_on_text_expected.wiki
+│   │   │   │   │       ├── work_on_text_result.wiki
+│   │   │   │   │       └── work_on_text_source.wiki
+│   │   │   │   ├── test_chembox1.py
+│   │   │   │   ├── test_mv_section1.py
+│   │   │   │   ├── test_portal_remove.py
+│   │   │   │   ├── test_rename_params.py
+│   │   │   │   └── test_work_on_text.py
 │   │   │   ├── test_chembox.py
 │   │   │   ├── test_drugbox.py
-│   │   │   ├── test_helps.py
 │   │   │   ├── test_MedWorkNew.py
 │   │   │   ├── test_mv_section.py
 │   │   │   └── test_resources_new.py
@@ -117,9 +149,12 @@ tests/
 │   │   │   └── test_replace_wikilink.py
 │   │   ├── test_decode_bytes.py
 │   │   ├── test_fixred_one.py
+│   │   ├── test_newupdater_service.py
 │   │   └── test_shared_classes.py
 │   ├── su_services/
-│   │   └── test_jobs_files_service.py
+│   │   ├── test_auth_users_service.py
+│   │   ├── test_jobs_files_service.py
+│   │   └── test_mwoauth_handshake.py
 │   ├── utils/
 │   │   └── test_verify.py
 │   ├── test_extensions.py

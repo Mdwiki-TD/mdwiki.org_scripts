@@ -11,17 +11,17 @@
 
 | #   | Finding                                                                                                                                                                       | Category  | Impact | Effort | Risk | Evidence                                                                       |
 | --- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------- | ------ | ------ | ---- | ------------------------------------------------------------------------------ |
-| 1   | **Missing authorization on job deletion route** — `@admin_required` is commented out; any anonymous POST can delete any job                                                   | Security  | HIGH   | S      | LOW  | `src/main_app/app_routes/public_jobs.py:285-290`                               |
-| 2   | **State-changing wiki edit via GET bypasses CSRF** — `/newupdater/save/<title>` triggers a live wiki edit on GET; `@oauth_required` only checks session, which CSRF satisfies | Security  | HIGH   | M      | MED  | `src/main_app/app_routes/newupdater/route.py:73-88`                            |
+| 1   | **Missing authorization on job deletion route** — `@admin_required` is commented out; any anonymous POST can delete any job                                                   | Security  | HIGH   | S      | LOW  | `src/main_app/public/public_jobs.py:285-290`                               |
+| 2   | **State-changing wiki edit via GET bypasses CSRF** — `/newupdater/save/<title>` triggers a live wiki edit on GET; `@oauth_required` only checks session, which CSRF satisfies | Security  | HIGH   | M      | MED  | `src/main_app/public/newupdater/route.py:73-88`                            |
 | 3   | **DB password double-encoded in SQLAlchemy URI** — `quote_plus()` applied before `URL.create()` which encodes internally; passwords with `@#%/` break in production           | Bug       | HIGH   | S      | LOW  | `src/main_app/config/flask_config.py:19`                                       |
-| 4   | **Rate limiter bypass via forged X-Forwarded-For** — no ProxyFix middleware; attacker rotates IPs to bypass login/callback rate limits                                        | Security  | MED    | S      | LOW  | `src/main_app/app_routes/auth/routes.py:58-62`                                 |
-| 5   | **Unauthenticated access to job result files** — `/jobs/job-file/<result_file>` serves operational data with no auth check                                             | Security  | MED    | S      | LOW  | `src/main_app/app_routes/public_jobs.py:292-297`                               |
-| 6   | **Open redirect via unvalidated `post_login_redirect`** — `request.url` stored in session, redirected to after OAuth without domain validation                                | Security  | MED    | S      | LOW  | `src/main_app/app_routes/auth/utils.py:81`, `auth/routes.py:176`               |
-| 7   | **Exception `repr()` leaked to users via flash** — internal paths, DB strings exposed                                                                                         | Security  | MED    | S      | LOW  | `src/main_app/app_routes/fixred.py:62`, `newupdater/route.py:48`               |
+| 4   | **Rate limiter bypass via forged X-Forwarded-For** — no ProxyFix middleware; attacker rotates IPs to bypass login/callback rate limits                                        | Security  | MED    | S      | LOW  | `src/main_app/public/auth/routes.py:58-62`                                 |
+| 5   | **Unauthenticated access to job result files** — `/jobs/job-file/<result_file>` serves operational data with no auth check                                             | Security  | MED    | S      | LOW  | `src/main_app/public/public_jobs.py:292-297`                               |
+| 6   | **Open redirect via unvalidated `post_login_redirect`** — `request.url` stored in session, redirected to after OAuth without domain validation                                | Security  | MED    | S      | LOW  | `src/main_app/public/auth/utils.py:81`, `auth/routes.py:176`               |
+| 7   | **Exception `repr()` leaked to users via flash** — internal paths, DB strings exposed                                                                                         | Security  | MED    | S      | LOW  | `src/main_app/public/fixred.py:62`, `newupdater/route.py:48`               |
 | 8   | **`raise exc` loses original traceback** in `db_guard_rollback`                                                                                                               | Bug       | MED    | S      | LOW  | `src/main_app/db/services/utils.py:28,31`                                      |
 | 9   | **Missing None check for `site` in fixred_one.py** — `get_user_site()` can return None, passed directly to `MwClientPage`                                                     | Bug       | MED    | S      | LOW  | `src/main_app/shared/fixred_one.py:35-37`                                      |
 | 10  | **Job reported "completed" when `before_run()` fails** — `after_run()` coerces pending→completed unconditionally                                                              | Bug       | MED    | S      | LOW  | `src/main_app/jobs_workers/base_worker_object.py:127-132,259-263`              |
-| 11  | **CSRF token leaked into background job args** — `request.form.to_dict()` includes `csrf_token`, persisted in job result files                                                | Security  | MED    | S      | LOW  | `src/main_app/app_routes/public_jobs.py:273`                                   |
+| 11  | **CSRF token leaked into background job args** — `request.form.to_dict()` includes `csrf_token`, persisted in job result files                                                | Security  | MED    | S      | LOW  | `src/main_app/public/public_jobs.py:273`                                   |
 | 12  | **`is_job_cancelled` issues redundant double-query** — `query().first()` then `session.refresh()` on same row; called every 10 edits                                          | Perf      | MED    | S      | LOW  | `src/main_app/db/services/jobs_service.py:92-95`                               |
 | 13  | **O(n\*m) list scan in add_rtt_template** — `x not in template_pages` on two lists of ~30K titles each                                                                        | Perf      | MED    | S      | LOW  | `src/main_app/jobs_workers/public_jobs_workers/add_rtt_template/worker.py:115` |
 | 14  | **`DevelopmentConfig` sets `TESTING=True`** — enables exception propagation; dangerous if accidentally deployed                                                               | Security  | LOW    | S      | LOW  | `src/main_app/config/flask_config.py:117-118`                                  |
@@ -64,7 +64,7 @@
 ### Finding 1: Missing authorization on job deletion route
 
 ```python
-# src/main_app/app_routes/public_jobs.py:285-290
+# src/main_app/public/public_jobs.py:285-290
 # @admin_required  <-- COMMENTED OUT
 @self.bp.post("/<string:job_type>/<int:job_id>/delete")
 def delete_job(job_type: str, job_id: int) -> Response:
@@ -78,7 +78,7 @@ def delete_job(job_type: str, job_id: int) -> Response:
 ### Finding 2: State-changing wiki edit via GET bypasses CSRF
 
 ```python
-# src/main_app/app_routes/newupdater/route.py:73-88
+# src/main_app/public/newupdater/route.py:73-88
 @bp_newupdater.route("/save/<path:title>", methods=["GET"])
 @oauth_required
 def auto_save(title: str) -> str:
@@ -105,7 +105,7 @@ url = URL.create(
 ### Finding 4: Rate limiter bypass via forged X-Forwarded-For
 
 ```python
-# src/main_app/app_routes/auth/routes.py:58-62
+# src/main_app/public/auth/routes.py:58-62
 def _client_key() -> str:
     forwarded_for = request.headers.get("X-Forwarded-For")
     if forwarded_for:
@@ -118,7 +118,7 @@ No `ProxyFix` middleware configured in `create_app()`. Attacker sends different 
 ### Finding 5: Unauthenticated access to job result files
 
 ```python
-# src/main_app/app_routes/public_jobs.py:292-297
+# src/main_app/public/public_jobs.py:292-297
 @self.bp.get("/job-file/<string:result_file>")
 @self.bp.get("/job-file/<string:result_file>/<string:job_type>")
 def read_job_result_file(result_file: str, job_type: str = "") -> ResponseReturnValue:
@@ -131,10 +131,10 @@ No auth decorator. Job result files contain operational data (page titles, error
 ### Finding 6: Open redirect via unvalidated post_login_redirect
 
 ```python
-# src/main_app/app_routes/auth/utils.py:81
+# src/main_app/public/auth/utils.py:81
 session["post_login_redirect"] = request.url  # full URL including scheme+host
 
-# src/main_app/app_routes/auth/routes.py:176
+# src/main_app/public/auth/routes.py:176
 response = make_response(redirect(session.pop("post_login_redirect", url_for("main.index"))))
 ```
 
@@ -143,10 +143,10 @@ No validation that the redirect target is same-origin. Combined with Finding #4 
 ### Finding 7: Exception repr() leaked to users
 
 ```python
-# src/main_app/app_routes/fixred.py:62
+# src/main_app/public/fixred.py:62
 flash(f"Error processing {title!r}: {exc!r}", "danger")
 
-# src/main_app/app_routes/newupdater/route.py:48
+# src/main_app/public/newupdater/route.py:48
 flash(f"Error processing {title!r}: {exc!r}", "danger")
 ```
 
@@ -198,7 +198,7 @@ if final_status in ["running", "pending"]:
 ### Finding 11: CSRF token leaked into job args
 
 ```python
-# src/main_app/app_routes/public_jobs.py:273
+# src/main_app/public/public_jobs.py:273
 args = request.form.to_dict()  # includes csrf_token field
 job_id = _start_job(job_type, args)  # passed to background worker and persisted in result files
 ```
