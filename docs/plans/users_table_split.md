@@ -390,7 +390,7 @@ def load_auth_payload(user) -> Dict[str, Any]:
 
 ```python
 # Change type hint from UserTokenRecord to CurrentUser
-from ..su_services.current_user import CurrentUser
+from ..shared.auth.current_user import CurrentUser
 
 def work_on_title(
     title: str,

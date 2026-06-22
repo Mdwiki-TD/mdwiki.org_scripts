@@ -7,7 +7,7 @@ from unittest.mock import MagicMock, patch
 from flask import g, session
 
 from src.main_app.public.auth.utils import load_logged_in_user, load_user, oauth_required
-from src.main_app.su_services.current_user import CurrentUser
+from src.main_app.shared.auth.current_user import CurrentUser
 
 
 class TestOauthRequired:
@@ -39,7 +39,7 @@ class TestLoadLoggedInUser:
             session["uid"] = 123
             fake_user = CurrentUser(user_id=123, username="test_user", access_token=b"t", access_secret=b"s")
             with patch(
-                "src.main_app.su_services.auth_users_service.AuthUserService.get_authenticated_user",
+                "src.main_app.shared.auth.auth_users_service.AuthUserService.get_authenticated_user",
                 return_value=fake_user,
             ):
                 load_logged_in_user()
@@ -57,7 +57,7 @@ class TestLoadLoggedInUser:
         with mock_app.test_request_context():
             # No uid in session, no cookie
             with patch(
-                "src.main_app.su_services.auth_users_service.AuthUserService.get_authenticated_user"
+                "src.main_app.shared.auth.auth_users_service.AuthUserService.get_authenticated_user"
             ) as mock_get:
                 user = load_user()
                 assert user is None

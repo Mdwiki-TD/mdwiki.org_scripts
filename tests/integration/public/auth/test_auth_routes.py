@@ -227,7 +227,7 @@ class TestCallbackRoute:
                 return_value="my_nonce",
             ),
             patch(
-                "src.main_app.su_services.auth_service.complete_login",
+                "src.main_app.shared.auth.auth_service.complete_login",
                 return_value=(fake_access, fake_identity),
             ),
         ):
