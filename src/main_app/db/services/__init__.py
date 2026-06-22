@@ -9,7 +9,7 @@ from .delete_service import (
     delete_coordinator,
     delete_job,
     delete_record_by_pk,
-    delete_setting,
+    delete_setting_by_key,
     delete_user,
     delete_user_token,
 )
@@ -77,7 +77,7 @@ __all__ = [
     "list_settings",
     # delete
     "delete_record_by_pk",
-    "delete_setting",
+    "delete_setting_by_key",
     "delete_coordinator",
     "delete_job",
     "delete_user",

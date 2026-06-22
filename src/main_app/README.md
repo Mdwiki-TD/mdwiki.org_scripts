@@ -12,7 +12,7 @@
 | `core/`         | Fernet encryption for OAuth tokens, cookie signing            |
 | `db/`           | SQLAlchemy models (UserToken, AdminUser, Job) + CRUD services |
 | `api_services/` | MediaWiki API wrappers (mwclient-based)                       |
-| `app_routes/`   | Flask Blueprints (auth, main, jobs, newupdater, fixred)       |
+| `public/`   | Flask Blueprints (auth, main, jobs, newupdater, fixred)       |
 | `public_jobs/`     | Thread-based background job runner + 8 worker implementations |
 | `shared/`       | Domain logic — wikitext processing, template normalization    |
 | `su_services/`  | User authentication helpers + job result file I/O             |
@@ -65,7 +65,7 @@ migrate = Migrate()
 
 ### Blueprint Registration
 
-5 blueprints registered in `app_routes/__init__.py`:
+5 blueprints registered in `public/__init__.py`:
 
 | Blueprint        | URL Prefix    | Purpose                     |
 | ---------------- | ------------- | --------------------------- |

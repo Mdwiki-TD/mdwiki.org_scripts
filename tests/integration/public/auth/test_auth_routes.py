@@ -1,4 +1,4 @@
-"""Integration tests for src/main_app/app_routes/auth/routes.py module.
+"""Integration tests for src/main_app/public/auth/routes.py module.
 
 Tests the full OAuth login/logout flow through the Flask test client with
 a real SQLite database (via TestingConfig). OAuth external calls are stubbed
@@ -40,7 +40,7 @@ class TestLoginRoute:
 
     def test_login_redirects_to_oauth(self, mock_client):
         """Login should redirect (302) after initiating OAuth flow."""
-        with patch("src.main_app.app_routes.auth.routes.start_login") as mock_start:
+        with patch("src.main_app.public.auth.routes.start_login") as mock_start:
             mock_start.return_value = (
                 "https://example.org/oauth/authorize",
                 MagicMock(key="req_key", secret="req_secret"),
@@ -51,7 +51,7 @@ class TestLoginRoute:
 
     def test_login_stores_request_token_in_session(self, mock_client):
         """After login, the session should contain the OAuth request token."""
-        with patch("src.main_app.app_routes.auth.routes.start_login") as mock_start:
+        with patch("src.main_app.public.auth.routes.start_login") as mock_start:
             token = MagicMock(key="req_key", secret="req_secret")
             mock_start.return_value = (
                 "https://example.org/oauth/authorize",
@@ -65,10 +65,10 @@ class TestLoginRoute:
     def test_login_flash_on_failure(self, mock_client, monkeypatch):
         """If start_login raises, a danger flash message should appear."""
         mock_flash = Mock()
-        monkeypatch.setattr("src.main_app.app_routes.auth.routes.flash", mock_flash)
+        monkeypatch.setattr("src.main_app.public.auth.routes.flash", mock_flash)
 
         with patch(
-            "src.main_app.app_routes.auth.routes.start_login",
+            "src.main_app.public.auth.routes.start_login",
             side_effect=RuntimeError("OAuth down"),
         ):
             resp = mock_client.get("/login", follow_redirects=True)
@@ -89,7 +89,7 @@ class TestCallbackRoute:
     def test_callback_missing_state_flash(self, mock_client, monkeypatch):
         """Callback without state in session should flash error."""
         mock_flash = Mock()
-        monkeypatch.setattr("src.main_app.app_routes.auth.routes.flash", mock_flash)
+        monkeypatch.setattr("src.main_app.public.auth.routes.flash", mock_flash)
 
         resp = mock_client.get("/callback", follow_redirects=True)
         assert resp.status_code == 200
@@ -98,11 +98,11 @@ class TestCallbackRoute:
     def test_callback_state_mismatch_flash(self, mock_client, monkeypatch):
         """Callback with wrong state should flash mismatch error."""
         mock_flash = Mock()
-        monkeypatch.setattr("src.main_app.app_routes.auth.routes.flash", mock_flash)
+        monkeypatch.setattr("src.main_app.public.auth.routes.flash", mock_flash)
 
         self._setup_session(mock_client)
         with patch(
-            "src.main_app.app_routes.auth.routes.verify_state_token",
+            "src.main_app.public.auth.routes.verify_state_token",
             return_value="wrong_nonce",
         ):
             resp = mock_client.get(
@@ -115,11 +115,11 @@ class TestCallbackRoute:
     def test_callback_missing_verifier_flash(self, mock_client, monkeypatch):
         """Callback without oauth_verifier should flash error."""
         mock_flash = Mock()
-        monkeypatch.setattr("src.main_app.app_routes.auth.routes.flash", mock_flash)
+        monkeypatch.setattr("src.main_app.public.auth.routes.flash", mock_flash)
 
         self._setup_session(mock_client)
         with patch(
-            "src.main_app.app_routes.auth.routes.verify_state_token",
+            "src.main_app.public.auth.routes.verify_state_token",
             return_value="my_nonce",
         ):
             resp = mock_client.get(
@@ -137,11 +137,11 @@ class TestCallbackRoute:
 
         with (
             patch(
-                "src.main_app.app_routes.auth.routes.verify_state_token",
+                "src.main_app.public.auth.routes.verify_state_token",
                 return_value="my_nonce",
             ),
             patch(
-                "src.main_app.app_routes.auth.routes.complete_oauth_callback",
+                "src.main_app.public.auth.routes.complete_oauth_callback",
                 return_value=fake_user_record,
             ),
         ):
@@ -168,11 +168,11 @@ class TestCallbackRoute:
 
         with (
             patch(
-                "src.main_app.app_routes.auth.routes.verify_state_token",
+                "src.main_app.public.auth.routes.verify_state_token",
                 return_value="my_nonce",
             ),
             patch(
-                "src.main_app.app_routes.auth.routes.complete_oauth_callback",
+                "src.main_app.public.auth.routes.complete_oauth_callback",
                 side_effect=_fake_complete_oauth_callback,
             ),
         ):
@@ -196,11 +196,11 @@ class TestCallbackRoute:
 
         with (
             patch(
-                "src.main_app.app_routes.auth.routes.verify_state_token",
+                "src.main_app.public.auth.routes.verify_state_token",
                 return_value="my_nonce",
             ),
             patch(
-                "src.main_app.app_routes.auth.routes.complete_oauth_callback",
+                "src.main_app.public.auth.routes.complete_oauth_callback",
                 return_value=fake_user_record,
             ),
         ):
@@ -223,7 +223,7 @@ class TestCallbackRoute:
 
         with (
             patch(
-                "src.main_app.app_routes.auth.routes.verify_state_token",
+                "src.main_app.public.auth.routes.verify_state_token",
                 return_value="my_nonce",
             ),
             patch(
@@ -250,11 +250,11 @@ class TestCallbackRoute:
 
         with (
             patch(
-                "src.main_app.app_routes.auth.routes.verify_state_token",
+                "src.main_app.public.auth.routes.verify_state_token",
                 return_value="my_nonce",
             ),
             patch(
-                "src.main_app.app_routes.auth.routes.complete_oauth_callback",
+                "src.main_app.public.auth.routes.complete_oauth_callback",
                 return_value=fake_user_record,
             ),
         ):
@@ -304,7 +304,7 @@ class TestLogoutRoute:
     def test_logout_flash_messages(self, mock_client, mock_login, monkeypatch):
         """Logout should display flash messages."""
         mock_flash = Mock()
-        monkeypatch.setattr("src.main_app.app_routes.auth.routes.flash", mock_flash)
+        monkeypatch.setattr("src.main_app.public.auth.routes.flash", mock_flash)
 
         mock_login("FlashLogout")
         resp = mock_client.get("/logout", follow_redirects=True)
@@ -341,7 +341,7 @@ class TestAuthRouteIntegration:
     def test_login_then_callback_full_flow(self, mock_app, mock_client):
         """Full round-trip: login -> callback -> user in database."""
         # Step 1: Login
-        with patch("src.main_app.app_routes.auth.routes.start_login") as mock_start:
+        with patch("src.main_app.public.auth.routes.start_login") as mock_start:
             mock_start.return_value = (
                 "https://example.org/oauth/authorize",
                 MagicMock(key="rk", secret="rs"),
@@ -362,11 +362,11 @@ class TestAuthRouteIntegration:
 
         with (
             patch(
-                "src.main_app.app_routes.auth.routes.verify_state_token",
+                "src.main_app.public.auth.routes.verify_state_token",
                 return_value="my_nonce",
             ),
             patch(
-                "src.main_app.app_routes.auth.routes.complete_oauth_callback",
+                "src.main_app.public.auth.routes.complete_oauth_callback",
                 side_effect=_fake_complete_oauth_callback,
             ),
         ):

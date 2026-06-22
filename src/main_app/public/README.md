@@ -1,4 +1,4 @@
-# app_routes — Flask Route Handlers
+# public — Flask Route Handlers
 
 ## Project Overview
 
@@ -7,7 +7,7 @@ Flask Blueprint-based route handlers implementing the web interface for MDWiki t
 ### Structure
 
 ```
-app_routes/
+public/
 ├── __init__.py           # register_blueprints()
 ├── fixred.py             # bp_fixred — single-page redirect fixer
 ├── public_jobs.py           # bp_public_jobs — job management dashboard
@@ -82,11 +82,11 @@ Runs `work_on_title()` inline — fast single-page template normalization.
 ## Testing
 
 ```bash
-pytest tests/unit/app_routes
-pytest tests/integration/app_routes
+pytest tests/unit/public
+pytest tests/integration/public
 
 # with coverage
-pytest tests/integration/app_routes tests/unit/app_routes --cov=src/main_app/app_routes
+pytest tests/integration/public tests/unit/public --cov=src/main_app/public
 ```
 
 ## Strengths

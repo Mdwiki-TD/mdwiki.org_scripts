@@ -55,7 +55,7 @@
 
 ## Flask Migration Vision
 
-### Current route: `flask_app/main_app/app_routes/import_history/__init__.py`
+### Current route: `flask_app/main_app/public/import_history/__init__.py`
 
 ```
 GET  /import-history/  → render form

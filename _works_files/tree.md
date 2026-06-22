@@ -28,7 +28,7 @@ src/
 │   │   ├── enwiki_api.py
 │   │   ├── query_api.py
 │   │   └── README.md
-│   ├── app_routes/
+│   ├── public/
 │   │   ├── auth/
 │   │   │   ├── __init__.py
 │   │   │   ├── rate_limit.py

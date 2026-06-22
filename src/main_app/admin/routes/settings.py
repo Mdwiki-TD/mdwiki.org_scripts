@@ -9,8 +9,8 @@ from flask import Blueprint, flash, redirect, render_template, request, url_for
 
 from ...db.services import (
     create_setting,
+    delete_setting_by_key,
     get_all_settings_raw,
-    delete_setting,
     update_setting,
 )
 from ..decorators import admin_required
@@ -42,7 +42,7 @@ def settings_update_form(request_form) -> tuple[list[str], list[str]]:
 
         # Check if marked for deletion
         if request_form.get(delete_key) == "on":
-            if delete_setting(key):
+            if delete_setting_by_key(key):
                 deleted_keys.append(key)
             else:
                 failed_keys.append(key)
@@ -60,7 +60,6 @@ def settings_update_form(request_form) -> tuple[list[str], list[str]]:
             failed_keys.append(key)
 
     return failed_keys, deleted_keys
-
 
 
 class SettingsRoutes:

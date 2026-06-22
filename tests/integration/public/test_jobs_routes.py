@@ -185,11 +185,11 @@ class TestStartJob:
 
         with (
             patch(
-                "src.main_app.app_routes.jobs_routes_utils.load_auth_payload",
+                "src.main_app.public.jobs_routes_utils.load_auth_payload",
                 return_value={"id": uid, "username": "JobUser"},
             ),
             patch(
-                "src.main_app.app_routes.jobs_routes_utils.start_job",
+                "src.main_app.public.jobs_routes_utils.start_job",
                 return_value=1,
             ),
         ):
@@ -207,11 +207,11 @@ class TestStartJob:
 
         with (
             patch(
-                "src.main_app.app_routes.jobs_routes_utils.load_auth_payload",
+                "src.main_app.public.jobs_routes_utils.load_auth_payload",
                 return_value={"id": uid, "username": "JobUser"},
             ),
             patch(
-                "src.main_app.app_routes.jobs_routes_utils.start_job",
+                "src.main_app.public.jobs_routes_utils.start_job",
                 return_value=1,
             ),
         ):
@@ -232,11 +232,11 @@ class TestStartJob:
 
         with (
             patch(
-                "src.main_app.app_routes.jobs_routes_utils.load_auth_payload",
+                "src.main_app.public.jobs_routes_utils.load_auth_payload",
                 return_value={"id": uid, "username": "JobUser"},
             ),
             patch(
-                "src.main_app.app_routes.jobs_routes_utils.start_job",
+                "src.main_app.public.jobs_routes_utils.start_job",
                 side_effect=DuplicateJobError("A job of type 'fixref' is already active"),
             ),
         ):
@@ -284,7 +284,7 @@ class TestCancelJob:
         job_id = _seed_job(mock_app, VALID_JOB_TYPE, username="Owner")
 
         with patch(
-            "src.main_app.app_routes.jobs_routes_utils.cancel_job_worker",
+            "src.main_app.public.jobs_routes_utils.cancel_job_worker",
             return_value=True,
         ):
             resp = mock_client.post(
@@ -297,7 +297,7 @@ class TestCancelJob:
     def test_cancel_other_user_job_blocked(self, mock_app, mock_client, monkeypatch):
         """Non-owner, non-admin should not be able to cancel another user's job."""
         mock_flash = Mock()
-        monkeypatch.setattr("src.main_app.app_routes.jobs_routes_utils.flash", mock_flash)
+        monkeypatch.setattr("src.main_app.public.jobs_routes_utils.flash", mock_flash)
 
         _seed_user(mock_app, username="Owner")
         other_uid = _seed_user(mock_app, username="Other")
@@ -322,7 +322,7 @@ class TestCancelJob:
         _login_user(mock_client, admin_uid, username="AdminCancel")
 
         with patch(
-            "src.main_app.app_routes.jobs_routes_utils.cancel_job_worker",
+            "src.main_app.public.jobs_routes_utils.cancel_job_worker",
             return_value=True,
         ):
             resp = mock_client.post(
@@ -351,7 +351,7 @@ class TestDeleteJob:
         job_id = _seed_job(mock_app, VALID_JOB_TYPE, username="Owner")
 
         with patch(
-            "src.main_app.app_routes.jobs_routes_utils.cancel_job_worker",
+            "src.main_app.public.jobs_routes_utils.cancel_job_worker",
             return_value=False,
         ):
             resp = mock_client.post(
@@ -371,7 +371,7 @@ class TestDeleteJob:
         _login_user(mock_client, uid)
 
         with patch(
-            "src.main_app.app_routes.jobs_routes_utils.cancel_job_worker",
+            "src.main_app.public.jobs_routes_utils.cancel_job_worker",
             return_value=False,
         ):
             resp = mock_client.post(
@@ -452,7 +452,7 @@ class TestJobsRouteIntegration:
             job2_id = job2.id
 
         with patch(
-            "src.main_app.app_routes.jobs_routes_utils.cancel_job_worker",
+            "src.main_app.public.jobs_routes_utils.cancel_job_worker",
             return_value=False,
         ):
             mock_client.post(

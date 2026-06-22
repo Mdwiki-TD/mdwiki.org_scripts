@@ -1,4 +1,4 @@
-"""Unit tests for src/main_app/app_routes/auth/utils.py."""
+"""Unit tests for src/main_app/public/auth/utils.py."""
 
 from __future__ import annotations
 
@@ -6,7 +6,7 @@ from unittest.mock import MagicMock, patch
 
 from flask import g, session
 
-from src.main_app.app_routes.auth.utils import load_logged_in_user, load_user, oauth_required
+from src.main_app.public.auth.utils import load_logged_in_user, load_user, oauth_required
 from src.main_app.su_services.current_user import CurrentUser
 
 
@@ -17,7 +17,7 @@ class TestOauthRequired:
             return "allowed"
 
         with mock_app.test_request_context("/protected"):
-            with patch("src.main_app.app_routes.auth.utils.load_user", return_value=None):
+            with patch("src.main_app.public.auth.utils.load_user", return_value=None):
                 response = protected()
                 assert response.status_code == 302
                 assert "/login" in response.location
@@ -28,7 +28,7 @@ class TestOauthRequired:
             return "allowed"
 
         with mock_app.test_request_context("/protected"):
-            with patch("src.main_app.app_routes.auth.utils.load_user", return_value=MagicMock()):
+            with patch("src.main_app.public.auth.utils.load_user", return_value=MagicMock()):
                 response = protected()
                 assert response == "allowed"
 

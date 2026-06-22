@@ -39,7 +39,7 @@
 
 ## Flask Migration Vision
 
-### Current route: `flask_app/main_app/app_routes/dup/__init__.py`
+### Current route: `flask_app/main_app/public/dup/__init__.py`
 
 ```
 GET  /dup/  → render form

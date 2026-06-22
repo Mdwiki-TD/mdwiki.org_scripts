@@ -365,7 +365,7 @@ No changes needed — it already calls `UserService.save_and_get_user()`.
 Since `CurrentUser` exposes the same attributes as before, most routes
 need **zero changes**. The only file that changes:
 
-#### `app_routes/auth/utils.py`
+#### `public/auth/utils.py`
 
 ```python
 # load_logged_in_user() — g._current_user is now CurrentUser
@@ -373,7 +373,7 @@ need **zero changes**. The only file that changes:
 # No change needed if CurrentUser has same attribute names
 ```
 
-#### `app_routes/utils/routes_utils.py`
+#### `public/utils/routes_utils.py`
 
 ```python
 def load_auth_payload(user) -> Dict[str, Any]:
@@ -410,14 +410,14 @@ def work_on_title(
 | --------------------------------------------------------- | ------------------------------------------------------------------------------- |
 | `tests/unit/db/models/test_users.py`                      | Add `UsersRecord` tests; update `UserTokenRecord` constructor (no username)     |
 | `tests/unit/db/services/test_user_token_service.py`       | Test `create_user`, `get_user`, `delete_user`; update `upsert_user_token` tests |
-| `tests/unit/app_routes/utils/test_routes_utils.py`        | Mock `CurrentUser` instead of `UserTokenRecord`                                 |
-| `tests/unit/app_routes/newupdater/test_route.py`          | Construct `CurrentUser` instead of `UserTokenRecord`                            |
-| `tests/unit/app_routes/auth/test_auth_utils.py`           | Mock returns `CurrentUser`                                                      |
-| `tests/unit/app_routes/test_public_jobs.py`                  | Mock `user.username` — still works on `CurrentUser`                             |
-| `tests/unit/app_routes/admin/test_admins_required.py`     | Mock `user.username` — still works                                              |
-| `tests/integration/app_routes/auth/test_auth_routes.py`   | `get_user_token` returns `UserTokenRecord` (no username); assert via `get_user` |
-| `tests/integration/app_routes/test_jobs_routes.py`        | `upsert_user_token` still works (auto-creates user)                             |
-| `tests/integration/app_routes/admin/test_admin_routes.py` | `upsert_user_token` still works                                                 |
+| `tests/unit/public/utils/test_routes_utils.py`        | Mock `CurrentUser` instead of `UserTokenRecord`                                 |
+| `tests/unit/public/newupdater/test_route.py`          | Construct `CurrentUser` instead of `UserTokenRecord`                            |
+| `tests/unit/public/auth/test_auth_utils.py`           | Mock returns `CurrentUser`                                                      |
+| `tests/unit/public/test_public_jobs.py`                  | Mock `user.username` — still works on `CurrentUser`                             |
+| `tests/unit/public/admin/test_admins_required.py`     | Mock `user.username` — still works                                              |
+| `tests/integration/public/auth/test_auth_routes.py`   | `get_user_token` returns `UserTokenRecord` (no username); assert via `get_user` |
+| `tests/integration/public/test_jobs_routes.py`        | `upsert_user_token` still works (auto-creates user)                             |
+| `tests/integration/public/admin/test_admin_routes.py` | `upsert_user_token` still works                                                 |
 
 ---
 
@@ -432,7 +432,7 @@ def work_on_title(
 | 5   | `db/services/__init__.py`           | Export new functions                                                     |
 | 6   | `su_services/users_service.py`      | Return `CurrentUser`, call `create_user`                                 |
 | 7   | `su_services/__init__.py`           | Export `CurrentUser`                                                     |
-| 8   | `app_routes/utils/routes_utils.py`  | Use `to_auth_payload()`                                                  |
+| 8   | `public/utils/routes_utils.py`  | Use `to_auth_payload()`                                                  |
 | 9   | `shared/fixred_one.py`              | Type hint → `CurrentUser`                                                |
 | 10  | `shared/newupdater_service.py`      | Type hint → `CurrentUser`                                                |
 | 11  | `db/models/jobs.py`                 | Update docstring                                                         |

@@ -1,6 +1,6 @@
 # Merge Plan: Legacy PHP + Python tooling → Flask app
 
-> Living document. Source analysis lives in `app_routes_docs/` (one `.md` per
+> Living document. Source analysis lives in `public_docs/` (one `.md` per
 > tool). This plan converts that analysis into a concrete migration roadmap.
 
 ---
@@ -11,7 +11,7 @@
 
 Replace the existing PHP entry points (`php/*.php`) and CLI-shaped Python
 scripts (`python/*.py`) with **first-class Flask blueprints** under
-`src/main_app/app_routes/<tool>/` that:
+`src/main_app/public/<tool>/` that:
 
 -   accept the same form parameters the PHP files used;
 -   call backend logic **in-process** (no `shell_exec`, no `toolforge jobs run`,
@@ -48,13 +48,13 @@ scripts (`python/*.py`) with **first-class Flask blueprints** under
 
 | URL                | PHP source               | Python source              | Flask blueprint             | Auth       | Long-running?  |
 | ------------------ | ------------------------ | -------------------------- | --------------------------- | ---------- | -------------- |
-| `/dup/`            | `php/dup.php`            | `python/fix_duplicate.py`  | `app_routes/dup`            | logged-in  | yes (job)      |
-| `/fixred/`         | `php/fixred.php`         | `python/fixred.py`         | `app_routes/fixred`         | logged-in  | yes (per page) |
-| `/fixref/`         | `php/fixref.php`         | `python/fixref/start.py`   | `app_routes/fixref`         | logged-in  | yes (job)      |
-| `/import-history/` | `php/import-history.php` | `python/imp.py`            | `app_routes/import_history` | allow-list | yes (job)      |
-| `/newupdater/`     | `php/newupdater.php`     | `python/newupdater.py`     | `app_routes/newupdater`     | logged-in  | sync           |
-| `/redirect/`       | `php/redirect.php`       | `python/red.py`            | `app_routes/redirect`       | logged-in  | yes (job)      |
-| `/replace/`        | `php/replace/index.php`  | `python/find_replace_bot/` | `app_routes/replace`        | allow-list | yes (job)      |
+| `/dup/`            | `php/dup.php`            | `python/fix_duplicate.py`  | `public/dup`            | logged-in  | yes (job)      |
+| `/fixred/`         | `php/fixred.php`         | `python/fixred.py`         | `public/fixred`         | logged-in  | yes (per page) |
+| `/fixref/`         | `php/fixref.php`         | `python/fixref/start.py`   | `public/fixref`         | logged-in  | yes (job)      |
+| `/import-history/` | `php/import-history.php` | `python/imp.py`            | `public/import_history` | allow-list | yes (job)      |
+| `/newupdater/`     | `php/newupdater.php`     | `python/newupdater.py`     | `public/newupdater`     | logged-in  | sync           |
+| `/redirect/`       | `php/redirect.php`       | `python/red.py`            | `public/redirect`       | logged-in  | yes (job)      |
+| `/replace/`        | `php/replace/index.php`  | `python/find_replace_bot/` | `public/replace`        | allow-list | yes (job)      |
 
 “Allow-list” = `["Doc James", "Mr. Ibrahem"]` per the legacy PHP files.
 
@@ -87,7 +87,7 @@ src/
 │   │   ├── redirect.py          # wraps python/red.py logic
 │   │   └── replace.py           # wraps python/find_replace_bot logic
 │   ├── newapi/                  # existing (untouched)
-│   └── app_routes/
+│   └── public/
 │       ├── __init__.py          # register_blueprints (fix duplicate "main" name bug)
 │       ├── dup/__init__.py
 │       ├── fixred/__init__.py
@@ -449,7 +449,7 @@ wins after the auth + service pattern is set).
 -   `src/main_app/jobs/runner.py`
 -   `src/main_app/services/__init__.py`
 -   `src/main_app/services/fix_duplicate.py`
--   `src/main_app/app_routes/jobs/__init__.py` (status + json endpoints)
+-   `src/main_app/public/jobs/__init__.py` (status + json endpoints)
 -   `src/templates/base.html`
 -   `src/templates/_macros.html`
 -   `src/templates/jobs/status.html`
@@ -459,10 +459,10 @@ wins after the auth + service pattern is set).
 -   `src/main_app/__init__.py` — register `bp_jobs`, expose
     `current_user` to templates via context processor.
 -   `src/main_app/config.py` — add new settings, soften OAuth check.
--   `src/main_app/app_routes/__init__.py` — register `bp_jobs`; verify
+-   `src/main_app/public/__init__.py` — register `bp_jobs`; verify
     unique blueprint names.
--   `src/main_app/app_routes/dup/__init__.py` — wire to service + jobs.
--   `src/main_app/app_routes/<other>/__init__.py` — rename Blueprint
+-   `src/main_app/public/dup/__init__.py` — wire to service + jobs.
+-   `src/main_app/public/<other>/__init__.py` — rename Blueprint
     name from `"main"` to something unique (no behaviour change yet).
 -   `src/templates/dup.html` — extend `base.html`, use `url_for`, csrf,
     flash.

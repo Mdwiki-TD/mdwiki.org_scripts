@@ -1,7 +1,7 @@
 ```
 tests/
 ├── integration/
-│   └── app_routes/
+│   └── public/
 │       ├── admin/
 │       │   ├── admin_routes/
 │       │   │   └── test_settings_integration.py
@@ -24,7 +24,7 @@ tests/
 │   │   ├── test_category.py
 │   │   ├── test_mwclient_page.py
 │   │   └── test_query_api.py
-│   ├── app_routes/
+│   ├── public/
 │   │   ├── auth/
 │   │   │   ├── test_auth_utils.py
 │   │   │   ├── test_rate_limit.py
@@ -36,7 +36,7 @@ tests/
 │   │   │   └── test_route.py
 │   │   ├── utils/
 │   │   │   └── test_routes_utils.py
-│   │   ├── test_app_routes_init.py
+│   │   ├── test_public_init.py
 │   │   ├── test_fixred.py
 │   │   ├── test_jobs_routes_utils.py
 │   │   ├── test_new_jobs.py

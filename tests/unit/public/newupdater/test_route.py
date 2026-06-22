@@ -1,5 +1,5 @@
 """
-Unit tests for src/main_app/app_routes/newupdater/route.py.
+Unit tests for src/main_app/public/newupdater/route.py.
 """
 
 from __future__ import annotations
@@ -22,7 +22,7 @@ class TestNewupdaterRoute:
         from src.main_app.su_services.current_user import CurrentUser
 
         monkeypatch.setattr(
-            "src.main_app.app_routes.auth.utils.load_user",
+            "src.main_app.public.auth.utils.load_user",
             lambda: CurrentUser(user_id=1, username="TestUser", access_token=b"t", access_secret=b"s"),
         )
         resp = mock_client.get("/newupdater/save/test")

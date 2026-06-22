@@ -12,7 +12,7 @@ A Flask web application deployed on **Wikimedia Toolforge** that provides admini
 | `main_app/core/`         | Fernet encryption, cookie signing                          |
 | `main_app/db/`           | SQLAlchemy models + CRUD services (users, tokens, jobs)    |
 | `main_app/api_services/` | MediaWiki API wrappers (`mwclient`)                        |
-| `main_app/app_routes/`   | Flask Blueprints (auth, jobs, updater, fixred)             |
+| `main_app/public/`   | Flask Blueprints (auth, jobs, updater, fixred)             |
 | `main_app/jobs/`     | Thread-based background job runner + 8 workers             |
 | `main_app/shared/`       | Domain logic (wikitext processing, template normalization) |
 | `main_app/su_services/`  | User auth helpers + job file I/O                           |
@@ -53,7 +53,7 @@ src/
     ├── core/               # Security (encryption, cookies)
     ├── db/                 # Models + services
     ├── api_services/       # MediaWiki API layer
-    ├── app_routes/         # Flask Blueprints
+    ├── public/         # Flask Blueprints
     ├── public_jobs/           # Background workers
     ├── shared/             # Business logic
     ├── su_services/        # Auth + file services
@@ -143,7 +143,7 @@ The global `_fernet` singleton is initialized lazily without thread-safe locking
 ### 3. Memory Leak in Rate Limiter
 
 ```python
-# app_routes/auth/rate_limit.py
+# public/auth/rate_limit.py
 self._hits: Dict[str, Deque[datetime]] = {}
 ```
 
@@ -152,7 +152,7 @@ The `_hits` dict grows unboundedly — stale keys are never evicted. Over time, 
 ### 4. Potential Path Traversal in Job Results
 
 ```python
-# app_routes/public_jobs.py line 265
+# public/public_jobs.py line 265
 @bp_public_jobs.get("/read-job-result-file/<path:result_file>")
 def read_job_result_file(result_file: str):
     result_data = load_job_result(result_file)
@@ -163,7 +163,7 @@ The `result_file` parameter is passed directly to file loading without sanitizat
 ### 5. Missing Authorization on Delete
 
 ```python
-# app_routes/public_jobs.py line 259
+# public/public_jobs.py line 259
 # @admin_required   # <-- COMMENTED OUT
 @bp_public_jobs.post("/<string:job_type>/<int:job_id>/delete")
 def delete_job(job_type: str, job_id: int):
