@@ -1,48 +1,53 @@
 ```
-flask_app/
+src/
 ├── main_app/
+│   ├── admin/
+│   │   ├── routes/
+│   │   │   ├── __init__.py
+│   │   │   ├── coordinators.py
+│   │   │   ├── jobs.py
+│   │   │   ├── settings.py
+│   │   │   └── users.py
+│   │   ├── __init__.py
+│   │   ├── decorators.py
+│   │   ├── route.py
+│   │   └── sidebar.py
 │   ├── api_services/
 │   │   ├── clients/
 │   │   │   ├── __init__.py
 │   │   │   ├── commons_client.py
 │   │   │   └── wiki_client.py
-│   │   ├── utils/
-│   │   │   └── __init__.py
+│   │   ├── files_service/
+│   │   ├── mwclient_page/
+│   │   │   ├── __init__.py
+│   │   │   ├── mwclient_error.py
+│   │   │   └── mwclient_wraper.py
 │   │   ├── __init__.py
 │   │   ├── category.py
-│   │   ├── mwclient_page.py
-│   │   ├── pages_api.py
+│   │   ├── citation_api.py
+│   │   ├── enwiki_api.py
 │   │   ├── query_api.py
 │   │   └── README.md
 │   ├── app_routes/
-│   │   ├── admin/
-│   │   │   ├── __init__.py
-│   │   │   ├── admins_required.py
-│   │   │   ├── routes.py
-│   │   │   └── sidebar.py
-│   │   ├── admin_routes/
-│   │   │   ├── __init__.py
-│   │   │   └── coordinators.py
 │   │   ├── auth/
 │   │   │   ├── __init__.py
-│   │   │   ├── cookie.py
-│   │   │   ├── oauth.py
 │   │   │   ├── rate_limit.py
 │   │   │   ├── routes.py
 │   │   │   └── utils.py
-│   │   ├── main/
-│   │   │   └── __init__.py
+│   │   ├── main_routes/
+│   │   │   ├── __init__.py
+│   │   │   └── routes.py
 │   │   ├── newupdater/
 │   │   │   ├── __init__.py
-│   │   │   ├── route.py
-│   │   │   └── worker.py
+│   │   │   └── route.py
 │   │   ├── utils/
 │   │   │   ├── __init__.py
 │   │   │   └── routes_utils.py
 │   │   ├── __init__.py
 │   │   ├── fixred.py
-│   │   ├── public_jobs.py
+│   │   ├── jobs_routes_utils.py
 │   │   ├── profile.py
+│   │   ├── public_jobs.py
 │   │   └── README.md
 │   ├── config/
 │   │   ├── __init__.py
@@ -51,8 +56,11 @@ flask_app/
 │   │   ├── main_settings.py
 │   │   └── README.md
 │   ├── core/
+│   │   ├── cookies/
+│   │   │   ├── __init__.py
+│   │   │   ├── cookie.py
+│   │   │   └── cookie_header_client.py
 │   │   ├── __init__.py
-│   │   ├── cookies.py
 │   │   ├── crypto.py
 │   │   ├── jinja_filters.py
 │   │   └── README.md
@@ -60,22 +68,34 @@ flask_app/
 │   │   ├── models/
 │   │   │   ├── __init__.py
 │   │   │   ├── jobs.py
+│   │   │   ├── settings.py
 │   │   │   └── users.py
 │   │   ├── services/
+│   │   │   ├── utils/
+│   │   │   │   ├── __init__.py
+│   │   │   │   ├── db_guard_model.py
+│   │   │   │   └── retry_on_disconnect.py
 │   │   │   ├── __init__.py
 │   │   │   ├── admin_service.py
+│   │   │   ├── delete_service.py
 │   │   │   ├── jobs_service.py
+│   │   │   ├── settings_service.py
 │   │   │   ├── user_token_service.py
-│   │   │   └── utils.py
+│   │   │   └── users_service.py
 │   │   ├── __init__.py
 │   │   ├── exceptions.py
 │   │   └── README.md
-│   ├── public_jobs/
-│   │   ├── workers/
+│   ├── jobs_workers/
+│   │   ├── admin_jobs_workers/
+│   │   │   └── workers_list.py
+│   │   ├── public_jobs_workers/
 │   │   │   ├── add_r_column/
 │   │   │   │   ├── __init__.py
 │   │   │   │   ├── add_rtt.py
 │   │   │   │   ├── objects.py
+│   │   │   │   └── worker.py
+│   │   │   ├── add_rtt_template/
+│   │   │   │   ├── __init__.py
 │   │   │   │   └── worker.py
 │   │   │   ├── add_unlinkedwikibase/
 │   │   │   │   ├── __init__.py
@@ -101,15 +121,19 @@ flask_app/
 │   │   │   │   ├── __init__.py
 │   │   │   │   ├── objects.py
 │   │   │   │   └── worker.py
+│   │   │   ├── newupdater_all/
+│   │   │   │   ├── __init__.py
+│   │   │   │   └── worker.py
 │   │   │   ├── __init__.py
-│   │   │   └── README.md
+│   │   │   ├── README.md
+│   │   │   └── workers_list_public.py
 │   │   ├── __init__.py
 │   │   ├── base_worker_object.py
+│   │   ├── cli_jobs.py
 │   │   ├── jobs_worker.py
-│   │   ├── README.md
+│   │   ├── objects.py
 │   │   ├── shared_objects.py
-│   │   ├── utils.py
-│   │   └── workers_list.py
+│   │   └── utils.py
 │   ├── shared/
 │   │   ├── fixref_shared/
 │   │   │   ├── __init__.py
@@ -117,6 +141,8 @@ flask_app/
 │   │   │   ├── fixref_text_new.py
 │   │   │   ├── make_title_bot.py
 │   │   │   └── objects.py
+│   │   ├── named_param/
+│   │   │   └── __init__.py
 │   │   ├── new_updater/
 │   │   │   ├── bots/
 │   │   │   │   ├── __init__.py
@@ -133,7 +159,6 @@ flask_app/
 │   │   │   ├── __init__.py
 │   │   │   ├── chembox.py
 │   │   │   ├── drugbox.py
-│   │   │   ├── helps.py
 │   │   │   ├── MedWorkNew.py
 │   │   │   ├── mv_section.py
 │   │   │   └── resources_new.py
@@ -142,13 +167,17 @@ flask_app/
 │   │   ├── __init__.py
 │   │   ├── decode_bytes.py
 │   │   ├── fixred_one.py
+│   │   ├── newupdater_service.py
 │   │   ├── README.md
 │   │   └── shared_classes.py
 │   ├── su_services/
 │   │   ├── __init__.py
+│   │   ├── auth_service.py
+│   │   ├── auth_users_service.py
+│   │   ├── current_user.py
 │   │   ├── jobs_files_service.py
-│   │   ├── README.md
-│   │   └── users_service.py
+│   │   ├── mwoauth_handshake.py
+│   │   └── README.md
 │   ├── utils/
 │   │   ├── README.md
 │   │   └── verify.py
@@ -162,21 +191,26 @@ flask_app/
 │   │   ├── sidebar-mobile.css
 │   │   └── style.css
 │   └── js/
+│       ├── auto-refresh.js
 │       ├── autocomplete.js
 │       ├── card-tools.js
 │       ├── dark-mode.js
 │       └── sidebar.js
 ├── templates/
+│   ├── _macros/
 │   ├── admins/
 │   ├── jobs_templates/
 │   │   ├── _help_templates/
-│   │   ├── add_unlinkedwikibase/
-│   │   ├── create_redirects/
-│   │   ├── duplicate_redirect/
-│   │   ├── find_and_replace/
-│   │   ├── fixred_all/
-│   │   ├── fixref/
-│   │   └── import_history/
+│   │   └── public/
+│   │       ├── add_rtt_template/
+│   │       ├── add_unlinkedwikibase/
+│   │       ├── create_redirects/
+│   │       ├── duplicate_redirect/
+│   │       ├── find_and_replace/
+│   │       ├── fixred_all/
+│   │       ├── fixref/
+│   │       ├── import_history/
+│   │       └── newupdater_all/
 │   └── one_page_templates/
 │       └── add_r_column/
 ├── __init__.py
