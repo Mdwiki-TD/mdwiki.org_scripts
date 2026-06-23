@@ -9,10 +9,10 @@ from __future__ import annotations
 import logging
 from typing import List
 
-from flask import current_app
 from sqlalchemy.exc import IntegrityError
 
 from ...extensions import db
+from ...shared.auth.bypass_utils import is_ui_test_bypass_enabled
 from ..exceptions import DuplicateUserError, UserNotFoundError
 from ..models import AdminUserRecord
 from .utils import db_guard_rollback
@@ -24,18 +24,7 @@ logger = logging.getLogger(__name__)
 
 def is_active_coordinator(username: str) -> bool:
     """Check whether a single username is an active coordinator."""
-    # Development bypass for UI/E2E testing
-    # This feature exists only for local development and automated UI/E2E testing.
-    # It must not be used as a production authorization mechanism.
-    bypass_enabled = (
-        current_app.config.get("ENV") == "development"
-        and current_app.config.get(
-            "UI_TEST_BYPASS_COORDINATOR_CHECK",
-            False,
-        )
-    )
-
-    if bypass_enabled:
+    if is_ui_test_bypass_enabled():
         return True
 
     try:
