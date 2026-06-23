@@ -60,6 +60,14 @@ The application follows a strict layering: **Controller → Service → Reposito
 python src/app1.py
 ```
 
+### Development UI Testing
+
+The admin area normally requires the authenticated user to exist in the coordinators table. Developers and AI agents can bypass this requirement during local UI testing.
+
+- **How to start the application using DevelopmentConfig**: Use `python src/app1.py` or `flask --app src.app1 run`. This will use the `DevelopmentConfig` by default.
+- **How to enable UI_TEST_BYPASS_COORDINATOR_CHECK**: Set the environment variable `UI_TEST_BYPASS_COORDINATOR_CHECK=true` in your `.env` file or terminal.
+- **Bypass constraints**: The bypass is only honored when `DevelopmentConfig` is used and is explicitly ignored when `ProductionConfig` is used, even if the environment variable is set.
+
 ## Testing
 
 Tests are managed with `pytest`. Network access is blocked by default in tests.

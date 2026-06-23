@@ -37,8 +37,10 @@ class Config:
     """
 
     # Flask core settings
+    ENV: str = "production"
     DEBUG: bool = False
     TESTING: bool = False
+    UI_TEST_BYPASS_COORDINATOR_CHECK: bool = False
     SECRET_KEY: str = settings.security.secret_key
     SECRET_KEY_FALLBACKS: list[str] = list(settings.security.secret_key_fallbacks or [])
 
@@ -81,6 +83,7 @@ class Config:
     def __init__(self) -> None:
         """Initialize configuration with values from environment-based settings."""
         # Sync with the dataclass-based settings for backward compatibility
+        self.UI_TEST_BYPASS_COORDINATOR_CHECK = settings.other.ui_test_bypass_coordinator_check
         self.SECRET_KEY = settings.security.secret_key
         self.SESSION_COOKIE_HTTPONLY = settings.cookie.httponly
         self.SESSION_COOKIE_SECURE = settings.cookie.secure
@@ -114,6 +117,7 @@ class Config:
 class DevelopmentConfig(Config):
     """Development configuration with debugging enabled."""
 
+    ENV: str = "development"
     DEBUG: bool = True
     TESTING: bool = True
     SQLALCHEMY_ECHO: bool = False  # Log SQL in development
@@ -130,6 +134,8 @@ class DevelopmentConfig(Config):
 class ProductionConfig(Config):
     """Production configuration with strict security settings."""
 
+    ENV: str = "production"
+
     # Production should always use secure cookies
     SESSION_COOKIE_SECURE: bool = True
     SESSION_COOKIE_HTTPONLY: bool = True
@@ -143,6 +149,7 @@ class TestingConfig(Config):
 
     __test__ = False  # prevent pytest collection
 
+    ENV: str = "testing"
     DEBUG: bool = False
     TESTING: bool = True
     WTF_CSRF_ENABLED: bool = False  # Disable CSRF for test requests

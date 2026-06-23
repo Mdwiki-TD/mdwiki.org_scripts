@@ -172,6 +172,7 @@ def load_other_config() -> OtherConfig:
         user_agent=user_agent,
         wiki_domain=wiki_domain,
         static_server=static_server,
+        ui_test_bypass_coordinator_check=_env_bool("UI_TEST_BYPASS_COORDINATOR_CHECK", False),
     )
 
     return _config
