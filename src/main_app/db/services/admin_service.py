@@ -12,7 +12,6 @@ from typing import List
 from sqlalchemy.exc import IntegrityError
 
 from ...extensions import db
-from ...shared.auth.bypass_utils import is_ui_test_bypass_enabled
 from ..exceptions import DuplicateUserError, UserNotFoundError
 from ..models import AdminUserRecord
 from .utils import db_guard_rollback
@@ -24,9 +23,6 @@ logger = logging.getLogger(__name__)
 
 def is_active_coordinator(username: str) -> bool:
     """Check whether a single username is an active coordinator."""
-    if is_ui_test_bypass_enabled():
-        return True
-
     try:
         record = (
             db.session.query(AdminUserRecord)
