@@ -103,10 +103,10 @@ ALTER TABLE user_tokens
 
 #### `db/models/users.py`
 
-**Add `UsersRecord`:**
+**Add `UserRecord`:**
 
 ```python
-class UsersRecord(db.Model):
+class UserRecord(db.Model):
     __tablename__ = "users"
 
     user_id = Column(Integer, primary_key=True)
@@ -131,7 +131,7 @@ class UserTokenRecord(db.Model):
     access_secret = Column(LargeBinary(1024), nullable=False)
     # ... timestamps unchanged
 
-    user = db.relationship("UsersRecord", backref=db.backref("token", uselist=False))
+    user = db.relationship("UserRecord", backref=db.backref("token", uselist=False))
 ```
 
 **Modify `AdminUserRecord`:**
@@ -153,11 +153,11 @@ class AdminUserRecord(db.Model):
 #### `db/models/__init__.py`
 
 ```python
-from .users import AdminUserRecord, UsersRecord, UserTokenRecord
+from .users import AdminUserRecord, UserRecord, UserTokenRecord
 
 __all__ = [
     "AdminUserRecord",
-    "UsersRecord",
+    "UserRecord",
     "UserTokenRecord",
 ]
 ```
@@ -201,30 +201,30 @@ No callers need to be modified for attribute access.
 **Add user CRUD:**
 
 ```python
-def create_user(user_id: int, username: str) -> UsersRecord:
+def create_user(user_id: int, username: str) -> UserRecord:
     """Create a user identity row. Idempotent — returns existing if present."""
-    existing = db.session.query(UsersRecord).filter(UsersRecord.user_id == user_id).first()
+    existing = db.session.query(UserRecord).filter(UserRecord.user_id == user_id).first()
     if existing:
         if existing.username != username:
             existing.username = username
             db.session.commit()
             db.session.refresh(existing)
         return existing
-    record = UsersRecord(user_id=user_id, username=username)
+    record = UserRecord(user_id=user_id, username=username)
     db.session.add(record)
     db.session.commit()
     db.session.refresh(record)
     return record
 
-def get_user(user_id: int) -> UsersRecord | None:
-    return db.session.query(UsersRecord).filter(UsersRecord.user_id == user_id).first()
+def get_user(user_id: int) -> UserRecord | None:
+    return db.session.query(UserRecord).filter(UserRecord.user_id == user_id).first()
 
-def get_user_by_username(username: str) -> UsersRecord | None:
-    return db.session.query(UsersRecord).filter(UsersRecord.username == username).first()
+def get_user_by_username(username: str) -> UserRecord | None:
+    return db.session.query(UserRecord).filter(UserRecord.username == username).first()
 
 def delete_user(user_id: int) -> bool:
     """Delete user + cascading token + admin record."""
-    affected = db.session.query(UsersRecord).filter(UsersRecord.user_id == user_id).delete()
+    affected = db.session.query(UserRecord).filter(UserRecord.user_id == user_id).delete()
     db.session.commit()
     return affected > 0
 ```
@@ -275,7 +275,7 @@ def delete_user_token(user_id: int) -> bool:
 
 ```python
 def get_user_token_by_username(username: str) -> UserTokenRecord | None:
-    user = db.session.query(UsersRecord).filter(UsersRecord.username == username).first()
+    user = db.session.query(UserRecord).filter(UserRecord.username == username).first()
     if not user:
         return None
     return db.session.query(UserTokenRecord).filter(
@@ -286,8 +286,8 @@ def get_user_token_by_username(username: str) -> UserTokenRecord | None:
 **Modify `list_users`:**
 
 ```python
-def list_users() -> list[UsersRecord]:
-    return db.session.query(UsersRecord).all()
+def list_users() -> list[UserRecord]:
+    return db.session.query(UserRecord).all()
 ```
 
 #### `db/services/__init__.py`
@@ -408,7 +408,7 @@ def work_on_title(
 
 | File                                                      | Change                                                                          |
 | --------------------------------------------------------- | ------------------------------------------------------------------------------- |
-| `tests/unit/db/models/test_users.py`                      | Add `UsersRecord` tests; update `UserTokenRecord` constructor (no username)     |
+| `tests/unit/db/models/test_users.py`                      | Add `UserRecord` tests; update `UserTokenRecord` constructor (no username)     |
 | `tests/unit/db/services/test_user_token_service.py`       | Test `create_user`, `get_user`, `delete_user`; update `upsert_user_token` tests |
 | `tests/unit/public/utils/test_routes_utils.py`        | Mock `CurrentUser` instead of `UserTokenRecord`                                 |
 | `tests/unit/public/newupdater/test_route.py`          | Construct `CurrentUser` instead of `UserTokenRecord`                            |
@@ -425,8 +425,8 @@ def work_on_title(
 
 | #   | File                                | Change Type                                                              |
 | --- | ----------------------------------- | ------------------------------------------------------------------------ |
-| 1   | `db/models/users.py`                | Add `UsersRecord`, modify `UserTokenRecord`, update `AdminUserRecord` FK |
-| 2   | `db/models/__init__.py`             | Export `UsersRecord`                                                     |
+| 1   | `db/models/users.py`                | Add `UserRecord`, modify `UserTokenRecord`, update `AdminUserRecord` FK |
+| 2   | `db/models/__init__.py`             | Export `UserRecord`                                                     |
 | 3   | `su_services/current_user.py`       | **NEW** — `CurrentUser` dataclass                                        |
 | 4   | `db/services/user_token_service.py` | Add user CRUD, modify token functions                                    |
 | 5   | `db/services/__init__.py`           | Export new functions                                                     |
