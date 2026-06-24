@@ -77,4 +77,6 @@ def fixred_post() -> str:
     )
 
 
-__all__ = ["bp_fixred"]
+__all__ = [
+    "bp_fixred",
+]

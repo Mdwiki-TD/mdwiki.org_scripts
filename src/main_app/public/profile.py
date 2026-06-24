@@ -42,4 +42,6 @@ def dashboard(user_name: str = "") -> str:
     )
 
 
-__all__ = ["bp_profile"]
+__all__ = [
+    "bp_profile",
+]
