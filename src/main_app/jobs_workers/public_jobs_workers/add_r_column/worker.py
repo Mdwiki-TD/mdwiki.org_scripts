@@ -246,7 +246,7 @@ class AddRColumnWorker(BaseObjectsJobWorker):
 
     def _save_text(self, new_text: str, summary: str, step) -> bool:
         assert self.page is not None
-        saved = self.page.edit_page(text=new_text, summary=summary, nocreate=1)
+        saved = self.page.edit_page(text=new_text, summary=summary, nocreate=True)
 
         if saved.get("success"):
             step.newrevid = saved.get("newrevid", 0)

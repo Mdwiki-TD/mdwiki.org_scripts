@@ -6,6 +6,7 @@ import logging
 from urllib.parse import unquote
 
 from flask import Blueprint, flash, g, redirect, render_template, request, url_for
+from werkzeug.wrappers.response import Response
 
 from ...shared import newupdater_service as svc
 from ..auth.utils import oauth_required
@@ -90,7 +91,7 @@ def auto_save(title: str) -> str:
 
 @bp_newupdater.route("/update", methods=["GET"])
 @oauth_required
-def newupdater() -> str:
+def newupdater() -> str | Response:
     title = _parse_title(request.args.get("title") or "")
     save = request.args.get("save") == "1"
 

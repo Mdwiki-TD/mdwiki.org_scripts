@@ -26,7 +26,7 @@ class TestUpdaterTextOutcome:
     def test_frozen(self):
         o = UpdaterTextOutcome(kind="notext")
         with pytest.raises(AttributeError):
-            o.kind = "changed"
+            o.kind = "changed"  # type: ignore
 
     def test_to_json(self):
         o = UpdaterTextOutcome(kind="saved", newrevid=456)

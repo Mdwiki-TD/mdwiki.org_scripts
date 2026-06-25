@@ -40,7 +40,7 @@ class TestFindAndReplaceWorker:
         assert result.status == "completed"
         assert len(result.pages_changed) == 1
         assert result.pages_changed[0]["title"] == "Page 1"
-        assert result.pages_changed[0]["newrevid"] == 789
+        assert result.pages_changed[0]["newrevid"] == "789"
 
     @patch("src.main_app.jobs_workers.public_jobs_workers.find_and_replace.worker.get_user_site")
     def test_process_no_site(self, mock_get_user_site, worker):

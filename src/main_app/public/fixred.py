@@ -37,7 +37,7 @@ def index() -> str:
 @oauth_required
 def fixred_post() -> str:
     title = _normalize_title(request.form.get("title", ""))
-    save = 1 if request.form.get("save") == "1" else 0
+    save = request.form.get("save") == "1"
 
     if not title:
         return render_template(
@@ -77,4 +77,6 @@ def fixred_post() -> str:
     )
 
 
-__all__ = ["bp_fixred"]
+__all__ = [
+    "bp_fixred",
+]

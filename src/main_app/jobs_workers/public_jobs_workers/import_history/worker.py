@@ -101,11 +101,11 @@ class ImportHistoryWorker(BaseObjectsJobWorker):
             "msg": outcome.msg,
         }
         if outcome.kind == "imported":
-            page_record["newrevid"] = outcome.newrevid
+            page_record["newrevid"] = str(outcome.newrevid)
             self.result.pages_imported.append(page_record)
 
         elif outcome.kind == "imported_fallback":
-            page_record["newrevid"] = outcome.newrevid
+            page_record["newrevid"] = str(outcome.newrevid)
             self.result.pages_imported_fallback.append(page_record)
 
         elif outcome.kind == "missing":

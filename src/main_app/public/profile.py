@@ -4,7 +4,7 @@ import logging
 
 from flask import Blueprint, flash, render_template
 
-from ..db.services import get_all_user_jobs_stats, get_user_jobs_stats
+from ..db.services import get_all_user_jobs_stats
 from .auth.utils import load_user
 
 logger = logging.getLogger(__name__)
@@ -42,4 +42,6 @@ def dashboard(user_name: str = "") -> str:
     )
 
 
-__all__ = ["bp_profile"]
+__all__ = [
+    "bp_profile",
+]

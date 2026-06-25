@@ -10,14 +10,13 @@ from datetime import datetime
 from typing import Any
 from unittest.mock import MagicMock, patch
 
-import pytest
 from flask.app import Flask
 from flask_migrate import Migrate
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import String, func
 from sqlalchemy.orm import Mapped, mapped_column
 
-from src.main_app.extensions import BaseModel, _commit, db, migrate
+from src.main_app.extensions import BaseModel, db, migrate
 
 
 class MockModel(db.Model):
@@ -28,7 +27,7 @@ class MockModel(db.Model):
 
     created_at: Mapped[datetime] = mapped_column(nullable=False, server_default=func.current_timestamp())
 
-    def __init__(self, **kwargs: dict[str, Any]) -> None:
+    def __init__(self, **kwargs: Any) -> None:
         for key, value in kwargs.items():
             if hasattr(self, key):
                 setattr(self, key, value)
@@ -39,17 +38,17 @@ def test_base_model_to_dict(mock_app: Flask) -> None:
         now = datetime(2025, 1, 1, 12, 0, 0)
         obj = MockModel(id=1, name="test", created_at=now)
 
-        data = obj.to_dict()
+        data = obj.to_dict()  # type: ignore
         assert data["id"] == 1
         assert data["name"] == "test"
         assert data["created_at"] == "2025-01-01T12:00:00"
 
 
-def test_base_model_to_dict():
+def test_base_model_to_dict2():
     """Test that to_dict serializes column values to a dictionary."""
     model = BaseModel()
-    model.foo = "value1"
-    model.bar = "value2"
+    model.foo = "value1"  # type: ignore
+    model.bar = "value2"  # type: ignore
 
     col1 = MagicMock()
     col1.name = "foo"
@@ -69,7 +68,7 @@ def test_base_model_to_dict_isoformat():
     """Test that datetime values are converted to ISO format in to_dict."""
     model = BaseModel()
     dt = datetime(2025, 10, 27, 4, 41, 7)
-    model.created_at = dt
+    model.created_at = dt  # type: ignore
 
     col = MagicMock()
     col.name = "created_at"
@@ -86,11 +85,11 @@ def test_base_model_to_dict_isoformat():
 def test_base_model_init_sets_kwargs():
     """Test that __init__ sets provided kwargs as instance attributes when the attribute exists."""
     model = BaseModel()
-    model.foo = "original"
+    model.foo = "original"  # type: ignore
 
     BaseModel.__init__(model, foo="updated", bar="new")
 
-    assert model.foo == "updated"
+    assert model.foo == "updated"  # type: ignore
     assert not hasattr(model, "bar")
 
 
@@ -101,35 +100,6 @@ def test_base_model_init_skips_nonexistent_attributes():
     BaseModel.__init__(model, nonexistent="val")
 
     assert not hasattr(model, "nonexistent")
-
-
-def test_commit_calls_commit():
-    """Test that _commit calls db.session.commit()."""
-    mock_db = MagicMock()
-    _commit(mock_db)
-    mock_db.session.commit.assert_called_once()
-
-
-def test_commit_rollback_on_exception():
-    """Test that _commit rolls back the session when commit raises."""
-    mock_db = MagicMock()
-    mock_db.session.commit.side_effect = RuntimeError("fail")
-
-    with pytest.raises(RuntimeError, match="fail"):
-        _commit(mock_db)
-
-    mock_db.session.rollback.assert_called_once()
-
-
-def test_commit_re_raises_exception():
-    """Test that _commit re-raises the original exception after rollback."""
-    mock_db = MagicMock()
-    mock_db.session.commit.side_effect = ValueError("original error")
-
-    with pytest.raises(ValueError, match="original error"):
-        _commit(mock_db)
-
-    mock_db.session.rollback.assert_called_once()
 
 
 def test_db_is_sqlalchemy_instance():

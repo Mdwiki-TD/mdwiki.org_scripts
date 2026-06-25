@@ -36,4 +36,6 @@ def favicon() -> Response:
     return send_from_directory("static", "favicon.ico", mimetype="image/x-icon")
 
 
-__all__ = ["bp_main"]
+__all__ = [
+    "bp_main",
+]

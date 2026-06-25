@@ -33,7 +33,7 @@ is_active_admin=is_active_coordinator(username),
 | File                                | Line  | Current                                      | After                                     |
 | ----------------------------------- | ----- | -------------------------------------------- | ----------------------------------------- |
 | `routes_utils.py:_is_admin()`       | 15-17 | `user.username in active_coordinators()`     | `getattr(user, "is_active_admin", False)` |
-| `routes_utils.py:context_user()`    | 33    | `_is_admin(user)`                            | same function, now reads field            |
+| `routes_utils.py:context_data()`    | 33    | `_is_admin(user)`                            | same function, now reads field            |
 | `routes_utils.py:can_run_jobs()`    | 58    | `_is_admin(user)`                            | same                                      |
 | `routes_utils.py:can_run_bg_jobs()` | 68    | `_is_admin(user)`                            | same                                      |
 | `public_jobs.py:_can_manage_job()`     | 44    | `user.username in active_coordinators()`     | `getattr(user, "is_active_admin", False)` |
