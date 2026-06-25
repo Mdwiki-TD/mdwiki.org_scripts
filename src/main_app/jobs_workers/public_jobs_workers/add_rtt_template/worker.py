@@ -207,7 +207,7 @@ class AddRttTemplateWorker(BaseObjectsJobWorker):
         result = page.edit(
             text=new_text,
             summary="Added {{RTT}}",
-            nocreate=1,
+            nocreate=True,
         )
 
         if result.get("success"):
