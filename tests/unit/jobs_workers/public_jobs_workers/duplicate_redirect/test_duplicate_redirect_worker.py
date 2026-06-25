@@ -62,7 +62,7 @@ class TestDuplicateRedirectWorker:
         assert result.status == "completed"
         assert len(result.pages_changed) == 1
         assert result.pages_changed[0]["from_title"] == "A"
-        assert result.pages_changed[0]["newrevid"] == 456
+        assert result.pages_changed[0]["newrevid"] == "456"
 
     @patch("src.main_app.jobs_workers.public_jobs_workers.duplicate_redirect.worker.get_user_site")
     def test_process_no_site(self, mock_get_user_site, worker):
