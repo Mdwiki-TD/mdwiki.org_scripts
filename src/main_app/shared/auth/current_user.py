@@ -8,7 +8,6 @@ from dataclasses import dataclass, field
 from typing import Any
 
 
-
 def parse_bool(value: str | int) -> bool:
     """Parse boolean value from CSV string."""
     if not value:
@@ -31,7 +30,6 @@ class CurrentUser:
     is_active_admin: bool = False
     can_run_jobs: bool = False
     can_run_bg_jobs: bool = False
-
 
     def __init__(self, **kwargs: Any) -> None:
         fields = self.__dataclass_fields__

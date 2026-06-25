@@ -12,6 +12,7 @@ from unittest.mock import Mock, patch
 import pytest
 from flask.app import Flask
 
+from src.main_app.db.exceptions import DuplicateJobError
 from src.main_app.db.services import (
     create_job,
     get_job,
@@ -20,7 +21,7 @@ from src.main_app.db.services import (
 )
 from src.main_app.db.services.admin_service import add_coordinator
 from src.main_app.db.services.users_service import create_user
-from src.main_app.db.exceptions import DuplicateJobError
+
 
 @pytest.fixture
 def _unwrap_delete_job(mock_app: Flask):
@@ -251,7 +252,9 @@ class TestStartJob:
                 follow_redirects=True,
             )
 
-        assert mock_flash.assert_called_with("A job of this type is already running. Please wait for it to complete.", "warning")
+        mock_flash.assert_called_with(
+            "A job of this type is already running. Please wait for it to complete.", "warning"
+        )
 
 
 @pytest.mark.usefixtures("mock_app")
