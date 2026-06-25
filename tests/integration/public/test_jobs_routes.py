@@ -20,7 +20,7 @@ from src.main_app.db.services import (
 )
 from src.main_app.db.services.admin_service import add_coordinator
 from src.main_app.db.services.users_service import create_user
-
+from src.main_app.db.exceptions import DuplicateJobError
 
 @pytest.fixture
 def _unwrap_delete_job(mock_app: Flask):
@@ -223,14 +223,20 @@ class TestStartJob:
 
         assert resp.status_code == 302
 
-    def test_start_duplicate_job_flashes_warning(self, mock_app, mock_client):
+    def test_start_duplicate_job_flashes_warning(self, mock_app, mock_client, monkeypatch):
         """Starting a duplicate job should flash a warning and redirect."""
-        from src.main_app.db.exceptions import DuplicateJobError
+
+        mock_flash = Mock()
+        # monkeypatch.setattr("src.main_app.public.jobs_routes_utils.flash", mock_flash)
 
         uid = _seed_user(mock_app, can_run_bg_jobs=True)
         _login_user(mock_client, uid)
 
         with (
+            patch(
+                "src.main_app.public.jobs_routes_utils.flash",
+                mock_flash,
+            ),
             patch(
                 "src.main_app.public.jobs_routes_utils.load_auth_payload",
                 return_value={"id": uid, "username": "JobUser"},
@@ -240,12 +246,12 @@ class TestStartJob:
                 side_effect=DuplicateJobError("A job of type 'fixref' is already active"),
             ),
         ):
-            resp = mock_client.post(
+            _resp = mock_client.post(
                 f"/jobs/{VALID_JOB_TYPE}/start",
                 follow_redirects=True,
             )
 
-        assert b"A job of this type is already running" in resp.data
+        assert mock_flash.assert_called_with("A job of this type is already running. Please wait for it to complete.", "warning")
 
 
 @pytest.mark.usefixtures("mock_app")
