@@ -6,10 +6,10 @@ Core security utilities providing symmetric encryption for OAuth tokens and a cu
 
 ### Files
 
-| File              | Purpose                                                                    |
-| ----------------- | -------------------------------------------------------------------------- |
-| `crypto.py`       | Fernet symmetric encryption/decryption for OAuth credentials               |
-| `cookies.py`      | `CookieHeaderClient` — Flask test client that accepts raw `Cookie` headers |
+| File               | Purpose                                                                                      |
+| ------------------ | -------------------------------------------------------------------------------------------- |
+| `crypto.py`        | Fernet symmetric encryption/decryption for OAuth credentials                                 |
+| `cookies.py`       | `CookieHeaderClient` — Flask test client that accepts raw `Cookie` headers                   |
 | `jinja_filters.py` | Custom Jinja2 template filters (`format_long_date`, `format_short_date`, `get_status_class`) |
 
 ## crypto.py — Fernet Encryption
@@ -45,10 +45,10 @@ class CookieHeaderClient(FlaskClient):
 
 Custom Jinja2 filters registered via a `filters` dict in `__init__.py`:
 
-| Filter              | Description                                       |
-| ------------------- | ------------------------------------------------- |
-| `format_long_date`  | `datetime` → `"May 30, 2026, 12:00:00 AM"`       |
-| `format_short_date` | `datetime` → `"May 30, 2026"`                    |
+| Filter              | Description                                                               |
+| ------------------- | ------------------------------------------------------------------------- |
+| `format_long_date`  | `datetime` → `"May 30, 2026, 12:00:00 AM"`                                |
+| `format_short_date` | `datetime` → `"May 30, 2026"`                                             |
 | `get_status_class`  | Job status string → Bootstrap color class (`"success"`, `"danger"`, etc.) |
 
 `get_status_class` maps statuses like `running`→`primary`, `completed`/`changed`/`imported`→`success`, `missing`/`skipped`/`cancelled`→`warning`, `failed`/`error`→`danger`, `pending`→`secondary`.
