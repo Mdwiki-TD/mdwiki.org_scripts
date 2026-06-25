@@ -92,7 +92,7 @@ def user_login_required(func: FuncType) -> FuncType:  # noqa: UP047
     """
 
     @wraps(func)
-    def wrapper(*args: Any, **kwargs: Any):
+    def wrapper(*args: Any, **kwargs: Any) -> Any:
         user = load_user()
         if not user:
             # Get the page the user came from, or default to the home page
@@ -105,7 +105,7 @@ def user_login_required(func: FuncType) -> FuncType:  # noqa: UP047
 
         return func(*args, **kwargs)
 
-    return wrapper
+    return cast(FuncType, wrapper)
 
 
 __all__ = [

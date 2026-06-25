@@ -104,7 +104,7 @@ class FixRedAllWorker(BaseObjectsJobWorker):
             "msg": outcome.msg,
         }
         if outcome.kind == "changed":
-            page_record["newrevid"] = outcome.newrevid
+            page_record["newrevid"] = str(outcome.newrevid)
             self.result.pages_changed.append(page_record)
 
         elif outcome.kind == "missing":
