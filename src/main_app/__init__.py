@@ -150,7 +150,6 @@ def create_app(config_class: Type) -> Flask:
 
     app.jinja_env.filters.update(filters)
 
-
     db_is_ok = True
     # Initialize Flask-SQLAlchemy and Flask-Migrate
     if app.config.get("SQLALCHEMY_DATABASE_URI"):
