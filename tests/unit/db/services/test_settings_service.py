@@ -146,7 +146,7 @@ class TestGetSettingByKey:
         mock_query.filter.return_value.first.return_value = mock_setting
         monkeypatch.setattr("src.main_app.db.services.settings_service.db.session.query", lambda cls: mock_query)
         result = get_setting_by_key("test_key")
-        assert result is True
+        assert result == mock_setting
 
     def test_returns_none_for_missing_key(self, monkeypatch):
         mock_query = MagicMock()
