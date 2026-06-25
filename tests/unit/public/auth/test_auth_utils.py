@@ -19,8 +19,8 @@ class TestOauthRequired:
         with mock_app.test_request_context("/protected"):
             with patch("src.main_app.public.auth.utils.load_user", return_value=None):
                 response = protected()
-                assert response.status_code == 302
-                assert "/login" in response.location
+                assert response.status_code == 302 # type: ignore
+                assert "/login" in response.location # type: ignore
 
     def test_oauth_required_decorator_with_user(self, mock_app):
         @oauth_required

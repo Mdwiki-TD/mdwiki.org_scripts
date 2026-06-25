@@ -21,7 +21,7 @@ class TestUpdaterOutcome:
     def test_frozen(self):
         o = UpdaterOutcome(kind="imported")
         with pytest.raises(AttributeError):
-            o.kind = "error"
+            o.kind = "error"# type: ignore
 
     def test_to_json(self):
         o = UpdaterOutcome(kind="imported_fallback", newrevid=123, msg="ok")
