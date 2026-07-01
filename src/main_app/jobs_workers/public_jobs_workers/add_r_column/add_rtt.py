@@ -5,6 +5,7 @@ import logging
 from typing import Any
 
 import wikitextparser as wtp
+from wikitextparser._cell import Cell
 
 logger = logging.getLogger(__name__)
 
@@ -33,6 +34,22 @@ def header_has_r(text: str, table: wtp.Table | bool = False) -> bool:
                     return True
 
     return False
+
+
+def _build_header_index(all_rows: list[list[Cell]]) -> dict[str, int]:
+    """
+    Build a mapping of header text -> column index.
+    """
+    header_index: dict[str, int] = {}
+    for row in all_rows:
+        if not row or row[0] is None or not row[0].is_header:
+            continue
+        for idx, cell in enumerate(row):
+            if cell is None:
+                continue
+            header_index[cell.value.strip()] = idx
+        break
+    return header_index
 
 
 def add_header_r(text: str, table: wtp.Table | bool = False) -> str:
@@ -65,8 +82,11 @@ def add_header_r(text: str, table: wtp.Table | bool = False) -> str:
 
     return table.string  # type: ignore
 
-
-def work_one_table(table_text, redirects, pages):
+def work_one_table(
+    table_text: str,
+    redirects: dict,
+    pages: set,
+) -> str:
     parsed = wtp.parse(table_text)
     table = parsed.tables[0]
 
@@ -82,9 +102,16 @@ def work_one_table(table_text, redirects, pages):
 
     cell_errors: list[Any] = []
 
+    all_rows = table.cells()
+    if not all_rows:
+        return table.string
+
+    # 1. Map header text to its column index
+    header_index = _build_header_index(all_rows)
+
     data = table.data()
-    table_cells = table.cells()
-    for n, x in enumerate(table_cells):
+
+    for n, x in enumerate(all_rows):
         if x[1].is_header or len(x) < 3:
             continue
 
@@ -98,7 +125,6 @@ def work_one_table(table_text, redirects, pages):
             continue
 
         title = fix_title(title)
-
         title2 = redirects.get(title, title)
 
         if r_s == "R":
@@ -107,15 +133,12 @@ def work_one_table(table_text, redirects, pages):
             already_in.append(title)
             continue
 
-        # logger.info(f"title: ({title}), r_s: ({r_s})")
-
         if title in pages:
             x[1].string = R_NEW_ROW
 
             add_done.append(title)
         elif title2 in pages:
             x[1].string = R_NEW_ROW
-
             add_from_redirect.append(title)
         else:
             no_add.append(title)
