@@ -60,7 +60,12 @@ class TestAddHeaderR:
 class TestWorkOneTable:
     def test_work_one_table_no_r_header(self):
         table_text = '{| class="wikitable"\n! Header\n! Title\n|-\n| data\n| data\n|}'
-        result = work_one_table(table_text, {}, [])
+        result = work_one_table(
+            table_text,
+            {},
+            [],
+            title_header="Title",
+        )
         assert result == table_text
 
     def test_work_one_table_updates_cells(self):
@@ -69,7 +74,12 @@ class TestWorkOneTable:
         )
         redirects = {"Aspirin": "Aspirin"}
         pages = ["Aspirin"]
-        result = work_one_table(table_text, redirects, pages)
+        result = work_one_table(
+            table_text,
+            redirects,
+            pages,
+            title_header="Title",
+        )
 
         assert 'background:#C66A05" | R' in result
         assert "[[Aspirin]]" in result
@@ -87,12 +97,22 @@ class TestWorkOneTable:
         table_text = '{| class="wikitable"\n! #\n! R\n! Title\n|-\n| 1\n| \n| [[Acetaminophen]]\n|}'
         redirects = {"Acetaminophen": "Paracetamol"}
         pages = ["Paracetamol"]
-        result = work_one_table(table_text, redirects, pages)
+        result = work_one_table(
+            table_text,
+            redirects,
+            pages,
+            title_header="Title",
+        )
         assert 'background:#C66A05" | R' in result
 
     def test_work_one_table_already_r(self):
         table_text = '{| class="wikitable"\n! #\n! R\n! Title\n|-\n| 1\n| R\n| [[Aspirin]]\n|}'
-        result = work_one_table(table_text, {}, [])
+        result = work_one_table(
+            table_text,
+            {},
+            [],
+            title_header="Title",
+        )
         assert 'background:#C66A05" | R' in result
 
     def test_work_one_table_cell_error(self):

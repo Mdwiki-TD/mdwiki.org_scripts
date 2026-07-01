@@ -82,10 +82,13 @@ def add_header_r(text: str, table: wtp.Table | bool = False) -> str:
 
     return table.string  # type: ignore
 
+
 def work_one_table(
     table_text: str,
     redirects: dict,
     pages: set,
+    r_header: str = "R",
+    title_header: str = "Page title",
 ) -> str:
     parsed = wtp.parse(table_text)
     table = parsed.tables[0]
@@ -109,18 +112,32 @@ def work_one_table(
     # 1. Map header text to its column index
     header_index = _build_header_index(all_rows)
 
+    r_idx = header_index.get(r_header)
+    title_idx = header_index.get(title_header)
+
+    if r_idx is None or title_idx is None:
+        logger.warning(
+            f"<<red>> couldn't find expected headers: "
+            f"r_header={r_header!r} -> {r_idx}, title_header={title_header!r} -> {title_idx}"
+        )
+        return table.string
+
     data = table.data()
 
     for n, x in enumerate(all_rows):
-        if x[1].is_header or len(x) < 3:
+        if not x or x[0] is None or x[0].is_header:
+            continue
+
+        # Skip rows that are too short to contain both required columns
+        if max(r_idx, title_idx) >= len(x) or x[r_idx] is None or x[title_idx] is None:
             continue
 
         try:
-            title = x[2].value.strip()
-            r_s = x[1].value.strip()
+            title = x[title_idx].value.strip()
+            r_s = x[r_idx].value.strip()
         except Exception:
             logger.warning(f"cell error: {n}")
-            numb = data[n][2]
+            numb = data[n][title_idx]
             cell_errors.append(numb)
             continue
 
@@ -128,17 +145,17 @@ def work_one_table(
         title2 = redirects.get(title, title)
 
         if r_s == "R":
-            x[1].string = R_NEW_ROW
+            x[r_idx].string = R_NEW_ROW
 
             already_in.append(title)
             continue
 
         if title in pages:
-            x[1].string = R_NEW_ROW
+            x[r_idx].string = R_NEW_ROW
 
             add_done.append(title)
         elif title2 in pages:
-            x[1].string = R_NEW_ROW
+            x[r_idx].string = R_NEW_ROW
             add_from_redirect.append(title)
         else:
             no_add.append(title)
