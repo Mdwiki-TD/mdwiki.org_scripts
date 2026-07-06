@@ -5,37 +5,50 @@ from __future__ import annotations
 import wikitextparser as wtp
 
 from src.main_app.jobs_workers.public_jobs_workers.add_r_column.add_rtt import (
-    add_header_r,
-    header_has_r,
+    add_r_header,
+    add_to_tables,
+    check_for_r_header,
     process_table_rows,
 )
+
+
+class TestAddToTables:
+    def test_add_to_tables_no_tables(self):
+        text = "Plain text"
+        assert add_to_tables(text, {}, []) == text
+
+    def test_add_to_tables_with_table(self):
+        text = '{| class="wikitable"\n! Header\n! Title\n|-\n| data\n| data\n|}'
+        # add_to_tables should add R column because it's missing
+        result = add_to_tables(text, {}, [])
+        assert "! Header\n! R" in result
 
 
 class TestHeaderHasR:
     def test_header_has_r_true(self):
         table_text = '{| class="wikitable"\n! Header\n! R\n! Title\n|-\n| data\n| data\n| data\n|}'
-        assert header_has_r(table_text) is True
+        assert check_for_r_header(table_text) is True
 
     def test_header_has_r_false(self):
         table_text = '{| class="wikitable"\n! Header\n! Other\n! Title\n|-\n| data\n| data\n| data\n|}'
-        assert header_has_r(table_text) is False
+        assert check_for_r_header(table_text) is False
 
     def test_header_has_r_with_table_object(self):
         table_text = '{| class="wikitable"\n! Header\n! R\n! Title\n|-\n| data\n| data\n| data\n|}'
         table = wtp.parse(table_text).tables[0]
-        assert header_has_r(table_text, table=table) is True
+        assert check_for_r_header(table_text, table=table) is True
 
 
 class TestAddHeaderR:
     def test_add_header_r_new(self):
         table_text = '{| class="wikitable"\n! Header\n! Title\n|-\n| data\n| data\n|}'
-        result = add_header_r(table_text)
+        result = add_r_header(table_text)
         assert "! Header\n! R" in result
         assert "| data\n| " in result
 
     def test_add_header_r_already_exists(self):
         table_text = '{| class="wikitable"\n! Header\n! R\n! Title\n|-\n| data\n| data\n| data\n|}'
-        result = add_header_r(table_text)
+        result = add_r_header(table_text)
         assert result == table_text
 
 

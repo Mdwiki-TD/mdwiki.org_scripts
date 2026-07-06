@@ -14,23 +14,6 @@ logger = logging.getLogger(__name__)
 R_NEW_ROW = '\n| style="text-align:center; white-space:nowrap; font-weight:bold; background:#C66A05" | R'
 
 
-def header_has_r(text: str, table: wtp.Table | bool = False) -> bool:
-    if not table:
-        parsed = wtp.parse(text)
-        table = parsed.tables[0]
-
-    # for table in parsed.tables:
-
-    for x in table.cells():  # type: ignore
-        if x[1].is_header:
-            for numb, v in enumerate(x, 1):
-                if v.value.strip() == "R":
-                    logger.info(f"header has R: in column {numb}")
-                    return True
-
-    return False
-
-
 def _build_header_index(all_rows: list[list[Cell]]) -> dict[str, int]:
     """
     Build a mapping of header text -> column index.
@@ -47,7 +30,27 @@ def _build_header_index(all_rows: list[list[Cell]]) -> dict[str, int]:
     return header_index
 
 
-def add_header_r(text: str, table: wtp.Table | bool = False) -> str:
+def count_r_rows(text: str) -> int:
+    """Count the number of rows with R in the first column"""
+    return text.count(R_NEW_ROW.strip())
+
+
+def check_for_r_header(text: str, table: wtp.Table | bool = False) -> bool:
+    if not table:
+        parsed = wtp.parse(text)
+        table = parsed.tables[0]
+
+    for x in table.cells():  # type: ignore
+        if x[1].is_header:
+            for numb, v in enumerate(x, 1):
+                if v.value.strip() == "R":
+                    logger.info(f"header has R: in column {numb}")
+                    return True
+
+    return False
+
+
+def add_r_header(text: str, table: wtp.Table | bool = False) -> str:
     if not table:
         parsed = wtp.parse(text)
         table = parsed.tables[0]
@@ -55,10 +58,8 @@ def add_header_r(text: str, table: wtp.Table | bool = False) -> str:
     if not table:
         return ""
 
-    # for table in parsed.tables:
-
     # Check if R column already exists
-    if header_has_r(text, table):
+    if check_for_r_header(text, table):
         logger.info("R column already exists in table header")
         return table.string  # type: ignore
 
@@ -88,7 +89,7 @@ def process_table_rows(
     parsed = wtp.parse(table_text)
     table = parsed.tables[0]
 
-    if not header_has_r(table_text, table):
+    if not check_for_r_header(table_text, table):
         logger.info("no R in table header!")
         return table_text
 
@@ -165,10 +166,47 @@ def process_table_rows(
     return table.string
 
 
+def add_to_tables(
+    text: str,
+    redirects: dict,
+    pages: list,
+) -> str:
+    parsed = wtp.parse(text)
+
+    if not parsed.tables:
+        return text
+
+    table = parsed.tables[0]
+
+    new_text = text
+
+    if not check_for_r_header(text, table):
+        new_text = add_r_header(text, table)
+
+        if new_text == text:
+            logger.info("Can't add R column to table!")
+            return text
+
+    if redirects or pages:
+        new_text = process_table_rows(
+            new_text,
+            redirects,
+            pages,
+            r_header="R",
+            title_header="Page title",
+        )
+
+    table.string = new_text
+
+    _text = parsed.string
+
+    return _text
+
+
 __all__ = [
-    "R_NEW_ROW",
-    "add_header_r",
-    "fix_title",
-    "header_has_r",
+    "add_r_header",
+    "check_for_r_header",
     "process_table_rows",
+    "count_r_rows",
+    "add_to_tables",
 ]

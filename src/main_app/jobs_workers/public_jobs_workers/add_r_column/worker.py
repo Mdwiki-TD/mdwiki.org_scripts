@@ -12,55 +12,17 @@ import threading
 from datetime import datetime
 from typing import Any, Dict
 
-import wikitextparser as wtp
 from mwclient.client import Site
 from mwclient.page import Page
 
 from ....api_services import MwClientPage, get_user_site
 from ....api_services.query_api import get_template_pages
 from ...base_worker_object import BaseObjectsJobWorker
-from .add_rtt import R_NEW_ROW, add_header_r, header_has_r, process_table_rows
+from .add_rtt import add_to_tables, count_r_rows
 from .objects import AddRColumnWorkerObject
 from .utils import fix_title
 
 logger = logging.getLogger(__name__)
-
-
-def add_to_tables(
-    text: str,
-    redirects: dict,
-    pages: list,
-) -> str:
-    parsed = wtp.parse(text)
-
-    if not parsed.tables:
-        return text
-
-    table = parsed.tables[0]
-
-    new_text = text
-
-    if not header_has_r(text, table):
-        new_text = add_header_r(text, table)
-
-        if new_text == text:
-            logger.info("Can't add R column to table!")
-            return text
-
-    if redirects or pages:
-        new_text = process_table_rows(
-            new_text,
-            redirects,
-            pages,
-            r_header="R",
-            title_header="Page title",
-        )
-
-    table.string = new_text
-
-    _text = parsed.string
-
-    return _text
 
 
 def get_titles_redirects(
@@ -209,7 +171,7 @@ class AddRColumnWorker(BaseObjectsJobWorker):
                 return False
             """
         # step 4 add R column
-        old_counts = text.count(R_NEW_ROW.strip())
+        old_counts = count_r_rows(text)
 
         newtext = None
         try:
@@ -230,8 +192,7 @@ class AddRColumnWorker(BaseObjectsJobWorker):
             logger.info("no changes")
             return False
 
-        # count R_NEW_ROW in newtext
-        counts = newtext.count(R_NEW_ROW.strip()) - old_counts
+        counts = count_r_rows(newtext) - old_counts
 
         # step 6 save new texg to page
         summary = f"Added R column to {counts} titles."
