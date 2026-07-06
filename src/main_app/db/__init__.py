@@ -50,11 +50,13 @@ def create_views(_db: SQLAlchemy) -> None:
                 logger.warning("View %s has no create_query, skipping", table.name)
                 continue
 
-            if table.name in existing_views:
-                continue
+            create_sql = table.info["create_query"]
+            if not table.info.get("replace_the_view"):
+                if table.name in existing_views:
+                    continue
+
             try:
                 with conn.begin():
-                    create_sql = table.info["create_query"]
                     conn.execute(text(create_sql))
             except Exception:
                 logger.exception("Failed to create view %s", table.name)
@@ -62,12 +64,6 @@ def create_views(_db: SQLAlchemy) -> None:
 
 def receive_connect(dbapi_conn, connection_record) -> None:
     logger.debug("New connection established")
-
-
-def receive_checkout(dbapi_conn, connection_record, connection_proxy) -> None:
-    pool = connection_record.owner if hasattr(connection_record, "owner") else None
-    pool_status = pool.status() if pool and hasattr(pool, "status") else "unknown"
-    logger.debug("Connection checked out from pool. Pool size: %s", pool_status)
 
 
 def register_events(engine) -> None:
@@ -78,9 +74,6 @@ def register_events(engine) -> None:
 
     if not event.contains(engine, "connect", receive_connect):
         event.listen(engine, "connect", receive_connect)
-
-    if not event.contains(engine, "checkout", receive_checkout):
-        event.listen(engine, "checkout", receive_checkout)
 
 
 def init_db(_db: SQLAlchemy) -> None:
