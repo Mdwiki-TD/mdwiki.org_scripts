@@ -48,53 +48,47 @@ class AddRColumn:
         self.redirects = redirects or {}
         self.pages = pages or {}
 
+    def _load_table_cells(self, table: wtp.Table) -> Any:
+        try:
+            return table.cells()
+        except Exception as exc:
+            logger.error(f"error getting cells: {exc}")
+            return False
+
     def _check_for_r_header(self, table: wtp.Table) -> bool:
         if not table or not isinstance(table, wtp.Table):
             logger.info("no table found")
             return False
 
-        try:
-            all_cells = table.cells()
-        except Exception as exc:
-            logger.error(f"error getting cells: {exc}")
-            return False
+        all_cells = self._load_table_cells(table)
 
-        if not all_cells:
-            return False
-
-        for x in all_cells:
-            if x[1].is_header:
-                for numb, v in enumerate(x, 1):
-                    if v.value.strip() == "R":
-                        logger.info(f"header has R: in column {numb}")
-                        return True
+        if all_cells:
+            for x in all_cells:
+                if x[1].is_header:
+                    for numb, v in enumerate(x, 1):
+                        if v.value.strip() == "R":
+                            logger.info(f"header has R: in column {numb}")
+                            return True
         return False
 
     def _add_r_header_table(self, table: wtp.Table) -> bool:
         if not table or not isinstance(table, wtp.Table):
             return False
+
+        all_cells = self._load_table_cells(table)
+        if all_cells:
+            return False
+
         count = 0
-
-        try:
-            all_cells = table.cells()
-        except Exception as exc:
-            logger.error(f"error getting cells: {exc}")
-            return False
-
-        if not all_cells:
-            return False
-
         # add R to header in 2nd column
         for x in all_cells:
+            count += 1
             if x[0].is_header:
                 x[0].value = x[0].value + "\n! R"
             else:
                 x[0].value = x[0].value + "\n| "
 
-            count += 1
-
         logger.info(f"Added R column to table header in {count} cells")
-
         return True
 
     def _add_r_header(self, table: wtp.Table):
@@ -119,11 +113,7 @@ class AddRColumn:
 
         cell_errors: list[Any] = []
 
-        try:
-            all_cells = table.cells()
-        except Exception as exc:
-            logger.error(f"error getting cells: {exc}")
-            return False
+        all_cells = self._load_table_cells(table)
 
         if not all_cells:
             return False
@@ -191,16 +181,6 @@ class AddRColumn:
     def count_r_rows(self) -> int:
         return count_r_rows(self.text)
 
-    def _process_the_table(self, table: wtp.Table) -> bool:
-        changed = self._process_table(
-            table,
-            r_header="R",
-            title_header="Page title",
-        )
-        if changed:
-            logger.info("Table changed!")
-            return True
-        return False
 
     def ensure_table_has_r_column(self, table) -> bool:
         if self._check_for_r_header(table):
@@ -229,19 +209,26 @@ class AddRColumn:
         # check if R column exists or add it
         added = self.ensure_table_has_r_column(table)
 
+        # update self.text after adding R column
+        if added:
+            self.text = parsed.string
+
         # Return False if no redirects or pages
         if not self.redirects and not self.pages:
-            if added:
-                return parsed.string
-            else:
-                return self.text
+            return self.text
 
         # Return False if R column not exists and not added
         if not self._check_for_r_header(table):
             logger.info("Can't add R column to table!")
             return self.text
 
-        self._process_the_table(table)
+        changed = self._process_table(
+            table,
+            r_header="R",
+            title_header="Page title",
+        )
+        if changed:
+            logger.info("Table changed!")
 
         return parsed.string
 

@@ -91,7 +91,7 @@ class TestInjectRColumnIntoTables:
         # check _add_r_header_table result:
         assert "! R" in result
 
-        # check _process_the_table result
+        # check _process_table result
         assert "background:#C66A05" in result
 
     def test_inject_with_empty_string(self):
