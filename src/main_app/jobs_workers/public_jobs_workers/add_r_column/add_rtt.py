@@ -249,10 +249,12 @@ class AddRColumn:
             r_header="R",
             title_header="Page title",
         )
-        if changed:
-            logger.info("Table changed!")
 
-        return parsed.string
+        if changed:
+            # update self.text after adding R column
+            self.text = parsed.string
+
+        return self.text
 
 
 def inject_r_column_into_tables(
