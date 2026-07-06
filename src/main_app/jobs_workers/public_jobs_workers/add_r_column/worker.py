@@ -43,7 +43,7 @@ def add_to_tables(
         new_text = add_header_r(text, table)
 
         if new_text == text:
-            logger.info("<<red>> Can't add R column to table!")
+            logger.info("Can't add R column to table!")
             return text
 
     if redirects or pages:

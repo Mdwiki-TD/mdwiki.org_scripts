@@ -94,7 +94,7 @@ def work_one_table(
     table = parsed.tables[0]
 
     if not header_has_r(table_text, table):
-        logger.info("<<red>> no R in table header!")
+        logger.info("no R in table header!")
         return table_text
 
     already_in: list[Any] = []
@@ -117,7 +117,7 @@ def work_one_table(
 
     if r_idx is None or title_idx is None:
         logger.warning(
-            f"<<red>> couldn't find expected headers: "
+            f"couldn't find expected headers: "
             f"r_header={r_header!r} -> {r_idx}, title_header={title_header!r} -> {title_idx}"
         )
         return table.string
@@ -160,12 +160,12 @@ def work_one_table(
         else:
             no_add.append(title)
 
-    logger.info(f"<<yellow>> no_add: {len(no_add)}, already_in: {len(already_in)}")
+    logger.info(f"no_add: {len(no_add)}, already_in: {len(already_in)}")
 
-    logger.error(f"<<red>> cell_errors: {len(cell_errors)}:")
+    logger.error(f"cell_errors: {len(cell_errors)}:")
     logger.info(cell_errors)
 
-    logger.info(f"<<yellow>> add_done: {len(add_done)}, add_from_redirect: {len(add_from_redirect)}")
+    logger.info(f"add_done: {len(add_done)}, add_from_redirect: {len(add_from_redirect)}")
 
     return table.string
 

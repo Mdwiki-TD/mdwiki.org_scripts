@@ -138,7 +138,7 @@ def resolve_redirect_chains(redirects: list[dict]) -> list[dict]:
 
 
 def main():
-    logger.info("*<<red>> > :")
+    logger.info("*")
     # ---
     # python3 dup.py -page:Allopurinol
     # python3 dup.py -page:Activated_charcoal_\(medication\)
@@ -158,7 +158,7 @@ def main():
         redirect_to = entry["redirect_to"]
         final_target = entry["final_target"]
 
-        logger.info(f'-------\n*<<yellow>> >{nu}/{len(redirects_data)} from_title:"{from_title}".')
+        logger.info(f'-------\n*{nu}/{len(redirects_data)} from_title:"{from_title}".')
 
         _fix_one(from_title, redirect_to, final_target)
 

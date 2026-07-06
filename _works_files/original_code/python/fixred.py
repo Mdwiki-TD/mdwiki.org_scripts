@@ -151,7 +151,7 @@ def find_redirects(links):
                 tab = pages[page]
                 for pa in tab.get("redirects", []):
                     from_to[pa["title"]] = tab["title"]
-                    # logger.info('<<yellow>> from_to["%s"] = "%s"' % ( pa["title"] , tab["title"] ) )
+                    # logger.info('from_to["%s"] = "%s"' % ( pa["title"] , tab["title"] ) )
         else:
             logger.info(" no jsone")
     # ---
@@ -245,7 +245,7 @@ def treat_page(title):
 
         elif tit not in nonredirects:
             if tit2 != tit:
-                logger.info(f'<<red>> tit:["{tit}"] and tit:["{tit2}"] not in from_to')
+                logger.info(f'tit:["{tit}"] and tit:["{tit2}"] not in from_to')
     # ---
     _save_page = page.save(newtext=newtext, summary="Fix redirects")
 
