@@ -11,7 +11,7 @@ from src.main_app.jobs_workers.public_jobs_workers.add_r_column.add_rtt import (
 
 
 def make_model(text: str = "", redirects: dict | None = None, pages: list | None = None) -> AddRColumn:
-    return AddRColumn(text, redirects or {}, pages or [])
+    return AddRColumn(text, redirects, pages)
 
 
 def _process_table_rows(
@@ -38,13 +38,13 @@ class TestProcessTableRowsExtra:
 
     def test_missing_r_or_title_header_returns_unchanged(self):
         table_text = '{| class="wikitable"\n! #\n! R\n! Description\n|-\n| 1\n| \n| something\n|}'
-        model = make_model(table_text, {}, [])
+        model = make_model(table_text)
         result = _process_table_rows(model, table_text, title_header="Page title")
         assert result == table_text
 
     def test_no_pages_no_redirects_marks_no_add(self):
         table_text = '{| class="wikitable"\n! #\n! R\n! Title\n|-\n| 1\n| \n| [[Ibuprofen]]\n|}'
-        model = make_model(table_text, {}, [])
+        model = make_model(table_text)
         result = _process_table_rows(model, table_text, title_header="Title")
         parsed = wtp.parse(result)
         cells = parsed.tables[0].cells()
@@ -65,7 +65,7 @@ class TestProcessTableRowsExtra:
 
     def test_row_already_marked_r_is_preserved_even_if_not_in_pages(self):
         table_text = '{| class="wikitable"\n! #\n! R\n! Title\n|-\n| 1\n| R\n| [[NotInPages]]\n|}'
-        model = make_model(table_text, {}, [])
+        model = make_model(table_text)
         result = _process_table_rows(model, table_text, title_header="Title")
         assert "background:#C66A05" in result
 
@@ -88,7 +88,7 @@ class TestProcessTableRowsExtra:
 class TestProcessTableRows:
     def test_work_one_table_no_r_header(self):
         table_text = '{| class="wikitable"\n! Header\n! Title\n|-\n| data\n| data\n|}'
-        model = make_model(table_text, {}, [])
+        model = make_model(table_text)
         result = _process_table_rows(
             model,
             table_text,
@@ -135,7 +135,7 @@ class TestProcessTableRows:
 
     def test_work_one_table_already_r(self):
         table_text = '{| class="wikitable"\n! #\n! R\n! Title\n|-\n| 1\n| R\n| [[Aspirin]]\n|}'
-        model = make_model(table_text, {}, [])
+        model = make_model(table_text)
         result = _process_table_rows(
             model,
             table_text,

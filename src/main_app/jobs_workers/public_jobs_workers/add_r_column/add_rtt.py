@@ -19,6 +19,21 @@ def count_r_rows(text: str) -> int:
     return text.count(R_NEW_ROW.strip())
 
 
+def _build_header_index(all_cells: list[list[Cell]]) -> dict[str, int]:
+    """
+    Build a mapping of header text -> column index.
+    """
+    header_index: dict[str, int] = {}
+    for row in all_cells:
+        if not row or row[0] is None or not row[0].is_header:
+            continue
+        for idx, cell in enumerate(row):
+            if cell is None:
+                continue
+            header_index[cell.value.strip()] = idx
+        break
+    return header_index
+
 class AddRColumn:
     """Encapsulates logic for injecting/updating an 'R' column in wikitext tables."""
 
@@ -37,7 +52,16 @@ class AddRColumn:
             logger.info("no table found")
             return False
 
-        for x in table.cells():  # type: ignore
+        try:
+            all_cells = table.cells()
+        except Exception as exc:
+            logger.error(f"error getting cells: {exc}")
+            return False
+
+        if not all_cells:
+            return False
+
+        for x in all_cells:
             if x[1].is_header:
                 for numb, v in enumerate(x, 1):
                     if v.value.strip() == "R":
@@ -45,29 +69,22 @@ class AddRColumn:
                         return True
         return False
 
-    def _build_header_index(self, all_rows: list[list[Cell]]) -> dict[str, int]:
-        """
-        Build a mapping of header text -> column index.
-        """
-        header_index: dict[str, int] = {}
-        for row in all_rows:
-            if not row or row[0] is None or not row[0].is_header:
-                continue
-            for idx, cell in enumerate(row):
-                if cell is None:
-                    continue
-                header_index[cell.value.strip()] = idx
-            break
-        return header_index
-
     def _add_r_header_table(self, table: wtp.Table) -> bool:
         if not table or not isinstance(table, wtp.Table):
             return False
-
         count = 0
 
+        try:
+            all_cells = table.cells()
+        except Exception as exc:
+            logger.error(f"error getting cells: {exc}")
+            return False
+
+        if not all_cells:
+            return False
+
         # add R to header in 2nd column
-        for x in table.cells():  # type: ignore
+        for x in all_cells:
             if x[0].is_header:
                 x[0].value = x[0].value + "\n! R"
             else:
@@ -81,8 +98,9 @@ class AddRColumn:
 
     def _add_r_header(self, table: wtp.Table):
         # Check if R column already exists
-        if not self._check_for_r_header(table):
+        if self._check_for_r_header(table):
             logger.info("R column already exists in table header")
+            return
 
         self._add_r_header_table(table)
 
@@ -92,10 +110,6 @@ class AddRColumn:
         r_header: str = "R",
         title_header: str = "Page title",
     ) -> bool:
-        if not self._check_for_r_header(table):
-            logger.info("no R in table header!")
-            return False
-
         already_in: list[Any] = []
         no_add: list[Any] = []
 
@@ -104,12 +118,17 @@ class AddRColumn:
 
         cell_errors: list[Any] = []
 
-        all_rows = table.cells()
-        if not all_rows:
+        try:
+            all_cells = table.cells()
+        except Exception as exc:
+            logger.error(f"error getting cells: {exc}")
+            return False
+
+        if not all_cells:
             return False
 
         # 1. Map header text to its column index
-        header_index = self._build_header_index(all_rows)
+        header_index = _build_header_index(all_cells)
 
         r_idx = header_index.get(r_header)
         title_idx = header_index.get(title_header)
@@ -123,7 +142,7 @@ class AddRColumn:
 
         data = table.data()
 
-        for n, row_cells in enumerate(all_rows):
+        for n, row_cells in enumerate(all_cells):
             if not row_cells or row_cells[0] is None or row_cells[0].is_header:
                 continue
 
@@ -198,7 +217,11 @@ class AddRColumn:
         table = parsed.tables[0]
 
         if not self._check_for_r_header(table):
-            self._add_r_header_table(table)
+            added = self._add_r_header_table(table)
+
+            # to reload table object
+            if added:
+                table.string = table.string
 
         self._process_the_table(table)
 
