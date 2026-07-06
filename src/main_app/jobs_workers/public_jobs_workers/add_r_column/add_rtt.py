@@ -137,6 +137,19 @@ class AddRColumn:
         added = self._add_r_header_table(table)
         return added
 
+
+    def load_ids(self, r_header, title_header, all_cells):
+        header_index = _build_header_index(all_cells)
+        r_idx = header_index.get(r_header)
+        title_idx = header_index.get(title_header)
+
+        if r_idx is None or title_idx is None:
+            logger.warning(
+                f"couldn't find expected headers: "
+                f"r_header={r_header!r} -> {r_idx}, title_header={title_header!r} -> {title_idx}"
+            )
+        return r_idx,title_idx
+
     # ================================
     # Main function
     # ================================
@@ -147,36 +160,30 @@ class AddRColumn:
         r_header: str = "R",
         title_header: str = "Page title",
     ) -> bool:
-        already_in: list[Any] = []
-        no_add: list[Any] = []
-
-        add_from_redirect: list[Any] = []
-        add_done: list[Any] = []
-
-        cell_errors: list[Any] = []
 
         all_cells = self._load_table_cells(table)
-
         if not all_cells:
             return False
 
         # 1. Map header text to its column index
-        header_index = _build_header_index(all_cells)
-
-        r_idx = header_index.get(r_header)
-        title_idx = header_index.get(title_header)
+        r_idx, title_idx = self.load_ids(r_header, title_header, all_cells)
 
         if r_idx is None or title_idx is None:
-            logger.warning(
-                f"couldn't find expected headers: "
-                f"r_header={r_header!r} -> {r_idx}, title_header={title_header!r} -> {title_idx}"
-            )
             return False
 
-        data = table.data()
+        already_in = 0
+        no_add = 0
+        add_from_redirect = 0
+        add_done = 0
+        cell_errors = 0
 
         for n, row_cells in enumerate(all_cells):
-            if not row_cells or row_cells[0] is None or row_cells[0].is_header:
+            # Skip empty rows and rows that don't have enough columns
+            if not row_cells or row_cells[0] is None:
+                continue
+
+            # Skip columns headers
+            if row_cells[0].is_header:
                 continue
 
             # Skip rows that are too short to contain both required columns
@@ -185,39 +192,36 @@ class AddRColumn:
 
             try:
                 title = row_cells[title_idx].value.strip()
-                r_s = row_cells[r_idx].value.strip()
+                header_label = row_cells[r_idx].value.strip()
             except Exception:
                 logger.warning(f"cell error: {n}")
-                numb = data[n][title_idx]
-                cell_errors.append(numb)
+                cell_errors += 1
                 continue
 
-            if r_s == "R":
+            if header_label == "R":
                 row_cells[r_idx].string = R_NEW_ROW
-                already_in.append(title)
+                already_in += 1
                 continue
 
             title = fix_title(title)
             title2 = self.redirects.get(title, title)
             if title in self.pages:
                 row_cells[r_idx].string = R_NEW_ROW
-                add_done.append(title)
+                add_done += 1
 
             elif title2 in self.pages:
                 row_cells[r_idx].string = R_NEW_ROW
-                add_from_redirect.append(title)
+                add_from_redirect += 1
             else:
-                no_add.append(title)
+                no_add += 1
 
-        logger.info(f"no_add: {len(no_add)}, already_in: {len(already_in)}")
+        if cell_errors:
+            logger.error(f"cell_errors: {cell_errors}:")
 
-        logger.error(f"cell_errors: {len(cell_errors)}:")
-        logger.info(cell_errors)
-
-        logger.info(f"add_done: {len(add_done)}, add_from_redirect: {len(add_from_redirect)}")
+        logger.info(f"no_add: {no_add}, already_in: {already_in}")
+        logger.info(f"add_done: {add_done}, add_from_redirect: {add_from_redirect}")
 
         return True
-
     # ================================
     # Public API
     # ================================
