@@ -9,6 +9,7 @@ from flask import has_request_context, url_for
 
 logger = logging.getLogger(__name__)
 
+
 @dataclass
 class SidebarItem:
     """Sidebar menu item definition."""
@@ -26,6 +27,7 @@ def _safe_url_for(endpoint: str, fallback: str, **values) -> str:
     if has_request_context():
         return url_for(endpoint, **values)
     return fallback
+
 
 def generate_list_item(item: SidebarItem) -> str:
     """Generate HTML for a single navigation link."""
@@ -225,6 +227,7 @@ def load_menu() -> dict[str, list[SidebarItem]]:
 
     return main_menu
 
+
 def create_side(active_route: str, path: str | None = None) -> str:
     """Generate sidebar HTML structure based on menu definitions."""
     main_menu = load_menu()
@@ -246,6 +249,7 @@ def create_side(active_route: str, path: str | None = None) -> str:
     sidebar = model.create_side()
 
     return sidebar
+
 
 __all__ = [
     "SidebarItem",
