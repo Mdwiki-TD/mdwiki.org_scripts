@@ -76,7 +76,7 @@ class AddRColumn:
             return False
 
         all_cells = self._load_table_cells(table)
-        if all_cells:
+        if not all_cells:
             return False
 
         count = 0
