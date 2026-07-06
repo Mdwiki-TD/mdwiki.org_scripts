@@ -34,6 +34,7 @@ def _build_header_index(all_cells: list[list[Cell]]) -> dict[str, int]:
         break
     return header_index
 
+
 class AddRColumn:
     """Encapsulates logic for injecting/updating an 'R' column in wikitext tables."""
 
@@ -219,9 +220,13 @@ class AddRColumn:
         if not self._check_for_r_header(table):
             added = self._add_r_header_table(table)
 
-            # to reload table object
+            # NOTE: next step to solve this issue by reloading the table object
+            # wikitextparser/_table.py:261: in cells insort_right(spans, cell_span)
+            # TypeError: '<' not supported between instances of 'bytearray' and 'NoneType'
+
+            table_str = table.string
             if added:
-                table.string = table.string
+                table.string = table_str
 
         self._process_the_table(table)
 

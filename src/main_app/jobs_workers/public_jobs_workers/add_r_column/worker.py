@@ -147,7 +147,7 @@ class AddRColumnWorker(BaseObjectsJobWorker):
 
         # step 3 add empty R column
         try:
-            new_text = inject_r_column_into_tables(text, redirects={}, pages=[])
+            new_text = inject_r_column_into_tables(text)
             if not new_text:
                 raise Exception("No text")
         except Exception as exc:
@@ -161,15 +161,7 @@ class AddRColumnWorker(BaseObjectsJobWorker):
 
         if new_text != text:
             text = new_text
-            """
-            if not self._save_text(
-                new_text,
-                summary="Add R column",
-                step=self.result.steps.first_save,
-            ):
-                self._set_status_failed("Failed to save text")
-                return False
-            """
+
         # step 4 add R column
         old_counts = count_r_rows(text)
 

@@ -7,10 +7,11 @@ import wikitextparser as wtp
 from src.main_app.jobs_workers.public_jobs_workers.add_r_column.add_rtt import (
     R_NEW_ROW,
     AddRColumn,
+    _build_header_index,
     count_r_rows,
     inject_r_column_into_tables,
-    _build_header_index,
 )
+
 
 class TestBuildHeaderIndex:
     def test_build_header_index_maps_columns(self):
