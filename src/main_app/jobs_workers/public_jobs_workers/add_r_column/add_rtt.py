@@ -30,15 +30,10 @@ def _build_header_index(all_rows: list[list[Cell]]) -> dict[str, int]:
     return header_index
 
 
-def count_r_rows(text: str) -> int:
-    """Count the number of rows with R in the first column"""
-    return text.count(R_NEW_ROW.strip())
+def _check_for_r_header(table: wtp.Table) -> bool:
 
-
-def check_for_r_header(text: str, table: wtp.Table | bool = False) -> bool:
     if not table:
-        parsed = wtp.parse(text)
-        table = parsed.tables[0]
+        return False
 
     for x in table.cells():  # type: ignore
         if x[1].is_header:
@@ -46,20 +41,21 @@ def check_for_r_header(text: str, table: wtp.Table | bool = False) -> bool:
                 if v.value.strip() == "R":
                     logger.info(f"header has R: in column {numb}")
                     return True
-
     return False
 
 
-def add_r_header(text: str, table: wtp.Table | bool = False) -> str:
-    if not table:
-        parsed = wtp.parse(text)
-        table = parsed.tables[0]
+def count_r_rows(text: str) -> int:
+    """Count the number of rows with R in the first column"""
+    return text.count(R_NEW_ROW.strip())
+
+
+def _add_r_header(table: wtp.Table) -> str:
 
     if not table:
         return ""
 
     # Check if R column already exists
-    if check_for_r_header(text, table):
+    if _check_for_r_header(table):
         logger.info("R column already exists in table header")
         return table.string  # type: ignore
 
@@ -79,7 +75,7 @@ def add_r_header(text: str, table: wtp.Table | bool = False) -> str:
     return table.string  # type: ignore
 
 
-def process_table_rows(
+def _process_table_rows(
     table_text: str,
     redirects: dict,
     pages: set,
@@ -89,7 +85,7 @@ def process_table_rows(
     parsed = wtp.parse(table_text)
     table = parsed.tables[0]
 
-    if not check_for_r_header(table_text, table):
+    if not _check_for_r_header(table):
         logger.info("no R in table header!")
         return table_text
 
@@ -166,7 +162,7 @@ def process_table_rows(
     return table.string
 
 
-def add_to_tables(
+def inject_r_column_into_tables(
     text: str,
     redirects: dict,
     pages: list,
@@ -180,15 +176,15 @@ def add_to_tables(
 
     new_text = text
 
-    if not check_for_r_header(text, table):
-        new_text = add_r_header(text, table)
+    if not _check_for_r_header(table):
+        new_text = _add_r_header(table)
 
         if new_text == text:
             logger.info("Can't add R column to table!")
             return text
 
     if redirects or pages:
-        new_text = process_table_rows(
+        new_text = _process_table_rows(
             new_text,
             redirects,
             pages,
@@ -203,10 +199,13 @@ def add_to_tables(
     return _text
 
 
+class AddRColumn:
+    def __init__(self):
+        pass
+
+
 __all__ = [
-    "add_r_header",
-    "check_for_r_header",
-    "process_table_rows",
+    "AddRColumn",
     "count_r_rows",
-    "add_to_tables",
+    "inject_r_column_into_tables",
 ]

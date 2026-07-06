@@ -18,7 +18,7 @@ from mwclient.page import Page
 from ....api_services import MwClientPage, get_user_site
 from ....api_services.query_api import get_template_pages
 from ...base_worker_object import BaseObjectsJobWorker
-from .add_rtt import add_to_tables, count_r_rows
+from .add_rtt import count_r_rows, inject_r_column_into_tables
 from .objects import AddRColumnWorkerObject
 from .utils import fix_title
 
@@ -147,7 +147,7 @@ class AddRColumnWorker(BaseObjectsJobWorker):
 
         # step 3 add empty R column
         try:
-            new_text = add_to_tables(text, redirects={}, pages=[])
+            new_text = inject_r_column_into_tables(text, redirects={}, pages=[])
             if not new_text:
                 raise Exception("No text")
         except Exception as exc:
@@ -255,7 +255,7 @@ class AddRColumnWorker(BaseObjectsJobWorker):
         links = [fix_title(x.strip()) for x in links if x.find("|") == -1 and x not in template_pages]
 
         redirects = get_titles_redirects(titles=links, site=self.site)
-        newtext = add_to_tables(text, redirects, template_pages)
+        newtext = inject_r_column_into_tables(text, redirects, template_pages)
 
         return newtext
 

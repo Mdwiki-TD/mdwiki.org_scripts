@@ -5,57 +5,72 @@ from __future__ import annotations
 import wikitextparser as wtp
 
 from src.main_app.jobs_workers.public_jobs_workers.add_r_column.add_rtt import (
-    add_r_header,
-    add_to_tables,
-    check_for_r_header,
-    process_table_rows,
+    _add_r_header,
+    _check_for_r_header,
+    _process_table_rows,
+    count_r_rows,
+    inject_r_column_into_tables,
 )
 
 
-class TestAddToTables:
-    def test_add_to_tables_no_tables(self):
+class TestCountRRows:
+    def test_count_r_rows_no_tables(self):
         text = "Plain text"
-        assert add_to_tables(text, {}, []) == text
+        assert count_r_rows(text) == 0
 
-    def test_add_to_tables_with_table(self):
+
+class TestInjectRColumnIntoTables:
+    def test_inject_r_column_into_tables_no_tables(self):
+        text = "Plain text"
+        assert inject_r_column_into_tables(text, {}, []) == text
+
+    def test_inject_r_column_into_tables_with_table(self):
         text = '{| class="wikitable"\n! Header\n! Title\n|-\n| data\n| data\n|}'
-        # add_to_tables should add R column because it's missing
-        result = add_to_tables(text, {}, [])
+        # inject_r_column_into_tables should add R column because it's missing
+        result = inject_r_column_into_tables(text, {}, [])
         assert "! Header\n! R" in result
 
 
-class TestHeaderHasR:
+class TestCheckForRHeader:
     def test_header_has_r_true(self):
         table_text = '{| class="wikitable"\n! Header\n! R\n! Title\n|-\n| data\n| data\n| data\n|}'
-        assert check_for_r_header(table_text) is True
+        parsed = wtp.parse(table_text)
+        table = parsed.tables[0]
+        assert _check_for_r_header(table) is True
 
     def test_header_has_r_false(self):
         table_text = '{| class="wikitable"\n! Header\n! Other\n! Title\n|-\n| data\n| data\n| data\n|}'
-        assert check_for_r_header(table_text) is False
+        parsed = wtp.parse(table_text)
+        table = parsed.tables[0]
+        assert _check_for_r_header(table) is False
 
     def test_header_has_r_with_table_object(self):
         table_text = '{| class="wikitable"\n! Header\n! R\n! Title\n|-\n| data\n| data\n| data\n|}'
         table = wtp.parse(table_text).tables[0]
-        assert check_for_r_header(table_text, table=table) is True
+        assert _check_for_r_header(table=table) is True
 
 
-class TestAddHeaderR:
+class TestAddRHeader:
     def test_add_header_r_new(self):
         table_text = '{| class="wikitable"\n! Header\n! Title\n|-\n| data\n| data\n|}'
-        result = add_r_header(table_text)
+        parsed = wtp.parse(table_text)
+        table = parsed.tables[0]
+        result = _add_r_header(table)
         assert "! Header\n! R" in result
         assert "| data\n| " in result
 
     def test_add_header_r_already_exists(self):
         table_text = '{| class="wikitable"\n! Header\n! R\n! Title\n|-\n| data\n| data\n| data\n|}'
-        result = add_r_header(table_text)
+        parsed = wtp.parse(table_text)
+        table = parsed.tables[0]
+        result = _add_r_header(table)
         assert result == table_text
 
 
-class TestWorkOneTable:
+class TestProcessTableRows:
     def test_work_one_table_no_r_header(self):
         table_text = '{| class="wikitable"\n! Header\n! Title\n|-\n| data\n| data\n|}'
-        result = process_table_rows(
+        result = _process_table_rows(
             table_text,
             {},
             [],
@@ -69,7 +84,7 @@ class TestWorkOneTable:
         )
         redirects = {"Aspirin": "Aspirin"}
         pages = ["Aspirin"]
-        result = process_table_rows(
+        result = _process_table_rows(
             table_text,
             redirects,
             pages,
@@ -92,7 +107,7 @@ class TestWorkOneTable:
         table_text = '{| class="wikitable"\n! #\n! R\n! Title\n|-\n| 1\n| \n| [[Acetaminophen]]\n|}'
         redirects = {"Acetaminophen": "Paracetamol"}
         pages = ["Paracetamol"]
-        result = process_table_rows(
+        result = _process_table_rows(
             table_text,
             redirects,
             pages,
@@ -102,7 +117,7 @@ class TestWorkOneTable:
 
     def test_work_one_table_already_r(self):
         table_text = '{| class="wikitable"\n! #\n! R\n! Title\n|-\n| 1\n| R\n| [[Aspirin]]\n|}'
-        result = process_table_rows(
+        result = _process_table_rows(
             table_text,
             {},
             [],
@@ -111,7 +126,7 @@ class TestWorkOneTable:
         assert 'background:#C66A05" | R' in result
 
     def test_work_one_table_cell_error(self):
-        # Trigger Exception in process_table_rows loop
+        # Trigger Exception in _process_table_rows loop
         # try:
         #     title = x[2].value.strip()
         #     r_s = x[1].value.strip()
