@@ -6,7 +6,7 @@ import logging
 import wikitextparser as wtp
 from wikitextparser._cell import Cell
 
-from .utils import fix_title_new
+from .utils import fix_title
 
 logger = logging.getLogger(__name__)
 
@@ -189,7 +189,7 @@ class AddRColumn:
                 cell_errors += 1
                 continue
 
-            title = fix_title_new(cell_value)
+            title = fix_title(cell_value)
 
             title2 = self.redirects.get(title, title)
             if title in self.pages:
