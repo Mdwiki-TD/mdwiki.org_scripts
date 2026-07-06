@@ -144,12 +144,12 @@ class TestCheckForRHeader:
 class TestAddRHeader:
 
     def test_add_r_header_data_rows_get_blank_cell(self):
-        # _add_r_header only appends to the first cell (x[0]) of each row,
+        # _add_r_header_table only appends to the first cell (x[0]) of each row,
         # inserting a new second column; it does not touch every cell.
         table_text = '{| class="wikitable"\n! Header\n! Title\n|-\n| data1\n| data2\n|}'
         table = wtp.parse(table_text).tables[0]
         model = AddRColumn("")
-        _ = model._add_r_header(table)
+        _ = model._add_r_header_table(table)
         result = table.string
 
         assert "! Header\n! R" in result
@@ -160,7 +160,7 @@ class TestAddRHeader:
         table_text = "{| class='wikitable'\n! Header\n! Title\n|-\n| r1c1\n| r1c2\n|-\n| r2c1\n| r2c2\n|}"
         table = wtp.parse(table_text).tables[0]
         model = AddRColumn("")
-        _ = model._add_r_header(table)
+        _ = model._add_r_header_table(table)
         result = table.string
 
         assert result.count("! R") == 1
@@ -172,19 +172,19 @@ class TestAddRHeader:
         parsed = wtp.parse(table_text)
         table = parsed.tables[0]
         model = AddRColumn("")
-        _ = model._add_r_header(table)
+        _ = model._add_r_header_table(table)
         result = table.string
         assert "! Header\n! R" in result
         assert "| data\n| " in result
 
     def test_add_header_r_already_exists(self):
-        table_text = '{| class="wikitable"\n! Header\n! R\n! Title\n|-\n| data\n| data\n| data\n|}'
+        table_text = '{| class="wikitable"\n! Header\n! R\n! Title\n|-\n|data1\n|data2\n|data3\n|}'
         parsed = wtp.parse(table_text)
         table = parsed.tables[0]
         model = AddRColumn("")
-        _ = model._add_r_header(table)
+        _ = model._add_r_header_table(table)
         result = table.string
-        assert result == table_text
+        assert result == '{| class="wikitable"\n! Header\n! R\n! R\n! Title\n|-\n|data1\n| \n|data2\n|data3\n|}'
 
 
 class TestAddRColumnClass:

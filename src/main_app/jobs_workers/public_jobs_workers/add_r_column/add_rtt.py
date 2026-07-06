@@ -129,14 +129,6 @@ class AddRColumn:
         table.string = table_str
         return True
 
-    def _add_r_header(self, table: wtp.Table):
-        # Check if R column already exists
-        if self._check_for_r_header(table):
-            logger.info("R column already exists in table header")
-            return
-
-        self._add_r_header_table(table)
-
     def _process_table(
         self,
         table: wtp.Table,
