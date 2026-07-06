@@ -47,9 +47,16 @@ class TestAddRColumnWorker:
         return AddRColumnWorker(job_id=1, args={}, user={"username": "test_user"})
 
     @patch("src.main_app.jobs_workers.public_jobs_workers.add_r_column.worker.get_user_site")
+    def test_process_no_site(self, mock_get_user_site, worker):
+        mock_get_user_site.return_value = None
+        # When no site, BaseObjectsJobWorker.log_no_site_error sets status to failed
+        result = worker.process()
+        assert result.status == "failed"
+
+    @patch("src.main_app.jobs_workers.public_jobs_workers.add_r_column.worker.get_user_site")
     @patch("src.main_app.jobs_workers.public_jobs_workers.add_r_column.worker.MwClientPage")
     @patch("src.main_app.jobs_workers.public_jobs_workers.add_r_column.worker.get_template_pages")
-    def test_process_success(self, mock_get_template_pages, mock_mw_client_page, mock_get_user_site, worker):
+    def test_process_success(self, mock_get_template_pages, mock_mw_client_page, mock_get_user_site, worker: AddRColumnWorker):
         mock_site = MagicMock()
         mock_get_user_site.return_value = mock_site
 
@@ -60,7 +67,7 @@ class TestAddRColumnWorker:
         mock_page_obj.load_page.return_value = mock_mw_page
         mock_page_obj.check_exists.return_value = True
         mock_mw_page.text.return_value = (
-            '== List ==\n{| class="wikitable"\n! #\n! R\n! Title\n|-\n| 1\n| \n| [[Aspirin]]\n|}'
+            '== List ==\n{| class="wikitable"\n! #\n! R\n! Page title\n|-\n| 1\n| \n| [[Aspirin]]\n|}'
         )
 
         mock_get_template_pages.return_value = ["Aspirin"]
@@ -72,14 +79,8 @@ class TestAddRColumnWorker:
 
         result = worker.process()
 
-        assert result.status == "completed"
         assert result.steps.load_page.status == "completed"
         assert result.steps.final_save.status == "completed"
         assert result.steps.final_save.newrevid == 123
 
-    @patch("src.main_app.jobs_workers.public_jobs_workers.add_r_column.worker.get_user_site")
-    def test_process_no_site(self, mock_get_user_site, worker):
-        mock_get_user_site.return_value = None
-        # When no site, BaseObjectsJobWorker.log_no_site_error sets status to failed
-        result = worker.process()
-        assert result.status == "failed"
+        assert result.status == "completed"

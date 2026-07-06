@@ -25,7 +25,7 @@ for arg in sys.argv:
 
 def work(title, num, length, title_from=""):
     # ---
-    logger.info(f'-------------------------------------------\n*<<yellow>> >{num}/{length} title:"{title}".')
+    logger.info(f'-------------------------------------------\n*{num}/{length} title:"{title}".')
     # ---
     if num < offset[1]:
         return ""
@@ -45,7 +45,7 @@ def work(title, num, length, title_from=""):
     # ---
     done = ing.get("import", [{}])[0].get("revisions", 0)
     # ---
-    logger.info(f"<<green>> imported {done} revisions")
+    logger.info(f"imported {done} revisions")
     # ---
     if done > 0:
         # ---
@@ -59,7 +59,7 @@ def work(title, num, length, title_from=""):
 
 
 def main():
-    logger.info("*<<red>> > :")
+    logger.info("*")
     # ---
     api_new = NewApi("www", family="mdwiki")
     # python3 imp.py -page:Crohn's_disease

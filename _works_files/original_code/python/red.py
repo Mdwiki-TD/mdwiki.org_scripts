@@ -98,7 +98,7 @@ def get_red(title):
 
 def work(title, num, length, title_from=""):
     # ---
-    logger.info(f'-------------------------------------------\n*<<yellow>> >{num}/{length} title:"{title}".')
+    logger.info(f'-------------------------------------------\n*{num}/{length} title:"{title}".')
     # ---
     api_new = NewApi("www", family="mdwiki")
     # ---
@@ -138,7 +138,7 @@ def work(title, num, length, title_from=""):
 
 
 def main():
-    logger.info("*<<red>> > :")
+    logger.info("*")
     # ---
     api_new = NewApi("www", family="mdwiki")
     # ---

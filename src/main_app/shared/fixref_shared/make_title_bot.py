@@ -61,7 +61,7 @@ globalbadtitles = r"""
 def make_title(url: str) -> str:
     url = url.strip()
     if not url:
-        logger.info("<<red>> url = '' return False")
+        logger.info("url = '' return False")
         return ""
 
     url2 = quote(url)
@@ -77,10 +77,10 @@ def make_title(url: str) -> str:
 
     titleBlackList = re.compile(globalbadtitles, re.I | re.S | re.X)
     if titleBlackList.match(title):
-        logger.error(f"<<red>> WARNING<<default>> {url} : Blacklisted title ({title})")
+        logger.error(f"{url} : Blacklisted title ({title})")
 
     if title:
-        logger.info(f"<<green>> make_title_bot: newtitle: ({title})")
+        logger.info(f"newtitle: ({title})")
 
     return title
 
