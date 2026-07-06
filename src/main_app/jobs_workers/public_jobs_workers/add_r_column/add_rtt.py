@@ -118,9 +118,11 @@ class AddRColumn:
 
         logger.info(f"Added R column to table header in {count} cells")
 
-        # NOTE: We have changed the table stracture so we need to rebuild the table object
-        # or we will face this issue:
-        # wikitextparser/_table.py:261: in cells insort_right(spans, cell_span)
+        # NOTE: Adding new cell delimiters (\n! or \n|) directly into the cell value
+        # alters the table structure dynamically. We must re-assign 'table.string'
+        # to force wikitextparser to re-parse the text and register the new cells.
+        # Otherwise, the internal span tracking breaks, causing the following error
+        # in wikitextparser/_table.py:261 (in cells insort_right):
         # TypeError: '<' not supported between instances of 'bytearray' and 'NoneType'
 
         table_str = table.string
@@ -216,7 +218,6 @@ class AddRColumn:
 
     def count_r_rows(self) -> int:
         return count_r_rows(self.text)
-
 
     def ensure_table_has_r_column(self, table) -> bool:
         if self._check_for_r_header(table):
