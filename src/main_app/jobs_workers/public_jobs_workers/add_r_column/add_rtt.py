@@ -31,7 +31,6 @@ def _build_header_index(all_rows: list[list[Cell]]) -> dict[str, int]:
 
 
 def _check_for_r_header(table: wtp.Table) -> bool:
-
     if not table:
         return False
 
@@ -211,36 +210,12 @@ def inject_r_column_into_tables(
     redirects: dict,
     pages: list,
 ) -> str:
-    parsed = wtp.parse(text)
-
-    if not parsed.tables:
-        return text
-
-    table = parsed.tables[0]
-
-    new_text = text
-
-    if not _check_for_r_header(table):
-        new_text = _add_r_header(table)
-
-        if new_text == text:
-            logger.info("Can't add R column to table!")
-            return text
-
-    if redirects or pages:
-        new_text = _process_table_rows(
-            new_text,
-            redirects,
-            pages,
-            r_header="R",
-            title_header="Page title",
-        )
-
-    table.string = new_text
-
-    _text = parsed.string
-
-    return _text
+    model = AddRColumn(
+        text,
+        redirects,
+        pages,
+    )
+    return model.inject_r_column()
 
 
 __all__ = [
