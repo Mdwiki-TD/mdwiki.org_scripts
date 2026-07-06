@@ -19,8 +19,9 @@ from mwclient.page import Page
 from ....api_services import MwClientPage, get_user_site
 from ....api_services.query_api import get_template_pages
 from ...base_worker_object import BaseObjectsJobWorker
-from .add_rtt import R_NEW_ROW, add_header_r, fix_title, header_has_r, process_table_rows
+from .add_rtt import R_NEW_ROW, add_header_r, header_has_r, process_table_rows
 from .objects import AddRColumnWorkerObject
+from .utils import fix_title
 
 logger = logging.getLogger(__name__)
 
@@ -51,9 +52,9 @@ def add_to_tables(
             new_text,
             redirects,
             pages,
-            r_header = "R",
-            title_header = "Page title",
-    )
+            r_header="R",
+            title_header="Page title",
+        )
 
     table.string = new_text
 

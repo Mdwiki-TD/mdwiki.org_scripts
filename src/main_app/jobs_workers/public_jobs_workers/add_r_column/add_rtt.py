@@ -7,16 +7,11 @@ from typing import Any
 import wikitextparser as wtp
 from wikitextparser._cell import Cell
 
+from .utils import fix_title
+
 logger = logging.getLogger(__name__)
 
 R_NEW_ROW = '\n| style="text-align:center; white-space:nowrap; font-weight:bold; background:#C66A05" | R'
-
-
-def fix_title(title: str) -> str:
-    title = title.replace("[[", "").replace("]]", "")
-    title = title.replace("&#039;", "'")
-
-    return title
 
 
 def header_has_r(text: str, table: wtp.Table | bool = False) -> bool:
@@ -124,17 +119,17 @@ def process_table_rows(
 
     data = table.data()
 
-    for n, x in enumerate(all_rows):
-        if not x or x[0] is None or x[0].is_header:
+    for n, row_cells in enumerate(all_rows):
+        if not row_cells or row_cells[0] is None or row_cells[0].is_header:
             continue
 
         # Skip rows that are too short to contain both required columns
-        if max(r_idx, title_idx) >= len(x) or x[r_idx] is None or x[title_idx] is None:
+        if max(r_idx, title_idx) >= len(row_cells) or row_cells[r_idx] is None or row_cells[title_idx] is None:
             continue
 
         try:
-            title = x[title_idx].value.strip()
-            r_s = x[r_idx].value.strip()
+            title = row_cells[title_idx].value.strip()
+            r_s = row_cells[r_idx].value.strip()
         except Exception:
             logger.warning(f"cell error: {n}")
             numb = data[n][title_idx]
@@ -145,17 +140,17 @@ def process_table_rows(
         title2 = redirects.get(title, title)
 
         if r_s == "R":
-            x[r_idx].string = R_NEW_ROW
+            row_cells[r_idx].string = R_NEW_ROW
 
             already_in.append(title)
             continue
 
         if title in pages:
-            x[r_idx].string = R_NEW_ROW
+            row_cells[r_idx].string = R_NEW_ROW
 
             add_done.append(title)
         elif title2 in pages:
-            x[r_idx].string = R_NEW_ROW
+            row_cells[r_idx].string = R_NEW_ROW
             add_from_redirect.append(title)
         else:
             no_add.append(title)
