@@ -67,7 +67,7 @@ class TestAddRColumnWorker:
         mock_page_obj.load_page.return_value = mock_mw_page
         mock_page_obj.check_exists.return_value = True
         mock_mw_page.text.return_value = (
-            '== List ==\n{| class="wikitable"\n! #\n! R\n! Title\n|-\n| 1\n| \n| [[Aspirin]]\n|}'
+            '== List ==\n{| class="wikitable"\n! #\n! R\n! Page title\n|-\n| 1\n| \n| [[Aspirin]]\n|}'
         )
 
         mock_get_template_pages.return_value = ["Aspirin"]

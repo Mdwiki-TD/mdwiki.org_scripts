@@ -12,7 +12,7 @@ logger = logging.getLogger(__name__)
 R_NEW_ROW = '\n| style="text-align:center; white-space:nowrap; font-weight:bold; background:#C66A05" | R'
 
 
-def fix_title(title):
+def fix_title(title: str) -> str:
     title = title.replace("[[", "").replace("]]", "")
     title = title.replace("&#039;", "'")
 

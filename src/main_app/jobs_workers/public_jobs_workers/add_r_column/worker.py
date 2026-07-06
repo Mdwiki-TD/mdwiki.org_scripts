@@ -47,7 +47,13 @@ def add_to_tables(
             return text
 
     if redirects or pages:
-        new_text = work_one_table(new_text, redirects, pages)
+        new_text = work_one_table(
+            new_text,
+            redirects,
+            pages,
+            r_header = "R",
+            title_header = "Page title",
+    )
 
     table.string = new_text
 
