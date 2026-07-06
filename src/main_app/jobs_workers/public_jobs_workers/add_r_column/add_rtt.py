@@ -91,7 +91,7 @@ class AddRColumn:
         table: wtp.Table,
         r_header: str = "R",
         title_header: str = "Page title",
-    ) -> str:
+    ) -> bool:
         if not self._check_for_r_header(table):
             logger.info("no R in table header!")
             return False
@@ -168,37 +168,24 @@ class AddRColumn:
 
         return True
 
-    def _process_table_rows(
-        self,
-        table_text: str,
-        r_header: str = "R",
-        title_header: str = "Page title",
-    ) -> str:
-        parsed = wtp.parse(table_text)
-        table = parsed.tables[0]
-        changed = self._process_table(table, r_header, title_header)
-
-        if changed:
-            logger.info("Table changed!")
-
-        return table.string
-
     def count_r_rows(self) -> int:
         return count_r_rows(self.text)
 
-    def _load_table_new_text(self, table: wtp.Table) -> bool:
+    def _process_the_table(self, table: wtp.Table) -> bool:
         if not self._check_for_r_header(table):
             logger.info("Can't add R column to table!")
             return False
 
-        if self.redirects or self.pages:
-            changed = self._process_table(
-                table,
-                r_header="R",
-                title_header="Page title",
-            )
-            if changed:
-                logger.info("Table changed!")
+        if not self.redirects and not self.pages:
+            return False
+
+        changed = self._process_table(
+            table,
+            r_header="R",
+            title_header="Page title",
+        )
+        if changed:
+            logger.info("Table changed!")
 
         return True
 
@@ -213,10 +200,7 @@ class AddRColumn:
         if not self._check_for_r_header(table):
             self._add_r_header_table(table)
 
-        table_changed = self._load_table_new_text(table)
-
-        if table_changed:
-            logger.info("Table changed!")
+        self._process_the_table(table)
 
         return parsed.string
 

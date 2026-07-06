@@ -16,7 +16,48 @@ def make_model(text: str = "", redirects: dict | None = None, pages: list | None
     return AddRColumn(text, redirects or {}, pages or [])
 
 
+class TestBuildHeaderIndex:
+    def test_build_header_index_maps_columns(self):
+        table_text = '{| class="wikitable"\n! #\n! R\n! Page title\n|-\n| 1\n| \n| [[Aspirin]]\n|}'
+        table = wtp.parse(table_text).tables[0]
+        rows = table.cells()
+        model = make_model()
+        index = model._build_header_index(rows)
+        assert index == {"#": 0, "R": 1, "Page title": 2}
+
+    def test_build_header_index_no_header_row(self):
+        table_text = '{| class="wikitable"\n|-\n| 1\n| 2\n|}'
+        table = wtp.parse(table_text).tables[0]
+        rows = table.cells()
+        model = make_model()
+        index = model._build_header_index(rows)
+        assert index == {}
+
+    def test_build_header_index_only_uses_first_header_row(self):
+        table_text = '{| class="wikitable"\n! A\n! B\n|-\n| 1\n| 2\n|}'
+        table = wtp.parse(table_text).tables[0]
+        rows = table.cells()
+        model = make_model()
+        index = model._build_header_index(rows)
+        assert index == {"A": 0, "B": 1}
+
+
 class TestCountRRows:
+    def test_count_r_rows_multiple_occurrences(self):
+        text = R_NEW_ROW + "some content" + R_NEW_ROW + "more" + R_NEW_ROW
+        assert count_r_rows(text) == 3
+
+    def test_count_r_rows_zero_when_absent(self):
+        text = '{| class="wikitable"\n! Header\n! Title\n|-\n| data\n| data\n|}'
+        assert count_r_rows(text) == 0
+
+    def test_count_r_rows_exact_marker_string(self):
+        assert count_r_rows(R_NEW_ROW.strip()) == 1
+
+    def test_count_r_rows_uses_instance_text(self):
+        model = make_model(R_NEW_ROW * 4)
+        assert model.count_r_rows() == 4
+
     def test_count_r_rows_no_tables(self):
         text = "Plain text"
         assert count_r_rows(text) == 0
@@ -33,8 +74,54 @@ class TestInjectRColumnIntoTables:
         result = inject_r_column_into_tables(text, {}, [])
         assert "! Header\n! R" in result
 
+    def test_inject_only_affects_first_table_when_multiple_present(self):
+        text = (
+            '{| class="wikitable"\n! Header\n! Title\n|-\n| data\n| data\n|}\n'
+            "Some text between tables\n"
+            '{| class="wikitable"\n! Header2\n! Title2\n|-\n| data2\n| data2\n|}'
+        )
+        result = inject_r_column_into_tables(text, {}, [])
+        assert "! Header\n! R" in result
+        assert "! Header2\n! Title2" in result
+        assert "! Header2\n! R" not in result
+
+    def test_inject_skips_row_processing_when_no_redirects_and_no_pages(self):
+        text = '{| class="wikitable"\n! #\n! R\n! Title\n|-\n| 1\n| \n| [[Aspirin]]\n|}'
+        result = inject_r_column_into_tables(text, {}, [])
+        assert result == text
+
+    def test_inject_with_default_title_header_page_title(self):
+        text = '{| class="wikitable"\n! #\n! Page title\n|-\n| 1\n| [[Aspirin]]\n|}'
+        result = inject_r_column_into_tables(text, {}, ["Aspirin"])
+        assert "! R" in result
+        assert "background:#C66A05" in result
+
+    def test_inject_with_empty_string(self):
+        assert inject_r_column_into_tables("", {}, []) == ""
+
+    def test_inject_returns_text_unchanged_when_header_cannot_be_added(self):
+        text = '{| class="wikitable"\n|-\n| onlydata\n| morestuff\n|}'
+        result = inject_r_column_into_tables(text, {}, [])
+        assert result != text
+
 
 class TestCheckForRHeader:
+    def test_check_for_r_header_none_table(self):
+        model = make_model()
+        assert model._check_for_r_header(None) is False
+
+    def test_check_for_r_header_r_present(self):
+        table_text = '{| class="wikitable"\n! Header\n! R\n! Title\n|-\n| data\n| data\n| data\n|}'
+        table = wtp.parse(table_text).tables[0]
+        model = make_model()
+        assert model._check_for_r_header(table) is True
+
+    def test_check_for_r_header_empty_table_no_rows(self):
+        table_text = '{| class="wikitable"\n|}'
+        table = wtp.parse(table_text).tables[0]
+        model = make_model()
+        assert model._check_for_r_header(table) is False
+
     def test_header_has_r_true(self):
         table_text = '{| class="wikitable"\n! Header\n! R\n! Title\n|-\n| data\n| data\n| data\n|}'
         parsed = wtp.parse(table_text)
@@ -57,6 +144,31 @@ class TestCheckForRHeader:
 
 
 class TestAddRHeader:
+
+    def test_add_r_header_data_rows_get_blank_cell(self):
+        # _add_r_header only appends to the first cell (x[0]) of each row,
+        # inserting a new second column; it does not touch every cell.
+        table_text = '{| class="wikitable"\n! Header\n! Title\n|-\n| data1\n| data2\n|}'
+        table = wtp.parse(table_text).tables[0]
+        model = make_model()
+        _ = model._add_r_header(table)
+        result = table.string
+
+        assert "! Header\n! R" in result
+        assert "| data1\n| " in result
+        assert "| data2" in result
+
+    def test_add_r_header_multiple_data_rows(self):
+        table_text = "{| class='wikitable'\n! Header\n! Title\n|-\n| r1c1\n| r1c2\n|-\n| r2c1\n| r2c2\n|}"
+        table = wtp.parse(table_text).tables[0]
+        model = make_model()
+        _ = model._add_r_header(table)
+        result = table.string
+
+        assert result.count("! R") == 1
+        assert "| r1c1\n| " in result
+        assert "| r2c1\n| " in result
+
     def test_add_header_r_new(self):
         table_text = '{| class="wikitable"\n! Header\n! Title\n|-\n| data\n| data\n|}'
         parsed = wtp.parse(table_text)
@@ -75,80 +187,6 @@ class TestAddRHeader:
         _ = model._add_r_header(table)
         result = table.string
         assert result == table_text
-
-
-class TestProcessTableRows:
-    def test_work_one_table_no_r_header(self):
-        table_text = '{| class="wikitable"\n! Header\n! Title\n|-\n| data\n| data\n|}'
-        model = make_model(table_text, {}, [])
-        result = model._process_table_rows(
-            table_text,
-            title_header="Title",
-        )
-        assert result == table_text
-
-    def test_work_one_table_updates_cells(self):
-        table_text = (
-            '{| class="wikitable"\n! #\n! R\n! Title\n|-\n| 1\n| \n| [[Aspirin]]\n|-\n| 2\n| \n| [[Paracetamol]]\n|}'
-        )
-        redirects = {"Aspirin": "Aspirin"}
-        pages = ["Aspirin"]
-        model = make_model(table_text, redirects, pages)
-        result = model._process_table_rows(
-            table_text,
-            title_header="Title",
-        )
-
-        assert 'background:#C66A05" | R' in result
-        assert "[[Aspirin]]" in result
-        assert "[[Paracetamol]]" in result
-
-        parsed = wtp.parse(result)
-        cells = parsed.tables[0].cells()
-        # Row 1 (data): cells[1] is list of Cells for the first data row
-        # cells[1][1] is the 'R' cell
-        assert 'background:#C66A05" | R' in cells[1][1].string  # type: ignore
-        # cells[2][1] should NOT be updated (it's for Paracetamol)
-        assert 'background:#C66A05" | R' not in cells[2][1].string  # type: ignore
-
-    def test_work_one_table_with_redirects(self):
-        table_text = '{| class="wikitable"\n! #\n! R\n! Title\n|-\n| 1\n| \n| [[Acetaminophen]]\n|}'
-        redirects = {"Acetaminophen": "Paracetamol"}
-        pages = ["Paracetamol"]
-        model = make_model(table_text, redirects, pages)
-        result = model._process_table_rows(
-            table_text,
-            title_header="Title",
-        )
-        assert 'background:#C66A05" | R' in result
-
-    def test_work_one_table_already_r(self):
-        table_text = '{| class="wikitable"\n! #\n! R\n! Title\n|-\n| 1\n| R\n| [[Aspirin]]\n|}'
-        model = make_model(table_text, {}, [])
-        result = model._process_table_rows(
-            table_text,
-            title_header="Title",
-        )
-        assert 'background:#C66A05" | R' in result
-
-    def test_work_one_table_cell_error(self):
-        # Trigger Exception in _process_table_rows loop
-        # try:
-        #     title = x[2].value.strip()
-        #     r_s = x[1].value.strip()
-        # except Exception:
-        # To trigger this, a row must have at least 3 cells (len(x) < 3 is checked), but access might fail?
-        # Actually len(x) < 3 is checked first. So x must have 3 cells.
-        # Maybe x[2].value fails? Unlikely if it is a Cell object.
-        # Wait, the code says:
-        # for n, x in enumerate(tqdm.tqdm(table.cells())):
-        # x is a row (list of cells).
-        # x[2] is the 3rd cell.
-        # x[1] is the 2nd cell.
-        # If a row has only 2 cells, it continues.
-        # How to trigger exception?
-        # Maybe if x[2] exists but value property fails?
-        pass
 
 
 class TestAddRColumnClass:
@@ -174,3 +212,27 @@ class TestAddRColumnClass:
     def test_module_level_inject_delegates_to_instance_run(self):
         text = '{| class="wikitable"\n! Header\n! Title\n|-\n| data\n| data\n|}'
         assert inject_r_column_into_tables(text, {}, []) == AddRColumn(text, {}, []).run()
+
+
+class TestAddRColumnRunMethod:
+    def test_run_uses_instance_state_directly(self):
+        text = '{| class="wikitable"\n! #\n! Page title\n|-\n| 1\n| [[Aspirin]]\n|}'
+        model = AddRColumn(text, {}, ["Aspirin"])
+        result = model.run()
+        assert "! R" in result
+        assert "background:#C66A05" in result
+
+    def test_run_no_tables_returns_original_text(self):
+        model = AddRColumn("Plain text", {}, [])
+        assert model.run() == "Plain text"
+
+    def test_two_instances_are_independent(self):
+        text1 = '{| class="wikitable"\n! #\n! Page title\n|-\n| 1\n| [[Aspirin]]\n|}'
+        text2 = '{| class="wikitable"\n! #\n! Page title\n|-\n| 1\n| [[Ibuprofen]]\n|}'
+        model1 = AddRColumn(text1, {}, ["Aspirin"])
+        model2 = AddRColumn(text2, {}, ["Ibuprofen"])
+        result1 = model1.run()
+        result2 = model2.run()
+        assert "background:#C66A05" in result1
+        assert "background:#C66A05" in result2
+        assert model1.text != model2.text
