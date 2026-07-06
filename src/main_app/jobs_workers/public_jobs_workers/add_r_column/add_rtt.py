@@ -55,6 +55,27 @@ class AddRColumn:
             logger.error(f"error getting cells: {exc}")
             return False
 
+    def _count_r_header(self, table: wtp.Table) -> int:
+        if not table or not isinstance(table, wtp.Table):
+            logger.info("no table found")
+            return 0
+
+        all_cells = self._load_table_cells(table)
+
+        if not all_cells:
+            return 0
+
+        numbs = 0
+        for x in all_cells:
+            # we don't need to count headers here
+            if x[1].is_header:
+                continue
+
+            for v in x:
+                if v.value.strip() == "R":
+                    numbs += 1
+        return False
+
     def _check_for_r_header(self, table: wtp.Table) -> bool:
         if not table or not isinstance(table, wtp.Table):
             logger.info("no table found")
@@ -62,13 +83,18 @@ class AddRColumn:
 
         all_cells = self._load_table_cells(table)
 
-        if all_cells:
-            for x in all_cells:
-                if x[1].is_header:
-                    for numb, v in enumerate(x, 1):
-                        if v.value.strip() == "R":
-                            logger.info(f"header has R: in column {numb}")
-                            return True
+        if not all_cells:
+            return False
+
+        for x in all_cells:
+            # we need to check only headers
+            if not x[1].is_header:
+                continue
+
+            for numb, v in enumerate(x, start=1):
+                if v.value.strip() == "R":
+                    logger.info(f"header has R: in column {numb}")
+                    return True
         return False
 
     def _add_r_header_table(self, table: wtp.Table) -> bool:
@@ -83,12 +109,22 @@ class AddRColumn:
         # add R to header in 2nd column
         for x in all_cells:
             count += 1
-            if x[0].is_header:
-                x[0].value = x[0].value + "\n! R"
-            else:
-                x[0].value = x[0].value + "\n| "
+
+            # in header add the column R, in other rows add empty cell
+            cell_str = "\n! R" if x[0].is_header else "\n| "
+
+            # add cell_str after first cell
+            x[0].value = x[0].value + cell_str
 
         logger.info(f"Added R column to table header in {count} cells")
+
+        # NOTE: We have changed the table stracture so we need to rebuild the table object
+        # or we will face this issue:
+        # wikitextparser/_table.py:261: in cells insort_right(spans, cell_span)
+        # TypeError: '<' not supported between instances of 'bytearray' and 'NoneType'
+
+        table_str = table.string
+        table.string = table_str
         return True
 
     def _add_r_header(self, table: wtp.Table):
@@ -187,16 +223,7 @@ class AddRColumn:
             return False
 
         added = self._add_r_header_table(table)
-        if not added:
-            return False
-
-        # NOTE: next step to solve this issue by reloading the table object
-        # wikitextparser/_table.py:261: in cells insort_right(spans, cell_span)
-        # TypeError: '<' not supported between instances of 'bytearray' and 'NoneType'
-        table_str = table.string
-        table.string = table_str
-
-        return True
+        return added
 
     def run(self) -> str:
         parsed = wtp.parse(self.text)
