@@ -8,21 +8,8 @@ import pytest
 
 from src.main_app.jobs_workers.public_jobs_workers.add_r_column.worker import (
     AddRColumnWorker,
-    add_to_tables,
     get_titles_redirects,
 )
-
-
-def test_add_to_tables_no_tables():
-    text = "Plain text"
-    assert add_to_tables(text, {}, []) == text
-
-
-def test_add_to_tables_with_table():
-    text = '{| class="wikitable"\n! Header\n! Title\n|-\n| data\n| data\n|}'
-    # add_to_tables should add R column because it's missing
-    result = add_to_tables(text, {}, [])
-    assert "! Header\n! R" in result
 
 
 def test_get_titles_redirects():
@@ -56,7 +43,9 @@ class TestAddRColumnWorker:
     @patch("src.main_app.jobs_workers.public_jobs_workers.add_r_column.worker.get_user_site")
     @patch("src.main_app.jobs_workers.public_jobs_workers.add_r_column.worker.MwClientPage")
     @patch("src.main_app.jobs_workers.public_jobs_workers.add_r_column.worker.get_template_pages")
-    def test_process_success(self, mock_get_template_pages, mock_mw_client_page, mock_get_user_site, worker: AddRColumnWorker):
+    def test_process_success(
+        self, mock_get_template_pages, mock_mw_client_page, mock_get_user_site, worker: AddRColumnWorker
+    ):
         mock_site = MagicMock()
         mock_get_user_site.return_value = mock_site
 

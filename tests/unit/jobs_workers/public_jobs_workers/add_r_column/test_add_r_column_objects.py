@@ -74,7 +74,7 @@ class TestAddRColumnWorkerObject:
         assert obj.steps.add_r_column.status == "skipped"
 
     def test_to_json(self):
-        obj = AddRColumnWorkerObject(status="running", new_text="some text")
+        obj = AddRColumnWorkerObject(status="running", new_text="some text")  # type: ignore
         d = obj.to_json()
         assert d["status"] == "running"
         assert d["new_text"] == "some text"

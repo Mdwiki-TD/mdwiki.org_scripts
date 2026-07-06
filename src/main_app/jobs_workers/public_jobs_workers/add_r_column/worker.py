@@ -12,54 +12,17 @@ import threading
 from datetime import datetime
 from typing import Any, Dict
 
-import wikitextparser as wtp
 from mwclient.client import Site
 from mwclient.page import Page
 
 from ....api_services import MwClientPage, get_user_site
 from ....api_services.query_api import get_template_pages
 from ...base_worker_object import BaseObjectsJobWorker
-from .add_rtt import R_NEW_ROW, add_header_r, fix_title, header_has_r, work_one_table
+from .add_rtt import count_r_rows, inject_r_column_into_tables
 from .objects import AddRColumnWorkerObject
+from .utils import fix_title
 
 logger = logging.getLogger(__name__)
-
-
-def add_to_tables(
-    text: str,
-    redirects: dict,
-    pages: list,
-) -> str:
-    parsed = wtp.parse(text)
-
-    if not parsed.tables:
-        return text
-
-    table = parsed.tables[0]
-
-    new_text = text
-
-    if not header_has_r(text, table):
-        new_text = add_header_r(text, table)
-
-        if new_text == text:
-            logger.info("Can't add R column to table!")
-            return text
-
-    if redirects or pages:
-        new_text = work_one_table(
-            new_text,
-            redirects,
-            pages,
-            r_header = "R",
-            title_header = "Page title",
-    )
-
-    table.string = new_text
-
-    _text = parsed.string
-
-    return _text
 
 
 def get_titles_redirects(
@@ -184,7 +147,7 @@ class AddRColumnWorker(BaseObjectsJobWorker):
 
         # step 3 add empty R column
         try:
-            new_text = add_to_tables(text, redirects={}, pages=[])
+            new_text = inject_r_column_into_tables(text)
             if not new_text:
                 raise Exception("No text")
         except Exception as exc:
@@ -198,17 +161,9 @@ class AddRColumnWorker(BaseObjectsJobWorker):
 
         if new_text != text:
             text = new_text
-            """
-            if not self._save_text(
-                new_text,
-                summary="Add R column",
-                step=self.result.steps.first_save,
-            ):
-                self._set_status_failed("Failed to save text")
-                return False
-            """
+
         # step 4 add R column
-        old_counts = text.count(R_NEW_ROW.strip())
+        old_counts = count_r_rows(text)
 
         newtext = None
         try:
@@ -229,8 +184,7 @@ class AddRColumnWorker(BaseObjectsJobWorker):
             logger.info("no changes")
             return False
 
-        # count R_NEW_ROW in newtext
-        counts = newtext.count(R_NEW_ROW.strip()) - old_counts
+        counts = count_r_rows(newtext) - old_counts
 
         # step 6 save new texg to page
         summary = f"Added R column to {counts} titles."
@@ -293,7 +247,7 @@ class AddRColumnWorker(BaseObjectsJobWorker):
         links = [fix_title(x.strip()) for x in links if x.find("|") == -1 and x not in template_pages]
 
         redirects = get_titles_redirects(titles=links, site=self.site)
-        newtext = add_to_tables(text, redirects, template_pages)
+        newtext = inject_r_column_into_tables(text, redirects, template_pages)
 
         return newtext
 

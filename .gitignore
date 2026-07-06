@@ -19,3 +19,4 @@ righttyper.log
 run_tests.py
 righttyper.out
 /.commandcode
+*.isorted
