@@ -246,16 +246,16 @@ class TestAddRColumnRunMethod:
     def test_with_r_column(self):
         table_text = (
             '{| class="wikitable sortable"\n'
-            '! #\n'
-            '! R\n'
-            '! Page title\n'
-            '|-\n'
-            '| 1\n'
-            '| \n'
-            '| [[Aspirin]]\n'
-            '|}\n'
-            '\n\n'
-            'test!!'
+            "! #\n"
+            "! R\n"
+            "! Page title\n"
+            "|-\n"
+            "| 1\n"
+            "| \n"
+            "| [[Aspirin]]\n"
+            "|}\n"
+            "\n\n"
+            "test!!"
         )
         model = AddRColumn(table_text, {}, ["Aspirin"])
         result = model.run()

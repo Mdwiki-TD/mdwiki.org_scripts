@@ -8,6 +8,7 @@ from src.main_app.jobs_workers.public_jobs_workers.add_r_column.add_rtt import (
     AddRColumn,
 )
 
+
 def _process_table_rows(
     model: AddRColumn,
     table_text: str,
@@ -71,6 +72,7 @@ class TestProcessTableRowsExtra:
         assert "! #" in result
         assert "! R" in result
         assert "! Title" in result
+
 
 class TestProcessTableRows:
     def test_work_one_table_no_r_header(self):

@@ -130,6 +130,17 @@ class AddRColumn:
         table.string = table_str
         return True
 
+    def _ensure_table_has_r_column(self, table) -> bool:
+        if self._check_for_r_header(table):
+            return False
+
+        added = self._add_r_header_table(table)
+        return added
+
+    # ================================
+    # Main function
+    # ================================
+
     def _process_table(
         self,
         table: wtp.Table,
@@ -207,15 +218,12 @@ class AddRColumn:
 
         return True
 
+    # ================================
+    # Public API
+    # ================================
+
     def count_r_rows(self) -> int:
         return count_r_rows(self.text)
-
-    def ensure_table_has_r_column(self, table) -> bool:
-        if self._check_for_r_header(table):
-            return False
-
-        added = self._add_r_header_table(table)
-        return added
 
     def run(self) -> str:
         parsed = wtp.parse(self.text)
@@ -228,7 +236,7 @@ class AddRColumn:
         table = parsed.tables[0]
 
         # check if R column exists or add it
-        added = self.ensure_table_has_r_column(table)
+        added = self._ensure_table_has_r_column(table)
 
         # update self.text after adding R column
         if added:
