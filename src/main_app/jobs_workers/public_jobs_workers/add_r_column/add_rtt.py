@@ -83,7 +83,7 @@ def add_header_r(text: str, table: wtp.Table | bool = False) -> str:
     return table.string  # type: ignore
 
 
-def work_one_table(
+def process_table_rows(
     table_text: str,
     redirects: dict,
     pages: set,
@@ -175,5 +175,5 @@ __all__ = [
     "add_header_r",
     "fix_title",
     "header_has_r",
-    "work_one_table",
+    "process_table_rows",
 ]

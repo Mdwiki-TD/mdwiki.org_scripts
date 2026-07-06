@@ -8,7 +8,7 @@ from src.main_app.jobs_workers.public_jobs_workers.add_r_column.add_rtt import (
     add_header_r,
     fix_title,
     header_has_r,
-    work_one_table,
+    process_table_rows,
 )
 
 
@@ -60,7 +60,7 @@ class TestAddHeaderR:
 class TestWorkOneTable:
     def test_work_one_table_no_r_header(self):
         table_text = '{| class="wikitable"\n! Header\n! Title\n|-\n| data\n| data\n|}'
-        result = work_one_table(
+        result = process_table_rows(
             table_text,
             {},
             [],
@@ -74,7 +74,7 @@ class TestWorkOneTable:
         )
         redirects = {"Aspirin": "Aspirin"}
         pages = ["Aspirin"]
-        result = work_one_table(
+        result = process_table_rows(
             table_text,
             redirects,
             pages,
@@ -97,7 +97,7 @@ class TestWorkOneTable:
         table_text = '{| class="wikitable"\n! #\n! R\n! Title\n|-\n| 1\n| \n| [[Acetaminophen]]\n|}'
         redirects = {"Acetaminophen": "Paracetamol"}
         pages = ["Paracetamol"]
-        result = work_one_table(
+        result = process_table_rows(
             table_text,
             redirects,
             pages,
@@ -107,7 +107,7 @@ class TestWorkOneTable:
 
     def test_work_one_table_already_r(self):
         table_text = '{| class="wikitable"\n! #\n! R\n! Title\n|-\n| 1\n| R\n| [[Aspirin]]\n|}'
-        result = work_one_table(
+        result = process_table_rows(
             table_text,
             {},
             [],
@@ -116,7 +116,7 @@ class TestWorkOneTable:
         assert 'background:#C66A05" | R' in result
 
     def test_work_one_table_cell_error(self):
-        # Trigger Exception in work_one_table loop
+        # Trigger Exception in process_table_rows loop
         # try:
         #     title = x[2].value.strip()
         #     r_s = x[1].value.strip()

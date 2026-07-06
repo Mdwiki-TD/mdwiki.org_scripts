@@ -19,7 +19,7 @@ from mwclient.page import Page
 from ....api_services import MwClientPage, get_user_site
 from ....api_services.query_api import get_template_pages
 from ...base_worker_object import BaseObjectsJobWorker
-from .add_rtt import R_NEW_ROW, add_header_r, fix_title, header_has_r, work_one_table
+from .add_rtt import R_NEW_ROW, add_header_r, fix_title, header_has_r, process_table_rows
 from .objects import AddRColumnWorkerObject
 
 logger = logging.getLogger(__name__)
@@ -47,7 +47,7 @@ def add_to_tables(
             return text
 
     if redirects or pages:
-        new_text = work_one_table(
+        new_text = process_table_rows(
             new_text,
             redirects,
             pages,
