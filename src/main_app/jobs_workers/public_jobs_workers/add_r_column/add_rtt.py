@@ -45,7 +45,7 @@ class AddRColumn:
     ) -> None:
         self.text = text
         self.redirects = redirects or {}
-        self.pages = pages or {}
+        self.pages = set(pages) if pages else set()
         self.tables = 0
 
     def _load_table_cells(self, table: wtp.Table) -> list[list[Cell]] | None:
@@ -53,7 +53,7 @@ class AddRColumn:
             return table.cells()
         except Exception as exc:
             logger.error(f"error getting cells: {exc}")
-            return False
+            return None
 
     def _check_for_r_header(self, table: wtp.Table) -> bool:
         if not table:
@@ -67,7 +67,7 @@ class AddRColumn:
 
         for x in all_cells:
             # we need to check only headers
-            if not x[1].is_header:
+            if not x[0].is_header:
                 continue
 
             for numb, v in enumerate(x, start=1):
@@ -88,7 +88,6 @@ class AddRColumn:
         # add R to header in 2nd column
         for x in all_cells:
             count += 1
-
             # in header add the column R, in other rows add empty cell
             cell_str = "\n! R" if x[0].is_header else "\n| "
 
@@ -163,11 +162,14 @@ class AddRColumn:
             if row_cells[0].is_header:
                 continue
 
+            # Skip rows that are too short to contain both required columns
+            if max(r_header_id, title_header_id) >= len(row_cells):
+                continue
+
             r_idx_cell: Cell = row_cells[r_header_id]
             title_idx_cell: Cell = row_cells[title_header_id]
 
-            # Skip rows that are too short to contain both required columns
-            if max(r_header_id, title_header_id) >= len(row_cells) or r_idx_cell is None or title_idx_cell is None:
+            if r_idx_cell is None or title_idx_cell is None:
                 continue
 
             try:

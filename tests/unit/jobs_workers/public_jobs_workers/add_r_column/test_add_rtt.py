@@ -201,7 +201,7 @@ class TestAddRColumnClass:
         model = AddRColumn("some text", {"a": "b"}, ["Page1"])
         assert model.text == "some text"
         assert model.redirects == {"a": "b"}
-        assert model.pages == ["Page1"]
+        assert model.pages == {"Page1"}
 
     def test_module_level_count_r_rows_delegates_to_instance(self):
         text = R_NEW_ROW * 2
