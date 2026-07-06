@@ -162,6 +162,50 @@ def _process_table_rows(
     return table.string
 
 
+class AddRColumn:
+    def __init__(
+        self,
+        text: str,
+        redirects: dict,
+        pages: list,
+    ) -> None:
+        self.text = text
+        self.redirects = redirects
+        self.pages = pages
+
+    def inject_r_column(self) -> str:
+        parsed = wtp.parse(self.text)
+
+        if not parsed.tables:
+            return self.text
+
+        table = parsed.tables[0]
+
+        new_text = self.text
+
+        if not _check_for_r_header(table):
+            new_text = _add_r_header(table)
+
+            if new_text == self.text:
+                logger.info("Can't add R column to table!")
+                return self.text
+
+        if self.redirects or self.pages:
+            new_text = _process_table_rows(
+                new_text,
+                self.redirects,
+                self.pages,
+                r_header="R",
+                title_header="Page title",
+            )
+
+        table.string = new_text
+
+        _text = parsed.string
+
+        return _text
+
+
 def inject_r_column_into_tables(
     text: str,
     redirects: dict,
@@ -197,11 +241,6 @@ def inject_r_column_into_tables(
     _text = parsed.string
 
     return _text
-
-
-class AddRColumn:
-    def __init__(self):
-        pass
 
 
 __all__ = [

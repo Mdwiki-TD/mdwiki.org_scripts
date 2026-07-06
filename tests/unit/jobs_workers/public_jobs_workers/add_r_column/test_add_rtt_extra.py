@@ -86,7 +86,7 @@ class TestAddRHeaderExtra:
         assert _add_r_header(None) == ""
 
     def test_add_r_header_multiple_data_rows(self):
-        table_text = '{| class="wikitable"\n! Header\n! Title\n' "|-\n| r1c1\n| r1c2\n" "|-\n| r2c1\n| r2c2\n|}"
+        table_text = "{| class=wikitable\n! Header\n! Title\n|-\n| r1c1\n| r1c2\n|-\n| r2c1\n| r2c2\n|}"
         table = wtp.parse(table_text).tables[0]
         result = _add_r_header(table)
         assert result.count("! R") == 1
@@ -109,7 +109,7 @@ class TestProcessTableRowsExtra:
 
     def test_short_row_missing_title_cell_is_skipped(self):
         # Row 1 has only 2 cells (missing Title), row 2 has all 3
-        table_text = '{| class="wikitable"\n! #\n! R\n! Title\n' "|-\n| 1\n| \n" "|-\n| 2\n| \n| [[Aspirin]]\n|}"
+        table_text = "{| class='wikitable'\n! #\n! R\n! Title\n|-\n| 1\n| \n|-\n| 2\n| \n| [[Aspirin]]\n|}"
         result = _process_table_rows(
             table_text,
             {},
@@ -148,7 +148,7 @@ class TestProcessTableRowsExtra:
 
     def test_redirect_maps_multiple_titles_to_same_page(self):
         table_text = (
-            '{| class="wikitable"\n! #\n! R\n! Title\n' "|-\n| 1\n| \n| [[Tylenol]]\n" "|-\n| 2\n| \n| [[Panadol]]\n|}"
+            "{| class='wikitable'\n! #\n! R\n! Title\n|-\n| 1\n| \n| [[Tylenol]]\n|-\n| 2\n| \n| [[Panadol]]\n|}"
         )
         redirects = {"Tylenol": "Paracetamol", "Panadol": "Paracetamol"}
         pages = ["Paracetamol"]
