@@ -2,12 +2,11 @@
 """ """
 
 import logging
-from typing import Any
 
 import wikitextparser as wtp
 from wikitextparser._cell import Cell
 
-from .utils import fix_title
+from .utils import fix_title_new
 
 logger = logging.getLogger(__name__)
 
@@ -49,40 +48,19 @@ class AddRColumn:
         self.pages = pages or {}
         self.tables = 0
 
-    def _load_table_cells(self, table: wtp.Table) -> Any:
+    def _load_table_cells(self, table: wtp.Table) -> list[list[Cell]] | None:
         try:
             return table.cells()
         except Exception as exc:
             logger.error(f"error getting cells: {exc}")
             return False
 
-    def _count_r_cells(self, table: wtp.Table) -> int:
-        if not table:
-            logger.info("no table found")
-            return 0
-
-        all_cells = self._load_table_cells(table)
-
-        if not all_cells:
-            return 0
-
-        numbs = 0
-        for x in all_cells:
-            # we don't need to count headers here
-            if x[1].is_header:
-                continue
-
-            for v in x:
-                if v.value.strip() == "R":
-                    numbs += 1
-        return numbs
-
     def _check_for_r_header(self, table: wtp.Table) -> bool:
         if not table:
             logger.info("no table found")
             return False
 
-        all_cells = self._load_table_cells(table)
+        all_cells: list[list[Cell]] | None = self._load_table_cells(table)
 
         if not all_cells:
             return False
@@ -102,7 +80,7 @@ class AddRColumn:
         if not table:
             return False
 
-        all_cells = self._load_table_cells(table)
+        all_cells: list[list[Cell]] | None = self._load_table_cells(table)
         if not all_cells:
             return False
 
@@ -137,18 +115,17 @@ class AddRColumn:
         added = self._add_r_header_table(table)
         return added
 
-
     def load_ids(self, r_header, title_header, all_cells):
         header_index = _build_header_index(all_cells)
-        r_idx = header_index.get(r_header)
-        title_idx = header_index.get(title_header)
+        r_header_id = header_index.get(r_header)
+        title_header_id = header_index.get(title_header)
 
-        if r_idx is None or title_idx is None:
+        if r_header_id is None or title_header_id is None:
             logger.warning(
                 f"couldn't find expected headers: "
-                f"r_header={r_header!r} -> {r_idx}, title_header={title_header!r} -> {title_idx}"
+                f"r_header={r_header!r} -> {r_header_id}, title_header={title_header!r} -> {title_header_id}"
             )
-        return r_idx,title_idx
+        return r_header_id, title_header_id
 
     # ================================
     # Main function
@@ -161,14 +138,14 @@ class AddRColumn:
         title_header: str = "Page title",
     ) -> bool:
 
-        all_cells = self._load_table_cells(table)
+        all_cells: list[list[Cell]] | None = self._load_table_cells(table)
         if not all_cells:
             return False
 
         # 1. Map header text to its column index
-        r_idx, title_idx = self.load_ids(r_header, title_header, all_cells)
+        r_header_id, title_header_id = self.load_ids(r_header, title_header, all_cells)
 
-        if r_idx is None or title_idx is None:
+        if r_header_id is None or title_header_id is None:
             return False
 
         already_in = 0
@@ -186,31 +163,41 @@ class AddRColumn:
             if row_cells[0].is_header:
                 continue
 
+            r_idx_cell: Cell = row_cells[r_header_id]
+            title_idx_cell: Cell = row_cells[title_header_id]
+
             # Skip rows that are too short to contain both required columns
-            if max(r_idx, title_idx) >= len(row_cells) or row_cells[r_idx] is None or row_cells[title_idx] is None:
+            if max(r_header_id, title_header_id) >= len(row_cells) or r_idx_cell is None or title_idx_cell is None:
                 continue
 
             try:
-                title = row_cells[title_idx].value.strip()
-                header_label = row_cells[r_idx].value.strip()
+                r_column_value = r_idx_cell.value.strip()
             except Exception:
                 logger.warning(f"cell error: {n}")
                 cell_errors += 1
                 continue
 
-            if header_label == "R":
-                row_cells[r_idx].string = R_NEW_ROW
+            if r_column_value == "R":
+                r_idx_cell.string = R_NEW_ROW
                 already_in += 1
                 continue
 
-            title = fix_title(title)
+            try:
+                cell_value = title_idx_cell.value.strip()
+            except Exception:
+                logger.warning(f"cell error: {n}")
+                cell_errors += 1
+                continue
+
+            title = fix_title_new(cell_value)
+
             title2 = self.redirects.get(title, title)
             if title in self.pages:
-                row_cells[r_idx].string = R_NEW_ROW
+                r_idx_cell.string = R_NEW_ROW
                 add_done += 1
 
             elif title2 in self.pages:
-                row_cells[r_idx].string = R_NEW_ROW
+                r_idx_cell.string = R_NEW_ROW
                 add_from_redirect += 1
             else:
                 no_add += 1
@@ -222,6 +209,7 @@ class AddRColumn:
         logger.info(f"add_done: {add_done}, add_from_redirect: {add_from_redirect}")
 
         return True
+
     # ================================
     # Public API
     # ================================

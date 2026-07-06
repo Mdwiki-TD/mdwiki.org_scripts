@@ -21,7 +21,7 @@ table_text = """
 |-
 | 1
 |
-| [[test]]
+| [[ test|test !#zz]]
 | [https://pageviews.toolforge.org/?project=en.wikipedia.org&amp;start=2026-04-01&amp;end=2026-04-30&amp;pages=Sexual_intercourse&amp;redirects=1 {{FORMATNUM:343160}}]
 | {{FORMATNUM:11438}}
 | style="text-align:center; white-space:nowrap; font-weight:bold; background:#B2FF66" | [[:Category:B-Class articles|B]]
@@ -48,6 +48,6 @@ class TestAddRColumn:
         first = (
             "| 1\n"
             '| style="text-align:center; white-space:nowrap; font-weight:bold; background:#C66A05" | R\n'
-            "| [[test]]"
+            "| [[ test|test !#zz]]"
         )
         assert first in result
