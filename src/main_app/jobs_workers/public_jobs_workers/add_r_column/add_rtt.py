@@ -192,13 +192,6 @@ class AddRColumn:
         return count_r_rows(self.text)
 
     def _process_the_table(self, table: wtp.Table) -> bool:
-        if not self._check_for_r_header(table):
-            logger.info("Can't add R column to table!")
-            return False
-
-        if not self.redirects and not self.pages:
-            return False
-
         changed = self._process_table(
             table,
             r_header="R",
@@ -206,6 +199,22 @@ class AddRColumn:
         )
         if changed:
             logger.info("Table changed!")
+            return True
+        return False
+
+    def ensure_table_has_r_column(self, table) -> bool:
+        if self._check_for_r_header(table):
+            return False
+
+        added = self._add_r_header_table(table)
+        if not added:
+            return False
+
+        # NOTE: next step to solve this issue by reloading the table object
+        # wikitextparser/_table.py:261: in cells insort_right(spans, cell_span)
+        # TypeError: '<' not supported between instances of 'bytearray' and 'NoneType'
+        table_str = table.string
+        table.string = table_str
 
         return True
 
@@ -217,16 +226,20 @@ class AddRColumn:
 
         table = parsed.tables[0]
 
-        if not self._check_for_r_header(table):
-            added = self._add_r_header_table(table)
+        # check if R column exists or add it
+        added = self.ensure_table_has_r_column(table)
 
-            # NOTE: next step to solve this issue by reloading the table object
-            # wikitextparser/_table.py:261: in cells insort_right(spans, cell_span)
-            # TypeError: '<' not supported between instances of 'bytearray' and 'NoneType'
-
-            table_str = table.string
+        # Return False if no redirects or pages
+        if not self.redirects and not self.pages:
             if added:
-                table.string = table_str
+                return parsed.string
+            else:
+                return self.text
+
+        # Return False if R column not exists and not added
+        if not self._check_for_r_header(table):
+            logger.info("Can't add R column to table!")
+            return self.text
 
         self._process_the_table(table)
 
