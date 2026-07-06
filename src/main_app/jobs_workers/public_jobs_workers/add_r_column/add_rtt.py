@@ -47,6 +47,7 @@ class AddRColumn:
         self.text = text
         self.redirects = redirects or {}
         self.pages = pages or {}
+        self.tables = 0
 
     def _load_table_cells(self, table: wtp.Table) -> Any:
         try:
@@ -55,8 +56,8 @@ class AddRColumn:
             logger.error(f"error getting cells: {exc}")
             return False
 
-    def _count_r_header(self, table: wtp.Table) -> int:
-        if not table or not isinstance(table, wtp.Table):
+    def _count_r_cells(self, table: wtp.Table) -> int:
+        if not table:
             logger.info("no table found")
             return 0
 
@@ -74,10 +75,10 @@ class AddRColumn:
             for v in x:
                 if v.value.strip() == "R":
                     numbs += 1
-        return False
+        return numbs
 
     def _check_for_r_header(self, table: wtp.Table) -> bool:
-        if not table or not isinstance(table, wtp.Table):
+        if not table:
             logger.info("no table found")
             return False
 
@@ -98,7 +99,7 @@ class AddRColumn:
         return False
 
     def _add_r_header_table(self, table: wtp.Table) -> bool:
-        if not table or not isinstance(table, wtp.Table):
+        if not table:
             return False
 
         all_cells = self._load_table_cells(table)
@@ -180,19 +181,17 @@ class AddRColumn:
                 cell_errors.append(numb)
                 continue
 
-            title = fix_title(title)
-            title2 = self.redirects.get(title, title)
-
             if r_s == "R":
                 row_cells[r_idx].string = R_NEW_ROW
-
                 already_in.append(title)
                 continue
 
+            title = fix_title(title)
+            title2 = self.redirects.get(title, title)
             if title in self.pages:
                 row_cells[r_idx].string = R_NEW_ROW
-
                 add_done.append(title)
+
             elif title2 in self.pages:
                 row_cells[r_idx].string = R_NEW_ROW
                 add_from_redirect.append(title)
@@ -222,8 +221,10 @@ class AddRColumn:
         parsed = wtp.parse(self.text)
 
         if not parsed.tables:
+            self.tables = 0
             return self.text
 
+        self.tables = len(parsed.tables)
         table = parsed.tables[0]
 
         # check if R column exists or add it
@@ -235,6 +236,7 @@ class AddRColumn:
 
         # Return False if no redirects or pages
         if not self.redirects and not self.pages:
+            logger.info("No redirects or pages to add!")
             return self.text
 
         # Return False if R column not exists and not added
