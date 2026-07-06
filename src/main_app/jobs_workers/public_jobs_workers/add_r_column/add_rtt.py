@@ -87,10 +87,11 @@ class AddRColumn:
         count = 0
         # add R to header in 2nd column
         for x in all_cells:
+            if not x or x[0] is None:
+                continue
             count += 1
             # in header add the column R, in other rows add empty cell
             cell_str = "\n! R" if x[0].is_header else "\n| "
-
             # add cell_str after first cell
             x[0].value = x[0].value + cell_str
 
