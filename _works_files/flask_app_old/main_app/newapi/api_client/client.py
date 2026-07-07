@@ -412,7 +412,7 @@ class WikiLoginClient(CookiesClient, RequestsHandler):
         username: str,
         password: str,
         cookies_dir: str | None = settings.paths.cookies_dir,
-        use_cookies: bool = True,
+        use_cookies: None | bool = None,
     ) -> None:
         """
         Initialise the client, load any saved cookies, and ensure the session
@@ -505,9 +505,9 @@ class WikiLoginClient(CookiesClient, RequestsHandler):
         self,
         params: dict,
         method: str = "post",
-        files: Optional[Any] = None,
+        files: Any | None = None,
         **kwargs,
-    ) -> dict:
+    ) -> dict[str, Any]:
         """
         Send a GET or POST request to the wiki API and return parsed JSON.
 
@@ -534,9 +534,12 @@ class WikiLoginClient(CookiesClient, RequestsHandler):
         if method not in ("get", "post"):
             raise ValueError(f"method must be 'get' or 'post', got {method!r}")
 
+        method = method.upper()
+
         # Files can only travel via multipart POST
-        if files is not None:
-            method = "post"
+        action = params.get("action")
+        if action in self._WRITE_ACTIONS or files is not None:
+            method = "POST"
 
         # Always request JSON and inject write-action safety params
         params = self._enrich_params({"format": "json", **params})
@@ -549,21 +552,26 @@ class WikiLoginClient(CookiesClient, RequestsHandler):
             {k: ("***" if k in skip_log_params else v) for k, v in params.items()},
             list(files.keys()) if files else None,
         )
-        action = params.get("action")
-        if action in self._WRITE_ACTIONS:
-            method = "post"
 
-        if method == "get":
-            return self._request_with_retry("GET", self.api_url, params=params)
-            # return self._site.get(action, **params)
+        # Fetch a CSRF token now if the caller didn't supply one.
+        # The retry loop will refresh it automatically on CSRF errors.
+        if method == "POST" and "token" not in params:
+            params["token"] = self._site.get_token("csrf")
+
+        args = {}
+
+        if method == "GET":
+            args["params"] = params
         else:
-            # Fetch a CSRF token now if the caller didn't supply one.
-            # The retry loop will refresh it automatically on CSRF errors.
-            if "token" not in params:
-                params["token"] = self._site.get_token("csrf")
+            args["data"] = params
+            if files:
+                args["files"] = files
 
-            return self._request_with_retry("POST", self.api_url, data=params, files=files)
-            # return self._site.post(action, **params, files=files)
+        return self._request_with_retry(
+            method,
+            self.api_url,
+            **args,
+        )
 
     def _ensure_logged_in(self) -> None:
         """
@@ -587,7 +595,7 @@ class WikiLoginClient(CookiesClient, RequestsHandler):
         # if not self._site.logged_in: self._do_login()
         # don't login yet, user can use login() method
 
-    def _enrich_params(self, params: dict) -> dict:
+    def _enrich_params(self, params: dict) -> dict[str, Any]:
         """
         Inject write-action safety parameters.
 
@@ -659,9 +667,9 @@ class WikiLoginClient(CookiesClient, RequestsHandler):
         self,
         params: dict,
         method: str = "post",
-        files: Optional[Any] = None,
+        files: Any | None = None,
         **kwargs,
-    ) -> dict:
+    ) -> dict[str, Any]:
         """ """
         return self._client_request(
             params=params,
@@ -674,9 +682,9 @@ class WikiLoginClient(CookiesClient, RequestsHandler):
         self,
         params: dict,
         method: str = "post",
-        files: Optional[Any] = None,
+        files: Any | None = None,
         **kwargs,
-    ) -> dict:
+    ) -> dict[str, Any]:
         """ """
         try:
             return self._client_request(
@@ -693,31 +701,10 @@ class WikiLoginClient(CookiesClient, RequestsHandler):
         self,
         params: dict,
         method: str = "post",
-        files: Optional[Any] = None,
+        files: Any | None = None,
         **kwargs,
-    ) -> dict:
-        """
-        Send a GET or POST request to the wiki API and return parsed JSON.
-
-        CSRF tokens, maxlag backoff, and ``assertnameduserfailed`` recovery are
-        all handled transparently by the ``RequestsHandler`` base class.
-
-        Args:
-            params: MediaWiki API parameters. ``format`` defaults to ``"json"``.
-            method: ``"get"`` or ``"post"`` (case-insensitive).
-                    Files automatically force POST.
-            files:  ``{field_name: file-like}`` for multipart uploads.
-
-        Returns:
-            Parsed JSON response dict.
-
-        Raises:
-            ValueError:         On invalid *method*.
-            CSRFError:          CSRF token invalid after all retries.
-            MaxlagError:        Server maxlag unresolved after all retries.
-            WikiClientError:    On other API-level errors.
-            requests.HTTPError: On non-2xx HTTP responses.
-        """
+    ) -> dict[str, Any]:
+        """ """
         method = method.lower()
         if method not in ("get", "post"):
             raise ValueError(f"method must be 'get' or 'post', got {method!r}")
