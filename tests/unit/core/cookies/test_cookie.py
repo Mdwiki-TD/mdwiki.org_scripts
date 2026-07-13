@@ -1,6 +1,6 @@
 """
 Tests for cookie helpers.
-src/main_app/core/cookies/cookie.py
+src/main_app/shared/core/cookies/cookie.py
 """
 
 from __future__ import annotations
