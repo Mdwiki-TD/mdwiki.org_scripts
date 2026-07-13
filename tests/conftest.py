@@ -1,4 +1,5 @@
-"""Shared pytest fixtures.
+"""
+Shared pytest fixtures.
 
 Boot a Flask app once per session with CSRF on (so tests exercise the
 real protection path) and provide helpers for scraping CSRF tokens and
