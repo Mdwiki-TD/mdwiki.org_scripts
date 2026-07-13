@@ -59,10 +59,10 @@
                             {{ user.created_at }}
                         </td>
                         <td class="text-center">
-                            {{ update_user_can_run('admin.users.update_can_run_jobs', user.user_id, user.can_run_jobs, "can_run_jobs") }}
+                            {{ update_user_can_run('adminpanel.users.update_can_run_jobs', user.user_id, user.can_run_jobs, "can_run_jobs") }}
                         </td>
                         <td class="text-center">
-                            {{ update_user_can_run('admin.users.update_can_run_bg_jobs', user.user_id, user.can_run_bg_jobs, "can_run_bg_jobs") }}
+                            {{ update_user_can_run('adminpanel.users.update_can_run_bg_jobs', user.user_id, user.can_run_bg_jobs, "can_run_bg_jobs") }}
                         </td>
                     </tr>
                     {% endfor %}

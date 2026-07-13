@@ -188,14 +188,14 @@ def load_menu() -> dict[str, list[SidebarItem]]:
             SidebarItem(
                 id="admins",
                 admin=1,
-                href=_safe_url_for("admin.coordinators.dashboard", "/admin/coordinators/"),
+                href=_safe_url_for("adminpanel.coordinators.dashboard", "/admin/coordinators/"),
                 title="Coordinators",
                 icon="bi-person-gear",
             ),
             SidebarItem(
                 id="users",
                 admin=1,
-                href=_safe_url_for("admin.users.dashboard", "/admin/users/"),
+                href=_safe_url_for("adminpanel.users.dashboard", "/admin/users/"),
                 title="Users",
                 icon="bi-person",
             ),
@@ -205,7 +205,7 @@ def load_menu() -> dict[str, list[SidebarItem]]:
             SidebarItem(
                 id="settings",
                 admin=1,
-                href=_safe_url_for("admin.settings.dashboard", "/admin/settings/"),
+                href=_safe_url_for("adminpanel.settings.dashboard", "/admin/settings/"),
                 title="Settings",
                 icon="bi-gear",
             ),
