@@ -9,13 +9,13 @@ from __future__ import annotations
 import logging
 import threading
 from datetime import datetime
-from typing import Any, Dict
+from typing import Any
 
 from mwclient.client import Site
 
 from ....api_services import MwClientPage
 from ....api_services.clients import get_user_site
-from ....jobs_workers.base_worker_object import BaseObjectsJobWorker
+from ...base_worker import BaseObjectsJobWorker
 from ...shared_objects import UpdaterOutcome
 from .objects import FindAndReplaceWorkerObject
 
@@ -211,10 +211,10 @@ class FindAndReplaceWorker(BaseObjectsJobWorker):
 
 def find_and_replace_worker_entry(
     job_id: int,
-    user: Dict[str, Any] | None = None,
+    user: dict[str, Any] | None = None,
     *,
     cancel_event: threading.Event | None = None,
-    args: Dict[str, Any] | None = None,
+    args: dict[str, Any] | None = None,
 ) -> None:
     """Background worker entry-point."""
     logger.info(f"Starting job {job_id}: find_and_replace")

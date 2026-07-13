@@ -20,3 +20,4 @@ run_tests.py
 righttyper.out
 /.commandcode
 *.isorted
+tests/unit/jobs_workers/public_jobs_workers/find_and_replace/__pycache__/test_find_and_replace_objects.cpython-313-pytest-9.0.2.pyc.15052

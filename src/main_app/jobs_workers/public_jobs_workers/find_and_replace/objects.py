@@ -4,9 +4,9 @@ from __future__ import annotations
 
 import logging
 from dataclasses import dataclass, field
-from typing import Any, Optional
+from typing import Any
 
-from ....jobs_workers.base_worker_object import WorkerObject
+from ...base_worker import WorkerObject
 from ...shared_objects import Summary
 
 logger = logging.getLogger(__name__)
@@ -17,7 +17,7 @@ class FindAndReplaceWorkerObject(WorkerObject):
     text_find: str = ""
     text_replace: str = ""
     stopped: bool = False
-    cap: Optional[int] = None
+    cap: int | None = None
 
     summary: Summary = field(default_factory=Summary)
 

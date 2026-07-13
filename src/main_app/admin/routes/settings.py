@@ -67,8 +67,8 @@ def settings_update_form(request_form) -> tuple[list[str], list[str]]:
 
 
 class SettingsRoutes:
-    def __init__(self) -> None:
-        self.bp = Blueprint("settings", __name__, url_prefix="/settings")
+    def __init__(self, bp: Blueprint) -> None:
+        self.bp = bp
         self._setup_routes()
 
     def _setup_routes(self) -> None:
@@ -93,7 +93,7 @@ class SettingsRoutes:
                     "Key must start with a lowercase letter and contain only lowercase letters, digits, and underscores.",
                     "danger",
                 )
-                return redirect(url_for("admin.settings.dashboard"))
+                return redirect(url_for("adminpanel.settings.dashboard"))
 
             if key and title:
                 success = create_setting(key, title, value_type)
@@ -104,7 +104,7 @@ class SettingsRoutes:
             else:
                 flash("Key and Title are required.", "danger")
 
-            return redirect(url_for("admin.settings.dashboard"))
+            return redirect(url_for("adminpanel.settings.dashboard"))
 
         @self.bp.post("/update")
         @admin_required
@@ -118,11 +118,9 @@ class SettingsRoutes:
                 flash("Settings updated successfully.", "success")
             else:
                 flash(f"Some settings failed to update: {', '.join(failed_keys)}", "danger")
-            return redirect(url_for("admin.settings.dashboard"))
+            return redirect(url_for("adminpanel.settings.dashboard"))
 
-
-settings_module = SettingsRoutes()
 
 __all__ = [
-    "settings_module",
+    "SettingsRoutes",
 ]

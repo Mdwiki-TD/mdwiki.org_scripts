@@ -7,6 +7,7 @@ python3 core8/pwb.py md_core/mdpy/fixref
 import logging
 import os
 import sys
+from typing import Any
 
 from python.mdwiki_page import CatDepth, NewApi, load_main_api
 

@@ -1,4 +1,4 @@
-"""Tests for src/main_app/admin/routes/settings.py."""
+"""Tests for src/main_app/adminpanel/routes/settings.py."""
 
 from __future__ import annotations
 
@@ -15,14 +15,14 @@ class TestSettingsRoutesClass:
 
     def test_blueprint_properties(self):
         """SettingsRoutes should create a Blueprint with the expected name and prefix."""
-        instance = SettingsRoutes()
+        instance = SettingsRoutes(Blueprint("settings", __name__, url_prefix="/settings"))
         assert isinstance(instance.bp, Blueprint)
         assert instance.bp.name == "settings"
         assert instance.bp.url_prefix == "/settings"
 
     def test_all_routes_registered(self):
         """SettingsRoutes should register all 3 routes."""
-        instance = SettingsRoutes()
+        instance = SettingsRoutes(Blueprint("settings", __name__, url_prefix="/settings"))
         assert len(instance.bp.deferred_functions) == 3
 
 
@@ -41,8 +41,8 @@ class TestSettingsRoutesRoutes:
         app.secret_key = "test-secret"
         app.config["TESTING"] = True
 
-        admin_bp = Blueprint("admin", __name__, url_prefix="/admin")
-        admin_bp.register_blueprint(SettingsRoutes().bp)
+        admin_bp = Blueprint("adminpanel", __name__, url_prefix="/adminpanel")
+        admin_bp.register_blueprint(SettingsRoutes(Blueprint("settings", __name__, url_prefix="/settings")).bp)
         app.register_blueprint(admin_bp)
 
         return app
@@ -67,7 +67,7 @@ class TestSettingsRoutesRoutes:
             mock_render,
         )
 
-        resp = client.get("/admin/settings/")
+        resp = client.get("/adminpanel/settings/")
 
         assert resp.status_code == 200
         mock_render.assert_called_once_with("admins/settings.html", settings_list=mock_settings)
@@ -83,7 +83,7 @@ class TestSettingsRoutesRoutes:
         )
 
         resp = client.post(
-            "/admin/settings/create",
+            "/adminpanel/settings/create",
             data={"key": "my_setting", "title": "My Setting", "value_type": "boolean"},
         )
 
@@ -99,7 +99,7 @@ class TestSettingsRoutesRoutes:
         )
 
         resp = client.post(
-            "/admin/settings/create",
+            "/adminpanel/settings/create",
             data={"key": "", "title": "My Setting"},
         )
 
@@ -115,7 +115,7 @@ class TestSettingsRoutesRoutes:
         )
 
         resp = client.post(
-            "/admin/settings/create",
+            "/adminpanel/settings/create",
             data={"key": "1nvalid", "title": "Invalid"},
         )
 
@@ -131,7 +131,7 @@ class TestSettingsRoutesRoutes:
         )
 
         resp = client.post(
-            "/admin/settings/create",
+            "/adminpanel/settings/create",
             data={"key": "MY_SETTING", "title": "My Setting"},
         )
 
@@ -147,7 +147,7 @@ class TestSettingsRoutesRoutes:
         )
 
         resp = client.post(
-            "/admin/settings/create",
+            "/adminpanel/settings/create",
             data={"key": "existing", "title": "Existing"},
         )
 
@@ -163,7 +163,7 @@ class TestSettingsRoutesRoutes:
         )
 
         resp = client.post(
-            "/admin/settings/create",
+            "/adminpanel/settings/create",
             data={"key": "valid_key", "title": ""},
         )
 
@@ -179,7 +179,7 @@ class TestSettingsRoutesRoutes:
             MagicMock(return_value=([], [])),
         )
 
-        resp = client.post("/admin/settings/update", data={})
+        resp = client.post("/adminpanel/settings/update", data={})
 
         assert resp.status_code == 302
 
@@ -190,7 +190,7 @@ class TestSettingsRoutesRoutes:
             MagicMock(return_value=([], ["key_a", "key_b"])),
         )
 
-        resp = client.post("/admin/settings/update", data={})
+        resp = client.post("/adminpanel/settings/update", data={})
 
         assert resp.status_code == 302
 
@@ -201,7 +201,7 @@ class TestSettingsRoutesRoutes:
             MagicMock(return_value=(["bad_key"], [])),
         )
 
-        resp = client.post("/admin/settings/update", data={})
+        resp = client.post("/adminpanel/settings/update", data={})
 
         assert resp.status_code == 302
 

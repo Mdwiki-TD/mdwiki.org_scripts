@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import pytest
 
-from src.main_app.jobs_workers.base_worker_object import WorkerObject
+from src.main_app.jobs_workers.base_worker import WorkerObject
 from src.main_app.jobs_workers.public_jobs_workers.import_history.objects import (
     ImportHistoryWorkerObject,
     UpdaterOutcome,

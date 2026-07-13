@@ -1,4 +1,4 @@
-"""Unit tests for src/main_app/admin/decorators.py."""
+"""Unit tests for src/main_app/adminpanel/decorators.py."""
 
 from __future__ import annotations
 
@@ -15,18 +15,18 @@ class TestAdminRequired:
         def view():
             return "ok"
 
-        with mock_app.test_request_context("/admin"):
+        with mock_app.test_request_context("/adminpanel"):
             with patch("src.main_app.admin.decorators.load_user", return_value=None):
                 response = view()
-                assert response.status_code == 302
-                assert "/login" in response.location
+                assert response.status_code == 302  # type: ignore
+                assert "/login" in response.location  # type: ignore
 
     def test_non_admin_gets_403(self, mock_app):
         @admin_required
         def view():
             return "ok"
 
-        with mock_app.test_request_context("/admin"):
+        with mock_app.test_request_context("/adminpanel"):
             user = MagicMock()
             user.username = "regular_user"
             user.is_active_admin = False
@@ -39,7 +39,7 @@ class TestAdminRequired:
         def view():
             return "ok"
 
-        with mock_app.test_request_context("/admin"):
+        with mock_app.test_request_context("/adminpanel"):
             user = MagicMock()
             user.username = "admin_user"
             user.is_active_admin = True

@@ -12,15 +12,15 @@ from __future__ import annotations
 
 import logging
 import threading
-from typing import Any, Dict
+from typing import Any
 
 from mwclient.client import Site
 
 from ....api_services import MwClientPage
 from ....api_services.clients import get_user_site
 from ....api_services.query_api import get_double_redirects
-from ....jobs_workers.base_worker_object import BaseObjectsJobWorker
 from ....shared.replace_wikilink import replace_wikilink_destinations
+from ...base_worker import BaseObjectsJobWorker
 from ...shared_objects import SharedworkerObject, UpdaterOutcome
 
 logger = logging.getLogger(__name__)
@@ -208,10 +208,10 @@ class DuplicateRedirectWorker(BaseObjectsJobWorker):
 
 def duplicate_redirect_worker_entry(
     job_id: int,
-    user: Dict[str, Any] | None = None,
+    user: dict[str, Any] | None = None,
     *,
     cancel_event: threading.Event | None = None,
-    args: Dict[str, Any] | None = None,
+    args: dict[str, Any] | None = None,
 ) -> None:
     """Background worker entry-point."""
     logger.info(f"Starting job {job_id}: duplicate_redirect")

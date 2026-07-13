@@ -9,7 +9,7 @@ from __future__ import annotations
 
 import logging
 import threading
-from typing import Any, Dict
+from typing import Any
 
 from mwclient.client import Site
 
@@ -17,7 +17,7 @@ from ....api_services import MwClientPage
 from ....api_services.clients import get_user_site
 from ....api_services.enwiki_api import get_redirects_for
 from ....api_services.query_api import is_pages_exists
-from ....jobs_workers.base_worker_object import BaseObjectsJobWorker
+from ...base_worker import BaseObjectsJobWorker
 from .objects import CreateRedirectsWorkerObject
 
 logger = logging.getLogger(__name__)
@@ -174,10 +174,10 @@ class CreateRedirectsWorker(BaseObjectsJobWorker):
 
 def create_redirects_worker_entry(
     job_id: int,
-    user: Dict[str, Any] | None = None,
+    user: dict[str, Any] | None = None,
     *,
     cancel_event: threading.Event | None = None,
-    args: Dict[str, Any] | None = None,
+    args: dict[str, Any] | None = None,
 ) -> None:
     """Background worker entry-point."""
     logger.info(f"Starting job {job_id}: create_redirects")

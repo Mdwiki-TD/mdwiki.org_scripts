@@ -4,7 +4,7 @@
 
 import logging
 import re
-from typing import Any, Optional
+from typing import Any
 
 import wikitextparser as wtp
 
@@ -99,8 +99,8 @@ def move_resources(text: str, title: str, lkj: str = _lkj_, lkj2: str = _lkj2_) 
     # Parse the wikitext
     temps = wtp.parse(text).templates
     # ---
-    infobox_temp: Optional[wtp.Template] = None
-    resources_temp: Optional[wtp.Template] = None
+    infobox_temp: wtp.Template | None = None
+    resources_temp: wtp.Template | None = None
     # ---
     for temp in temps:
         name = str(temp.normal_name()).lower()

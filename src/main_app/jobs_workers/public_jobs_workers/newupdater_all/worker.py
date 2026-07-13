@@ -8,16 +8,16 @@ from __future__ import annotations
 
 import logging
 import threading
-from typing import Any, Dict
+from typing import Any
 
 from mwclient.client import Site
 
 from ....api_services import MwClientPage
 from ....api_services.category import get_category_members
 from ....api_services.clients import get_user_site
-from ....jobs_workers.base_worker_object import BaseObjectsJobWorker
 from ....shared.named_param import add_param_named
 from ....shared.new_updater import med_updater_one
+from ...base_worker import BaseObjectsJobWorker
 from ...shared_objects import SharedworkerObject, UpdaterOutcome
 
 logger = logging.getLogger(__name__)
@@ -150,10 +150,10 @@ class NewUpdaterAllWorker(BaseObjectsJobWorker):
 
 def newupdater_all_worker_entry(
     job_id: int,
-    user: Dict[str, Any] | None = None,
+    user: dict[str, Any] | None = None,
     *,
     cancel_event: threading.Event | None = None,
-    args: Dict[str, Any] | None = None,
+    args: dict[str, Any] | None = None,
 ) -> None:
     """Background worker entry-point."""
     logger.info(f"Starting job {job_id}: newupdater_all")
