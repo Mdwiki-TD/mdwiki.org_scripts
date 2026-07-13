@@ -4,7 +4,6 @@ from __future__ import annotations
 
 import logging
 from dataclasses import dataclass, field, fields
-from typing import Optional
 
 from ...base_worker import WorkerObject
 
@@ -16,7 +15,7 @@ class StepDetail:
     status: str = "pending"  # ["pending", "running", "completed", "failed", "skipped", "cancelled"]
     title: str = ""
     message: str = ""
-    newrevid: Optional[int] = None  # Kept optional as some steps don't require this field
+    newrevid: int | None = None  # Kept optional as some steps don't require this field
 
 
 @dataclass
