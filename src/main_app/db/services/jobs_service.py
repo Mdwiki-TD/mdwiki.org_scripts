@@ -209,8 +209,7 @@ def create_job(job_type: str, username: str) -> JobRecord:
     return job
 
 
-@retry_on_db_disconnect()
-def update_job_status(
+def _update_job_status(
     job_id: int,
     status: str,
     result_file: str | None = None,
@@ -248,6 +247,31 @@ def update_job_status(
 
 
 @db_guard_rollback
+def update_job_status(
+    job_id: int,
+    status: str,
+    result_file: str | None = None,
+    *,
+    job_type: str,
+) -> JobRecord:
+    """
+    Update job status and result file.
+    """
+    return _update_job_status(job_id, status, result_file, job_type=job_type)
+
+
+@retry_on_db_disconnect()
+def update_job_status_with_retry(
+    job_id: int,
+    status: str,
+    result_file: str | None = None,
+    *,
+    job_type: str,
+) -> JobRecord:
+    return _update_job_status(job_id, status, result_file, job_type=job_type)
+
+
+@db_guard_rollback
 def cancel_job_db(job_id: int, job_type: str | None = None) -> bool:
     """
     Mark a job as cancelled.
@@ -282,7 +306,66 @@ def cancel_job_db(job_id: int, job_type: str | None = None) -> bool:
     return True
 
 
+class JobsService:
+    def __init__(self) -> None:
+        pass
+
+    def is_job_cancelled(self, job_id: int, job_type: str) -> bool:
+        return is_job_cancelled(job_id, job_type)
+
+    def get_job(self, job_id: int, job_type: str) -> JobRecord:
+        return get_job(job_id, job_type)
+
+    def list_jobs(self, limit: int = 100, job_type: str | None = None) -> list[JobRecord]:
+        return list_jobs(limit, job_type)
+
+    def get_all_user_jobs_stats(
+        self,
+        username: str,
+        limit: int | None = 100,
+    ) -> dict[str, dict[str, int] | list[JobRecord]]:
+        return get_all_user_jobs_stats(username, limit)
+
+    def get_user_jobs_stats(
+        self,
+        username: str,
+        jobs_types: list | None = None,
+        limit: int | None = 100,
+    ) -> dict[str, dict[str, int] | list[JobRecord]]:
+        return get_user_jobs_stats(username, jobs_types, limit)
+
+    def has_active_job(self, job_type: str) -> bool:
+        return has_active_job(job_type)
+
+    def create_job(self, job_type: str, username: str) -> JobRecord:
+        return create_job(job_type, username)
+
+    def update_job_status(
+        self,
+        job_id: int,
+        status: str,
+        result_file: str | None = None,
+        *,
+        job_type: str,
+    ) -> JobRecord:
+        return update_job_status(job_id, status, result_file, job_type=job_type)
+
+    def update_job_status_with_retry(
+        self,
+        job_id: int,
+        status: str,
+        result_file: str | None = None,
+        *,
+        job_type: str,
+    ) -> JobRecord:
+        return update_job_status_with_retry(job_id, status, result_file, job_type=job_type)
+
+    def cancel_job_db(self, job_id: int, job_type: str | None = None) -> bool:
+        return cancel_job_db(job_id, job_type)
+
+
 __all__ = [
+    "JobsService",
     "create_job",
     "get_job",
     "has_active_job",
@@ -292,4 +375,5 @@ __all__ = [
     "is_job_cancelled",
     "get_all_user_jobs_stats",
     "get_user_jobs_stats",
+    "update_job_status_with_retry",
 ]

@@ -119,8 +119,8 @@ def _delete_coordinator(coordinator_id: int) -> ResponseReturnValue:
 class CoordinatorsRoutes:
     """Jobs management routes."""
 
-    def __init__(self) -> None:
-        self.bp = Blueprint("coordinators", __name__, url_prefix="/coordinators")
+    def __init__(self, bp: Blueprint) -> None:
+        self.bp = bp
         self._setup_routes()
 
     def _setup_routes(self) -> None:
@@ -150,8 +150,6 @@ class CoordinatorsRoutes:
             return _delete_coordinator(coordinator_id)
 
 
-coordinators_module = CoordinatorsRoutes()
-
 __all__ = [
-    "coordinators_module",
+    "CoordinatorsRoutes",
 ]

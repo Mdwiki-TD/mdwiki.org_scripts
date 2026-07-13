@@ -24,34 +24,35 @@ from flask.testing import FlaskClient
 from pytest_socket import disable_socket
 from sqlalchemy import text
 
-# tempfile.gettempdir() returns the path to the system's directory for temporary files
-system_temp_dir = Path(tempfile.gettempdir())
+if sys:
+    # tempfile.gettempdir() returns the path to the system's directory for temporary files
+    system_temp_dir = Path(tempfile.gettempdir())
 
-# Now correctly combine it with "test" and set the environment variable
-os.environ["MAIN_DIR"] = str(system_temp_dir / "test")
+    # Now correctly combine it with "test" and set the environment variable
+    os.environ["MAIN_DIR"] = str(system_temp_dir / "test")
 
-# Make the src/ directory importable as `main_app`. The repo's prod
-# entrypoint src/app.py does the same trick.
-_REPO = Path(__file__).resolve().parents[1]
-sys.path.insert(0, str(_REPO / "src"))
+    # Make the src/ directory importable as `main_app`. The repo's prod
+    # entrypoint src/app.py does the same trick.
+    _REPO = Path(__file__).resolve().parents[1]
+    sys.path.insert(0, str(_REPO / "src"))
 
-# ── Set ALL env vars before any src.* import ─────────────────────────────────
-# config.py executes get_settings() at module level and raises RuntimeError
-# if FLASK_SECRET_KEY is missing, so every env var must be set here first,
-# before any import that pulls in src.main_app.
-os.environ.setdefault("FLASK_SECRET_KEY", secrets.token_hex(16))
-os.environ.setdefault("FLASK_ENV", "testing")
-os.environ.setdefault("APP_ENV", "testing")
-os.environ.setdefault("OAUTH_ENCRYPTION_KEY", Fernet.generate_key().decode("utf-8"))
-os.environ.setdefault("OAUTH_CONSUMER_KEY", "test-consumer-key")
-os.environ.setdefault("OAUTH_CONSUMER_SECRET", "test-consumer-secret")
-os.environ.setdefault("OAUTH_MWURI", "https://example.org/w/index.php")
-os.environ.setdefault("WIKI_DOMAIN", "test.wikipedia.org")
+    # ── Set ALL env vars before any src.* import ─────────────────────────────────
+    # config.py executes get_settings() at module level and raises RuntimeError
+    # if FLASK_SECRET_KEY is missing, so every env var must be set here first,
+    # before any import that pulls in src.main_app.
+    os.environ.setdefault("FLASK_SECRET_KEY", secrets.token_hex(16))
+    os.environ.setdefault("FLASK_ENV", "testing")
+    os.environ.setdefault("APP_ENV", "testing")
+    os.environ.setdefault("OAUTH_ENCRYPTION_KEY", Fernet.generate_key().decode("utf-8"))
+    os.environ.setdefault("OAUTH_CONSUMER_KEY", "test-consumer-key")
+    os.environ.setdefault("OAUTH_CONSUMER_SECRET", "test-consumer-secret")
+    os.environ.setdefault("OAUTH_MWURI", "https://example.org/w/index.php")
+    os.environ.setdefault("WIKI_DOMAIN", "test.wikipedia.org")
 
 # Import after environment setup
-from src.main_app import create_app  # noqa: E402
-from src.main_app.config import TestingConfig  # noqa: E402
-from src.main_app.extensions import db as _db  # noqa: E402
+from src.main_app import create_app
+from src.main_app.config import TestingConfig
+from src.main_app.extensions import db as _db
 
 
 @pytest.fixture(autouse=True)
@@ -103,8 +104,9 @@ def mock_login(mock_client):
 
 
 @pytest.fixture(autouse=True)
-def setup_db(mock_app):
-    """Initialize an in-memory SQLite database for tests using Flask-SQLAlchemy.
+def setup_db(mock_app: Flask):
+    """
+    Initialize an in-memory SQLite database for tests using Flask-SQLAlchemy.
 
     Creates all real tables (skipping views) and creates views manually.
     The Flask-SQLAlchemy session (db.session) is used throughout tests.
@@ -124,7 +126,7 @@ def setup_db(mock_app):
                     continue
 
                 if not table.info.get("create_query"):
-                    logging.warning("View %s has no create_query, skipping", table.name)
+                    logging.error("View %s has no create_query, skipping", table.name)
                     continue
 
                 if table.name in existing_views:
@@ -135,7 +137,7 @@ def setup_db(mock_app):
                     conn.commit()
                 except Exception:
                     conn.rollback()
-                    logging.exception("Failed to create view %s", table.name)
+                    logging.error("Failed to create view %s", table.name)
 
         yield
 

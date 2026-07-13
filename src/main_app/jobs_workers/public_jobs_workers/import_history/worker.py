@@ -16,7 +16,7 @@ from mwclient.client import Site
 from ....api_services import MwClientPage
 from ....api_services.clients import get_user_site
 from ....api_services.query_api import import_page_from_wiki
-from ....jobs_workers.base_worker_object import BaseObjectsJobWorker
+from ...base_worker_object import BaseObjectsJobWorker
 from .objects import ImportHistoryWorkerObject, UpdaterOutcome
 
 logger = logging.getLogger(__name__)

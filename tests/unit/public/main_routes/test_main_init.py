@@ -9,5 +9,5 @@ TODO: write tests
 """
 
 from src.main_app.public.main_routes import (
-    bp_main,
+    MainRoutes,
 )
