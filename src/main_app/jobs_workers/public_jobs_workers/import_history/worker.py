@@ -9,7 +9,7 @@ from __future__ import annotations
 
 import logging
 import threading
-from typing import Any, Dict
+from typing import Any
 
 from mwclient.client import Site
 
@@ -174,10 +174,10 @@ class ImportHistoryWorker(BaseObjectsJobWorker):
 
 def import_history_worker_entry(
     job_id: int,
-    user: Dict[str, Any] | None = None,
+    user: dict[str, Any] | None = None,
     *,
     cancel_event: threading.Event | None = None,
-    args: Dict[str, Any] | None = None,
+    args: dict[str, Any] | None = None,
 ) -> None:
     """Background worker entry-point."""
     logger.info(f"Starting job {job_id}: import_history")

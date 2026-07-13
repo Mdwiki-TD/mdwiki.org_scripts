@@ -10,7 +10,7 @@ import logging
 import re
 import threading
 from datetime import datetime
-from typing import Any, Dict
+from typing import Any
 
 from mwclient.client import Site
 from mwclient.page import Page
@@ -254,10 +254,10 @@ class AddRColumnWorker(BaseObjectsJobWorker):
 
 def add_r_column_worker_entry(
     job_id: int,
-    user: Dict[str, Any] | None = None,
+    user: dict[str, Any] | None = None,
     *,
     cancel_event: threading.Event | None = None,
-    args: Dict[str, Any] | None = None,
+    args: dict[str, Any] | None = None,
 ) -> None:
     """Background worker entry-point."""
     logger.info(f"Starting job {job_id}: add_r_column")

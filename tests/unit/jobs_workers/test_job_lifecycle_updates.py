@@ -24,7 +24,7 @@ class MockWorker(BaseObjectsJobWorker):
     def get_job_type(self) -> str:
         return self._job_type_name
 
-    def process(self) -> Dict[str, Any]:
+    def process(self) -> dict[str, Any]:
         return self.result.to_json()
 
 
