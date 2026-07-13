@@ -19,7 +19,7 @@ def extract_classes_and_functions(file_path):
                 if not node.name.startswith("_"):
                     classes.append(node.name)
 
-            elif isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)):
+            elif isinstance(node, ast.FunctionDef | ast.AsyncFunctionDef):
                 # Ignore functions starting with _
                 if not node.name.startswith("_"):
                     functions.append(node.name)
