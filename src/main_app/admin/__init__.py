@@ -13,7 +13,7 @@ from .routes import (
 
 
 def register_bp_admin_blueprints(app: Flask) -> None:
-    bp_admin = Blueprint("adminpanel", __name__, url_prefix="/admin")
+    bp_admin = Blueprint("adminpanel", __name__, url_prefix="/adminpanel")
     admin_model = AdminPanel(bp_admin)  # noqa: F841
 
     bp_coords = Blueprint("coordinators", __name__, url_prefix="/coordinators")

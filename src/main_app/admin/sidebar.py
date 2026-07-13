@@ -31,8 +31,8 @@ def _safe_url_for(endpoint: str, fallback: str, **values) -> str:
 
 def generate_list_item(item: SidebarItem) -> str:
     """Generate HTML for a single navigation link."""
-    href_full = item.href if item.target else f"/admin/{item.href}"
-    if item.href.startswith("/admin/"):
+    href_full = item.href if item.target else f"/adminpanel/{item.href}"
+    if item.href.startswith("/adminpanel/"):
         href_full = item.href
 
     icon_tag = f"<i class='bi {item.icon} me-1'></i>" if item.icon else ""
@@ -188,14 +188,14 @@ def load_menu() -> dict[str, list[SidebarItem]]:
             SidebarItem(
                 id="admins",
                 admin=1,
-                href=_safe_url_for("adminpanel.coordinators.dashboard", "/admin/coordinators/"),
+                href=_safe_url_for("adminpanel.coordinators.dashboard", "/adminpanel/coordinators/"),
                 title="Coordinators",
                 icon="bi-person-gear",
             ),
             SidebarItem(
                 id="users",
                 admin=1,
-                href=_safe_url_for("adminpanel.users.dashboard", "/admin/users/"),
+                href=_safe_url_for("adminpanel.users.dashboard", "/adminpanel/users/"),
                 title="Users",
                 icon="bi-person",
             ),
@@ -205,7 +205,7 @@ def load_menu() -> dict[str, list[SidebarItem]]:
             SidebarItem(
                 id="settings",
                 admin=1,
-                href=_safe_url_for("adminpanel.settings.dashboard", "/admin/settings/"),
+                href=_safe_url_for("adminpanel.settings.dashboard", "/adminpanel/settings/"),
                 title="Settings",
                 icon="bi-gear",
             ),
