@@ -20,7 +20,7 @@ from ....api_services import MwClientPage
 from ....api_services.clients import get_user_site
 from ....api_services.query_api import get_double_redirects
 from ....shared.replace_wikilink import replace_wikilink_destinations
-from ...base_worker_object import BaseObjectsJobWorker
+from ...base_worker import BaseObjectsJobWorker
 from ...shared_objects import SharedworkerObject, UpdaterOutcome
 
 logger = logging.getLogger(__name__)

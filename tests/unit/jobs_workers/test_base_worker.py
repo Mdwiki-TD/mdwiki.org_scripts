@@ -1,10 +1,10 @@
-"""Unit tests for src/main_app/jobs/base_worker_object.py (test_base_worker.py)."""
+"""Unit tests for src/main_app/jobs/base_worker.py (test_base_worker.py)."""
 
 from __future__ import annotations
 
 import pytest
 
-from src.main_app.jobs_workers.base_worker_object import BaseObjectsJobWorker
+from src.main_app.jobs_workers.base_worker import BaseObjectsJobWorker
 
 
 class TestBaseObjectsJobWorkerAbstract:

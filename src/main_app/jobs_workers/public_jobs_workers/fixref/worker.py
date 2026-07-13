@@ -17,7 +17,7 @@ from mwclient.client import Site
 from ....api_services import MwClientPage, get_category_members
 from ....api_services.clients import get_user_site
 from ....shared.fixref_shared.fixref_text_new import fix_ref_template
-from ...base_worker_object import BaseObjectsJobWorker
+from ...base_worker import BaseObjectsJobWorker
 from ...shared_objects import SharedworkerObject, UpdaterOutcome
 
 logger = logging.getLogger(__name__)

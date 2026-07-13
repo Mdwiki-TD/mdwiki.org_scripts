@@ -7,7 +7,7 @@ from flask.app import Flask
 from src.main_app.db.models.jobs import JobRecord
 from src.main_app.db.services.jobs_service import create_job, is_job_cancelled
 from src.main_app.extensions import db
-from src.main_app.jobs_workers.base_worker_object import BaseObjectsJobWorker, WorkerObject
+from src.main_app.jobs_workers.base_worker import BaseObjectsJobWorker, WorkerObject
 
 
 class MockWorker(BaseObjectsJobWorker):

@@ -17,7 +17,7 @@ from mwclient.page import Page
 
 from ....api_services import MwClientPage, get_user_site
 from ....api_services.query_api import get_template_pages
-from ...base_worker_object import BaseObjectsJobWorker
+from ...base_worker import BaseObjectsJobWorker
 from .add_rtt import count_r_rows, inject_r_column_into_tables
 from .objects import AddRColumnWorkerObject
 from .utils import fix_title
