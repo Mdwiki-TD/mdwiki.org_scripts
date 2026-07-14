@@ -23,7 +23,7 @@ class AddUnlinkedWikibaseWorker(BaseObjectsJobWorker):
         self,
         job_id: int,
         args: dict[str, Any] | None,
-        user: dict[str, Any] | None,
+        user: dict[str, Any],
         cancel_event: threading.Event | None = None,
     ) -> None:
         self.args = args or {}
@@ -52,7 +52,7 @@ class AddUnlinkedWikibaseWorker(BaseObjectsJobWorker):
 
 def add_unlinkedwikibase_worker_entry(
     job_id: int,
-    user: dict[str, Any] | None = None,
+    user: dict[str, Any],
     *,
     cancel_event: threading.Event | None = None,
     args: dict[str, Any] | None = None,
