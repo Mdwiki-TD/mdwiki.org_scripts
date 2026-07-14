@@ -32,7 +32,7 @@ class FixRefWorker(BaseObjectsJobWorker):
         self,
         job_id: int,
         args: Any,
-        user: dict[str, Any] | None,
+        user: dict[str, Any],
         cancel_event: threading.Event | None = None,
     ) -> None:
         self.args = args
@@ -222,7 +222,7 @@ class FixRefWorker(BaseObjectsJobWorker):
 
 def fixref_worker_entry(
     job_id: int,
-    user: dict[str, Any] | None = None,
+    user: dict[str, Any],
     *,
     cancel_event: threading.Event | None = None,
     args: dict[str, Any] | None = None,

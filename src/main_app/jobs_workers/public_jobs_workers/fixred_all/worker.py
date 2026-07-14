@@ -29,7 +29,7 @@ class FixRedAllWorker(BaseObjectsJobWorker):
         self,
         job_id: int,
         args: Any,
-        user: dict[str, Any] | None,
+        user: dict[str, Any],
         cancel_event: threading.Event | None = None,
     ) -> None:
         self.args = args
@@ -154,7 +154,7 @@ class FixRedAllWorker(BaseObjectsJobWorker):
 
 def fixred_all_worker_entry(
     job_id: int,
-    user: dict[str, Any] | None = None,
+    user: dict[str, Any],
     *,
     cancel_event: threading.Event | None = None,
     args: dict[str, Any] | None = None,
