@@ -8,7 +8,7 @@ from typing import Any
 
 import wikitextparser as wtp
 
-from .bots.Remove import portal_remove, remove_cite_web
+from .bots.remove_worker import portal_remove, remove_cite_web
 from .lists.identifier_params import identifiers_params
 
 logger = logging.getLogger(__name__)
