@@ -11,11 +11,7 @@ from .routes import (
     UsersRoutes,
 )
 
-
-def register_bp_admin_blueprints(app: Flask) -> None:
-    bp_admin = Blueprint("adminpanel", __name__, url_prefix="/adminpanel")
-    admin_model = AdminPanel(bp_admin)
-
+def register_admin_blueprints(bp_admin: Blueprint) -> None:
     bp_coords = Blueprint("coordinators", __name__, url_prefix="/coordinators")
     coords_model = CoordinatorsRoutes(bp_coords)
 
@@ -39,8 +35,12 @@ def register_bp_admin_blueprints(app: Flask) -> None:
     bp_admin.register_blueprint(settings_module.bp)
     bp_admin.register_blueprint(jobs_module.bp)
 
-    app.register_blueprint(bp_admin)
+def register_bp_admin_blueprints(app: Flask) -> None:
+    bp_admin = Blueprint("adminpanel", __name__, url_prefix="/adminpanel")
+    admin_model = AdminPanel(bp_admin)
 
+    register_admin_blueprints(admin_model.bp)
+    app.register_blueprint(admin_model.bp)
 
 __all__ = [
     "register_bp_admin_blueprints",
