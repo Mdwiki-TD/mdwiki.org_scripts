@@ -16,9 +16,9 @@ from __future__ import annotations
 import functools
 import logging
 import os
+from collections.abc import Callable, Iterable
 from threading import Event
 from typing import Any
-from collections.abc import Callable, Iterable
 
 import requests
 

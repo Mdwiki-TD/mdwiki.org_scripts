@@ -13,7 +13,6 @@ from ..auth.utils import oauth_required
 
 # from ..utils.routes_utils import can_run_jobs
 
-bp_newupdater = Blueprint("newupdater", __name__, url_prefix="/newupdater")
 
 logger = logging.getLogger(__name__)
 
@@ -64,60 +63,63 @@ def _newupdater(title: str, save: bool) -> str:
     )
 
 
-@bp_newupdater.route("/<path:title>", methods=["GET"])
-@oauth_required
-def worker(title: str) -> str:
-    title = _parse_title(title)
-    return _newupdater(title, False)
+class NewUpdaterRoutes:
+    def __init__(self, bp: Blueprint) -> None:
+        self.bp = bp
+        self._setup_routes()
 
+    def _setup_routes(self) -> None:
+        @self.bp.route("/<path:title>", methods=["GET"])
+        @oauth_required
+        def worker(title: str) -> str:
+            title = _parse_title(title)
+            return _newupdater(title, False)
 
-@bp_newupdater.route("/save/<path:title>", methods=["GET"])
-@oauth_required
-def auto_save(title: str) -> str:
-    """
-    Process a title string and trigger a new update with auto-save enabled.
-    NOTE: this route already used in https://mdwiki.org/wiki/MediaWiki:Sidebars:
-        `**https://mdw.toolforge.org/newupdater/save/{{urlencode:{{PAGENAME}}}}|Med updater`
+        @self.bp.route("/save/<path:title>", methods=["GET"])
+        @oauth_required
+        def auto_save(title: str) -> str:
+            """
+            Process a title string and trigger a new update with auto-save enabled.
+            NOTE: this route already used in https://mdwiki.org/wiki/MediaWiki:Sidebars:
+                `**https://mdw.toolforge.org/newupdater/save/{{urlencode:{{PAGENAME}}}}|Med updater`
 
-    Args:
-        title (str): The raw title string to be processed.
+            Args:
+                title (str): The raw title string to be processed.
 
-    Returns:
-        str: The result returned by the `_newupdater` function after processing the title.
-    """
-    title = _parse_title(title)
-    return _newupdater(title, True)
+            Returns:
+                str: The result returned by the `_newupdater` function after processing the title.
+            """
+            title = _parse_title(title)
+            return _newupdater(title, True)
 
+        @self.bp.route("/update", methods=["GET"])
+        @oauth_required
+        def newupdater() -> str | Response:
+            title = _parse_title(request.args.get("title") or "")
+            save = request.args.get("save") == "1"
 
-@bp_newupdater.route("/update", methods=["GET"])
-@oauth_required
-def newupdater() -> str | Response:
-    title = _parse_title(request.args.get("title") or "")
-    save = request.args.get("save") == "1"
+            # If the title is empty, just render the default page without redirecting
+            if not title:
+                return _newupdater("", False)
 
-    # If the title is empty, just render the default page without redirecting
-    if not title:
-        return _newupdater("", False)
+            if save:
+                # Redirect to auto_save route: /save/<path:title>
+                return redirect(url_for("newupdater.auto_save", title=title))
+            else:
+                # Redirect to worker route: /<path:title>
+                return redirect(url_for("newupdater.worker", title=title))
 
-    if save:
-        # Redirect to auto_save route: /save/<path:title>
-        return redirect(url_for("newupdater.auto_save", title=title))
-    else:
-        # Redirect to worker route: /<path:title>
-        return redirect(url_for("newupdater.worker", title=title))
-
-
-@bp_newupdater.route("/", methods=["GET"])
-def index() -> str:
-    return render_template(
-        "newupdater.html",
-        title="Medical content updater",
-        form_title="",
-        outcome=None,
-        save=False,
-    )
+        @self.bp.route("/", methods=["GET"])
+        def index() -> str:
+            return render_template(
+                "newupdater.html",
+                title="Medical content updater",
+                form_title="",
+                outcome=None,
+                save=False,
+            )
 
 
 __all__ = [
-    "bp_newupdater",
+    "NewUpdaterRoutes",
 ]

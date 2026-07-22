@@ -17,10 +17,10 @@ they live in :class:`RunState` so concurrent jobs can't collide.
 from __future__ import annotations
 
 import logging
+from collections.abc import Callable
 from dataclasses import dataclass, field
 from threading import Event
 from typing import Any
-from collections.abc import Callable
 
 import mwclient
 

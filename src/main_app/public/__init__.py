@@ -4,9 +4,9 @@ from flask import Blueprint, Flask
 
 from ..jobs_workers.public_jobs_workers.workers_list_public import jobs_data_public
 from .auth.routes import AuthRoutes
-from .fixred import bp_fixred
+from .fixred import FixRedRoutes
 from .main_routes import MainRoutes
-from .newupdater.route import bp_newupdater
+from .newupdater.route import NewUpdaterRoutes
 from .profile import ProfileRoutes
 from .public_jobs import PublicJobsRoutes
 
@@ -28,13 +28,18 @@ def register_blueprints(app: Flask) -> None:
     bp_profile = Blueprint("profile", __name__, url_prefix="/profile")
     profile_model = ProfileRoutes(bp_profile)
 
+    bp_fixred = Blueprint("fixred", __name__, url_prefix="/fixred")
+    fixred_model = FixRedRoutes(bp_fixred)
+
+    bp_newupdater = Blueprint("newupdater", __name__, url_prefix="/newupdater")
+    newupdater_model = NewUpdaterRoutes(bp_newupdater)
+
     app.register_blueprint(auth_model.bp)
     app.register_blueprint(profile_model.bp)
-
     app.register_blueprint(main_model.bp)
     app.register_blueprint(jobs_public_module.bp)
-    app.register_blueprint(bp_newupdater)
-    app.register_blueprint(bp_fixred)
+    app.register_blueprint(newupdater_model.bp)
+    app.register_blueprint(fixred_model.bp)
 
 
 __all__ = [
