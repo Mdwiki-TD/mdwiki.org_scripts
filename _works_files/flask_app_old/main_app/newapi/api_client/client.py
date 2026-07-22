@@ -36,7 +36,7 @@ import http.cookiejar
 import logging
 import time
 from pathlib import Path
-from typing import Any, Optional, Union
+from typing import Any
 
 import mwclient
 import mwclient.errors
@@ -113,9 +113,9 @@ class RequestsHandler:
         method: str,
         url: str,
         *,
-        params: Optional[dict] = None,
-        data: Optional[dict] = None,
-        files: Optional[Any] = None,
+        params: dict | None = None,
+        data: dict | None = None,
+        files: Any | None = None,
     ) -> requests.Response:
         """
         Send one HTTP request through the session with no retry logic.
@@ -138,9 +138,9 @@ class RequestsHandler:
         method: str,
         url: str,
         *,
-        params: Optional[dict] = None,
-        data: Optional[dict] = None,
-        files: Optional[Any] = None,
+        params: dict | None = None,
+        data: dict | None = None,
+        files: Any | None = None,
         assertnameduser_retries: int = 1,
     ) -> dict:
         """
@@ -750,13 +750,13 @@ class WikiLoginClient(CookiesClient, RequestsHandler):
         params: dict,
         action: str,
         _p_: str = "pages",
-        p_empty: Optional[Union[list, dict]] = None,
+        p_empty: list | dict | None = None,
         max: int = 500_000,
         first: bool = False,
         _p_2: str = "",
-        _p_2_empty: Optional[Union[list, dict]] = None,
+        _p_2_empty: list | dict | None = None,
         **kwargs,
-    ) -> Union[list, dict]:
+    ) -> list | dict:
         """
         Drive a MediaWiki API continuation query to completion.
 

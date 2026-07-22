@@ -15,7 +15,8 @@ from __future__ import annotations
 
 import logging
 from threading import Event
-from typing import Any, Callable, Iterable, Optional
+from typing import Any
+from collections.abc import Callable, Iterable
 
 from .._api import get_api
 
@@ -74,8 +75,8 @@ def run(
     titles: Iterable[str],
     from_lang: str = "en",  # reserved; current import_page only accepts family
     save: bool = True,
-    on_progress: Optional[Callable[..., None]] = None,
-    stop_event: Optional[Event] = None,
+    on_progress: Callable[..., None] | None = None,
+    stop_event: Event | None = None,
 ) -> dict[str, Any]:
     """Import revision history for each title.
 

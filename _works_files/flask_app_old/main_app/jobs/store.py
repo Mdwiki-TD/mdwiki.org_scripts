@@ -10,7 +10,6 @@ import json
 import threading
 import uuid
 from pathlib import Path
-from typing import Optional
 
 from ..config import settings
 from .models import Job
@@ -37,7 +36,7 @@ class JobStore:
             with self._lock:
                 self._jobs[job.id] = job
 
-    def create(self, tool: str, *, submitted_by: str = "", params: Optional[dict] = None) -> Job:
+    def create(self, tool: str, *, submitted_by: str = "", params: dict | None = None) -> Job:
         job = Job(
             id=uuid.uuid4().hex[:12],
             tool=tool,
@@ -48,11 +47,11 @@ class JobStore:
             self._jobs[job.id] = job
         return job
 
-    def get(self, job_id: str) -> Optional[Job]:
+    def get(self, job_id: str) -> Job | None:
         with self._lock:
             return self._jobs.get(job_id)
 
-    def find_active(self, tool: str) -> Optional[Job]:
+    def find_active(self, tool: str) -> Job | None:
         """First in-flight job for the given tool, or None."""
 
         with self._lock:
@@ -66,7 +65,7 @@ class JobStore:
             return list(self._jobs.values())
 
 
-_store: Optional[JobStore] = None
+_store: JobStore | None = None
 
 
 def get_store() -> JobStore:
