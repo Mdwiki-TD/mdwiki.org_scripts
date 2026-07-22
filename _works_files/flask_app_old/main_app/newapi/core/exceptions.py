@@ -5,7 +5,7 @@ Provides typed exceptions for consistent error handling across the codebase,
 replacing the inconsistent return types (str, bool, None) in error handling.
 """
 
-from typing import Any, Dict, Optional
+from typing import Any
 
 
 class NewApiException(Exception):
@@ -40,7 +40,7 @@ class ApiError(NewApiException):
         message: str,
         info: str = "",
         is_retryable: bool = False,
-        raw_error: Optional[Dict[str, Any]] = None,
+        raw_error: dict[str, Any] | None = None,
     ) -> None:
         self.info = info
         self.is_retryable = is_retryable
@@ -63,7 +63,7 @@ class AbuseFilterError(ApiError):
         self,
         description: str,
         filter_id: str = "",
-        raw_error: Optional[Dict[str, Any]] = None,
+        raw_error: dict[str, Any] | None = None,
     ) -> None:
         self.filter_id = filter_id
         self.description = description
@@ -91,7 +91,7 @@ class MaxLagError(ApiError):
         self,
         lag: int = 0,
         message: str = "Database lag is too high",
-        raw_error: Optional[Dict[str, Any]] = None,
+        raw_error: dict[str, Any] | None = None,
     ) -> None:
         self.lag = lag
         super().__init__(
@@ -111,7 +111,7 @@ class ArticleExistsError(ApiError):
     def __init__(
         self,
         message: str = "The article you tried to create has been created already.",
-        raw_error: Optional[Dict[str, Any]] = None,
+        raw_error: dict[str, Any] | None = None,
     ) -> None:
         super().__init__(
             code="articleexists",
@@ -129,7 +129,7 @@ class NoSuchEntityError(ApiError):
     def __init__(
         self,
         message: str = "The entity does not exist.",
-        raw_error: Optional[Dict[str, Any]] = None,
+        raw_error: dict[str, Any] | None = None,
     ) -> None:
         super().__init__(
             code="no-such-entity",
@@ -147,7 +147,7 @@ class ProtectedPageError(ApiError):
     def __init__(
         self,
         message: str = "The page is protected.",
-        raw_error: Optional[Dict[str, Any]] = None,
+        raw_error: dict[str, Any] | None = None,
     ) -> None:
         super().__init__(
             code="protectedpage",
@@ -167,7 +167,7 @@ class InvalidTokenError(ApiError):
     def __init__(
         self,
         message: str = "Invalid CSRF token.",
-        raw_error: Optional[Dict[str, Any]] = None,
+        raw_error: dict[str, Any] | None = None,
     ) -> None:
         super().__init__(code="badtoken", message=message, is_retryable=True, raw_error=raw_error)
 
@@ -191,7 +191,7 @@ class ValidationError(NewApiException):
         super().__init__(message, code="validation_error")
 
 
-def parse_api_error(error_dict: Dict[str, Any]) -> Optional[ApiError]:
+def parse_api_error(error_dict: dict[str, Any]) -> ApiError | None:
     """
     Parse an API error dictionary and return the appropriate exception.
 

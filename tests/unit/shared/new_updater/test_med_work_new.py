@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from src.main_app.shared.new_updater.MedWorkNew import med_updater_one
+from src.main_app.shared.new_updater.med_work_new import med_updater_one
 
 
 class TestWorkOnText:

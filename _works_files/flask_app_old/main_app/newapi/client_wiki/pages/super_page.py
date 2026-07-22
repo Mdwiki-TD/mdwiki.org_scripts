@@ -1,7 +1,7 @@
 """ """
 
 import logging
-from typing import Any, Dict, Optional, Union
+from typing import Any
 
 import wikitextparser as wtp
 
@@ -56,8 +56,8 @@ class MainPage(HandleErrors):
 
         self.text: str = ""
         self.newtext: str = ""
-        self.ns: Union[bool, int] = False
-        self.langlinks: Dict[str, str] = {}
+        self.ns: bool | int = False
+        self.langlinks: dict[str, str] = {}
 
         self.meta = Meta()
         self.content = Content()
@@ -72,11 +72,11 @@ class MainPage(HandleErrors):
 
     def client_request(
         self,
-        params: Dict[str, Any],
+        params: dict[str, Any],
         method: str = "get",
-        files: Optional[Dict[str, Any]] = None,
+        files: dict[str, Any] | None = None,
         **kwargs,
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         return self.login_bot.client_request(
             params,
             method=method,

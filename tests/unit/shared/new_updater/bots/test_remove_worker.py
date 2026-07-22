@@ -1,8 +1,8 @@
-"""Unit tests for src/main_app/shared/new_updater/bots/Remove.py."""
+"""Unit tests for src/main_app/shared/new_updater/bots/remove_worker.py."""
 
 from __future__ import annotations
 
-from src.main_app.shared.new_updater.bots.Remove import portal_remove
+from src.main_app.shared.new_updater.bots.remove_worker import portal_remove
 
 
 class TestPortalRemove:

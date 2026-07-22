@@ -19,7 +19,8 @@ from __future__ import annotations
 import logging
 from dataclasses import dataclass, field
 from threading import Event
-from typing import Any, Callable, Optional
+from typing import Any
+from collections.abc import Callable
 
 import mwclient
 
@@ -74,8 +75,8 @@ def _treat_page(api: AllAPIS, title: str, state: RunState, *, save: bool, site: 
 
 def run_all(
     save: bool = True,
-    on_progress: Optional[Callable[..., None]] = None,
-    stop_event: Optional[Event] = None,
+    on_progress: Callable[..., None] | None = None,
+    stop_event: Event | None = None,
 ) -> dict[str, Any]:
     """ """
 

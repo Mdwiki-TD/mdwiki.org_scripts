@@ -20,7 +20,8 @@ from __future__ import annotations
 
 import logging
 from threading import Event
-from typing import Any, Callable, Literal, Optional
+from typing import Any, Literal
+from collections.abc import Callable
 
 from .._api import get_api
 
@@ -87,10 +88,10 @@ def run(
     find: str,
     replace: str = "",
     listtype: ListType = "newlist",
-    number: Optional[int] = None,
+    number: int | None = None,
     save: bool = True,
-    on_progress: Optional[Callable[..., None]] = None,
-    stop_event: Optional[Event] = None,
+    on_progress: Callable[..., None] | None = None,
+    stop_event: Event | None = None,
 ) -> dict[str, Any]:
     """Iterate the resolved page list and apply ``find -> replace`` per page.
 

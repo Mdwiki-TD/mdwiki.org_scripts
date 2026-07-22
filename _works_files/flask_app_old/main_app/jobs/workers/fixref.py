@@ -19,7 +19,8 @@ from __future__ import annotations
 
 import logging
 from threading import Event
-from typing import Any, Callable, Iterable, Optional
+from typing import Any
+from collections.abc import Callable, Iterable
 
 from ...shared.fixref_shared.fixref_text_new import fix_ref_template
 from .._api import get_api
@@ -44,9 +45,9 @@ def _legacy_fix_ref_template(text: str) -> tuple[str, str]:
 def _resolve_targets(
     api,
     *,
-    titles: Optional[Iterable[str]],
-    category: Optional[str],
-    number: Optional[int],
+    titles: Iterable[str] | None,
+    category: str | None,
+    number: int | None,
 ) -> list[str]:
     """Resolve which pages to process given the input options."""
 
@@ -82,12 +83,12 @@ def _resolve_targets(
 
 def run(
     *,
-    titles: Optional[Iterable[str]] = None,
-    category: Optional[str] = None,
-    number: Optional[int] = None,
+    titles: Iterable[str] | None = None,
+    category: str | None = None,
+    number: int | None = None,
     save: bool = True,
-    on_progress: Optional[Callable[..., None]] = None,
-    stop_event: Optional[Event] = None,
+    on_progress: Callable[..., None] | None = None,
+    stop_event: Event | None = None,
 ) -> dict[str, Any]:
     """Iterate the resolved targets and normalize references on each."""
 

@@ -5,7 +5,7 @@ Flask application factory.
 from __future__ import annotations
 
 import logging
-from typing import Any, Type
+from typing import Any
 
 from flask import Flask, Response, flash, jsonify, render_template, request
 from flask_wtf.csrf import CSRFError
@@ -118,7 +118,7 @@ def init_app_and_db(app, _db) -> bool:
     return False
 
 
-def create_app(config_class: Type) -> Flask:
+def create_app(config_class: type) -> Flask:
     """Instantiate and configure the Flask application.
 
     Args:

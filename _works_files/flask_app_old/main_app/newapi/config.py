@@ -15,7 +15,6 @@ Example:
 import os
 import sys
 from dataclasses import dataclass, field
-from typing import Optional
 
 from dotenv import load_dotenv
 
@@ -88,7 +87,7 @@ class DatabaseConfig:
         use_sql: Whether to use SQL database for queries
     """
 
-    host: Optional[str] = None
+    host: str | None = None
     port: int = 3306
     use_sql: bool = True
 

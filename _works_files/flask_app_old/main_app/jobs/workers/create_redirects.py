@@ -17,7 +17,8 @@ import functools
 import logging
 import os
 from threading import Event
-from typing import Any, Callable, Iterable, Optional
+from typing import Any
+from collections.abc import Callable, Iterable
 
 import requests
 
@@ -141,8 +142,8 @@ def run(
     *,
     titles: Iterable[str],
     save: bool = True,
-    on_progress: Optional[Callable[..., None]] = None,
-    stop_event: Optional[Event] = None,
+    on_progress: Callable[..., None] | None = None,
+    stop_event: Event | None = None,
 ) -> dict[str, Any]:
     """Iterate ``titles`` and copy enwiki redirects for each."""
 

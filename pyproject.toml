@@ -13,7 +13,7 @@ test = ["pytest>=7"]
 [tool.black]
 line-length = 120
 target-version = ["py313"]
-include = '\.pyi?$'
+# include = '\.pyi?$'
 exclude = '''
     /(
         \.git
@@ -26,6 +26,7 @@ exclude = '''
       | build
       | dist
       | typings
+      | site-packages
     )/
 '''
 
@@ -64,30 +65,54 @@ skip = [
 # ============================================
 [tool.ruff]
 exclude = [
-    ".git",
-    ".git-rewrite",
-    ".hg",
-    ".ipynb_checkpoints",
-    ".mypy_cache",
-    ".nox",
-    ".pants.d",
-    ".pyenv",
-    ".pytest_cache",
-    ".pytype",
-    ".ruff_cache",
-    ".svn",
-    ".tox",
-    ".venv",
-    ".vscode",
-    "typings",
-    "__pypackages__",
-    "_build",
-    "buck-out",
-    "old",
-    "build",
-    "dist",
-    "site-packages",
-    "venv",
+    # System & Version Control
+    "**/$RECYCLE.BIN/**",
+    "**/.git/**",
+    "**/.git-rewrite/**",
+    "**/.hg/**",
+    "**/.svn/**",
+
+    # Editors & IDEs
+    "**/.vscode/**",
+    "**/.ipynb_checkpoints/**",
+
+    # Python Caches & Environments
+    "**/__pycache__/**",
+    "**/.venv/**",
+    "**/venv/**",
+    "**/.pyenv/**",
+  "**/site-packages/**",
+    "**/__pypackages__/**",
+
+    # Tools, Linters & Builders
+    "**/.mypy_cache/**",
+    "**/.pytest_cache/**",
+    "**/.ruff_cache/**",
+    "**/.nox/**",
+    "**/.pants.d/**",
+    "**/.pytype/**",
+    "**/.tox/**",
+    "**/_build/**",
+    "**/buck-out/**",
+    "**/build/**",
+    "**/dist/**",
+
+    # Project Specific Modules & Vendors
+    "**/node_modules/**",
+    "**/setuptools/**",
+    "**/typings/**",
+    "**/vendor/**",
+
+    # Archive & Old Codes
+    "**/old/**",
+    "**/OLD_REPOS/**",
+    "**/OldCodes/**",
+    "**/core8/**",
+    "**/i18n/**",
+    "**/MagicMock/**",
+
+    # Global System Paths
+    "C:/**",
 ]
 line-length = 120
 target-version = "py313"
@@ -107,18 +132,19 @@ docstring-code-format = true
 docstring-code-line-length = 120
 
 [tool.ruff.lint]
-# "E402", "E225", "E226", "E227", "E228", "E252", "F841", "E224", "E203", "F401",
 ignore = [
-    "E501",
-    "UP035",
-    "UP006",
-    "N806",
-    "N999",
-    "UP015",
-    "I001",
-    "N802",
-    "UP007",
-    "UP045",
+    "E501", # Line too long
+    "F841", # Local variable is assigned to but never used
+    # "N802",  # Function name should be lowercase
+    "N806", # Variable in function should be lowercase
+    # "UP007", # Use `X | Y` for type annotations instead of `Optional[X]`
+    "UP031", # Use format specifiers instead of percent format
+    # "UP045", # Use `X | None` instead of `Optional[X]`
+    # "UP006",  # Use `list` instead of `List` for type annotations
+    # "UP035",  # Use `X | Y` for type unions instead of `Union[X, Y]`
+    "I001", # Import block is un-sorted or un-formatted
+    # "N999",   # Invalid module name
+    "UP015", # Unnecessary open mode parameters
 ]
 select = [
     "E",       # pycodestyle (error)
@@ -160,7 +186,6 @@ warn_unused_configs = true
 disallow_untyped_defs = false
 ignore_missing_imports = true
 
-
 [tool.pylint.messages_control]
 max-line-length = 120
 disable = [
@@ -171,24 +196,85 @@ disable = [
 
 
 [tool.pyright]
+reportIncompatibleMethodOverride = "none"
 # Target Python version for type analysis
 pythonVersion = "3.13"
 stubPath = "typings"
 # Paths to include and exclude from checking
 include = ["src"]
-exclude = ["typings", "**/node_modules", "**/__pycache__", ".venv"]
+exclude = [
+    # System & Version Control
+    "**/$RECYCLE.BIN/**",
+    "**/.git/**",
+    "**/.git-rewrite/**",
+    "**/.hg/**",
+    "**/.svn/**",
+
+    # Editors & IDEs
+    "**/.vscode/**",
+    "**/.ipynb_checkpoints/**",
+
+    # Python Caches & Environments
+    "**/__pycache__/**",
+  "**/.venv/**",
+    "**/venv/**",
+    "**/.pyenv/**",
+    "**/site-packages/**",
+    "**/__pypackages__/**",
+
+    # Tools, Linters & Builders
+    "**/.mypy_cache/**",
+    "**/.pytest_cache/**",
+    "**/.ruff_cache/**",
+    "**/.nox/**",
+    "**/.pants.d/**",
+    "**/.pytype/**",
+    "**/.tox/**",
+    "**/_build/**",
+    "**/buck-out/**",
+    "**/build/**",
+    "**/dist/**",
+
+    # Project Specific Modules & Vendors
+    "**/node_modules/**",
+    "**/setuptools/**",
+    "**/typings/**",
+    "**/vendor/**",
+
+    # Archive & Old Codes
+  "**/old/**",
+  "**/OLD_REPOS/**",
+  "**/OldCodes/**",
+    "**/core8/**",
+    "**/i18n/**",
+  "**/MagicMock/**",
+
+    # Global System Paths
+    "C:/**",
+]
 
 # Diagnostic modes: "basic" or "standard" or "strict"
-typeCheckingMode = "basic"
+typeCheckingMode = "standard"
 
 # Automatically find virtual environments
 venvPath = "."
 venv = ".venv"
 
-# Fine-tune specific warning rules
-reportMissingTypeStubs = false
-reportGeneralTypeIssues = false
+reportPrivateUsage = false
+reportMissingTypeArgument = false
 reportUnknownMemberType = false
+reportUnknownVariableType = false
+
+reportUnusedFunction = false
+reportUnusedVariable = false
+reportMissingParameterType = false
+reportUnknownParameterType = false
+reportMissingTypeStubs = false
+reportUnknownArgumentType = false
+
+# Fine-tune specific warning rules
+reportPossiblyUnboundVariable = true
+reportGeneralTypeIssues = false
 enableReachabilityAnalysis = false
 strictListInference = false
 strictDictionaryInference = false
@@ -202,7 +288,7 @@ strictParameterNoneValue = true
 enableTypeIgnoreComments = true
 reportMissingModuleSource = "warning"
 reportInvalidTypeForm = "warning"
-reportMissingImports = "warning"
+reportMissingImports = "error"
 reportUndefinedVariable = "warning"
 
 reportReturnType = false
@@ -213,8 +299,6 @@ reportOptionalMemberAccess = "warning"
 reportCallIssue = "warning"
 reportOptionalSubscript = "warning"
 
-
-# -----
 reportAbstractUsage = false
 reportAssertAlwaysTrue = false
 reportAssertTypeFailure = false
@@ -226,7 +310,6 @@ reportFunctionMemberAccess = false
 reportImplicitOverride = false
 reportImplicitStringConcatenation = false
 reportImportCycles = false
-reportIncompatibleMethodOverride = false
 reportIncompatibleVariableOverride = false
 reportIncompleteStub = false
 reportInconsistentOverload = false
@@ -236,18 +319,14 @@ reportInvalidStubStatement = false
 reportInvalidTypeArguments = false
 reportInvalidTypeVarUse = false
 reportMatchNotExhaustive = false
-reportMissingParameterType = false
 reportMissingSuperCall = false
-reportMissingTypeArgument = false
 reportOperatorIssue = false
 reportOptionalCall = false
 reportOptionalContextManager = false
 reportOptionalIterable = false
 reportOptionalOperand = false
 reportOverlappingOverload = false
-reportPossiblyUnboundVariable = false
 reportPrivateImportUsage = false
-reportPrivateUsage = false
 reportPropertyTypeMismatch = false
 reportRedeclaration = false
 reportTypeCommentUsage = false
@@ -255,5 +334,4 @@ reportTypedDictNotRequiredAccess = false
 reportUnboundVariable = false
 reportUnhashable = false
 reportUninitializedInstanceVariable = false
-reportUnknownArgumentType = false
 reportUnknownLambdaType = false

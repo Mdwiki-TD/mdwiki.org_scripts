@@ -5,7 +5,8 @@ from __future__ import annotations
 import logging
 from concurrent.futures import ThreadPoolExecutor
 from datetime import UTC, datetime
-from typing import Any, Callable, Optional
+from typing import Any
+from collections.abc import Callable
 
 from ..config import settings
 from .models import Job
@@ -13,7 +14,7 @@ from .store import get_store
 
 logger = logging.getLogger(__name__)
 
-_executor: Optional[ThreadPoolExecutor] = None
+_executor: ThreadPoolExecutor | None = None
 
 
 def _get_executor() -> ThreadPoolExecutor:
@@ -26,7 +27,7 @@ def _get_executor() -> ThreadPoolExecutor:
     return _executor
 
 
-def _bump(job: Job, status: Optional[str] = None) -> None:
+def _bump(job: Job, status: str | None = None) -> None:
     job.updated_at = datetime.now(UTC)
     if status is not None:
         job.status = status
@@ -39,7 +40,7 @@ def submit(
     fn: Callable[..., Any],
     *,
     submitted_by: str = "",
-    params: Optional[dict] = None,
+    params: dict | None = None,
     **kwargs: Any,
 ) -> Job:
     """Queue ``fn`` for execution under a new :class:`Job`.
@@ -55,7 +56,7 @@ def submit(
     store = get_store()
     job = store.create(tool, submitted_by=submitted_by, params=params or {})
 
-    def on_progress(done: int, total: int = 0, message: Optional[str] = None) -> None:
+    def on_progress(done: int, total: int = 0, message: str | None = None) -> None:
         try:
             job.progress["done"] = int(done)
         except (TypeError, ValueError):
