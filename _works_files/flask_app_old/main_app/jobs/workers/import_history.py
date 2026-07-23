@@ -14,9 +14,9 @@ In-process replacement for ``python/imp.py``. For each input title:
 from __future__ import annotations
 
 import logging
+from collections.abc import Callable, Iterable
 from threading import Event
 from typing import Any
-from collections.abc import Callable, Iterable
 
 from .._api import get_api
 

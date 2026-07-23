@@ -18,9 +18,9 @@ out of scope for the migration (see ``docs/merge-plan.md`` §6).
 from __future__ import annotations
 
 import logging
+from collections.abc import Callable, Iterable
 from threading import Event
 from typing import Any
-from collections.abc import Callable, Iterable
 
 from ...shared.fixref_shared.fixref_text_new import fix_ref_template
 from .._api import get_api

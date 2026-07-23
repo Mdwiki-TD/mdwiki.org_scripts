@@ -16,9 +16,9 @@ The service is reentrant: credentials and the API client are cached via
 from __future__ import annotations
 
 import logging
+from collections.abc import Callable
 from threading import Event
 from typing import Any
-from collections.abc import Callable
 
 from ...newapi import AllAPIS
 from .._api import get_api

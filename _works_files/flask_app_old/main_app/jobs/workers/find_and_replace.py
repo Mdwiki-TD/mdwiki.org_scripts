@@ -19,9 +19,9 @@ user-clicked stop takes effect at the next page boundary (cooperative).
 from __future__ import annotations
 
 import logging
+from collections.abc import Callable
 from threading import Event
 from typing import Any, Literal
-from collections.abc import Callable
 
 from .._api import get_api
 
