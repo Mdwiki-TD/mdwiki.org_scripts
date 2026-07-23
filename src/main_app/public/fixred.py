@@ -58,7 +58,7 @@ class FixRedRoutes:
                 outcome = fixred_one.work_on_title(
                     title=title,
                     save=save,
-                    summary="Med updater.",
+                    summary="Fix redirects.",
                     user=user,
                 )
             except Exception as exc:
