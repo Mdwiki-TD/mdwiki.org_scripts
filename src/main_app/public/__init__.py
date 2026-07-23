@@ -23,8 +23,8 @@ class PublicRouteModule:
 
 
 PUBLIC_ROUTE_MODULES: list[PublicRouteModule] = [
-    PublicRouteModule(MainRoutes, "main", "/main"),
-    PublicRouteModule(AuthRoutes, "auth", "/auth"),
+    PublicRouteModule(MainRoutes, "main", ""),
+    PublicRouteModule(AuthRoutes, "auth", ""), # /auth
     PublicRouteModule(ProfileRoutes, "profile", "/profile"),
     PublicRouteModule(FixRedRoutes, "fixred", "/fixred"),
     PublicRouteModule(NewUpdaterRoutes, "newupdater", "/newupdater"),
