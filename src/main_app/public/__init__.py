@@ -1,5 +1,8 @@
 """ """
 
+from dataclasses import dataclass, field
+from typing import Any
+
 from flask import Blueprint, Flask
 
 from ..jobs_workers.public_jobs_workers.workers_list_public import jobs_data_public
@@ -11,35 +14,37 @@ from .profile import ProfileRoutes
 from .public_jobs import PublicJobsRoutes
 
 
+@dataclass(frozen=True)
+class PublicRouteModule:
+    route_cls: type
+    name: str
+    url_prefix: str = ""
+    extra_kwargs: dict[str, Any] = field(default_factory=dict)
+
+
+PUBLIC_ROUTE_MODULES: list[PublicRouteModule] = [
+    PublicRouteModule(MainRoutes, "main", ""),
+    PublicRouteModule(AuthRoutes, "auth", ""),  # /auth
+    PublicRouteModule(ProfileRoutes, "profile", "/profile"),
+    PublicRouteModule(FixRedRoutes, "fixred", "/fixred"),
+    PublicRouteModule(NewUpdaterRoutes, "newupdater", "/newupdater"),
+    PublicRouteModule(
+        PublicJobsRoutes,
+        "public_jobs",
+        "/jobs",
+        extra_kwargs={
+            "jobs_data_infos": jobs_data_public,
+            "bp_name": "public_jobs",
+        },
+    ),
+]
+
+
 def register_blueprints(app: Flask) -> None:
-    bp_main = Blueprint("main", __name__)
-    main_model = MainRoutes(bp_main)
-
-    # Public API module
-    jobs_public_module = PublicJobsRoutes(
-        bp=Blueprint("public_jobs", __name__, url_prefix="/jobs"),
-        jobs_data_infos=jobs_data_public,
-        bp_name="public_jobs",
-    )
-
-    bp_auth = Blueprint("auth", __name__)
-    auth_model = AuthRoutes(bp_auth)
-
-    bp_profile = Blueprint("profile", __name__, url_prefix="/profile")
-    profile_model = ProfileRoutes(bp_profile)
-
-    bp_fixred = Blueprint("fixred", __name__, url_prefix="/fixred")
-    fixred_model = FixRedRoutes(bp_fixred)
-
-    bp_newupdater = Blueprint("newupdater", __name__, url_prefix="/newupdater")
-    newupdater_model = NewUpdaterRoutes(bp_newupdater)
-
-    app.register_blueprint(auth_model.bp)
-    app.register_blueprint(profile_model.bp)
-    app.register_blueprint(main_model.bp)
-    app.register_blueprint(jobs_public_module.bp)
-    app.register_blueprint(newupdater_model.bp)
-    app.register_blueprint(fixred_model.bp)
+    for module in PUBLIC_ROUTE_MODULES:
+        bp = Blueprint(module.name, __name__, url_prefix=module.url_prefix)
+        route_instance = module.route_cls(bp=bp, **module.extra_kwargs)
+        app.register_blueprint(route_instance.bp)
 
 
 __all__ = [
