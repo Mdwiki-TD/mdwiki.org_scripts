@@ -9,6 +9,7 @@ from sqlalchemy.exc import IntegrityError
 from ...extensions import db
 from ..exceptions import DuplicateJobError
 from ..models import JobRecord
+from .delete_service import delete_record_by_pk
 from .utils import db_guard, db_guard_rollback, retry_on_db_disconnect
 
 logger = logging.getLogger(__name__)
@@ -18,6 +19,42 @@ def _normalize_limit(limit: int | None, *, default: int = 100, max_limit: int = 
     if limit is None or limit <= 0:
         return default
     return min(limit, max_limit)
+
+def _update_job_status(
+    job_id: int,
+    status: str,
+    result_file: str | None = None,
+    *,
+    job_type: str,
+) -> JobRecord:
+    """
+    Update job status and result file.
+    """
+    query = db.session.query(JobRecord).filter(JobRecord.id == job_id)
+    if job_type:
+        query = query.filter(JobRecord.job_type == job_type)
+    job = query.first()
+
+    if not job:
+        raise LookupError(f"Job id {job_id} was not found")
+
+    status_lower = status.lower()
+    job.status = status_lower
+
+    if status_lower == "running" and not job.started_at:
+        job.started_at = datetime.now(UTC)
+
+    if status_lower in ("completed", "failed", "cancelled", "skipped"):
+        job.completed_at = datetime.now(UTC)
+        job.is_running = None
+
+    if result_file:
+        job.result_file = result_file
+
+    db.session.commit()
+    db.session.refresh(job)
+
+    return job
 
 
 # ── SELECT ───────────────────────────────────────────────
@@ -209,42 +246,6 @@ def create_job(job_type: str, username: str) -> JobRecord:
     return job
 
 
-def _update_job_status(
-    job_id: int,
-    status: str,
-    result_file: str | None = None,
-    *,
-    job_type: str,
-) -> JobRecord:
-    """
-    Update job status and result file.
-    """
-    query = db.session.query(JobRecord).filter(JobRecord.id == job_id)
-    if job_type:
-        query = query.filter(JobRecord.job_type == job_type)
-    job = query.first()
-
-    if not job:
-        raise LookupError(f"Job id {job_id} was not found")
-
-    status_lower = status.lower()
-    job.status = status_lower
-
-    if status_lower == "running" and not job.started_at:
-        job.started_at = datetime.now(UTC)
-
-    if status_lower in ("completed", "failed", "cancelled", "skipped"):
-        job.completed_at = datetime.now(UTC)
-        job.is_running = None
-
-    if result_file:
-        job.result_file = result_file
-
-    db.session.commit()
-    db.session.refresh(job)
-
-    return job
-
 
 @db_guard_rollback
 def update_job_status(
@@ -380,6 +381,9 @@ class JobsService:
 
     def cancel_job_db(self, job_id: int, job_type: str | None = None) -> bool:
         return cancel_job_db(job_id, job_type)
+
+    def delete(self, record_id: int) -> bool:
+        return delete_record_by_pk(JobRecord, record_id)
 
     def delete_job(self, job_id: int, job_type: str) -> bool:
         return delete_job(job_id, job_type)
