@@ -1,24 +1,20 @@
 from .admin_service import (
     AdminService,
     add_coordinator,
+    delete_coordinator,
     get_coordinator_by_id,
     is_active_coordinator,
     list_coordinators,
     set_coordinator_active,
 )
 from .delete_service import (
-    DeleteService,
-    delete_coordinator,
-    delete_job,
     delete_record_by_pk,
-    delete_setting_by_key,
-    delete_user,
-    delete_user_token,
 )
 from .jobs_service import (
     JobsService,
     cancel_job_db,
     create_job,
+    delete_job,
     get_all_user_jobs_stats,
     get_job,
     get_user_jobs_stats,
@@ -30,6 +26,7 @@ from .jobs_service import (
 from .settings_service import (
     SettingsService,
     create_setting,
+    delete_setting_by_key,
     get_all_settings_raw,
     get_all_settings_ready,
     list_settings,
@@ -37,6 +34,7 @@ from .settings_service import (
 )
 from .user_token_service import (
     UserTokenService,
+    delete_user_token,
     get_authenticated_user_token,
     get_user_token,
     update_user_token,
@@ -45,6 +43,7 @@ from .user_token_service import (
 from .users_service import (
     UsersService,
     create_user,
+    delete_user,
     get_user,
     get_user_by_username,
     list_users,
@@ -54,7 +53,6 @@ from .users_service import (
 
 __all__ = [
     "AdminService",
-    "DeleteService",
     "JobsService",
     "SettingsService",
     "UsersService",

@@ -11,6 +11,7 @@ from sqlalchemy.exc import IntegrityError
 
 from ...extensions import db
 from ..models import SettingRecord
+from .delete_service import delete_record_by_pk
 from .utils import db_guard
 
 logger = logging.getLogger(__name__)
@@ -146,6 +147,13 @@ def create_setting(
         return False
 
 
+def delete_setting_by_key(key: str) -> bool:
+    setting = SettingRecord.query.filter_by(key=key).first()
+    if setting:
+        return delete_record_by_pk(SettingRecord, setting.id)
+    return False
+
+
 class SettingsService:
     def __init__(self) -> None:
         pass
@@ -183,6 +191,9 @@ class SettingsService:
     ) -> bool:
         return create_setting(key, title, value_type, value)
 
+    def delete_setting_by_key(self, key: str) -> bool:
+        return delete_setting_by_key(key)
+
 
 __all__ = [
     "SettingsService",
@@ -194,4 +205,5 @@ __all__ = [
     "create_setting",
     "list_settings",
     "get_all_settings_ready",
+    "delete_setting_by_key",
 ]

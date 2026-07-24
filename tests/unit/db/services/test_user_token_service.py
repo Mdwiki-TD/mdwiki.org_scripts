@@ -6,10 +6,10 @@ from unittest.mock import MagicMock
 
 from flask.app import Flask
 
-from src.main_app.db.services.delete_service import delete_user_token
 from src.main_app.db.services.user_token_service import (
     UserTokenRecord,
     create_user_token,
+    delete_user_token,
     get_authenticated_user_token,
     get_user_token,
     update_user_token,
