@@ -50,7 +50,7 @@ def test_runner():
     assert _get_jobs_cancel_event(job_id) is None
 
 
-@patch("src.main_app.jobs_workers.jobs_worker.cancel_job_db")
+@patch("src.main_app.jobs_workers.jobs_worker.JobsService.cancel_job_db")
 @patch("src.main_app.jobs_workers.jobs_worker.create_job_cancelled_file")
 def test_cancel_job_worker(mock_create_file, mock_cancel_db):
     job_id = 123
@@ -70,7 +70,7 @@ def test_cancel_job_worker(mock_create_file, mock_cancel_db):
     mock_cancel_db.assert_called_once_with(job_id, "test_job")
 
 
-@patch("src.main_app.jobs_workers.jobs_worker.create_job")
+@patch("src.main_app.jobs_workers.jobs_worker.JobsService.create_job")
 @patch("src.main_app.jobs_workers.jobs_worker.jobs_data_public")
 @patch("threading.Thread")
 def test_start_job(mock_thread, mock_jobs_data, mock_create_job, mock_app):
