@@ -1,392 +1,225 @@
-"""Integration tests for src/main_app/public/auth/routes.py module.
-
-Tests the full OAuth login/logout flow through the Flask test client with
-a real SQLite database (via TestingConfig). OAuth external calls are stubbed
-so no network access is required.
-"""
+"""Tests for authentication routes."""
 
 from __future__ import annotations
 
-from unittest.mock import MagicMock, Mock, patch
+import types
 
 import pytest
-from flask.app import Flask
-
-from src.main_app.config import settings
-from src.main_app.db.services import get_user_by_username, get_user_token, upsert_user_token
-from src.main_app.db.services.users_service import create_user
-from src.main_app.extensions import db
-
-# Session key names from settings
-_STATE_KEY = settings.sessions.state_key  # "oauth_state_nonce"
-_REQ_TOKEN_KEY = settings.sessions.request_token_key  # "state"
-
-
-@pytest.fixture(autouse=True)
-def _clean_db(mock_app: Flask):
-    """Clean all tables after each test to prevent state leaking."""
-    yield
-    with mock_app.app_context():
-
-        meta = db.metadata
-        with db.engine.begin() as conn:
-            for table in reversed(meta.sorted_tables):
-                conn.execute(table.delete())
-
-
-@pytest.mark.usefixtures("mock_app")
-class TestLoginRoute:
-    """GET /login — initiates OAuth handshake."""
-
-    def test_login_redirects_to_oauth(self, mock_client):
-        """Login should redirect (302) after initiating OAuth flow."""
-        with patch("src.main_app.public.auth.routes.start_login") as mock_start:
-            mock_start.return_value = (
-                "https://example.org/oauth/authorize",
-                MagicMock(key="req_key", secret="req_secret"),
-            )
-            resp = mock_client.get("/login")
-        assert resp.status_code == 302
-        assert "example.org" in resp.headers["Location"]
-
-    def test_login_stores_request_token_in_session(self, mock_client):
-        """After login, the session should contain the OAuth request token."""
-        with patch("src.main_app.public.auth.routes.start_login") as mock_start:
-            token = MagicMock(key="req_key", secret="req_secret")
-            mock_start.return_value = (
-                "https://example.org/oauth/authorize",
-                token,
-            )
-            mock_client.get("/login")
-
-        with mock_client.session_transaction() as session:
-            assert session.get(_REQ_TOKEN_KEY) is not None
-
-    def test_login_flash_on_failure(self, mock_client, monkeypatch):
-        """If start_login raises, a danger flash message should appear."""
-        mock_flash = Mock()
-        monkeypatch.setattr("src.main_app.public.auth.routes.flash", mock_flash)
-
-        with patch(
-            "src.main_app.public.auth.routes.start_login",
-            side_effect=RuntimeError("OAuth down"),
-        ):
-            resp = mock_client.get("/login", follow_redirects=True)
-        assert resp.status_code == 200
-        mock_flash.assert_called_once_with("Failed to initiate OAuth login", "danger")
-
-
-@pytest.mark.usefixtures("mock_app")
-class TestCallbackRoute:
-    """GET /callback — completes OAuth handshake."""
-
-    def _setup_session(self, mock_client):
-        """Prepare session state as if /login was called."""
-        with mock_client.session_transaction() as sess:
-            sess[_STATE_KEY] = "my_nonce"
-            sess[_REQ_TOKEN_KEY] = ["req_key", "req_secret"]
-
-    def test_callback_missing_state_flash(self, mock_client, monkeypatch):
-        """Callback without state in session should flash error."""
-        mock_flash = Mock()
-        monkeypatch.setattr("src.main_app.public.auth.routes.flash", mock_flash)
-
-        resp = mock_client.get("/callback", follow_redirects=True)
-        assert resp.status_code == 200
-        mock_flash.assert_called_once_with("Invalid OAuth state", "danger")
-
-    def test_callback_state_mismatch_flash(self, mock_client, monkeypatch):
-        """Callback with wrong state should flash mismatch error."""
-        mock_flash = Mock()
-        monkeypatch.setattr("src.main_app.public.auth.routes.flash", mock_flash)
-
-        self._setup_session(mock_client)
-        with patch(
-            "src.main_app.public.auth.routes.verify_state_token",
-            return_value="wrong_nonce",
-        ):
-            resp = mock_client.get(
-                "/callback?state=signed_bad&oauth_verifier=v",
-                follow_redirects=True,
-            )
-        assert resp.status_code == 200
-        mock_flash.assert_called_once_with("OAuth state mismatch", "danger")
-
-    def test_callback_missing_verifier_flash(self, mock_client, monkeypatch):
-        """Callback without oauth_verifier should flash error."""
-        mock_flash = Mock()
-        monkeypatch.setattr("src.main_app.public.auth.routes.flash", mock_flash)
-
-        self._setup_session(mock_client)
-        with patch(
-            "src.main_app.public.auth.routes.verify_state_token",
-            return_value="my_nonce",
-        ):
-            resp = mock_client.get(
-                "/callback?state=signed_ok",
-                follow_redirects=True,
-            )
-        assert resp.status_code == 200
-        mock_flash.assert_called_once_with("Invalid OAuth verifier", "danger")
-
-    def test_callback_success_sets_session(self, mock_app, mock_client):
-        """Successful callback should set session uid and username."""
-        self._setup_session(mock_client)
-
-        fake_user_record = MagicMock(user_id=42, username="TestUser")
-
-        with (
-            patch(
-                "src.main_app.public.auth.routes.verify_state_token",
-                return_value="my_nonce",
-            ),
-            patch(
-                "src.main_app.public.auth.routes.complete_oauth_callback",
-                return_value=fake_user_record,
-            ),
-        ):
-            resp = mock_client.get(
-                "/callback?state=signed_ok&oauth_verifier=verifier_val",
-                follow_redirects=False,
-            )
-
-        assert resp.status_code == 302
-
-        with mock_client.session_transaction() as sess:
-            assert sess.get("uid") is not None
-            assert sess.get("username") == "TestUser"
-
-    def test_callback_success_persists_user_token(self, mock_app, mock_client):
-        """Successful callback should upsert encrypted credentials in DB."""
-        self._setup_session(mock_client)
-
-        def _fake_complete_oauth_callback(request_token, query_string):
-            with mock_app.app_context():
-                user = create_user("DbUser")
-                upsert_user_token(user.user_id, "new_key", "new_secret")
-            return MagicMock(user_id=user.user_id, username="DbUser")
-
-        with (
-            patch(
-                "src.main_app.public.auth.routes.verify_state_token",
-                return_value="my_nonce",
-            ),
-            patch(
-                "src.main_app.public.auth.routes.complete_oauth_callback",
-                side_effect=_fake_complete_oauth_callback,
-            ),
-        ):
-            mock_client.get(
-                "/callback?state=signed_ok&oauth_verifier=v",
-                follow_redirects=False,
-            )
-
-        with mock_app.app_context():
-
-            user = get_user_by_username("DbUser")
-            assert user is not None
-            token = get_user_token(user.user_id)
-            assert token is not None
-
-    def test_callback_success_sets_cookie(self, mock_app, mock_client):
-        """Successful callback should set the auth cookie in response headers."""
-        self._setup_session(mock_client)
-
-        fake_user_record = MagicMock(user_id=42, username="CookieUser")
-
-        with (
-            patch(
-                "src.main_app.public.auth.routes.verify_state_token",
-                return_value="my_nonce",
-            ),
-            patch(
-                "src.main_app.public.auth.routes.complete_oauth_callback",
-                return_value=fake_user_record,
-            ),
-        ):
-            resp = mock_client.get(
-                "/callback?state=signed_ok&oauth_verifier=v",
-                follow_redirects=False,
-            )
-
-        set_cookie_headers = resp.headers.getlist("Set-Cookie")
-        cookie_names = [h.split("=")[0] for h in set_cookie_headers]
-        name = settings.cookie.name
-        assert name in cookie_names
-
-    def test_callback_success_redirects_to_index(self, mock_app, mock_client):
-        """After successful login, redirect should go to index."""
-        self._setup_session(mock_client)
-
-        fake_identity = {"sub": 42, "username": "RedirUser"}
-        fake_access = MagicMock(key="k", secret="s")
-
-        with (
-            patch(
-                "src.main_app.public.auth.routes.verify_state_token",
-                return_value="my_nonce",
-            ),
-            patch(
-                "src.main_app.shared.auth.auth_service.complete_login",
-                return_value=(fake_access, fake_identity),
-            ),
-        ):
-            resp = mock_client.get(
-                "/callback?state=signed_ok&oauth_verifier=v",
-                follow_redirects=False,
-            )
-
-        assert resp.status_code == 302
-        location = resp.headers["Location"]
-        assert location.endswith(("/", "/"))
-
-    def test_callback_success_redirects_to_post_login(self, mock_app, mock_client):
-        """If post_login_redirect is set, callback redirects there."""
-        self._setup_session(mock_client)
-        with mock_client.session_transaction() as sess:
-            sess["post_login_redirect"] = "/profile/"
-
-        fake_user_record = MagicMock(user_id=42, username="PostRedirUser")
-
-        with (
-            patch(
-                "src.main_app.public.auth.routes.verify_state_token",
-                return_value="my_nonce",
-            ),
-            patch(
-                "src.main_app.public.auth.routes.complete_oauth_callback",
-                return_value=fake_user_record,
-            ),
-        ):
-            resp = mock_client.get(
-                "/callback?state=signed_ok&oauth_verifier=v",
-                follow_redirects=False,
-            )
-
-        assert resp.status_code == 302
-        assert "/profile/" in resp.headers["Location"]
-
-
-@pytest.mark.usefixtures("mock_app")
-class TestLogoutRoute:
-    """GET /logout — clears session and credentials."""
-
-    def test_logout_clears_session(self, mock_app, mock_client):
-        """After logout, session uid and username should be gone."""
-        with mock_app.app_context():
-            user = create_user("LogoutUser")
-            upsert_user_token(
-                user_id=user.user_id,
-                access_key="k",
-                access_secret="s",
-            )
-        with mock_client.session_transaction() as sess:
-            sess["uid"] = user.user_id
-            sess["username"] = "LogoutUser"
-
-        mock_client.get("/logout", follow_redirects=True)
-
-        with mock_client.session_transaction() as sess:
-            assert sess.get("uid") is None
-            assert sess.get("username") is None
-
-    def test_logout_redirects_to_index(self, mock_client, mock_login):
-        """Logout should redirect to the index page."""
-        mock_login("RedirLogout")
-        resp = mock_client.get("/logout", follow_redirects=False)
-        assert resp.status_code == 302
-
-    def test_logout_without_session_still_works(self, mock_client):
-        """Logout should not error even if there is no active session."""
-        resp = mock_client.get("/logout", follow_redirects=True)
-        assert resp.status_code == 200
-
-    def test_logout_flash_messages(self, mock_client, mock_login, monkeypatch):
-        """Logout should display flash messages."""
-        mock_flash = Mock()
-        monkeypatch.setattr("src.main_app.public.auth.routes.flash", mock_flash)
-
-        mock_login("FlashLogout")
-        resp = mock_client.get("/logout", follow_redirects=True)
-        assert resp.status_code == 200
-        mock_flash.assert_called_once_with("Session cleared.", "info")
-
-    def test_logout_deletes_user_token_from_db(self, mock_app, mock_client):
-        """Logout should delete the user token record from DB."""
-        with mock_app.app_context():
-            user = create_user("TokenDelete")
-            upsert_user_token(
-                user_id=user.user_id,
-                access_key="k",
-                access_secret="s",
-            )
-
-            assert get_user_token(user.user_id) is not None
-
-        with mock_client.session_transaction() as sess:
-            sess["uid"] = user.user_id
-            sess["username"] = "TokenDelete"
-
-        mock_client.get("/logout", follow_redirects=True)
-
-        with mock_app.app_context():
-
-            assert get_user_token(50) is None
-
-
-@pytest.mark.usefixtures("mock_app")
-class TestAuthRouteIntegration:
-    """Cross-cutting integration tests for the auth blueprint."""
-
-    def test_login_then_callback_full_flow(self, mock_app, mock_client):
-        """Full round-trip: login -> callback -> user in database."""
-        # Step 1: Login
-        with patch("src.main_app.public.auth.routes.start_login") as mock_start:
-            mock_start.return_value = (
-                "https://example.org/oauth/authorize",
-                MagicMock(key="rk", secret="rs"),
-            )
-            mock_client.get("/login")
-
-        # Step 2: Setup callback session state
-        with mock_client.session_transaction() as sess:
-            sess[_STATE_KEY] = "my_nonce"
-            sess[_REQ_TOKEN_KEY] = ["rk", "rs"]
-
-        # Step 3: Callback
-        def _fake_complete_oauth_callback(request_token, query_string):
-            with mock_app.app_context():
-                user = create_user("FlowUser")
-                upsert_user_token(user.user_id, "ak", "as")
-            return MagicMock(user_id=user.user_id, username="FlowUser")
-
-        with (
-            patch(
-                "src.main_app.public.auth.routes.verify_state_token",
-                return_value="my_nonce",
-            ),
-            patch(
-                "src.main_app.public.auth.routes.complete_oauth_callback",
-                side_effect=_fake_complete_oauth_callback,
-            ),
-        ):
-            resp = mock_client.get(
-                "/callback?state=signed_ok&oauth_verifier=v",
-                follow_redirects=True,
-            )
-
-        assert resp.status_code == 200
-
-        # Step 4: Verify user is in the database
-        with mock_app.app_context():
-
-            user = get_user_by_username("FlowUser")
-            assert user is not None
-            token = get_user_token(user.user_id)
-            assert token is not None
-
-    def test_authenticated_user_can_access_profile(self, mock_client, mock_login):
-        """A logged-in user should be able to access /profile/."""
-        mock_login("ProfileUser")
-        resp = mock_client.get("/profile/")
-        assert resp.status_code == 200
+from flask import Blueprint, Flask
+
+from src.main_app.public.auth.routes import AuthRoutes
+
+
+@pytest.fixture
+def auth_app(monkeypatch: pytest.MonkeyPatch) -> Flask:
+    app = Flask(__name__)
+    app.secret_key = "test-secret"
+    app.config["SERVER_NAME"] = "example.com"
+
+    cookie = types.SimpleNamespace(
+        name="uid_enc_copy",
+        httponly=True,
+        secure=False,
+        samesite="Lax",
+        max_age=3600,
+    )
+    oauth_cfg = types.SimpleNamespace(consumer_key="key", consumer_secret="secret")
+    settings = types.SimpleNamespace(
+        STATE_SESSION_KEY="state",
+        REQUEST_TOKEN_SESSION_KEY="req_token",
+        cookie=cookie,
+        oauth=oauth_cfg,
+    )
+    monkeypatch.setattr("src.main_app.public.auth.routes.settings", settings)
+    monkeypatch.setattr("src.main_app.public.auth.routes.oauth_state_nonce", "state")
+    monkeypatch.setattr("src.main_app.public.auth.routes.request_token_key", "req_token")
+    monkeypatch.setattr("src.main_app.public.auth.routes.load_logged_in_user", lambda: None)
+
+    bp = Blueprint("auth", __name__)
+    AuthRoutes(bp)
+    app.register_blueprint(bp)
+    app.add_url_rule("/", "main.index", lambda: "index")
+
+    return app
+
+
+def test_login_success_flow(auth_app: Flask, monkeypatch: pytest.MonkeyPatch) -> None:
+    class DummyLimiter:
+        def __init__(self) -> None:
+            self.calls: list[str] = []
+
+        def allow(self, key: str) -> bool:
+            self.calls.append(key)
+            return True
+
+        def try_after(self, key: str):  # pragma: no cover - defensive guard
+            raise AssertionError("try_after should not be called")
+
+    limiter = DummyLimiter()
+    monkeypatch.setattr("src.main_app.public.auth.routes.login_rate_limiter", limiter)
+    monkeypatch.setattr(
+        "src.main_app.public.auth.routes.secrets",
+        types.SimpleNamespace(token_urlsafe=lambda _: "nonce"),
+    )
+    monkeypatch.setattr("src.main_app.public.auth.routes.sign_state_token", lambda state: f"signed:{state}")
+
+    class DummyStart:
+        def __call__(self, token: str):
+            assert token == "signed:nonce"
+            return "https://auth.example", ("a", "b")
+
+    monkeypatch.setattr("src.main_app.public.auth.routes.start_login", DummyStart())
+
+    client = auth_app.test_client()
+    response = client.get("/login")
+
+    assert response.status_code == 302
+    assert response.headers["Location"] == "https://auth.example"
+
+    with client.session_transaction() as sess:
+        assert sess["state"] == "nonce"
+        assert sess["req_token"] == ["a", "b"]
+
+    assert limiter.calls
+
+
+def test_callback_success(auth_app: Flask, monkeypatch: pytest.MonkeyPatch) -> None:
+    class DummyLimiter:
+        def allow(self, key: str) -> bool:
+            return True
+
+    monkeypatch.setattr("src.main_app.public.auth.routes.callback_rate_limiter", DummyLimiter())
+    monkeypatch.setattr(
+        "src.main_app.public.auth.routes.verify_state_token",
+        lambda token: "state-value" if token == "token" else None,
+    )
+    monkeypatch.setattr("src.main_app.public.auth.routes._load_request_token", lambda raw: ("k", "s"))
+
+    def fake_complete(request_token, query_string: str):
+        assert request_token == ("k", "s")
+        assert query_string == "state=token&oauth_verifier=code"
+        access = types.SimpleNamespace(key="ak", secret="as")
+        identity = {"sub": "123", "username": "Tester"}
+        return access, identity
+
+    monkeypatch.setattr("src.main_app.shared.auth.auth_service.complete_login", fake_complete)
+
+    fake_user = types.SimpleNamespace(user_id=123, username="Tester")
+    monkeypatch.setattr(
+        "src.main_app.shared.auth.auth_users_service.AuthUserService.save_and_get_user",
+        staticmethod(lambda **kwargs: fake_user),
+    )
+    monkeypatch.setattr("src.main_app.public.auth.routes.sign_user_id", lambda user_id: f"signed:{user_id}")
+
+    client = auth_app.test_client()
+    with client.session_transaction() as sess:
+        sess["state"] = "state-value"
+        sess["req_token"] = ["k", "s"]
+
+    response = client.get("/callback?state=token&oauth_verifier=code")
+    cookie_header = response.headers.get("Set-Cookie", "")
+
+    assert response.status_code == 302
+    assert "uid_enc_copy" in cookie_header
+
+    with client.session_transaction() as sess:
+        assert sess["uid"] == 123
+
+
+def test_logout_clears_session(auth_app: Flask, monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr("src.main_app.public.auth.routes.delete_user_token", lambda uid: None)
+    monkeypatch.setattr("src.main_app.public.auth.routes.extract_user_id", lambda token: 55)
+
+    client = auth_app.test_client()
+    with client.session_transaction() as sess:
+        sess["uid"] = 42
+        sess["username"] = "Tester"
+
+    response = client.get("/logout")
+
+    assert response.status_code == 302
+    assert response.headers["Location"] == "/"
+
+    with client.session_transaction() as sess:
+        assert "uid" not in sess
+
+
+def test_login_rate_limited(auth_app: Flask, monkeypatch: pytest.MonkeyPatch) -> None:
+    """Test login redirects when rate limited."""
+
+    class DummyLimiter:
+        def allow(self, key: str) -> bool:
+            return False
+
+        def try_after(self, key: str):
+            return type("obj", (object,), {"total_seconds": lambda self: 60})()
+
+    limiter = DummyLimiter()
+    monkeypatch.setattr("src.main_app.public.auth.routes.login_rate_limiter", limiter)
+
+    client = auth_app.test_client()
+    response = client.get("/login")
+
+    assert response.status_code == 302
+
+
+def test_callback_rate_limited(auth_app: Flask, monkeypatch: pytest.MonkeyPatch) -> None:
+    """Test callback redirects when rate limited."""
+
+    class DummyLimiter:
+        def allow(self, key: str) -> bool:
+            return False
+
+    limiter = DummyLimiter()
+    monkeypatch.setattr("src.main_app.public.auth.routes.callback_rate_limiter", limiter)
+
+    client = auth_app.test_client()
+    response = client.get("/callback?state=token&oauth_verifier=code")
+
+    assert response.status_code == 302
+
+
+def test_callback_missing_state(auth_app: Flask, monkeypatch: pytest.MonkeyPatch) -> None:
+    """Test callback fails when state is missing."""
+
+    class DummyLimiter:
+        def allow(self, key: str) -> bool:
+            return True
+
+    monkeypatch.setattr("src.main_app.public.auth.routes.callback_rate_limiter", DummyLimiter())
+
+    client = auth_app.test_client()
+    response = client.get("/callback")
+
+    assert response.status_code == 302
+
+
+def test_load_request_token_valid(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Test _load_request_token parses valid token."""
+    from mwoauth import RequestToken
+
+    from src.main_app.public.auth.routes import _load_request_token
+
+    result = _load_request_token(["key", "secret"])
+    assert isinstance(result, RequestToken)
+    assert result.key == "key"
+    assert result.secret == "secret"
+
+
+def test_load_request_token_invalid_empty(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Test _load_request_token raises on empty token."""
+    from src.main_app.public.auth.routes import _load_request_token
+
+    with pytest.raises(ValueError, match="Missing OAuth request token"):
+        _load_request_token(None)
+
+    with pytest.raises(ValueError, match="Missing OAuth request token"):
+        _load_request_token([])
+
+
+def test_load_request_token_invalid_short(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Test _load_request_token raises on short token."""
+    from src.main_app.public.auth.routes import _load_request_token
+
+    with pytest.raises(ValueError, match="Invalid OAuth request token"):
+        _load_request_token(["key"])

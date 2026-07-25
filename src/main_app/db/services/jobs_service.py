@@ -62,7 +62,7 @@ def _update_job_status(
 
 
 @db_guard(default_return=False)
-def is_job_cancelled(job_id: int, job_type: str) -> bool:
+def _is_job_cancelled(job_id: int, job_type: str) -> bool:
     """
     Check if a job is marked as cancelled.
 
@@ -77,7 +77,7 @@ def is_job_cancelled(job_id: int, job_type: str) -> bool:
     return False
 
 
-def get_job(job_id: int, job_type: str) -> JobRecord:
+def _get_job(job_id: int, job_type: str) -> JobRecord:
     """
     Get a job by ID.
     """
@@ -90,7 +90,7 @@ def get_job(job_id: int, job_type: str) -> JobRecord:
     return job
 
 
-def list_jobs(limit: int = 100, job_type: str | None = None) -> list[JobRecord]:
+def _list_jobs(limit: int = 100, job_type: str | None = None) -> list[JobRecord]:
     """
     list recent jobs, optionally filtered by job_type.
 
@@ -113,7 +113,7 @@ def list_jobs(limit: int = 100, job_type: str | None = None) -> list[JobRecord]:
     return query.order_by(JobRecord.created_at.desc()).limit(limit).all()
 
 
-def get_all_user_jobs_stats(username: str, limit: int | None = 100) -> dict[str, dict[str, int] | list[JobRecord]]:
+def _get_all_user_jobs_stats(username: str, limit: int | None = 100) -> dict[str, dict[str, int] | list[JobRecord]]:
     """
     Get user jobs
     """
@@ -150,7 +150,7 @@ def get_all_user_jobs_stats(username: str, limit: int | None = 100) -> dict[str,
     return data
 
 
-def get_user_jobs_stats(
+def _get_user_jobs_stats(
     username: str,
     jobs_types: list | None = None,
     limit: int | None = 100,
@@ -159,7 +159,7 @@ def get_user_jobs_stats(
     Get user jobs
     """
     if jobs_types is None or not jobs_types:
-        return get_all_user_jobs_stats(username, limit)
+        return _get_all_user_jobs_stats(username, limit)
 
     limit = _normalize_limit(limit)
 
@@ -197,7 +197,7 @@ def get_user_jobs_stats(
     return data
 
 
-def has_active_job(job_type: str) -> bool:
+def _has_active_job(job_type: str) -> bool:
     """
     Check if there is an active (pending or running) job of the given type.
 
@@ -221,7 +221,7 @@ def has_active_job(job_type: str) -> bool:
 # ── INSERT, UPDATE, SET ──────────────────────────────────
 
 
-def create_job(job_type: str, username: str) -> JobRecord:
+def _create_job(job_type: str, username: str) -> JobRecord:
     """
     Create a new job record.
 
@@ -248,7 +248,7 @@ def create_job(job_type: str, username: str) -> JobRecord:
 
 
 @db_guard_rollback
-def update_job_status(
+def _update_job_status_rollback(
     job_id: int,
     status: str,
     result_file: str | None = None,
@@ -262,7 +262,7 @@ def update_job_status(
 
 
 @retry_on_db_disconnect()
-def update_job_status_with_retry(
+def _update_job_status_with_retry(
     job_id: int,
     status: str,
     result_file: str | None = None,
@@ -273,7 +273,7 @@ def update_job_status_with_retry(
 
 
 @db_guard_rollback
-def cancel_job_db(job_id: int, job_type: str | None = None) -> bool:
+def _cancel_job_db(job_id: int, job_type: str | None = None) -> bool:
     """
     Mark a job as cancelled.
         query = "UPDATE jobs SET status = 'cancelled', completed_at = NOW() WHERE id = %s AND status IN ('pending', 'running')"
@@ -307,7 +307,7 @@ def cancel_job_db(job_id: int, job_type: str | None = None) -> bool:
     return True
 
 
-def delete_job(job_id: int, job_type: str) -> bool:
+def _delete_job_by_id_and_type(job_id: int, job_type: str) -> bool:
     """
     Special case since it filters by multiple columns (id and job_type).
     """
@@ -330,20 +330,20 @@ class JobsService:
         pass
 
     def is_job_cancelled(self, job_id: int, job_type: str) -> bool:
-        return is_job_cancelled(job_id, job_type)
+        return _is_job_cancelled(job_id, job_type)
 
     def get_job(self, job_id: int, job_type: str) -> JobRecord:
-        return get_job(job_id, job_type)
+        return _get_job(job_id, job_type)
 
     def list_jobs(self, limit: int = 100, job_type: str | None = None) -> list[JobRecord]:
-        return list_jobs(limit, job_type)
+        return _list_jobs(limit, job_type)
 
     def get_all_user_jobs_stats(
         self,
         username: str,
         limit: int | None = 100,
     ) -> dict[str, dict[str, int] | list[JobRecord]]:
-        return get_all_user_jobs_stats(username, limit)
+        return _get_all_user_jobs_stats(username, limit)
 
     def get_user_jobs_stats(
         self,
@@ -351,13 +351,13 @@ class JobsService:
         jobs_types: list | None = None,
         limit: int | None = 100,
     ) -> dict[str, dict[str, int] | list[JobRecord]]:
-        return get_user_jobs_stats(username, jobs_types, limit)
+        return _get_user_jobs_stats(username, jobs_types, limit)
 
     def has_active_job(self, job_type: str) -> bool:
-        return has_active_job(job_type)
+        return _has_active_job(job_type)
 
     def create_job(self, job_type: str, username: str) -> JobRecord:
-        return create_job(job_type, username)
+        return _create_job(job_type, username)
 
     def update_job_status(
         self,
@@ -367,7 +367,7 @@ class JobsService:
         *,
         job_type: str,
     ) -> JobRecord:
-        return update_job_status(job_id, status, result_file, job_type=job_type)
+        return _update_job_status_rollback(job_id, status, result_file, job_type=job_type)
 
     def update_job_status_with_retry(
         self,
@@ -377,29 +377,18 @@ class JobsService:
         *,
         job_type: str,
     ) -> JobRecord:
-        return update_job_status_with_retry(job_id, status, result_file, job_type=job_type)
+        return _update_job_status_with_retry(job_id, status, result_file, job_type=job_type)
 
     def cancel_job_db(self, job_id: int, job_type: str | None = None) -> bool:
-        return cancel_job_db(job_id, job_type)
+        return _cancel_job_db(job_id, job_type)
 
     def delete(self, record_id: int) -> bool:
         return delete_record_by_pk(JobRecord, record_id)
 
-    def delete_job(self, job_id: int, job_type: str) -> bool:
-        return delete_job(job_id, job_type)
+    def delete_job_by_id_and_type(self, job_id: int, job_type: str) -> bool:
+        return _delete_job_by_id_and_type(job_id, job_type)
 
 
 __all__ = [
     "JobsService",
-    "create_job",
-    "get_job",
-    "has_active_job",
-    "list_jobs",
-    "update_job_status",
-    "cancel_job_db",
-    "is_job_cancelled",
-    "get_all_user_jobs_stats",
-    "get_user_jobs_stats",
-    "update_job_status_with_retry",
-    "delete_job",
 ]
