@@ -18,11 +18,7 @@ from flask.typing import ResponseReturnValue
 from werkzeug.wrappers.response import Response
 
 from ..db.exceptions import DuplicateJobError
-from ..db.services import (
-    delete_job,
-    get_job,
-    list_jobs,
-)
+from ..db.services import JobsService
 from ..jobs_workers.jobs_worker import (
     cancel_job_worker,
     start_job,
@@ -59,7 +55,7 @@ def cancel_job_handler(job_id: int, job_type: str) -> str:
         return "job_detail"
 
     try:
-        job = get_job(job_id, job_type)
+        job = JobsService().get_job(job_id, job_type)
     except LookupError:
         flash("Job not found.", "warning")
         return "jobs_list"
@@ -88,7 +84,7 @@ def delete_job_handler(job_id: int, job_type: str) -> str:
         return "job_detail"
 
     try:
-        job = get_job(job_id, job_type)
+        job = JobsService().get_job(job_id, job_type)
     except LookupError:
         flash("Job not found.", "warning")
         return "jobs_list"
@@ -101,7 +97,7 @@ def delete_job_handler(job_id: int, job_type: str) -> str:
         if cancel_job_worker(job_id, job_type, job):
             logger.info("Cancelled running job %s before deletion", job_id)
 
-        if delete_job(job_id, job_type):
+        if JobsService().delete_job_by_id_and_type(job_id, job_type):
             flash(f"Job {job_id} deleted successfully.", "success")
         else:
             flash(f"Failed to delete job {job_id}", "danger")
@@ -159,7 +155,7 @@ def start_job_handler(
 def jobs_list_handler(job_type: str, template_data: JobData) -> str:
     """Render the jobs list dashboard for any job type."""
     try:
-        jobs = list_jobs(limit=100, job_type=job_type)
+        jobs = JobsService().list_jobs(limit=100, job_type=job_type)
     except Exception:  # pragma: no cover - defensive guard
         logger.exception("Unable to load jobs list.")
         flash("Unable to load jobs list.", "danger")
@@ -187,7 +183,7 @@ def job_detail_handler(
     """Render the job detail page for any job type."""
 
     try:
-        job = get_job(job_id, job_type)
+        job = JobsService().get_job(job_id, job_type)
     except LookupError:
         logger.error("Job not found: id=%s, type=%s", job_id, job_type)
         flash(f"Job id {job_id} was not found", "warning")
@@ -224,7 +220,7 @@ class JobsBp(ABC):
         self.bp_name = bp_name
         self._setup_routes()
 
-    def cancel_job(self, job_type: str, job_id: int) -> Response:
+    def cancel_running_job(self, job_type: str, job_id: int) -> Response:
         if job_type not in self.jobs_data_infos:
             flash("Job type not found.", "warning")
             abort(404)
@@ -236,14 +232,14 @@ class JobsBp(ABC):
 
         return redirect(url_for(f"{self.bp_name}.jobs_list", job_type=job_type))
 
-    def jobs_list(self, job_type: str) -> str:
+    def jobs_lists(self, job_type: str) -> str:
         template_data: JobData | None = self.jobs_data_infos.get(job_type)
         if not template_data:
             abort(404)
 
         return jobs_list_handler(job_type, template_data)
 
-    def job_detail(self, job_type: str, job_id: int, expand_all: bool = False) -> Response | str:
+    def job_details(self, job_type: str, job_id: int, expand_all: bool = False) -> Response | str:
         # Load template data
         template_data: JobData | None = self.jobs_data_infos.get(job_type)
 
@@ -252,7 +248,7 @@ class JobsBp(ABC):
 
         return job_detail_handler(job_id, job_type, template_data, bp_name=self.bp_name, expand_all=expand_all)
 
-    def start_job(
+    def start_new_job(
         self,
         job_type: str,
         args: dict[str, Any],
@@ -267,7 +263,7 @@ class JobsBp(ABC):
 
         return redirect(url_for(f"{self.bp_name}.job_detail", job_type=job_type, job_id=job_id))
 
-    def delete_job(self, job_type: str, job_id: int) -> Response:
+    def delete_job_record(self, job_type: str, job_id: int) -> Response:
         if job_type not in self.jobs_data_infos:
             abort(404)
         result = delete_job_handler(job_id, job_type)
@@ -277,7 +273,7 @@ class JobsBp(ABC):
 
         return redirect(url_for(f"{self.bp_name}.jobs_list", job_type=job_type))
 
-    def read_job_result_file(self, result_file: str, job_type: str) -> ResponseReturnValue:
+    def read_job_file(self, result_file: str, job_type: str) -> ResponseReturnValue:
         """ """
         if job_type not in self.jobs_data_infos:
             abort(404)

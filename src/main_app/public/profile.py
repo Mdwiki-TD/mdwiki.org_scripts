@@ -4,7 +4,7 @@ import logging
 
 from flask import Blueprint, flash, render_template
 
-from ..db.services import get_all_user_jobs_stats
+from ..db.services import JobsService
 from .auth.utils import load_user
 
 logger = logging.getLogger(__name__)
@@ -13,6 +13,7 @@ logger = logging.getLogger(__name__)
 class ProfileRoutes:
     def __init__(self, bp: Blueprint) -> None:
         self.bp = bp
+        self.jobs_service = JobsService()
         self._setup_routes()
 
     def _setup_routes(self) -> None:
@@ -29,7 +30,7 @@ class ProfileRoutes:
                 user_name = user.username
 
             try:
-                data = get_all_user_jobs_stats(user_name)
+                data = self.jobs_service.get_all_user_jobs_stats(user_name)
             except Exception:  # pragma: no cover - defensive guard
                 logger.exception("Unable to load user stats.")
                 flash("Unable to load user job statistics.", "danger")

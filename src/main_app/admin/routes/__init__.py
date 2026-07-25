@@ -19,13 +19,13 @@ class AdminRouteModule:
 
 
 ADMIN_ROUTE_MODULES: list[AdminRouteModule] = [
-    AdminRouteModule(CoordinatorsRoutes, "coordinators", "/coordinators"),
-    AdminRouteModule(UsersRoutes, "users", "/users"),
-    AdminRouteModule(SettingsRoutes, "settings", "/settings"),
+    AdminRouteModule(route_cls=CoordinatorsRoutes, name="coordinators", url_prefix="/coordinators"),
+    AdminRouteModule(route_cls=UsersRoutes, name="users", url_prefix="/users"),
+    AdminRouteModule(route_cls=SettingsRoutes, name="settings", url_prefix="/settings"),
     AdminRouteModule(
-        AdminJobsRoutes,
-        "jobs",
-        "/jobs",
+        route_cls=AdminJobsRoutes,
+        name="jobs",
+        url_prefix="/jobs",
         extra_kwargs={
             "jobs_data_infos": jobs_data_admins,
             "bp_name": "adminpanel.jobs",
@@ -35,8 +35,4 @@ ADMIN_ROUTE_MODULES: list[AdminRouteModule] = [
 
 __all__ = [
     "ADMIN_ROUTE_MODULES",
-    "CoordinatorsRoutes",
-    "UsersRoutes",
-    "SettingsRoutes",
-    "AdminJobsRoutes",
 ]

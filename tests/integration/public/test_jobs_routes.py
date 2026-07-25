@@ -14,13 +14,11 @@ from flask.app import Flask
 
 from src.main_app.db.exceptions import DuplicateJobError
 from src.main_app.db.services import (
-    create_job,
-    get_job,
-    list_jobs,
-    upsert_user_token,
+    AdminService,
+    JobsService,
+    UsersService,
+    UserTokenService,
 )
-from src.main_app.db.services.admin_service import add_coordinator
-from src.main_app.db.services.users_service import create_user
 
 
 @pytest.fixture
@@ -66,12 +64,11 @@ def _clean_db(mock_app: Flask):
 def _seed_user(mock_app, username="JobUser", *, can_run_bg_jobs=False) -> int:
     """Create a user token record for job ownership. Returns the auto-generated user_id."""
     with mock_app.app_context():
-        user = create_user(username)
+        user = UsersService().create_user(username)
         if can_run_bg_jobs:
-            from src.main_app.db.services.users_service import toggle_can_run_bg_jobs
 
-            toggle_can_run_bg_jobs(user.user_id, True)
-        upsert_user_token(
+            UsersService().toggle_can_run_bg_jobs(user.user_id, True)
+        UserTokenService().upsert_user_token(
             user_id=user.user_id,
             access_key="k",
             access_secret="s",
@@ -89,7 +86,7 @@ def _login_user(mock_client, user_id, username="JobUser"):
 def _seed_job(mock_app, job_type=VALID_JOB_TYPE, username="JobUser"):
     """Create a job record and return its ID."""
     with mock_app.app_context():
-        job = create_job(job_type, username)
+        job = JobsService().create_job(job_type, username)
         return job.id
 
 
@@ -325,7 +322,7 @@ class TestCancelJob:
         _seed_user(mock_app, username="Owner")
         admin_uid = _seed_user(mock_app, username="AdminCancel")
         with mock_app.app_context():
-            add_coordinator("AdminCancel")
+            AdminService().add_coordinator("AdminCancel")
 
         job_id = _seed_job(mock_app, VALID_JOB_TYPE, username="Owner")
         _login_user(mock_client, admin_uid, username="AdminCancel")
@@ -372,7 +369,7 @@ class TestDeleteJob:
 
         with mock_app.app_context():
             with pytest.raises(LookupError):
-                get_job(job_id, VALID_JOB_TYPE)
+                JobsService().get_job(job_id, VALID_JOB_TYPE)
 
     def test_delete_nonexistent_job(self, mock_app, mock_client):
         """Deleting a non-existent job should not error."""
@@ -402,7 +399,7 @@ class TestJobsRouteIntegration:
 
         # Create job in DB
         with mock_app.app_context():
-            job = create_job(VALID_JOB_TYPE, "LifecycleUser")
+            job = JobsService().create_job(VALID_JOB_TYPE, "LifecycleUser")
             job_id = job.id
 
         # View detail
@@ -419,26 +416,24 @@ class TestJobsRouteIntegration:
 
         # Verify cancelled in DB
         with mock_app.app_context():
-            from src.main_app.db.services import is_job_cancelled
 
-            assert is_job_cancelled(job_id, VALID_JOB_TYPE) is True
+            assert JobsService().is_job_cancelled(job_id, VALID_JOB_TYPE) is True
 
     def test_multiple_jobs_listed_by_type(self, mock_app, mock_client):
         """Multiple jobs of the same type should all appear in the list."""
-        from src.main_app.db.services import update_job_status
 
         _seed_user(mock_app)
         with mock_app.app_context():
-            job1 = create_job(VALID_JOB_TYPE, "JobUser")
-            update_job_status(job1.id, "running", job_type=VALID_JOB_TYPE)
-            update_job_status(job1.id, "completed", job_type=VALID_JOB_TYPE)
-            create_job(VALID_JOB_TYPE, "JobUser")
-            create_job(ANOTHER_VALID_JOB_TYPE, "JobUser")
+            job1 = JobsService().create_job(VALID_JOB_TYPE, "JobUser")
+            JobsService().update_job_status(job1.id, "running", job_type=VALID_JOB_TYPE)
+            JobsService().update_job_status(job1.id, "completed", job_type=VALID_JOB_TYPE)
+            JobsService().create_job(VALID_JOB_TYPE, "JobUser")
+            JobsService().create_job(ANOTHER_VALID_JOB_TYPE, "JobUser")
 
         with mock_app.app_context():
-            fixref_jobs = list_jobs(limit=100, job_type=VALID_JOB_TYPE)
-            redirect_jobs = list_jobs(limit=100, job_type=ANOTHER_VALID_JOB_TYPE)
-            all_jobs = list_jobs(limit=100)
+            fixref_jobs = JobsService().list_jobs(limit=100, job_type=VALID_JOB_TYPE)
+            redirect_jobs = JobsService().list_jobs(limit=100, job_type=ANOTHER_VALID_JOB_TYPE)
+            all_jobs = JobsService().list_jobs(limit=100)
 
         assert len(fixref_jobs) == 2
         assert len(redirect_jobs) == 1
@@ -447,16 +442,15 @@ class TestJobsRouteIntegration:
     @pytest.mark.usefixtures("_unwrap_delete_job")
     def test_delete_then_list_shows_remaining(self, mock_app, mock_client):
         """After deleting one job, the list should show remaining jobs."""
-        from src.main_app.db.services import update_job_status
 
         owner_uid = _seed_user(mock_app, username="Owner")
         _login_user(mock_client, owner_uid, username="Owner")
 
         with mock_app.app_context():
-            job1 = create_job(VALID_JOB_TYPE, "Owner")
-            update_job_status(job1.id, "running", job_type=VALID_JOB_TYPE)
-            update_job_status(job1.id, "completed", job_type=VALID_JOB_TYPE)
-            job2 = create_job(VALID_JOB_TYPE, "Owner")
+            job1 = JobsService().create_job(VALID_JOB_TYPE, "Owner")
+            JobsService().update_job_status(job1.id, "running", job_type=VALID_JOB_TYPE)
+            JobsService().update_job_status(job1.id, "completed", job_type=VALID_JOB_TYPE)
+            job2 = JobsService().create_job(VALID_JOB_TYPE, "Owner")
             job1_id = job1.id
             job2_id = job2.id
 
@@ -470,7 +464,7 @@ class TestJobsRouteIntegration:
             )
 
         with mock_app.app_context():
-            remaining = list_jobs(limit=100, job_type=VALID_JOB_TYPE)
+            remaining = JobsService().list_jobs(limit=100, job_type=VALID_JOB_TYPE)
             remaining_ids = [j.id for j in remaining]
             assert job1_id not in remaining_ids
             assert job2_id in remaining_ids
