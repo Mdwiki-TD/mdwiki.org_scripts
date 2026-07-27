@@ -34,11 +34,16 @@ class InsufficientDatabaseConfigError(RuntimeError):
         super().__init__(msg)
 
 
+class CRUDError(Exception):
+    """Base error for CRUD service failures."""
+
+
 __all__ = [
+    "CRUDError",
     "UniqueError",
+    "DuplicateRecordError",
     "DatabaseInitError",
     "MaxUserConnectionsError",
     "UserNotFoundError",
-    "DuplicateRecordError",
     "InsufficientDatabaseConfigError",
 ]
