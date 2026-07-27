@@ -181,7 +181,7 @@ class TestGetSettingByKey:
 
 
 class TestUpdateSetting:
-    """Tests for update_setting (wrapped with @db_guard)."""
+    """Tests for update_setting."""
 
     def test_updates_existing_setting(self, mock_db: MockDbSession):
         mock_setting = MagicMock()
