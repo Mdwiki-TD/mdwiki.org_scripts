@@ -24,9 +24,6 @@ class UserNotFoundError(LookupError):
     """Raised when a referenced user does not exist in users."""
 
 
-class DuplicateJobError(Exception):
-    """Raised when attempting to create a job of a type that already has an active (pending/running) instance."""
-
 class DuplicateRecordError(Exception):
     """Raised when attempting to create duplicate record."""
 
@@ -43,6 +40,5 @@ __all__ = [
     "MaxUserConnectionsError",
     "UserNotFoundError",
     "DuplicateRecordError",
-    "DuplicateJobError",
     "InsufficientDatabaseConfigError",
 ]

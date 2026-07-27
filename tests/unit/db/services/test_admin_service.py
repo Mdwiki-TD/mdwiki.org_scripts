@@ -2,155 +2,128 @@
 
 from __future__ import annotations
 
-from unittest.mock import MagicMock, patch
-
 import pytest
-from sqlalchemy.exc import IntegrityError
 
 from src.main_app.db.exceptions import DuplicateRecordError, UserNotFoundError
-from src.main_app.db.models import AdminUserRecord
-from src.main_app.db.models.users import UserRecord
 from src.main_app.db.services.admin_service import AdminService
+from src.main_app.db.services.users_service import UsersService
 
 
-class TestIsActiveCoordinator:
-    def test_active_coordinator(self):
-        mock_record = MagicMock()
-        mock_db = MagicMock()
-        mock_db.session.query.return_value.filter.return_value.first.return_value = mock_record
-        with patch("src.main_app.db.services.admin_service.db", mock_db):
-            assert AdminService().is_active_coordinator("testuser") is True
+class TestSetup:
+    @pytest.fixture(autouse=True)
+    def setup(self) -> None:
+        self.user_service = UsersService()
+        self.service = AdminService()
 
-    def test_inactive_coordinator(self):
-        mock_db = MagicMock()
-        mock_db.session.query.return_value.filter.return_value.first.return_value = None
-        with patch("src.main_app.db.services.admin_service.db", mock_db):
-            assert AdminService().is_active_coordinator("testuser") is False
-
-    def test_exception_returns_false(self):
-        mock_db = MagicMock()
-        mock_db.session.query.side_effect = Exception("DB error")
-        with patch("src.main_app.db.services.admin_service.db", mock_db):
-            assert AdminService().is_active_coordinator("testuser") is False
+        self.user_record = self.user_service.create(username="test_user")
+        self.coordinator_record = self.service.create(username=self.user_record.username, is_active=True)
 
 
-class TestListCoordinators:
-    def test_returns_all(self):
-        mock_db = MagicMock()
-        mock_db.session.query.return_value.all.return_value = ["record1", "record2"]
-        with patch("src.main_app.db.services.admin_service.db", mock_db):
-            result = AdminService().list_coordinators()
-            assert result == ["record1", "record2"]
+class TestIsActiveCoordinator(TestSetup):
+    def test_active_coordinator(self) -> None:
+        assert self.service.is_active_coordinator(self.coordinator_record.username) is True
 
-    def test_empty_list(self):
-        mock_db = MagicMock()
-        mock_db.session.query.return_value.all.return_value = []
-        with patch("src.main_app.db.services.admin_service.db", mock_db):
-            result = AdminService().list_coordinators()
-            assert result == []
+    def test_inactive_coordinator(self) -> None:
+        self.service.set_coordinator_active(self.coordinator_record.id, False)
+
+        assert self.service.is_active_coordinator(self.coordinator_record.username) is False
+
+    def test_missing_coordinator(self) -> None:
+        assert self.service.is_active_coordinator("testuser") is False
 
 
-class TestGetCoordinatorById:
-    def test_found(self):
-        mock_record = MagicMock()
-        mock_record.id = 1
-        mock_db = MagicMock()
-        mock_db.session.query.return_value.filter.return_value.first.return_value = mock_record
-        with patch("src.main_app.db.services.admin_service.db", mock_db):
-            result = AdminService().get_coordinator_by_id(1)
-            assert result.id == 1
-
-    def test_not_found_raises(self):
-        mock_db = MagicMock()
-        mock_db.session.query.return_value.filter.return_value.first.return_value = None
-        with patch("src.main_app.db.services.admin_service.db", mock_db):
-            with pytest.raises(LookupError, match="not found"):
-                AdminService().get_coordinator_by_id(999)
+class TestListCoordinators(TestSetup):
+    def test_returns_all(self) -> None:
+        result = self.service.list_coordinators()
+        assert len(result) == 1
+        assert result[0].id == self.coordinator_record.id
+        assert result[0].username == self.coordinator_record.username
 
 
-class TestAddCoordinator:
-    def test_empty_username_raises(self):
-        with patch("src.main_app.db.services.admin_service.db"):
-            with pytest.raises(ValueError, match="Username is required"):
-                AdminService().add_coordinator("")
-
-    def test_whitespace_username_raises(self):
-        with patch("src.main_app.db.services.admin_service.db"):
-            with pytest.raises(ValueError, match="Username is required"):
-                AdminService().add_coordinator("   ")
-
-    def test_duplicate_raises(self):
-        mock_record = MagicMock()
-        mock_db = MagicMock()
-        mock_db.session.query.return_value.filter.return_value.first.return_value = mock_record
-        with patch("src.main_app.db.services.admin_service.db", mock_db):
-            with pytest.raises(DuplicateRecordError, match="already exists"):
-                AdminService().add_coordinator("existing_user")
-
-    def test_integrity_error_raises_user_not_found(self):
-        mock_db = MagicMock()
-        mock_db.session.query.return_value.filter.return_value.first.return_value = None
-        mock_db.session.commit.side_effect = IntegrityError("mock", "orig", "a foreign key constraint fails")
-        with patch("src.main_app.db.services.admin_service.db", mock_db):
-            with pytest.raises(UserNotFoundError, match="does not exist"):
-                AdminService().add_coordinator("unknown_user")
-
-    def test_success(self):
-        mock_db = MagicMock()
-        mock_db.session.query.return_value.filter.return_value.first.return_value = None
-        mock_db.session.commit.return_value = None
-        with patch("src.main_app.db.services.admin_service.db", mock_db):
-            result = AdminService().add_coordinator("new_user")
-            assert result.username == "new_user"
-            assert result.is_active is True
+class TestListCoordinators2:
+    def test_empty_list(self) -> None:
+        service = AdminService()
+        result = service.list_coordinators()
+        assert result == []
 
 
-class TestSetCoordinatorActive:
-    def test_activate(self):
-        mock_record = MagicMock()
-        mock_record.is_active = False
-        mock_db = MagicMock()
-        mock_db.session.query.return_value.filter.return_value.first.return_value = mock_record
-        with patch("src.main_app.db.services.admin_service.db", mock_db):
-            result = AdminService().set_coordinator_active(1, True)
-            assert result.is_active is True
+class TestGetCoordinatorById(TestSetup):
+    def test_found(self) -> None:
+        result = self.service.get_coordinator_by_id(self.coordinator_record.id)
+        assert result.id == self.coordinator_record.id
+        assert result.username == self.coordinator_record.username
 
-    def test_deactivate(self):
-        mock_record = MagicMock()
-        mock_record.is_active = True
-        mock_db = MagicMock()
-        mock_db.session.query.return_value.filter.return_value.first.return_value = mock_record
-        with patch("src.main_app.db.services.admin_service.db", mock_db):
-            result = AdminService().set_coordinator_active(1, False)
-            assert result.is_active is False
-
-    def test_not_found(self):
-        mock_db = MagicMock()
-        mock_db.session.query.return_value.filter.return_value.first.return_value = None
-        with patch("src.main_app.db.services.admin_service.db", mock_db):
-            result = AdminService().set_coordinator_active(999, True)
-            assert result is None
+    def test_not_found_raises(self) -> None:
+        with pytest.raises(LookupError, match="not found"):
+            self.service.get_coordinator_by_id(999)
 
 
-class TestDeleteCoordinator:
-    def test_delete_existing_coordinator(self, mock_app, setup_db):
-        from src.main_app.extensions import db as _db
+class TestAddCoordinator(TestSetup):
+    def test_empty_username_raises(self) -> None:
+        with pytest.raises(ValueError, match="Username is required"):
+            self.service.add_coordinator("")
 
-        with mock_app.app_context():
-            user = UserRecord(username="admin_user", user_id=401)
-            _db.session.add(user)
-            _db.session.commit()
+    def test_whitespace_username_raises(self) -> None:
+        with pytest.raises(ValueError, match="Username is required"):
+            self.service.add_coordinator("   ")
 
-            record = AdminUserRecord(username="admin_user", is_active=True)
-            _db.session.add(record)
-            _db.session.commit()
+    def test_duplicate_raises(self) -> None:
+        with pytest.raises(DuplicateRecordError, match="already exists"):
+            self.service.add_coordinator(self.coordinator_record.username)
 
-            result = AdminService().delete(record.id)
-            assert result is True
-            _db.session.expire_all()
-            assert _db.session.get(AdminUserRecord, record.id) is None
+    def test_missing_user_raises_user_not_found(self) -> None:
+        with pytest.raises(UserNotFoundError, match="does not exist"):
+            self.service.add_coordinator("unknown_user")
 
-    def test_delete_non_existent_coordinator(self, mock_app, setup_db):
-        with mock_app.app_context():
-            result = AdminService().delete(99999)
-            assert result is False
+    def test_success(self) -> None:
+        user_record = self.user_service.create(username="test_user1")
+        result = self.service.add_coordinator(user_record.username)
+        assert result.username == user_record.username
+        assert result.is_active is True
+
+        persisted = self.service.get(result.id)
+        assert persisted is not None
+        assert persisted.username == user_record.username
+
+    def test_strips_username_before_creating(self) -> None:
+        user_record = self.user_service.create(username="test_user2")
+        result = self.service.add_coordinator("  test_user2  ")
+        assert result.username == user_record.username
+
+
+class TestSetCoordinatorActive(TestSetup):
+    def test_activate(self) -> None:
+        self.service.set_coordinator_active(self.coordinator_record.id, False)
+
+        result = self.service.set_coordinator_active(self.coordinator_record.id, True)
+        assert result is not None
+        assert result.is_active is True
+
+        persisted = self.service.get(self.coordinator_record.id)
+        assert persisted is not None
+        assert persisted.is_active is True
+
+    def test_deactivate(self) -> None:
+        result = self.service.set_coordinator_active(self.coordinator_record.id, False)
+        assert result is not None
+        assert result.is_active is False
+
+        persisted = self.service.get(self.coordinator_record.id)
+        assert persisted is not None
+        assert persisted.is_active is False
+
+    def test_not_found(self) -> None:
+        result = self.service.set_coordinator_active(999, True)
+        assert result is None
+
+
+class TestDeleteCoordinator(TestSetup):
+    def test_delete_existing_coordinator(self) -> None:
+        result = self.service.delete(self.coordinator_record.id)
+        assert result is True
+        self.service.expire_all()
+        assert self.service.get(self.coordinator_record.id) is None
+
+    def test_delete_non_existent_coordinator(self) -> None:
+        result = self.service.delete(99999)
+        assert result is False
