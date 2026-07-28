@@ -80,6 +80,7 @@ class UsersService(CRUDService[UserRecord]):
             logger.error("Failed to update record: %s", exc)
             return None
 
+
 __all__ = [
     "UsersService",
 ]
