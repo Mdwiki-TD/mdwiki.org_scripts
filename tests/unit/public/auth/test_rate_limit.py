@@ -1,44 +1,43 @@
-"""Unit tests for src/main_app/public/auth/rate_limit.py."""
+"""Tests for the rate limiter."""
 
-from __future__ import annotations
-
+import time
 from datetime import timedelta
+
+import pytest
 
 from src.main_app.public.auth.rate_limit import RateLimiter
 
 
-class TestRateLimiter:
-    def test_allows_within_limit(self):
-        rl = RateLimiter(limit=3, period=timedelta(seconds=10))
-        assert rl.allow("user1") is True
-        assert rl.allow("user1") is True
-        assert rl.allow("user1") is True
+def test_ratelimiter_enforces_limit() -> None:
+    limiter = RateLimiter(limit=2, period=timedelta(seconds=60))
 
-    def test_blocks_over_limit(self):
-        rl = RateLimiter(limit=2, period=timedelta(seconds=10))
-        assert rl.allow("user1") is True
-        assert rl.allow("user1") is True
-        assert rl.allow("user1") is False
+    assert limiter.allow("key") is True
+    assert limiter.allow("key") is True
+    assert limiter.allow("key") is False
 
-    def test_different_keys_independent(self):
-        rl = RateLimiter(limit=1, period=timedelta(seconds=10))
-        assert rl.allow("user1") is True
-        assert rl.allow("user1") is False
-        assert rl.allow("user2") is True
+    remaining = limiter.try_after("key")
+    assert remaining > timedelta(0)
+    assert remaining <= timedelta(seconds=60)
 
-    def test_try_after_when_under_limit(self):
-        rl = RateLimiter(limit=5, period=timedelta(seconds=10))
-        rl.allow("user1")
-        result = rl.try_after("user1")
-        assert result == timedelta(0)
 
-    def test_try_after_when_over_limit(self):
-        rl = RateLimiter(limit=1, period=timedelta(seconds=10))
-        rl.allow("user1")
-        result = rl.try_after("user1")
-        assert result > timedelta(0)
+@pytest.mark.parametrize("key", ["a", "b"])
+def test_ratelimiter_tracks_keys_independently(key: str) -> None:
+    limiter = RateLimiter(limit=1, period=timedelta(seconds=10))
 
-    def test_limit_of_one(self):
-        rl = RateLimiter(limit=1, period=timedelta(seconds=10))
-        assert rl.allow("k") is True
-        assert rl.allow("k") is False
+    assert limiter.allow(key) is True
+    assert limiter.allow(key) is False
+    assert limiter.allow("other") is True
+
+
+def test_rate_limiter_allow_and_try_after():
+    rl = RateLimiter(limit=2, period=timedelta(seconds=0.2))
+    key = "client-ip"
+    assert rl.allow(key) is True
+    assert rl.allow(key) is True
+    # Third hit within window should be throttled
+    assert rl.allow(key) is False
+    wait = rl.try_after(key)
+    assert wait.total_seconds() > 0
+    # After the period passes, it's allowed again
+    time.sleep(0.3)
+    assert rl.allow(key) is True

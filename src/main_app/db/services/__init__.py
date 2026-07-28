@@ -1,5 +1,4 @@
 from .admin_service import AdminService
-from .delete_service import delete_record_by_pk
 from .jobs_service import JobsService
 from .settings_service import SettingsService
 from .user_token_service import UserTokenService
@@ -11,5 +10,4 @@ __all__ = [
     "SettingsService",
     "UsersService",
     "UserTokenService",
-    "delete_record_by_pk",
 ]

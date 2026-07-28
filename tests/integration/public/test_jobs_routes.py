@@ -12,7 +12,7 @@ from unittest.mock import Mock, patch
 import pytest
 from flask.app import Flask
 
-from src.main_app.db.exceptions import DuplicateJobError
+from src.main_app.db.exceptions import DuplicateRecordError
 from src.main_app.db.services import (
     AdminService,
     JobsService,
@@ -241,7 +241,7 @@ class TestStartJob:
             ),
             patch(
                 "src.main_app.public.jobs_routes_utils.start_job",
-                side_effect=DuplicateJobError("A job of type 'fixref' is already active"),
+                side_effect=DuplicateRecordError("A job of type 'fixref' is already active"),
             ),
         ):
             _resp = mock_client.post(
