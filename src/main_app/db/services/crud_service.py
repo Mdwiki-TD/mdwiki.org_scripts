@@ -9,9 +9,11 @@ from collections.abc import Iterable, Sequence
 from typing import Any, TypeVar
 
 from sqlalchemy import Select, func, select
-from sqlalchemy.orm import Session
 from sqlalchemy.exc import IntegrityError
+from sqlalchemy.orm import Session
+
 from ..exceptions import RecordNotFoundError
+
 logger = logging.getLogger(__name__)
 
 ModelT = TypeVar("ModelT")  # , bound=db.Model
@@ -55,9 +57,17 @@ class CRUDService[ModelT]:
             logger.error("Error getting %s by filters: %s", self.model_name, exc)
             return None
 
-    def list_all(self) -> list[ModelT]:
+    def list_all(
+        self,
+        order_by: Iterable[Any] | None = None,
+    ) -> list[ModelT]:
         try:
-            return self.session.query(self.model).all()
+            stmt = self.session.query(self.model)
+
+            if order_by:
+                stmt = stmt.order_by(*order_by)
+
+            return list(stmt.all())
         except Exception as exc:
             logger.error("Error listing %s records: %s", self.model_name, exc)
             return []
@@ -69,7 +79,7 @@ class CRUDService[ModelT]:
         order_by: Iterable[Any] | None = None,
         limit: int | None = None,
         offset: int | None = None,
-    ) -> Sequence[ModelT]:
+    ) -> list[ModelT]:
         """
         Fetch multiple rows.
 
@@ -87,7 +97,8 @@ class CRUDService[ModelT]:
                 stmt = stmt.limit(limit)
             if offset is not None:
                 stmt = stmt.offset(offset)
-            return self.session.execute(stmt).scalars().all()
+            result = self.session.execute(stmt).scalars().all()
+            return list(result)
         except Exception as exc:
             logger.error("Error listing %s records: %s", self.model_name, exc)
             return []
