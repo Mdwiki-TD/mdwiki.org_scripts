@@ -13,7 +13,6 @@ from typing import Any
 from mwclient.client import Site
 
 from ....api_services import MwClientPage
-from ....api_services.clients import get_user_site
 from ....shared.fixref_shared.fixred_worker import work_on_text
 from ....shared.fixref_shared.objects import RunState
 from ...base_worker import BaseObjectsJobWorker

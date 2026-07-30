@@ -14,7 +14,6 @@ from typing import Any
 from mwclient.client import Site
 
 from ....api_services import MwClientPage
-from ....api_services.clients import get_user_site
 from ....api_services.query_api import import_page_from_wiki
 from ...base_worker import BaseObjectsJobWorker
 from .objects import ImportHistoryWorkerObject, UpdaterOutcome
