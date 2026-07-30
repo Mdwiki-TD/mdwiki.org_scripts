@@ -87,6 +87,7 @@ class TestSetup:
     def setup(self) -> None:
         self.job_service = JobsService()
 
+
 @pytest.mark.usefixtures("mock_app")
 class TestBaseObjectsJobWorker(TestSetup):
     def test_before_run_success(self, mock_app, worker, mock_base_worker):

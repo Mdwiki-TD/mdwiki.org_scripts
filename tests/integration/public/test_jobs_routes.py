@@ -82,11 +82,11 @@ def _login_user(mock_client, user_id, username="JobUser"):
         sess["uid"] = user_id
         sess["username"] = username
 
+
 class TestSetup:
     @pytest.fixture(autouse=True)
     def setup(self) -> None:
         self.job_service = JobsService()
-
 
     def _seed_job(self, mock_app, job_type=VALID_JOB_TYPE, username="JobUser"):
         """Create a job record and return its ID."""
