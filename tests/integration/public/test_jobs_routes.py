@@ -70,8 +70,8 @@ def _seed_user(mock_app, username="JobUser", *, can_run_bg_jobs=False) -> int:
             UsersService().toggle_can_run_bg_jobs(user.user_id, True)
         UserTokenService().upsert_user_token(
             user_id=user.user_id,
-            access_key="k",
-            access_secret="s",
+            encrypted_token=b"k",
+            encrypted_secret=b"s",
         )
         return user.user_id
 

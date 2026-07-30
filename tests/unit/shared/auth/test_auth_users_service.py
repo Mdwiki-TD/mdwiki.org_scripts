@@ -1,4 +1,5 @@
-"""Unit tests for AuthUserService.
+"""
+Unit tests for AuthUserService.
 
 Uses real DB services with the TestingConfig SQLite database.
 Only monkeypatches specific methods to simulate error paths.
@@ -28,8 +29,8 @@ class TestUserService:
             user = UsersService().create_user(username)
             UserTokenService().upsert_user_token(
                 user_id=user.user_id,
-                access_key=access_key,
-                access_secret=access_secret,
+                encrypted_token=b"access_key",
+                encrypted_secret=b"access_secret",
             )
             return user.user_id
 
