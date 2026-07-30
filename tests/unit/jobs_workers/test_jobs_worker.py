@@ -67,6 +67,12 @@ class TestCancelJobWorker:
         with mock_app.app_context():
             job = JobsService().create_job("test_job", "testuser")
             job_id = job.id
+            # Set result_file so the cancelled-file branch executes
+            JobsService().update_job_status(
+                job_id, "running", "test_job_job_1.json", job_type="test_job"
+            )
+            # Re-fetch to get the updated result_file
+            job = JobsService().get_job(job_id, "test_job")
 
         event = threading.Event()
         _register_cancel_event(job_id, event)
