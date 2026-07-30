@@ -47,10 +47,7 @@ class ImportHistoryWorker(BaseObjectsJobWorker):
         return "import_history"
 
     def process(self) -> ImportHistoryWorkerObject:
-        self.site = get_user_site(self.user)
-        if not self.site:
-            logger.warning(f"Job {self.job_id}: No site authentication available")
-            self.log_no_site_error()
+        if not self._check_site():
             return self.result
 
         titles_raw = self.args.get("titles", [])
