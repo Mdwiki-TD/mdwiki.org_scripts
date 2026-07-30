@@ -8,6 +8,7 @@ from .coordinators import CoordinatorsRoutes
 from .jobs import AdminJobsRoutes
 from .settings import SettingsRoutes
 from .users import UsersRoutes
+from .errors_route import CheckErrorsRoutes
 
 
 @dataclass(frozen=True)
@@ -31,6 +32,7 @@ ADMIN_ROUTE_MODULES: list[AdminRouteModule] = [
             "bp_name": "adminpanel.jobs",
         },
     ),
+    AdminRouteModule(route_cls=CheckErrorsRoutes, name="errors", url_prefix="/errors"),
 ]
 
 __all__ = [
