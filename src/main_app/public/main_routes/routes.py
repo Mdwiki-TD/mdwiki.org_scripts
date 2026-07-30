@@ -8,6 +8,7 @@ import logging
 
 from flask import (
     Blueprint,
+    current_app,
     render_template,
     send_from_directory,
 )
@@ -27,17 +28,18 @@ class MainRoutes:
         self._setup_routes()
 
     def _setup_routes(self) -> None:
-        @self.bp.route("/", methods=["GET"])
-        def index() -> str:
-            return render_template(
-                "index.html",
-                jobs_data_for_all_pages=jobs_data_for_all_pages,
-                jobs_data_one_page=jobs_data_one_page,
-            )
+        self.bp.route("/", methods=["GET"])(self.index)
+        self.bp.get("/favicon.ico")(self.favicon)
 
-        @self.bp.get("/favicon.ico")
-        def favicon() -> Response:
-            return send_from_directory("static", "favicon.ico", mimetype="image/x-icon")
+    def index(self) -> str:
+        return render_template(
+            "index.html",
+            jobs_data_for_all_pages=jobs_data_for_all_pages,
+            jobs_data_one_page=jobs_data_one_page,
+        )
+
+    def favicon(self) -> Response:
+        return send_from_directory(current_app.static_folder, "favicon.ico", mimetype="image/x-icon")
 
 
 __all__ = [
