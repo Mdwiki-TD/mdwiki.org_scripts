@@ -1,13 +1,25 @@
-"""Tests for src/main_app/adminpanel/routes/settings.py."""
+"""Tests for src/main_app/admin/routes/settings.py.
+
+Uses the full app factory (TestingConfig) with a real SQLite database.
+Only the ``admin_required`` auth decorator is bypassed.
+"""
 
 from __future__ import annotations
-
-from unittest.mock import MagicMock
 
 import pytest
 from flask import Blueprint, Flask
 
-from src.main_app.admin.routes.settings import SettingsRoutes, _parse_setting_value, settings_update_form
+from src.main_app.admin.routes.settings import (
+    SettingsRoutes,
+    _parse_setting_value,
+    settings_update_form,
+)
+from src.main_app.db.services import SettingsService
+
+
+# ---------------------------------------------------------------------------
+# SettingsRoutes class structure (no DB needed)
+# ---------------------------------------------------------------------------
 
 
 class TestSettingsRoutesClass:
@@ -26,304 +38,241 @@ class TestSettingsRoutesClass:
         assert len(instance.bp.deferred_functions) == 3
 
 
+# ---------------------------------------------------------------------------
+# Route-level tests (real DB, admin_required bypassed via unwrap)
+# ---------------------------------------------------------------------------
+
+
 class TestSettingsRoutesRoutes:
-    """Route-level tests using a Flask test client."""
+    """Route-level tests using the session-scoped app with a real SQLite database.
 
-    @pytest.fixture
-    def app_with_routes(self, monkeypatch):
-        """Build a minimal Flask app with the settings blueprint and a mocked admin_required."""
-        monkeypatch.setattr(
-            "src.main_app.admin.routes.settings.admin_required",
-            lambda f: f,
-        )
+    The ``admin_required`` decorator is applied at app-factory time, so we
+    unwrap the view functions per-test, then restore them afterwards.
+    """
 
-        app = Flask(__name__)
-        app.secret_key = "test-secret"
-        app.config["TESTING"] = True
+    SETTINGS_ENDPOINTS = [
+        "adminpanel.settings.dashboard",
+        "adminpanel.settings.create",
+        "adminpanel.settings.update",
+    ]
 
-        admin_bp = Blueprint("adminpanel", __name__, url_prefix="/adminpanel")
-        admin_bp.register_blueprint(SettingsRoutes(Blueprint("settings", __name__, url_prefix="/settings")).bp)
-        app.register_blueprint(admin_bp)
-
-        return app
-
-    @pytest.fixture
-    def client(self, app_with_routes):
-        """Test client bound to the minimal app."""
-        return app_with_routes.test_client()
+    @pytest.fixture(autouse=True)
+    def _unwrap_admin_required(self, mock_app: Flask):
+        """Unwrap admin_required on settings endpoints for the duration of each test."""
+        originals = {}
+        for endpoint in self.SETTINGS_ENDPOINTS:
+            fn = mock_app.view_functions.get(endpoint)
+            if fn is not None:
+                unwrapped = fn
+                while hasattr(unwrapped, "__wrapped__"):
+                    unwrapped = unwrapped.__wrapped__
+                originals[endpoint] = fn
+                mock_app.view_functions[endpoint] = unwrapped
+        yield
+        for endpoint, fn in originals.items():
+            mock_app.view_functions[endpoint] = fn
 
     # ── dashboard (GET /) ────────────────────────────────────────────────
 
-    def test_dashboard_returns_settings(self, client, monkeypatch):
-        """Dashboard should render the template with all settings."""
-        mock_settings = [{"key": "foo", "value": "true"}, {"key": "bar", "value": "42"}]
-        monkeypatch.setattr(
-            "src.main_app.admin.routes.settings.SettingsService.get_all_settings_raw",
-            MagicMock(return_value=mock_settings),
-        )
-        mock_render = MagicMock(return_value="dashboard")
-        monkeypatch.setattr(
-            "src.main_app.admin.routes.settings.render_template",
-            mock_render,
-        )
+    def test_dashboard_returns_settings(self, mock_app: Flask, mock_client):
+        """Dashboard should render with settings from the real DB."""
+        with mock_app.app_context():
+            SettingsService().create_setting("foo", "Foo", "boolean", "true")
+            SettingsService().create_setting("bar", "Bar", "integer", "42")
 
-        resp = client.get("/adminpanel/settings/")
-
+        resp = mock_client.get("/adminpanel/settings/")
         assert resp.status_code == 200
-        mock_render.assert_called_once_with("admins/settings.html", settings_list=mock_settings)
 
     # ── create (POST /create) ────────────────────────────────────────────
 
-    def test_create_valid_key(self, client, monkeypatch):
-        """POST /create with valid key, title, and value_type should call create_setting."""
-        mock_create = MagicMock(return_value=True)
-        monkeypatch.setattr(
-            "src.main_app.admin.routes.settings.SettingsService.create_setting",
-            mock_create,
-        )
-
-        resp = client.post(
+    def test_create_valid_key(self, mock_app: Flask, mock_client):
+        """POST /create with valid key, title, and value_type should persist the setting."""
+        resp = mock_client.post(
             "/adminpanel/settings/create",
             data={"key": "my_setting", "title": "My Setting", "value_type": "boolean"},
         )
-
-        mock_create.assert_called_once_with("my_setting", "My Setting", "boolean")
         assert resp.status_code == 302
 
-    def test_create_empty_key_shows_error(self, client, monkeypatch):
-        """POST /create with an empty key should not call create_setting and redirect."""
-        mock_create = MagicMock()
-        monkeypatch.setattr(
-            "src.main_app.admin.routes.settings.SettingsService.create_setting",
-            mock_create,
-        )
+        with mock_app.app_context():
+            record = SettingsService().get_setting_by_key("my_setting")
+            assert record is not None
+            assert record.title == "My Setting"
+            assert record.value_type == "boolean"
 
-        resp = client.post(
+    def test_create_empty_key_shows_error(self, mock_app: Flask, mock_client):
+        """POST /create with an empty key should not create a setting."""
+        resp = mock_client.post(
             "/adminpanel/settings/create",
             data={"key": "", "title": "My Setting"},
         )
-
-        mock_create.assert_not_called()
         assert resp.status_code == 302
 
-    def test_create_invalid_key_starts_with_number(self, client, monkeypatch):
-        """POST /create with a key starting with a number should show validation error."""
-        mock_create = MagicMock()
-        monkeypatch.setattr(
-            "src.main_app.admin.routes.settings.SettingsService.create_setting",
-            mock_create,
-        )
+        with mock_app.app_context():
+            assert SettingsService().get_setting_by_key("") is None
 
-        resp = client.post(
+    def test_create_invalid_key_starts_with_number(self, mock_app: Flask, mock_client):
+        """POST /create with a key starting with a number should fail validation."""
+        resp = mock_client.post(
             "/adminpanel/settings/create",
             data={"key": "1nvalid", "title": "Invalid"},
         )
-
-        mock_create.assert_not_called()
         assert resp.status_code == 302
 
-    def test_create_invalid_key_uppercase(self, client, monkeypatch):
-        """POST /create with uppercase letters in key should show validation error."""
-        mock_create = MagicMock()
-        monkeypatch.setattr(
-            "src.main_app.admin.routes.settings.SettingsService.create_setting",
-            mock_create,
-        )
+        with mock_app.app_context():
+            assert SettingsService().get_setting_by_key("1nvalid") is None
 
-        resp = client.post(
+    def test_create_invalid_key_uppercase(self, mock_app: Flask, mock_client):
+        """POST /create with uppercase letters in key should fail validation."""
+        resp = mock_client.post(
             "/adminpanel/settings/create",
             data={"key": "MY_SETTING", "title": "My Setting"},
         )
-
-        mock_create.assert_not_called()
         assert resp.status_code == 302
 
-    def test_create_key_already_exists(self, client, monkeypatch):
-        """POST /create when create_setting returns False should show 'already exists' flash."""
-        mock_create = MagicMock(return_value=False)
-        monkeypatch.setattr(
-            "src.main_app.admin.routes.settings.SettingsService.create_setting",
-            mock_create,
-        )
+        with mock_app.app_context():
+            assert SettingsService().get_setting_by_key("MY_SETTING") is None
 
-        resp = client.post(
+    def test_create_key_already_exists(self, mock_app: Flask, mock_client):
+        """POST /create when setting already exists should flash error and redirect."""
+        with mock_app.app_context():
+            SettingsService().create_setting("existing", "Existing", "boolean")
+
+        resp = mock_client.post(
             "/adminpanel/settings/create",
-            data={"key": "existing", "title": "Existing"},
+            data={"key": "existing", "title": "Existing", "value_type": "boolean"},
         )
-
-        mock_create.assert_called_once_with("existing", "Existing", "boolean")
         assert resp.status_code == 302
 
-    def test_create_missing_title(self, client, monkeypatch):
+    def test_create_missing_title(self, mock_app: Flask, mock_client):
         """POST /create with key but no title should show 'Key and Title are required'."""
-        mock_create = MagicMock()
-        monkeypatch.setattr(
-            "src.main_app.admin.routes.settings.SettingsService.create_setting",
-            mock_create,
-        )
-
-        resp = client.post(
+        resp = mock_client.post(
             "/adminpanel/settings/create",
             data={"key": "valid_key", "title": ""},
         )
-
-        mock_create.assert_not_called()
         assert resp.status_code == 302
+
+        with mock_app.app_context():
+            assert SettingsService().get_setting_by_key("valid_key") is None
 
     # ── update (POST /update) ────────────────────────────────────────────
 
-    def test_update_success(self, client, monkeypatch):
+    def test_update_success(self, mock_app: Flask, mock_client, monkeypatch):
         """POST /update with no failed keys should show success flash."""
         monkeypatch.setattr(
             "src.main_app.admin.routes.settings.SettingsFuncs.settings_update_form",
             lambda self, request_form: ([], []),
         )
 
-        resp = client.post("/adminpanel/settings/update", data={})
-
+        resp = mock_client.post("/adminpanel/settings/update", data={})
         assert resp.status_code == 302
 
-    def test_update_with_deleted_keys(self, client, monkeypatch):
+    def test_update_with_deleted_keys(self, mock_app: Flask, mock_client, monkeypatch):
         """POST /update with deleted keys should show both 'Deleted' and 'Settings updated'."""
         monkeypatch.setattr(
             "src.main_app.admin.routes.settings.SettingsFuncs.settings_update_form",
             lambda self, request_form: ([], ["key_a", "key_b"]),
         )
 
-        resp = client.post("/adminpanel/settings/update", data={})
-
+        resp = mock_client.post("/adminpanel/settings/update", data={})
         assert resp.status_code == 302
 
-    def test_update_with_failed_keys(self, client, monkeypatch):
+    def test_update_with_failed_keys(self, mock_app: Flask, mock_client, monkeypatch):
         """POST /update with failed keys should show error flash."""
         monkeypatch.setattr(
             "src.main_app.admin.routes.settings.SettingsFuncs.settings_update_form",
             lambda self, request_form: (["bad_key"], []),
         )
 
-        resp = client.post("/adminpanel/settings/update", data={})
-
+        resp = mock_client.post("/adminpanel/settings/update", data={})
         assert resp.status_code == 302
 
 
+# ---------------------------------------------------------------------------
+# settings_update_form (real DB)
+# ---------------------------------------------------------------------------
+
+
+@pytest.mark.usefixtures("mock_app")
 class TestSettingsUpdateForm:
-    """Tests for settings_update_form."""
+    """Tests for settings_update_form using real DB."""
 
-    def test_processes_boolean_value(self, monkeypatch):
-        mock_settings = [
-            {"key": "test_bool", "value_type": "boolean", "value": "false"},
-        ]
-        monkeypatch.setattr(
-            "src.main_app.admin.routes.settings.SettingsService.get_all_settings_raw",
-            lambda self: mock_settings,
-        )
+    def _seed_setting(self, app: Flask, key: str, value_type: str, value: str) -> None:
+        with app.app_context():
+            SettingsService().create_setting(key, key.replace("_", " ").title(), value_type, value)
 
-        updated = {}
-
-        def mock_update(self, key, value, v_type):
-            updated[key] = (value, v_type)
-            return True
-
-        monkeypatch.setattr("src.main_app.admin.routes.settings.SettingsService.update_setting", mock_update)
+    def test_processes_boolean_value(self, mock_app: Flask):
+        self._seed_setting(mock_app, "test_bool", "boolean", "false")
 
         request_form = {"setting_test_bool": "on"}
-
         failed, deleted = settings_update_form(request_form)
 
         assert failed == []
         assert deleted == []
-        assert updated == {"test_bool": (True, "boolean")}
 
-    def test_processes_integer_value(self, monkeypatch):
-        mock_settings = [
-            {"key": "test_int", "value_type": "integer", "value": "0"},
-        ]
-        monkeypatch.setattr(
-            "src.main_app.admin.routes.settings.SettingsService.get_all_settings_raw",
-            lambda self: mock_settings,
-        )
+        with mock_app.app_context():
+            record = SettingsService().get_setting_by_key("test_bool")
+            assert record.value == "true"
 
-        updated = {}
-
-        def mock_update(self, key, value, v_type):
-            updated[key] = (value, v_type)
-            return True
-
-        monkeypatch.setattr("src.main_app.admin.routes.settings.SettingsService.update_setting", mock_update)
+    def test_processes_integer_value(self, mock_app: Flask):
+        self._seed_setting(mock_app, "test_int", "integer", "0")
 
         request_form = {"setting_test_int": "42"}
-
         failed, deleted = settings_update_form(request_form)
 
         assert failed == []
         assert deleted == []
-        assert updated == {"test_int": (42, "integer")}
 
-    def test_handles_delete_action(self, monkeypatch):
-        mock_settings = [
-            {"key": "test_key", "value_type": "string", "value": "val"},
-        ]
-        monkeypatch.setattr(
-            "src.main_app.admin.routes.settings.SettingsService.get_all_settings_raw",
-            lambda self: mock_settings,
-        )
-        monkeypatch.setattr(
-            "src.main_app.admin.routes.settings.SettingsService.delete_setting_by_key",
-            lambda self, k: True,
-        )
+        with mock_app.app_context():
+            record = SettingsService().get_setting_by_key("test_int")
+            assert record.value == "42"
+
+    def test_handles_delete_action(self, mock_app: Flask):
+        self._seed_setting(mock_app, "test_key", "string", "val")
 
         request_form = {"delete_test_key": "on"}
-
         failed, deleted = settings_update_form(request_form)
 
         assert failed == []
         assert deleted == ["test_key"]
 
-    def test_collects_failed_keys_on_error(self, monkeypatch):
-        mock_settings = [
-            {"key": "test_key", "value_type": "string", "value": "val"},
-        ]
-        monkeypatch.setattr(
-            "src.main_app.admin.routes.settings.SettingsService.get_all_settings_raw",
-            lambda self: mock_settings,
-        )
+        with mock_app.app_context():
+            assert SettingsService().get_setting_by_key("test_key") is None
+
+    def test_collects_failed_keys_on_error(self, mock_app: Flask, monkeypatch: pytest.MonkeyPatch):
+        self._seed_setting(mock_app, "test_key", "string", "val")
+
+        def fail_update(*args, **kwargs):
+            return False
+
         monkeypatch.setattr(
             "src.main_app.admin.routes.settings.SettingsService.update_setting",
-            lambda self, k, v, vt: False,
+            fail_update,
         )
-        # monkeypatch.setattr("src.main_app.admin.routes.settings._parse_setting_value", lambda k, v: v, True)
 
         request_form = {"setting_test_key": "new_val"}
-
         failed, deleted = settings_update_form(request_form)
 
         assert deleted == []
-        # assert failed == ["test_key"]
+        assert "test_key" in failed
 
-    def test_skips_when_form_key_not_in_request_form(self, monkeypatch):
-        mock_settings = [
-            {"key": "test_key", "value_type": "string", "value": "val"},
-        ]
-        monkeypatch.setattr(
-            "src.main_app.admin.routes.settings.SettingsService.get_all_settings_raw",
-            lambda self: mock_settings,
-        )
-
-        update_called = []
-
-        def mock_update(self, key, value, v_type):
-            update_called.append(key)
-            return True
-
-        monkeypatch.setattr("src.main_app.admin.routes.settings.SettingsService.update_setting", mock_update)
+    def test_skips_when_form_key_not_in_request_form(self, mock_app: Flask):
+        self._seed_setting(mock_app, "test_key", "string", "val")
 
         request_form = {"other_key": "value"}
-
         failed, deleted = settings_update_form(request_form)
 
         assert failed == []
         assert deleted == []
-        assert update_called == []
+
+        # Value should be unchanged
+        with mock_app.app_context():
+            record = SettingsService().get_setting_by_key("test_key")
+            assert record.value == "val"
+
+
+# ---------------------------------------------------------------------------
+# _parse_setting_value (pure function — no DB)
+# ---------------------------------------------------------------------------
 
 
 class TestParseSettingValue:
