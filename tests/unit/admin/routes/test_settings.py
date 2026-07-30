@@ -10,9 +10,9 @@ import pytest
 from flask import Blueprint, Flask
 
 from src.main_app.admin.routes.settings import (
+    SettingsFuncs,
     SettingsRoutes,
     _parse_setting_value,
-    settings_update_form,
 )
 from src.main_app.db.services import SettingsService
 
@@ -20,8 +20,14 @@ from src.main_app.db.services import SettingsService
 # SettingsRoutes class structure (no DB needed)
 # ---------------------------------------------------------------------------
 
+class TestSetup:
+    @pytest.fixture(autouse=True)
+    def setup(self) -> None:
+        self.func_service = SettingsFuncs()
+        self.service = SettingsService()
 
-class TestSettingsRoutesClass:
+
+class TestSettingsRoutesClass(TestSetup):
     """Tests for the SettingsRoutes class itself."""
 
     def test_blueprint_properties(self):
@@ -42,7 +48,7 @@ class TestSettingsRoutesClass:
 # ---------------------------------------------------------------------------
 
 
-class TestSettingsRoutesRoutes:
+class TestSettingsRoutesRoutes(TestSetup):
     """Route-level tests using the session-scoped app with a real SQLite database.
 
     The ``admin_required`` decorator is applied at app-factory time, so we
@@ -76,8 +82,8 @@ class TestSettingsRoutesRoutes:
     def test_dashboard_returns_settings(self, mock_app: Flask, mock_client):
         """Dashboard should render with settings from the real DB."""
         with mock_app.app_context():
-            SettingsService().create_setting("foo", "Foo", "boolean", "true")
-            SettingsService().create_setting("bar", "Bar", "integer", "42")
+            self.service.create_setting("foo", "Foo", "boolean", "true")
+            self.service.create_setting("bar", "Bar", "integer", "42")
 
         resp = mock_client.get("/adminpanel/settings/")
         assert resp.status_code == 200
@@ -93,7 +99,7 @@ class TestSettingsRoutesRoutes:
         assert resp.status_code == 302
 
         with mock_app.app_context():
-            record = SettingsService().get_setting_by_key("my_setting")
+            record = self.service.get_setting_by_key("my_setting")
             assert record is not None
             assert record.title == "My Setting"
             assert record.value_type == "boolean"
@@ -107,7 +113,7 @@ class TestSettingsRoutesRoutes:
         assert resp.status_code == 302
 
         with mock_app.app_context():
-            assert SettingsService().get_setting_by_key("") is None
+            assert self.service.get_setting_by_key("") is None
 
     def test_create_invalid_key_starts_with_number(self, mock_app: Flask, mock_client):
         """POST /create with a key starting with a number should fail validation."""
@@ -118,7 +124,7 @@ class TestSettingsRoutesRoutes:
         assert resp.status_code == 302
 
         with mock_app.app_context():
-            assert SettingsService().get_setting_by_key("1nvalid") is None
+            assert self.service.get_setting_by_key("1nvalid") is None
 
     def test_create_invalid_key_uppercase(self, mock_app: Flask, mock_client):
         """POST /create with uppercase letters in key should fail validation."""
@@ -129,12 +135,12 @@ class TestSettingsRoutesRoutes:
         assert resp.status_code == 302
 
         with mock_app.app_context():
-            assert SettingsService().get_setting_by_key("MY_SETTING") is None
+            assert self.service.get_setting_by_key("MY_SETTING") is None
 
     def test_create_key_already_exists(self, mock_app: Flask, mock_client):
         """POST /create when setting already exists should flash error and redirect."""
         with mock_app.app_context():
-            SettingsService().create_setting("existing", "Existing", "boolean")
+            self.service.create_setting("existing", "Existing", "boolean")
 
         resp = mock_client.post(
             "/adminpanel/settings/create",
@@ -151,7 +157,7 @@ class TestSettingsRoutesRoutes:
         assert resp.status_code == 302
 
         with mock_app.app_context():
-            assert SettingsService().get_setting_by_key("valid_key") is None
+            assert self.service.get_setting_by_key("valid_key") is None
 
     # ── update (POST /update) ────────────────────────────────────────────
 
@@ -192,50 +198,52 @@ class TestSettingsRoutesRoutes:
 
 
 @pytest.mark.usefixtures("mock_app")
-class TestSettingsUpdateForm:
+class TestSettingsUpdateForm(TestSetup):
     """Tests for settings_update_form using real DB."""
 
     def _seed_setting(self, app: Flask, key: str, value_type: str, value: str) -> None:
         with app.app_context():
-            SettingsService().create_setting(key, key.replace("_", " ").title(), value_type, value)
+            self.service.create_setting(key, key.replace("_", " ").title(), value_type, value)
 
     def test_processes_boolean_value(self, mock_app: Flask):
         self._seed_setting(mock_app, "test_bool", "boolean", "false")
 
         request_form = {"setting_test_bool": "on"}
-        failed, deleted = settings_update_form(request_form)
+        failed, deleted = self.func_service.settings_update_form(request_form)
 
         assert failed == []
         assert deleted == []
 
         with mock_app.app_context():
-            record = SettingsService().get_setting_by_key("test_bool")
+            record = self.service.get_setting_by_key("test_bool")
+            assert record is not None
             assert record.value == "true"
 
     def test_processes_integer_value(self, mock_app: Flask):
         self._seed_setting(mock_app, "test_int", "integer", "0")
 
         request_form = {"setting_test_int": "42"}
-        failed, deleted = settings_update_form(request_form)
+        failed, deleted = self.func_service.settings_update_form(request_form)
 
         assert failed == []
         assert deleted == []
 
         with mock_app.app_context():
-            record = SettingsService().get_setting_by_key("test_int")
+            record = self.service.get_setting_by_key("test_int")
+            assert record is not None
             assert record.value == "42"
 
     def test_handles_delete_action(self, mock_app: Flask):
         self._seed_setting(mock_app, "test_key", "string", "val")
 
         request_form = {"delete_test_key": "on"}
-        failed, deleted = settings_update_form(request_form)
+        failed, deleted = self.func_service.settings_update_form(request_form)
 
         assert failed == []
         assert deleted == ["test_key"]
 
         with mock_app.app_context():
-            assert SettingsService().get_setting_by_key("test_key") is None
+            assert self.service.get_setting_by_key("test_key") is None
 
     def test_collects_failed_keys_on_error(self, mock_app: Flask, monkeypatch: pytest.MonkeyPatch):
         self._seed_setting(mock_app, "test_key", "string", "val")
@@ -249,7 +257,7 @@ class TestSettingsUpdateForm:
         )
 
         request_form = {"setting_test_key": "new_val"}
-        failed, deleted = settings_update_form(request_form)
+        failed, deleted = self.func_service.settings_update_form(request_form)
 
         assert deleted == []
         assert "test_key" in failed
@@ -258,14 +266,15 @@ class TestSettingsUpdateForm:
         self._seed_setting(mock_app, "test_key", "string", "val")
 
         request_form = {"other_key": "value"}
-        failed, deleted = settings_update_form(request_form)
+        failed, deleted = self.func_service.settings_update_form(request_form)
 
         assert failed == []
         assert deleted == []
 
         # Value should be unchanged
         with mock_app.app_context():
-            record = SettingsService().get_setting_by_key("test_key")
+            record = self.service.get_setting_by_key("test_key")
+            assert record is not None
             assert record.value == "val"
 
 
@@ -274,7 +283,7 @@ class TestSettingsUpdateForm:
 # ---------------------------------------------------------------------------
 
 
-class TestParseSettingValue:
+class TestParseSettingValue(TestSetup):
     """Tests for _parse_setting_value."""
 
     def test_boolean_on(self):
