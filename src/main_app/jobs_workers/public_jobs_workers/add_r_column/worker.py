@@ -15,7 +15,7 @@ from typing import Any
 from mwclient.client import Site
 from mwclient.page import Page
 
-from ....api_services import MwClientPage, get_user_site
+from ....api_services import MwClientPage
 from ....api_services.query_api import get_template_pages
 from ...base_worker import BaseObjectsJobWorker
 from .add_rtt import count_r_rows, inject_r_column_into_tables
@@ -86,10 +86,7 @@ class AddRColumnWorker(BaseObjectsJobWorker):
         """
         process method.
         """
-        self.site = get_user_site(self.user)
-        if not self.site:
-            logger.warning(f"Job {self.job_id}: No site authentication available")
-            self.log_no_site_error()
+        if not self._check_site():
             self._set_steps_skipped()
             return self.result
 

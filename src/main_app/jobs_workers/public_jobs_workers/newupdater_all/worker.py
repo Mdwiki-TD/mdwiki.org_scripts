@@ -14,7 +14,6 @@ from mwclient.client import Site
 
 from ....api_services import MwClientPage
 from ....api_services.category import get_category_members
-from ....api_services.clients import get_user_site
 from ....shared.named_param import add_param_named
 from ....shared.new_updater import med_updater_one
 from ...base_worker import BaseObjectsJobWorker
@@ -48,10 +47,7 @@ class NewUpdaterAllWorker(BaseObjectsJobWorker):
         return "newupdater_all"
 
     def process(self) -> SharedworkerObject:
-        self.site = get_user_site(self.user)
-        if not self.site:
-            logger.warning(f"Job {self.job_id}: No site authentication available")
-            self.log_no_site_error()
+        if not self._check_site():
             return self.result
 
         titles = get_category_members(

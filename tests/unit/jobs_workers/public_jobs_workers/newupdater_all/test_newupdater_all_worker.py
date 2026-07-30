@@ -38,7 +38,7 @@ class TestNewUpdaterAllWorker:
 
     def test_process_success(self):
         with (
-            patch("src.main_app.jobs_workers.public_jobs_workers.newupdater_all.worker.get_user_site") as mock_get_site,
+            patch("src.main_app.jobs_workers.base_worker.get_user_site") as mock_get_site,
             patch(
                 "src.main_app.jobs_workers.public_jobs_workers.newupdater_all.worker.get_category_members"
             ) as mock_get_members,

@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from typing import Any
 
+import pytest
 from flask.app import Flask
 from sqlalchemy import text
 
@@ -29,53 +30,58 @@ class MockWorker(BaseObjectsJobWorker):
         return self.result.to_json()
 
 
-def test_before_run_updates_status(mock_app: Flask) -> None:
-    with mock_app.app_context():
-        job = JobsService().create_job("mock_job_before_run", "test_user")
-        worker = MockWorker(job.id, "mock_job_before_run")
-
-        assert worker.result.status == "pending"
-        worker.before_run()
-        # This is expected to fail currently based on the issue description
-        assert worker.result.status == "running"
+class TestSetup:
+    @pytest.fixture(autouse=True)
+    def setup(self) -> None:
+        self.job_service = JobsService()
 
 
-def test_is_job_cancelled_detects_external_change(mock_app: Flask) -> None:
-    with mock_app.app_context():
-        job = JobsService().create_job("mock_job_cancel_detect", "test_user")
+class TestJob(TestSetup):
+    def test_before_run_updates_status(self, mock_app: Flask) -> None:
+        with mock_app.app_context():
+            job = self.job_service.create_job("mock_job_before_run", "test_user")
+            worker = MockWorker(job.id, "mock_job_before_run")
 
-        # Load the job record into the session's identity map
-        _ = db.session.get(JobRecord, job.id)
+            assert worker.result.status == "pending"
+            worker.before_run()
+            # This is expected to fail currently based on the issue description
+            assert worker.result.status == "running"
 
-        assert JobsService().is_job_cancelled(job.id, "mock_job_cancel_detect") is False
+    def test_is_job_cancelled_detects_external_change(self, mock_app: Flask) -> None:
+        with mock_app.app_context():
+            job = self.job_service.create_job("mock_job_cancel_detect", "test_user")
 
-        # Update status externally via a raw connection (bypassing ORM)
-        with db.engine.connect() as conn:
-            conn.execute(text("UPDATE jobs SET status = 'cancelled' WHERE id = :id"), {"id": job.id})
-            conn.commit()
+            # Load the job record into the session's identity map
+            _ = db.session.get(JobRecord, job.id)
 
-        # Expire all ORM objects so they re-read from DB on next access
-        db.session.expire_all()
+            assert self.job_service.is_job_cancelled(job.id, "mock_job_cancel_detect") is False
 
-        # Now JobsService().is_job_cancelled should return True.
-        assert JobsService().is_job_cancelled(job.id, "mock_job_cancel_detect") is True
+            # Update status externally via a raw connection (bypassing ORM)
+            with db.engine.connect() as conn:
+                conn.execute(text("UPDATE jobs SET status = 'cancelled' WHERE id = :id"), {"id": job.id})
+                conn.commit()
 
+            # Expire all ORM objects so they re-read from DB on next access
+            db.session.expire_all()
 
-def test_is_cancelled_sets_cancelled_at(mock_app: Flask) -> None:
-    with mock_app.app_context():
-        job = JobsService().create_job("mock_job_cancelled_at", "test_user")
-        worker = MockWorker(job.id, "mock_job_cancelled_at")
+            # Now self.job_service.is_job_cancelled should return True.
+            assert self.job_service.is_job_cancelled(job.id, "mock_job_cancel_detect") is True
 
-        # Manually cancel in DB via raw connection (bypassing ORM)
-        with db.engine.connect() as conn:
-            conn.execute(text("UPDATE jobs SET status = 'cancelled' WHERE id = :id"), {"id": job.id})
-            conn.commit()
+    def test_is_cancelled_sets_cancelled_at(self, mock_app: Flask) -> None:
+        with mock_app.app_context():
+            job = self.job_service.create_job("mock_job_cancelled_at", "test_user")
+            worker = MockWorker(job.id, "mock_job_cancelled_at")
 
-        # Expire all ORM objects so they re-read from DB on next access
-        db.session.expire_all()
+            # Manually cancel in DB via raw connection (bypassing ORM)
+            with db.engine.connect() as conn:
+                conn.execute(text("UPDATE jobs SET status = 'cancelled' WHERE id = :id"), {"id": job.id})
+                conn.commit()
 
-        assert worker.result.cancelled_at is None
-        assert worker.is_cancelled() is False
-        assert worker.is_cancelled(check_db=True) is True
-        assert worker.result.status == "cancelled"
-        assert worker.result.cancelled_at is not None
+            # Expire all ORM objects so they re-read from DB on next access
+            db.session.expire_all()
+
+            assert worker.result.cancelled_at is None
+            assert worker.is_cancelled() is False
+            assert worker.is_cancelled(check_db=True) is True
+            assert worker.result.status == "cancelled"
+            assert worker.result.cancelled_at is not None

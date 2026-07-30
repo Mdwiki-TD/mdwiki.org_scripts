@@ -33,14 +33,14 @@ class TestAddRColumnWorker:
     def worker(self):
         return AddRColumnWorker(job_id=1, args={}, user={"username": "test_user"})
 
-    @patch("src.main_app.jobs_workers.public_jobs_workers.add_r_column.worker.get_user_site")
+    @patch("src.main_app.jobs_workers.base_worker.get_user_site")
     def test_process_no_site(self, mock_get_user_site, worker):
         mock_get_user_site.return_value = None
         # When no site, BaseObjectsJobWorker.log_no_site_error sets status to failed
         result = worker.process()
         assert result.status == "failed"
 
-    @patch("src.main_app.jobs_workers.public_jobs_workers.add_r_column.worker.get_user_site")
+    @patch("src.main_app.jobs_workers.base_worker.get_user_site")
     @patch("src.main_app.jobs_workers.public_jobs_workers.add_r_column.worker.MwClientPage")
     @patch("src.main_app.jobs_workers.public_jobs_workers.add_r_column.worker.get_template_pages")
     def test_process_success(

@@ -14,7 +14,6 @@ from typing import Any
 from mwclient.client import Site
 
 from ....api_services import MwClientPage
-from ....api_services.clients import get_user_site
 from ....api_services.enwiki_api import get_redirects_for
 from ....api_services.query_api import is_pages_exists
 from ...base_worker import BaseObjectsJobWorker
@@ -64,10 +63,7 @@ class CreateRedirectsWorker(BaseObjectsJobWorker):
         return "create_redirects"
 
     def process(self) -> CreateRedirectsWorkerObject:
-        self.site = get_user_site(self.user)
-        if not self.site:
-            logger.warning(f"Job {self.job_id}: No site authentication available")
-            self.log_no_site_error()
+        if not self._check_site():
             return self.result
 
         titles = self._resolve_titles()

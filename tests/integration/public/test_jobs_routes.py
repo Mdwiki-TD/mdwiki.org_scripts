@@ -83,15 +83,20 @@ def _login_user(mock_client, user_id, username="JobUser"):
         sess["username"] = username
 
 
-def _seed_job(mock_app, job_type=VALID_JOB_TYPE, username="JobUser"):
-    """Create a job record and return its ID."""
-    with mock_app.app_context():
-        job = JobsService().create_job(job_type, username)
-        return job.id
+class TestSetup:
+    @pytest.fixture(autouse=True)
+    def setup(self) -> None:
+        self.job_service = JobsService()
+
+    def _seed_job(self, mock_app, job_type=VALID_JOB_TYPE, username="JobUser"):
+        """Create a job record and return its ID."""
+        with mock_app.app_context():
+            job = self.job_service.create_job(job_type, username)
+            return job.id
 
 
 @pytest.mark.usefixtures("mock_app")
-class TestAllJobsList:
+class TestAllJobsList(TestSetup):
     """GET /jobs/list — public listing of all jobs."""
 
     def test_all_jobs_list_loads(self, mock_client):
@@ -106,7 +111,7 @@ class TestAllJobsList:
 
 
 @pytest.mark.usefixtures("mock_app")
-class TestJobsListByType:
+class TestJobsListByType(TestSetup):
     """GET /jobs/<job_type> — jobs list filtered by type."""
 
     def test_valid_job_type_loads(self, mock_client):
@@ -129,13 +134,13 @@ class TestJobsListByType:
 
 
 @pytest.mark.usefixtures("mock_app")
-class TestJobDetail:
+class TestJobDetail(TestSetup):
     """GET /jobs/<job_type>/<job_id> — single job detail page."""
 
     def test_job_detail_loads(self, mock_app, mock_client):
         """A valid job ID should load the detail page."""
         _seed_user(mock_app)
-        job_id = _seed_job(mock_app, VALID_JOB_TYPE)
+        job_id = self._seed_job(mock_app, VALID_JOB_TYPE)
         resp = mock_client.get(f"/jobs/{VALID_JOB_TYPE}/{job_id}")
         assert resp.status_code == 200
 
@@ -147,21 +152,21 @@ class TestJobDetail:
     def test_job_detail_wrong_type_redirects(self, mock_app, mock_client):
         """Looking up a job with the wrong type should redirect."""
         _seed_user(mock_app)
-        job_id = _seed_job(mock_app, VALID_JOB_TYPE)
+        job_id = self._seed_job(mock_app, VALID_JOB_TYPE)
         resp = mock_client.get(f"/jobs/{ANOTHER_VALID_JOB_TYPE}/{job_id}")
         assert resp.status_code == 302
 
     def test_job_detail_invalid_type_returns_404_or_redirect(self, mock_app, mock_client):
         """An invalid job type should return 404 or redirect."""
         _seed_user(mock_app)
-        job_id = _seed_job(mock_app, VALID_JOB_TYPE)
+        job_id = self._seed_job(mock_app, VALID_JOB_TYPE)
         resp = mock_client.get(f"/jobs/nonexistent/{job_id}")
         # The route may 404 or redirect depending on abort handler
         assert resp.status_code in (302, 404)
 
 
 @pytest.mark.usefixtures("mock_app")
-class TestStartJob:
+class TestStartJob(TestSetup):
     """POST /jobs/<job_type>/start — start a new background job."""
 
     def test_start_requires_login(self, mock_app, mock_client):
@@ -255,13 +260,13 @@ class TestStartJob:
 
 
 @pytest.mark.usefixtures("mock_app")
-class TestCancelJob:
+class TestCancelJob(TestSetup):
     """POST /jobs/<job_type>/<job_id>/cancel — cancel a running job."""
 
     def test_cancel_requires_login(self, mock_app, mock_client):
         """Unauthenticated user should be redirected."""
         _seed_user(mock_app)
-        job_id = _seed_job(mock_app, VALID_JOB_TYPE)
+        job_id = self._seed_job(mock_app, VALID_JOB_TYPE)
         resp = mock_client.post(f"/jobs/{VALID_JOB_TYPE}/{job_id}/cancel")
         assert resp.status_code == 302
 
@@ -269,7 +274,7 @@ class TestCancelJob:
         """Cancelling with invalid job type should return 404."""
         uid = _seed_user(mock_app)
         _login_user(mock_client, uid)
-        job_id = _seed_job(mock_app, VALID_JOB_TYPE)
+        job_id = self._seed_job(mock_app, VALID_JOB_TYPE)
         resp = mock_client.post(f"/jobs/nonexistent/{job_id}/cancel")
         assert resp.status_code == 404
 
@@ -287,7 +292,7 @@ class TestCancelJob:
         """Job owner should be able to cancel their own job."""
         owner_uid = _seed_user(mock_app, username="Owner")
         _login_user(mock_client, owner_uid, username="Owner")
-        job_id = _seed_job(mock_app, VALID_JOB_TYPE, username="Owner")
+        job_id = self._seed_job(mock_app, VALID_JOB_TYPE, username="Owner")
 
         with patch(
             "src.main_app.public.jobs_routes_utils.cancel_job_worker",
@@ -307,7 +312,7 @@ class TestCancelJob:
 
         _seed_user(mock_app, username="Owner")
         other_uid = _seed_user(mock_app, username="Other")
-        job_id = _seed_job(mock_app, VALID_JOB_TYPE, username="Owner")
+        job_id = self._seed_job(mock_app, VALID_JOB_TYPE, username="Owner")
         _login_user(mock_client, other_uid, username="Other")
 
         resp = mock_client.post(
@@ -324,7 +329,7 @@ class TestCancelJob:
         with mock_app.app_context():
             AdminService().add_coordinator("AdminCancel")
 
-        job_id = _seed_job(mock_app, VALID_JOB_TYPE, username="Owner")
+        job_id = self._seed_job(mock_app, VALID_JOB_TYPE, username="Owner")
         _login_user(mock_client, admin_uid, username="AdminCancel")
 
         with patch(
@@ -340,7 +345,7 @@ class TestCancelJob:
 
 
 @pytest.mark.usefixtures("mock_app", "_unwrap_delete_job")
-class TestDeleteJob:
+class TestDeleteJob(TestSetup):
     """POST /jobs/<job_type>/<job_id>/delete — delete a job."""
 
     def test_delete_invalid_job_type_404(self, mock_app, mock_client):
@@ -354,7 +359,7 @@ class TestDeleteJob:
         """Job owner should be able to delete their own job."""
         owner_uid = _seed_user(mock_app, username="Owner")
         _login_user(mock_client, owner_uid, username="Owner")
-        job_id = _seed_job(mock_app, VALID_JOB_TYPE, username="Owner")
+        job_id = self._seed_job(mock_app, VALID_JOB_TYPE, username="Owner")
 
         with patch(
             "src.main_app.public.jobs_routes_utils.cancel_job_worker",
@@ -369,7 +374,7 @@ class TestDeleteJob:
 
         with mock_app.app_context():
             with pytest.raises(LookupError):
-                JobsService().get_job(job_id, VALID_JOB_TYPE)
+                self.job_service.get_job(job_id, VALID_JOB_TYPE)
 
     def test_delete_nonexistent_job(self, mock_app, mock_client):
         """Deleting a non-existent job should not error."""
@@ -389,7 +394,7 @@ class TestDeleteJob:
 
 
 @pytest.mark.usefixtures("mock_app")
-class TestJobsRouteIntegration:
+class TestJobsRouteIntegration(TestSetup):
     """End-to-end integration scenarios for job routes."""
 
     def test_job_lifecycle_through_routes(self, mock_app, mock_client):
@@ -399,7 +404,7 @@ class TestJobsRouteIntegration:
 
         # Create job in DB
         with mock_app.app_context():
-            job = JobsService().create_job(VALID_JOB_TYPE, "LifecycleUser")
+            job = self.job_service.create_job(VALID_JOB_TYPE, "LifecycleUser")
             job_id = job.id
 
         # View detail
@@ -417,23 +422,23 @@ class TestJobsRouteIntegration:
         # Verify cancelled in DB
         with mock_app.app_context():
 
-            assert JobsService().is_job_cancelled(job_id, VALID_JOB_TYPE) is True
+            assert self.job_service.is_job_cancelled(job_id, VALID_JOB_TYPE) is True
 
     def test_multiple_jobs_listed_by_type(self, mock_app, mock_client):
         """Multiple jobs of the same type should all appear in the list."""
 
         _seed_user(mock_app)
         with mock_app.app_context():
-            job1 = JobsService().create_job(VALID_JOB_TYPE, "JobUser")
-            JobsService().update_job_status(job1.id, "running", job_type=VALID_JOB_TYPE)
-            JobsService().update_job_status(job1.id, "completed", job_type=VALID_JOB_TYPE)
-            JobsService().create_job(VALID_JOB_TYPE, "JobUser")
-            JobsService().create_job(ANOTHER_VALID_JOB_TYPE, "JobUser")
+            job1 = self.job_service.create_job(VALID_JOB_TYPE, "JobUser")
+            self.job_service.update_job_status(job1.id, "running", job_type=VALID_JOB_TYPE)
+            self.job_service.update_job_status(job1.id, "completed", job_type=VALID_JOB_TYPE)
+            self.job_service.create_job(VALID_JOB_TYPE, "JobUser")
+            self.job_service.create_job(ANOTHER_VALID_JOB_TYPE, "JobUser")
 
         with mock_app.app_context():
-            fixref_jobs = JobsService().list_jobs(limit=100, job_type=VALID_JOB_TYPE)
-            redirect_jobs = JobsService().list_jobs(limit=100, job_type=ANOTHER_VALID_JOB_TYPE)
-            all_jobs = JobsService().list_jobs(limit=100)
+            fixref_jobs = self.job_service.list_jobs(limit=100, job_type=VALID_JOB_TYPE)
+            redirect_jobs = self.job_service.list_jobs(limit=100, job_type=ANOTHER_VALID_JOB_TYPE)
+            all_jobs = self.job_service.list_jobs(limit=100)
 
         assert len(fixref_jobs) == 2
         assert len(redirect_jobs) == 1
@@ -447,10 +452,10 @@ class TestJobsRouteIntegration:
         _login_user(mock_client, owner_uid, username="Owner")
 
         with mock_app.app_context():
-            job1 = JobsService().create_job(VALID_JOB_TYPE, "Owner")
-            JobsService().update_job_status(job1.id, "running", job_type=VALID_JOB_TYPE)
-            JobsService().update_job_status(job1.id, "completed", job_type=VALID_JOB_TYPE)
-            job2 = JobsService().create_job(VALID_JOB_TYPE, "Owner")
+            job1 = self.job_service.create_job(VALID_JOB_TYPE, "Owner")
+            self.job_service.update_job_status(job1.id, "running", job_type=VALID_JOB_TYPE)
+            self.job_service.update_job_status(job1.id, "completed", job_type=VALID_JOB_TYPE)
+            job2 = self.job_service.create_job(VALID_JOB_TYPE, "Owner")
             job1_id = job1.id
             job2_id = job2.id
 
@@ -464,7 +469,7 @@ class TestJobsRouteIntegration:
             )
 
         with mock_app.app_context():
-            remaining = JobsService().list_jobs(limit=100, job_type=VALID_JOB_TYPE)
+            remaining = self.job_service.list_jobs(limit=100, job_type=VALID_JOB_TYPE)
             remaining_ids = [j.id for j in remaining]
             assert job1_id not in remaining_ids
             assert job2_id in remaining_ids
