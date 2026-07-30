@@ -82,15 +82,20 @@ def test_worker_object_to_json():
     assert data["error"] == "some error"
 
 
+class TestSetup:
+    @pytest.fixture(autouse=True)
+    def setup(self) -> None:
+        self.job_service = JobsService()
+
 @pytest.mark.usefixtures("mock_app")
-class TestBaseObjectsJobWorker:
+class TestBaseObjectsJobWorker(TestSetup):
     def test_before_run_success(self, mock_app, worker, mock_base_worker):
         _seed_job(mock_app)
         assert worker.before_run() is True
 
         # Verify real DB was updated to "running"
         with mock_app.app_context():
-            job = JobsService().get_job(JOB_ID, JOB_TYPE)
+            job = self.job_service.get_job(JOB_ID, JOB_TYPE)
             assert job.status == "running"
         assert worker.result.status == "running"
 
@@ -108,7 +113,7 @@ class TestBaseObjectsJobWorker:
         assert worker.result.completed_at is not None
 
         with mock_app.app_context():
-            job = JobsService().get_job(JOB_ID, JOB_TYPE)
+            job = self.job_service.get_job(JOB_ID, JOB_TYPE)
             assert job.status == "completed"
 
     def test_after_run_db_error(self, mock_app, worker, mock_base_worker, monkeypatch: pytest.MonkeyPatch):
@@ -170,7 +175,7 @@ class TestBaseObjectsJobWorker:
         assert result["status"] == "completed"
 
         with mock_app.app_context():
-            job = JobsService().get_job(JOB_ID, JOB_TYPE)
+            job = self.job_service.get_job(JOB_ID, JOB_TYPE)
             assert job.status == "completed"
 
     def test_run_before_fail(self, mock_app, worker, mock_base_worker):
