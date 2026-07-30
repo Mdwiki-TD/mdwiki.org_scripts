@@ -59,20 +59,27 @@ def test_runner():
     assert _get_jobs_cancel_event(job_id) is None
 
 
+
+
+class TestSetup:
+    @pytest.fixture(autouse=True)
+    def setup(self) -> None:
+        self.job_service = JobsService()
+
 @pytest.mark.usefixtures("mock_app")
-class TestCancelJobWorker:
+class TestCancelJobWorker(TestSetup):
     @patch("src.main_app.jobs_workers.jobs_worker.create_job_cancelled_file")
     def test_cancel_job_worker(self, mock_create_file, mock_app: Flask):
         """cancel_job_worker should set the event, update the DB, and create a cancelled file."""
         with mock_app.app_context():
-            job = JobsService().create_job("test_job", "testuser")
+            job = self.job_service.create_job("test_job", "testuser")
             job_id = job.id
             # Set result_file so the cancelled-file branch executes
-            JobsService().update_job_status(
+            self.job_service.update_job_status(
                 job_id, "running", "test_job_job_1.json", job_type="test_job"
             )
             # Re-fetch to get the updated result_file
-            job = JobsService().get_job(job_id, "test_job")
+            job = self.job_service.get_job(job_id, "test_job")
 
         event = threading.Event()
         _register_cancel_event(job_id, event)
@@ -86,7 +93,7 @@ class TestCancelJobWorker:
 
         # Verify DB was updated
         with mock_app.app_context():
-            assert JobsService().is_job_cancelled(job_id, "test_job") is True
+            assert self.job_service.is_job_cancelled(job_id, "test_job") is True
 
         mock_create_file.assert_called_once()
 
@@ -95,7 +102,7 @@ class TestCancelJobWorker:
 
 
 @pytest.mark.usefixtures("mock_app")
-class TestStartJob:
+class TestStartJob(TestSetup):
     @patch("src.main_app.jobs_workers.jobs_worker.threading.Thread")
     @patch("src.main_app.jobs_workers.jobs_worker.jobs_data_public")
     def test_start_job(self, mock_jobs_data, mock_thread, mock_app: Flask):
@@ -121,7 +128,7 @@ class TestStartJob:
 
         # Verify job was persisted to the real DB
         with mock_app.app_context():
-            job = JobsService().get_job(job_id, job_type)
+            job = self.job_service.get_job(job_id, job_type)
             assert job is not None
             assert job.status == "pending"
             assert job.username == "test_user"
