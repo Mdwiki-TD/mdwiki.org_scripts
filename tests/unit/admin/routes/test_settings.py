@@ -16,7 +16,6 @@ from src.main_app.admin.routes.settings import (
 )
 from src.main_app.db.services import SettingsService
 
-
 # ---------------------------------------------------------------------------
 # SettingsRoutes class structure (no DB needed)
 # ---------------------------------------------------------------------------

@@ -17,7 +17,6 @@ from src.main_app.db.services import UsersService, UserTokenService
 from src.main_app.public.auth.routes import _load_request_token
 from src.main_app.shared.core.cookies import sign_state_token
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
@@ -42,7 +41,9 @@ def _seed_user_with_token(app: Flask, username: str = "Tester") -> int:
 
 @pytest.mark.usefixtures("mock_app")
 class TestLogin:
-    def test_login_success_flow(self, mock_app: Flask, mock_client: FlaskClient, monkeypatch: pytest.MonkeyPatch) -> None:
+    def test_login_success_flow(
+        self, mock_app: Flask, mock_client: FlaskClient, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
         """Login should redirect to MediaWiki and store state + request token in session."""
 
         # Mock only external OAuth handshake and non-deterministic nonce
@@ -70,7 +71,9 @@ class TestLogin:
             # Real session key from settings (state = request_token_key)
             assert sess["state"] == ["a", "b"]
 
-    def test_login_rate_limited(self, mock_app: Flask, mock_client: FlaskClient, monkeypatch: pytest.MonkeyPatch) -> None:
+    def test_login_rate_limited(
+        self, mock_app: Flask, mock_client: FlaskClient, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
         """Login should redirect when rate limited."""
 
         class DummyLimiter:
@@ -134,7 +137,9 @@ class TestCallback:
             assert sess["uid"] == user.user_id
             assert sess["username"] == "Tester"
 
-    def test_callback_rate_limited(self, mock_app: Flask, mock_client: FlaskClient, monkeypatch: pytest.MonkeyPatch) -> None:
+    def test_callback_rate_limited(
+        self, mock_app: Flask, mock_client: FlaskClient, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
         """Callback should redirect when rate limited."""
 
         class DummyLimiter:
@@ -146,7 +151,9 @@ class TestCallback:
         response = mock_client.get("/callback?state=token&oauth_verifier=code")
         assert response.status_code == 302
 
-    def test_callback_missing_state(self, mock_app: Flask, mock_client: FlaskClient, monkeypatch: pytest.MonkeyPatch) -> None:
+    def test_callback_missing_state(
+        self, mock_app: Flask, mock_client: FlaskClient, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
         """Callback should fail when state is missing."""
 
         response = mock_client.get("/callback")

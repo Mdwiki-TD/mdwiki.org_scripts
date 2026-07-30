@@ -12,8 +12,8 @@ from __future__ import annotations
 import threading
 from unittest.mock import MagicMock, patch
 
-from flask import Flask
 import pytest
+from flask import Flask
 
 from src.main_app.db.services import JobsService, UsersService
 from src.main_app.jobs_workers.jobs_worker import (

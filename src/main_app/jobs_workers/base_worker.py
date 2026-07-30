@@ -226,7 +226,7 @@ class BaseObjectsJobWorker(ABC):
         self.log_errors("No authenticated user site available.")
 
     def _check_site(self) -> bool:
-        self.site = get_user_site( self.user )
+        self.site = get_user_site(self.user)
         if not self.site:
             logger.warning(f"Job {self.job_id}: No site authentication available")
             self.log_no_site_error()

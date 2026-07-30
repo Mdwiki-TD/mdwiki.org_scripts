@@ -52,7 +52,7 @@ class FixRedAllWorker(BaseObjectsJobWorker):
 
         state = RunState()
         titles = list(
-            self.site.allpages( # type: ignore
+            self.site.allpages(  # type: ignore
                 start="!",
                 namespace=0,
                 filterredir="nonredirects",
