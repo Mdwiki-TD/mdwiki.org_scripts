@@ -11,6 +11,17 @@ from src.main_app.jobs_workers.public_jobs_workers.add_r_column.add_rtt import (
     count_r_rows,
     inject_r_column_into_tables,
 )
+# from src.main_app.jobs_workers.public_jobs_workers.add_r_column.wtp_tables_header import WikiTableColumnManager
+
+
+def inject_r_column_into_tablesz( text: str ) -> str:
+    """
+    Helper function that accepts wikitext and column name, returning updated text.
+    """
+    manager = WikiTableColumnManager(
+        text=text,
+    )
+    return manager.ensure_column_exists("R", "", "after_first")
 
 
 class TestBuildHeaderIndex:

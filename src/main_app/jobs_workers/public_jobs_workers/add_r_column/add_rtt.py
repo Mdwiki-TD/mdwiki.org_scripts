@@ -1,5 +1,8 @@
 #!/usr/bin/python3
-""" """
+"""
+Module for injecting and updating table columns in Wikitext documents.
+Separated into structural table management and data population logic.
+"""
 
 import logging
 
@@ -14,7 +17,7 @@ R_NEW_ROW = '\n| style="text-align:center; white-space:nowrap; font-weight:bold;
 
 
 def count_r_rows(text: str) -> int:
-    """Count the number of rows with R in the first column"""
+    """Count the number of rows with R in the first column."""
     return text.count(R_NEW_ROW.strip())
 
 
@@ -35,7 +38,7 @@ def _build_header_index(all_cells: list[list[Cell]]) -> dict[str, int]:
 
 
 class AddRColumn:
-    """Encapsulates logic for injecting/updating an 'R' column in wikitext tables."""
+    """Encapsulates logic for populating data in the 'R' column of wikitext tables."""
 
     def __init__(
         self,
@@ -115,14 +118,15 @@ class AddRColumn:
         added = self._add_r_header_table(table)
         return added
 
-    def load_ids(self, r_header, title_header, all_cells):
+    def load_ids(self, r_header: str, title_header: str, all_cells: list[list[Cell]]):
+        """Map header names to their respective column indices."""
         header_index = _build_header_index(all_cells)
         r_header_id = header_index.get(r_header)
         title_header_id = header_index.get(title_header)
 
         if r_header_id is None or title_header_id is None:
             logger.warning(
-                f"couldn't find expected headers: "
+                f"Couldn't find expected headers: "
                 f"r_header={r_header!r} -> {r_header_id}, title_header={title_header!r} -> {title_header_id}"
             )
         return r_header_id, title_header_id
@@ -218,9 +222,11 @@ class AddRColumn:
     # ================================
 
     def count_r_rows(self) -> int:
-        return count_r_rows(self.text)
+        """Count existing 'R' formatted rows in the document text."""
+        return self.text.count(R_NEW_ROW.strip())
 
     def run(self) -> str:
+        """Execute column structure injection and data population sequentially."""
         parsed = wtp.parse(self.text)
 
         if not parsed.tables:
@@ -230,14 +236,14 @@ class AddRColumn:
         self.tables = len(parsed.tables)
         table = parsed.tables[0]
 
-        # check if R column exists or add it
+        # STEP 1: Ensure structural column exists (Part 1)
         added = self._ensure_table_has_r_column(table)
 
         # update self.text after adding R column
         if added:
             self.text = parsed.string
 
-        # Return False if no redirects or pages
+        # Validate prerequisites: Return False if no redirects or pages
         if not self.redirects and not self.pages:
             logger.info("No redirects or pages to add!")
             return self.text
@@ -247,6 +253,7 @@ class AddRColumn:
             logger.info("Can't add R column to table!")
             return self.text
 
+        # STEP 2: Populate cell values (Part 2)
         changed = self._process_table(
             table,
             r_header="R",
@@ -265,6 +272,7 @@ def inject_r_column_into_tables(
     redirects: dict | None = None,
     pages: list | None = None,
 ) -> str:
+    """Convenience function to process wikitext and populate the 'R' column."""
     model = AddRColumn(
         text,
         redirects,
@@ -274,6 +282,7 @@ def inject_r_column_into_tables(
 
 
 __all__ = [
+    "WikiTableColumnManager",
     "AddRColumn",
     "count_r_rows",
     "inject_r_column_into_tables",
