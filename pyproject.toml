@@ -3,7 +3,7 @@
 name = "mdwiki-org-scripts"
 version = "0.0.0"
 description = "Flask app for mdwiki maintenance tools."
-requires-python = ">=3.10"
+requires-python = ">=3.13"
 
 [project.optional-dependencies]
 test = ["pytest>=7"]
