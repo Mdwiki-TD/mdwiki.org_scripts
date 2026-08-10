@@ -176,7 +176,7 @@ class AddRColumn:
 
         # STEP 1: Ensure structural column exists (Part 1)
         added = self.column_manager.ensure_column_exists(
-            table,
+            table=table,
             col_name="R",
             position="after_first",
             default_value="",

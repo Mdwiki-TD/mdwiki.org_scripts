@@ -77,7 +77,6 @@ class WikiTableColumnManager:
             return False
 
         count = 0
-        # add R to header in 2nd column
         for row in all_cells:
             if not row:
                 continue
@@ -94,14 +93,14 @@ class WikiTableColumnManager:
             if is_header:
                 cell_str = f"\n! {col_name}"
             else:
-                formatted_val = f" {default_value}"#.rstrip()
+                formatted_val = f" {default_value}"  # .rstrip()
                 cell_str = f"\n|{formatted_val}"
 
             # Pick target cell to attach the new column delimiter
             target_cell = valid_cells[0] if position == "after_first" else valid_cells[-1]
             target_cell.value = target_cell.value + cell_str
 
-        logger.info(f"Added '{col_name}' column structure across {count} rows.")
+        logger.info(f"Added column '{col_name}' across {count} rows.")
 
         # NOTE: Adding new cell delimiters (\n! or \n|) directly into the cell value
         # alters the table structure dynamically. We must re-assign 'table.string'
@@ -120,6 +119,7 @@ class WikiTableColumnManager:
 
     def ensure_column_exists(
         self,
+        *,
         table: wtp.Table,
         col_name: str,
         position: str = "after_first",
@@ -134,6 +134,27 @@ class WikiTableColumnManager:
             position=position,
             default_value=default_value,
         )
+
+    def ensure_columns_exists(
+        self,
+        *,
+        table: wtp.Table,
+        cols_name: list[str],
+        position: str = "after_first",
+        default_value: str = "",
+    ) -> None:
+        """Verifies column presence and injects its structure if missing."""
+        for col_name in reversed(cols_name):
+            if not self.has_column(table, col_name):
+                self.add_column(
+                    table=table,
+                    col_name=col_name,
+                    position=position,
+                    default_value=default_value,
+                )
+
+        return
+
 
 __all__ = [
     "WikiTableColumnManager",
