@@ -28,10 +28,9 @@ class WikiTableColumnManager:
             logger.error(f"Error getting table cells: {exc}")
             return None
 
-    def get_header_index(self, table: wtp.Table) -> dict[str, int]:
+    def get_header_index(self, table: wtp.Table, normlize_keys: bool = True) -> dict[str, int]:
         """
         return dict which maps column name (lowercase) to its index (0-based).
-        Direct alternative to _build_header_index of yours.
         """
         if not table:
             logger.info("no table found")
@@ -51,7 +50,8 @@ class WikiTableColumnManager:
             # Inspect header names in the header row
             for idx, cell in enumerate(row):
                 if cell:
-                    index_map[cell.value.strip().lower()] = idx
+                    key = cell.value.strip().lower() if normlize_keys else cell.value
+                    index_map[key] = idx
             break  # Only inspect the first header row found
 
         return index_map
