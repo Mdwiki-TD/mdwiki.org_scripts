@@ -23,7 +23,7 @@ def test_valid_title():
 class TestCreateRedirectsWorker:
     @pytest.fixture
     def worker(self):
-        return CreateRedirectsWorker(job_id=1, args={"titles": ["Aspirin"]}, user={"username": "test_user"})
+        return CreateRedirectsWorker(JobsRunner(job_id=1, args={"titles": ["Aspirin"]}, user={"username": "test_user"}))
 
     @patch("src.main_app.jobs_workers.base_worker.get_user_site")
     @patch("src.main_app.jobs_workers.public_jobs_workers.create_redirects.worker.MwClientPage")

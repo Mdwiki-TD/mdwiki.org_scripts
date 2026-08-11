@@ -31,7 +31,7 @@ def test_get_titles_redirects():
 class TestAddRColumnWorker:
     @pytest.fixture
     def worker(self):
-        return AddRColumnWorker(job_id=1, args={}, user={"username": "test_user"})
+        return AddRColumnWorker(JobsRunner(job_id=1, args={}, user={"username": "test_user"}))
 
     @patch("src.main_app.jobs_workers.base_worker.get_user_site")
     def test_process_no_site(self, mock_get_user_site, worker):

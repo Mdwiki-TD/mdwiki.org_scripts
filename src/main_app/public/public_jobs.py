@@ -56,6 +56,7 @@ class PublicJobsRoutes(JobsBp):
             jobs = []
         return render_template("jobs_templates/all_jobs_list.html", jobs=jobs)
 
+
 __all__ = [
     "PublicJobsRoutes",
 ]

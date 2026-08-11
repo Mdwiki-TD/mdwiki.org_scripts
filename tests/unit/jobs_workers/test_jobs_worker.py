@@ -86,7 +86,7 @@ class TestCancelJobWorker(TestSetup):
         mock_create_file.return_value = MagicMock()  # Simulate file creation success
 
         with mock_app.app_context():
-            result = cancel_job_worker(job_id, "test_job", job)
+            result = cancel_job_worker(JobsRunner(job_id, "test_job", job))
 
         assert result is True
         assert event.is_set()

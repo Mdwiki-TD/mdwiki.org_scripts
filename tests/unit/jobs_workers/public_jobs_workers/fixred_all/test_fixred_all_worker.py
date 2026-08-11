@@ -2,16 +2,17 @@
 
 from __future__ import annotations
 
+from src.main_app.jobs_workers.objects import JobsRunner
 from src.main_app.jobs_workers.public_jobs_workers.fixred_all.worker import FixRedAllWorker
 
 
 class TestFixRedAllWorker:
     def test_get_job_type(self):
-        worker = FixRedAllWorker(job_id=1, args={}, user=None)
+        worker = FixRedAllWorker(JobsRunner(job_id=1, args={}, user=None))
         assert worker.get_job_type() == "fixred_all"
 
     def test_result_type(self):
         from src.main_app.jobs_workers.shared_objects import SharedworkerObject
 
-        worker = FixRedAllWorker(job_id=1, args={}, user=None)
+        worker = FixRedAllWorker(JobsRunner(job_id=1, args={}, user=None))
         assert isinstance(worker.result, SharedworkerObject)

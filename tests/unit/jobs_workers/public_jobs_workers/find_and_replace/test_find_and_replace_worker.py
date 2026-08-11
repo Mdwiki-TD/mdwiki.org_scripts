@@ -6,6 +6,7 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
+from src.main_app.jobs_workers.objects import JobsRunner
 from src.main_app.jobs_workers.public_jobs_workers.find_and_replace.worker import (
     FindAndReplaceWorker,
 )
@@ -15,9 +16,11 @@ class TestFindAndReplaceWorker:
     @pytest.fixture
     def worker(self):
         return FindAndReplaceWorker(
-            job_id=1,
-            args={"str_find": "findme", "str_replace": "replaceme", "listtype": "newlist"},
-            user={"username": "test_user"},
+            JobsRunner(
+                job_id=1,
+                args={"str_find": "findme", "str_replace": "replaceme", "listtype": "newlist"},
+                user={"username": "test_user"},
+            )
         )
 
     @patch("src.main_app.jobs_workers.base_worker.get_user_site")

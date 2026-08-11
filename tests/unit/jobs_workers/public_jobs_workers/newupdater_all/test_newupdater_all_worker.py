@@ -9,17 +9,17 @@ from src.main_app.jobs_workers.public_jobs_workers.newupdater_all.worker import 
 
 class TestNewUpdaterAllWorker:
     def test_get_job_type(self):
-        worker = NewUpdaterAllWorker(job_id=1, args={}, user=None)
+        worker = NewUpdaterAllWorker(JobsRunner(job_id=1, args={}, user=None))
         assert worker.get_job_type() == "newupdater_all"
 
     def test_result_type(self):
         from src.main_app.jobs_workers.shared_objects import SharedworkerObject
 
-        worker = NewUpdaterAllWorker(job_id=1, args={}, user=None)
+        worker = NewUpdaterAllWorker(JobsRunner(job_id=1, args={}, user=None))
         assert isinstance(worker.result, SharedworkerObject)
 
     def test_make_new_text(self):
-        worker = NewUpdaterAllWorker(job_id=1, args={}, user=None)
+        worker = NewUpdaterAllWorker(JobsRunner(job_id=1, args={}, user=None))
         with (
             patch(
                 "src.main_app.jobs_workers.public_jobs_workers.newupdater_all.worker.med_updater_one",
@@ -63,7 +63,7 @@ class TestNewUpdaterAllWorker:
             mock_med_updater.return_value = "new text"
             mock_add_param.return_value = "new text"
 
-            worker = NewUpdaterAllWorker(job_id=1, args={}, user={"name": "test"})
+            worker = NewUpdaterAllWorker(JobsRunner(job_id=1, args={}, user={"name": "test"}))
             worker._save_progress = MagicMock()
 
             result = worker.process()
