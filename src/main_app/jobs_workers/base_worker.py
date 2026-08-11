@@ -14,7 +14,8 @@ from sqlalchemy.orm.exc import StaleDataError
 from ..api_services import get_user_site
 from ..config import settings
 from ..db.services import JobsService
-from ..su_services import is_job_cancelled_file_exist, save_job_result_by_name
+from ..io import is_job_cancelled_file_exist, save_job_result_by_name
+from .objects import JobsRunner
 from .shared_objects import WorkerObject
 from .utils import generate_result_file_name
 
@@ -40,19 +41,14 @@ class BaseObjectsJobWorker(ABC):
     - after_run(): Called after processing completes
     """
 
-    def __init__(
-        self,
-        job_id: int,
-        user: dict[str, Any],
-        cancel_event: threading.Event | None = None,
-    ) -> None:
-        self.job_id: Final[int] = job_id
-        self.user: Final[dict[str, Any]] = user
-        self.cancel_event: Final[threading.Event | None] = cancel_event
+    def __init__(self, data: JobsRunner) -> None:
+        self.job_id: Final[int] = data.job_id
+        self.user: Final[dict[str, Any]] = data.user
+        self.cancel_event: Final[threading.Event | None] = data.cancel_event
         self.job_type: str = self.get_job_type()
         self._status: str = "pending"
 
-        self.result_file: str = generate_result_file_name(job_id, self.job_type)
+        self.result_file: str = generate_result_file_name(data.job_id, self.job_type)
         self.result_file_cancelled: str = f"{self.result_file}.cancelled"
 
         self._edit_count: int = 0
@@ -111,11 +107,11 @@ class BaseObjectsJobWorker(ABC):
 
         self.result.status = final_status
 
+        # Update final status
+        self.result.final_status_updated = self.update_final_status(final_status)
+
         # Save final results
         self._save_progress()
-
-        # Update final status
-        self.update_final_status(final_status)
 
         logger.info("Job %s: Finished with status %s", self.job_id, final_status)
 
@@ -127,15 +123,19 @@ class BaseObjectsJobWorker(ABC):
                 self.result_file,
                 job_type=self.job_type,
             )
+            return True
         except (StaleDataError, LookupError) as exc:
             logger.error("Job %s: Could not update final status, job record might have been deleted.", self.job_id)
             logger.error("Error: %s", str(exc))
+            return False
         except Exception:
             logger.exception("Job %s: Failed to update final status", self.job_id)
+            return False
 
     def _save_progress(self, insert_last_update: bool = True) -> None:
         if insert_last_update:
             self.result.last_update = datetime.now().isoformat()
+
         result = self.result.to_json()
         try:
             save_job_result_by_name(self.result_file, result)

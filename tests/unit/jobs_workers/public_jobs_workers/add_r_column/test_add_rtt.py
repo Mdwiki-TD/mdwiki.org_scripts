@@ -12,6 +12,7 @@ from src.main_app.jobs_workers.public_jobs_workers.add_r_column.add_rtt import (
     inject_r_column_into_tables,
 )
 
+
 class TestBuildHeaderIndex:
     def test_build_header_index_maps_columns(self):
         table_text = '{| class="wikitable"\n! #\n! R\n! Page title\n|-\n| 1\n| \n| [[Aspirin]]\n|}'
@@ -100,6 +101,7 @@ class TestInjectRColumnIntoTables:
         text = '{| class="wikitable"\n|-\n| onlydata\n| morestuff\n|}'
         result = inject_r_column_into_tables(text)
         assert result != text
+
 
 class TestAddRColumnClass:
     """Sanity checks that the instance-based API works and matches __all__."""

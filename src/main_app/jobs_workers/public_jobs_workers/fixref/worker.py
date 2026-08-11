@@ -16,7 +16,7 @@ from mwclient.client import Site
 
 from ....api_services import MwClientPage, get_category_members
 from ....shared.fixref_shared.fixref_text_new import fix_ref_template
-from ...base_worker import BaseObjectsJobWorker
+from ...base_worker import BaseObjectsJobWorker, JobsRunner
 from ...shared_objects import SharedworkerObject, UpdaterOutcome
 
 logger = logging.getLogger(__name__)
@@ -27,17 +27,11 @@ MAX_PAGES_FIXREF = 20000
 class FixRefWorker(BaseObjectsJobWorker):
     """Normalize references on mdwiki pages."""
 
-    def __init__(
-        self,
-        job_id: int,
-        args: Any,
-        user: dict[str, Any],
-        cancel_event: threading.Event | None = None,
-    ) -> None:
-        self.args = args
+    def __init__(self, data: JobsRunner) -> None:
+        self.args = data.args or {}
         self.site: Site | None = None
 
-        super().__init__(job_id, user, cancel_event)
+        super().__init__(data)
 
         self.result: SharedworkerObject = SharedworkerObject()
 
@@ -216,21 +210,10 @@ class FixRefWorker(BaseObjectsJobWorker):
         return new_text, summary
 
 
-def fixref_worker_entry(
-    job_id: int,
-    user: dict[str, Any],
-    *,
-    cancel_event: threading.Event | None = None,
-    args: dict[str, Any] | None = None,
-) -> None:
+def fixref_worker_entry(data: JobsRunner) -> None:
     """Background worker entry-point."""
-    logger.info(f"Starting job {job_id}: fixref")
-    worker = FixRefWorker(
-        job_id=job_id,
-        user=user,
-        args=args,
-        cancel_event=cancel_event,
-    )
+    logger.info(f"Starting job {data.job_id}: fixref")
+    worker = FixRefWorker(data)
     worker.run()
 
 

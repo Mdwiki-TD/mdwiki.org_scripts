@@ -10,7 +10,7 @@ from typing import Any
 from flask import Flask, Response, flash, jsonify, render_template, request
 from flask_wtf.csrf import CSRFError
 
-from .admin import register_bp_admin_blueprints, add_admin_dashboard
+from .admin import add_admin_dashboard, register_bp_admin_blueprints
 from .config import ensure_directories, settings
 from .db import init_db
 from .db.exceptions import DatabaseInitError
@@ -62,7 +62,11 @@ def register_error_pages(app: Flask) -> None:
     def page_not_found(e: Exception) -> tuple[str | Response, int]:
         """Handle 404 errors"""
         # Skip logging for `/.well-known/` which is used in browser console
-        if not request.path.startswith("/.well-known/"):
+        skip_routs = (
+            "/robots.txt",
+            "/.well-known",
+        )
+        if not request.path.startswith(skip_routs):
             logger.error("%s Page not found: %s", request.path, e)
 
         # Return JSON response for API requests

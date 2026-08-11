@@ -37,9 +37,11 @@ def _build_header_index(all_cells: list[list[Cell]]) -> dict[str, int]:
         break
     return header_index
 
+
 # ==============================================================================
 # PART 2: Data Population Manager (Fills Row Values Based on Business Logic)
 # ==============================================================================
+
 
 class AddRColumn:
     """Encapsulates logic for populating data in the 'R' column of wikitext tables."""

@@ -8,7 +8,6 @@ Copies redirects from English Wikipedia to mdwiki.
 from __future__ import annotations
 
 import logging
-import threading
 from typing import Any
 
 from mwclient.client import Site
@@ -16,7 +15,7 @@ from mwclient.client import Site
 from ....api_services import MwClientPage
 from ....api_services.enwiki_api import get_redirects_for
 from ....api_services.query_api import is_pages_exists
-from ...base_worker import BaseObjectsJobWorker
+from ...base_worker import BaseObjectsJobWorker, JobsRunner
 from .objects import CreateRedirectsWorkerObject
 
 logger = logging.getLogger(__name__)
@@ -41,17 +40,11 @@ def _valid_title(title: str) -> bool:
 class CreateRedirectsWorker(BaseObjectsJobWorker):
     """Copy redirects from enwiki to mdwiki."""
 
-    def __init__(
-        self,
-        job_id: int,
-        args: Any,
-        user: dict[str, Any],
-        cancel_event: threading.Event | None = None,
-    ) -> None:
-        self.args = args
+    def __init__(self, data: JobsRunner) -> None:
+        self.args = data.args or {}
         self.site: Site | None = None
 
-        super().__init__(job_id, user, cancel_event)
+        super().__init__(data)
 
         self.result: CreateRedirectsWorkerObject = CreateRedirectsWorkerObject()
 
@@ -168,21 +161,10 @@ class CreateRedirectsWorker(BaseObjectsJobWorker):
         return counts
 
 
-def create_redirects_worker_entry(
-    job_id: int,
-    user: dict[str, Any],
-    *,
-    cancel_event: threading.Event | None = None,
-    args: dict[str, Any] | None = None,
-) -> None:
+def create_redirects_worker_entry(data: JobsRunner) -> None:
     """Background worker entry-point."""
-    logger.info(f"Starting job {job_id}: create_redirects")
-    worker = CreateRedirectsWorker(
-        job_id=job_id,
-        user=user,
-        args=args,
-        cancel_event=cancel_event,
-    )
+    logger.info(f"Starting job {data.job_id}: create_redirects")
+    worker = CreateRedirectsWorker(data)
     worker.run()
 
 

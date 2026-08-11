@@ -89,4 +89,3 @@ class TestAddRHeader:
         _ = model.add_column(table, "R")
         result = table.string
         assert result == '{| class="wikitable"\n! Header\n! R\n! R\n! Title\n|-\n|data1\n| \n|data2\n|data3\n|}'
-
