@@ -1,5 +1,8 @@
 #!/usr/bin/python3
-""" """
+"""
+Module for injecting and updating table columns in Wikitext documents.
+Separated into structural table management and data population logic.
+"""
 
 import logging
 
@@ -7,6 +10,7 @@ import wikitextparser as wtp
 from wikitextparser._cell import Cell
 
 from .utils import fix_title
+from .wtp_table_manager import WikiTableColumnManager
 
 logger = logging.getLogger(__name__)
 
@@ -14,7 +18,7 @@ R_NEW_ROW = '\n| style="text-align:center; white-space:nowrap; font-weight:bold;
 
 
 def count_r_rows(text: str) -> int:
-    """Count the number of rows with R in the first column"""
+    """Count the number of rows with R in the first column."""
     return text.count(R_NEW_ROW.strip())
 
 
@@ -33,9 +37,12 @@ def _build_header_index(all_cells: list[list[Cell]]) -> dict[str, int]:
         break
     return header_index
 
+# ==============================================================================
+# PART 2: Data Population Manager (Fills Row Values Based on Business Logic)
+# ==============================================================================
 
 class AddRColumn:
-    """Encapsulates logic for injecting/updating an 'R' column in wikitext tables."""
+    """Encapsulates logic for populating data in the 'R' column of wikitext tables."""
 
     def __init__(
         self,
@@ -47,82 +54,17 @@ class AddRColumn:
         self.redirects = redirects or {}
         self.pages = set(pages) if pages else set()
         self.tables = 0
+        self.column_manager = WikiTableColumnManager()
 
-    def _load_table_cells(self, table: wtp.Table) -> list[list[Cell]] | None:
-        try:
-            return table.cells()
-        except Exception as exc:
-            logger.error(f"error getting cells: {exc}")
-            return None
-
-    def _check_for_r_header(self, table: wtp.Table) -> bool:
-        if not table:
-            logger.info("no table found")
-            return False
-
-        all_cells: list[list[Cell]] | None = self._load_table_cells(table)
-
-        if not all_cells:
-            return False
-
-        for x in all_cells:
-            # we need to check only headers
-            if not x[0].is_header:
-                continue
-
-            for numb, v in enumerate(x, start=1):
-                if v.value.strip() == "R":
-                    logger.info(f"header has R: in column {numb}")
-                    return True
-        return False
-
-    def _add_r_header_table(self, table: wtp.Table) -> bool:
-        if not table:
-            return False
-
-        all_cells: list[list[Cell]] | None = self._load_table_cells(table)
-        if not all_cells:
-            return False
-
-        count = 0
-        # add R to header in 2nd column
-        for x in all_cells:
-            if not x or x[0] is None:
-                continue
-            count += 1
-            # in header add the column R, in other rows add empty cell
-            cell_str = "\n! R" if x[0].is_header else "\n| "
-            # add cell_str after first cell
-            x[0].value = x[0].value + cell_str
-
-        logger.info(f"Added R column to table header in {count} cells")
-
-        # NOTE: Adding new cell delimiters (\n! or \n|) directly into the cell value
-        # alters the table structure dynamically. We must re-assign 'table.string'
-        # to force wikitextparser to re-parse the text and register the new cells.
-        # Otherwise, the internal span tracking breaks, causing the following error
-        # in wikitextparser/_table.py:261 (in cells insort_right):
-        # TypeError: '<' not supported between instances of 'bytearray' and 'NoneType'
-
-        table_str = table.string
-        table.string = table_str
-        return True
-
-    def _ensure_table_has_r_column(self, table) -> bool:
-        if self._check_for_r_header(table):
-            return False
-
-        added = self._add_r_header_table(table)
-        return added
-
-    def load_ids(self, r_header, title_header, all_cells):
+    def load_ids(self, r_header: str, title_header: str, all_cells: list[list[Cell]]):
+        """Map header names to their respective column indices."""
         header_index = _build_header_index(all_cells)
         r_header_id = header_index.get(r_header)
         title_header_id = header_index.get(title_header)
 
         if r_header_id is None or title_header_id is None:
             logger.warning(
-                f"couldn't find expected headers: "
+                f"Couldn't find expected headers: "
                 f"r_header={r_header!r} -> {r_header_id}, title_header={title_header!r} -> {title_header_id}"
             )
         return r_header_id, title_header_id
@@ -131,14 +73,14 @@ class AddRColumn:
     # Main function
     # ================================
 
-    def _process_table(
+    def _populate_table_rows(
         self,
         table: wtp.Table,
         r_header: str = "R",
         title_header: str = "Page title",
     ) -> bool:
-
-        all_cells: list[list[Cell]] | None = self._load_table_cells(table)
+        """Populate the 'R' column cell values based on matching pages and redirects."""
+        all_cells: list[list[Cell]] | None = self.column_manager.load_table_cells(table)
         if not all_cells:
             return False
 
@@ -176,11 +118,11 @@ class AddRColumn:
             try:
                 r_column_value = r_idx_cell.value.strip()
             except Exception:
-                logger.warning(f"cell error: {n}")
+                logger.warning(f"Cell error at row {n}")
                 cell_errors += 1
                 continue
 
-            if r_column_value == "R":
+            if r_column_value == r_header:
                 r_idx_cell.string = R_NEW_ROW
                 already_in += 1
                 continue
@@ -188,13 +130,13 @@ class AddRColumn:
             try:
                 cell_value = title_idx_cell.value.strip()
             except Exception:
-                logger.warning(f"cell error: {n}")
+                logger.warning(f"Cell error at row {n}")
                 cell_errors += 1
                 continue
 
             title = fix_title(cell_value)
-
             title2 = self.redirects.get(title, title)
+
             if title in self.pages:
                 r_idx_cell.string = R_NEW_ROW
                 add_done += 1
@@ -206,7 +148,7 @@ class AddRColumn:
                 no_add += 1
 
         if cell_errors:
-            logger.error(f"cell_errors: {cell_errors}:")
+            logger.error(f"Cell errors encountered: {cell_errors}")
 
         logger.info(f"no_add: {no_add}, already_in: {already_in}")
         logger.info(f"add_done: {add_done}, add_from_redirect: {add_from_redirect}")
@@ -218,9 +160,11 @@ class AddRColumn:
     # ================================
 
     def count_r_rows(self) -> int:
-        return count_r_rows(self.text)
+        """Count existing 'R' formatted rows in the document text."""
+        return self.text.count(R_NEW_ROW.strip())
 
     def run(self) -> str:
+        """Execute column structure injection and data population sequentially."""
         parsed = wtp.parse(self.text)
 
         if not parsed.tables:
@@ -230,24 +174,30 @@ class AddRColumn:
         self.tables = len(parsed.tables)
         table = parsed.tables[0]
 
-        # check if R column exists or add it
-        added = self._ensure_table_has_r_column(table)
+        # STEP 1: Ensure structural column exists (Part 1)
+        added = self.column_manager.ensure_column_exists(
+            table=table,
+            col_name="R",
+            position="after_first",
+            default_value="",
+        )
 
         # update self.text after adding R column
         if added:
             self.text = parsed.string
 
-        # Return False if no redirects or pages
+        # Validate prerequisites: Return False if no redirects or pages
         if not self.redirects and not self.pages:
             logger.info("No redirects or pages to add!")
             return self.text
 
         # Return False if R column not exists and not added
-        if not self._check_for_r_header(table):
-            logger.info("Can't add R column to table!")
+        if not self.column_manager.has_column(table, "R"):
+            logger.info("Can't add or find R column in table!")
             return self.text
 
-        changed = self._process_table(
+        # STEP 2: Populate cell values (Part 2)
+        changed = self._populate_table_rows(
             table,
             r_header="R",
             title_header="Page title",
@@ -265,6 +215,7 @@ def inject_r_column_into_tables(
     redirects: dict | None = None,
     pages: list | None = None,
 ) -> str:
+    """Convenience function to process wikitext and populate the 'R' column."""
     model = AddRColumn(
         text,
         redirects,
@@ -274,6 +225,7 @@ def inject_r_column_into_tables(
 
 
 __all__ = [
+    "WikiTableColumnManager",
     "AddRColumn",
     "count_r_rows",
     "inject_r_column_into_tables",

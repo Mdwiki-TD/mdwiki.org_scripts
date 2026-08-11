@@ -17,7 +17,7 @@ def _process_table_rows(
 ) -> str:
     parsed = wtp.parse(table_text)
     table = parsed.tables[0]
-    _ = model._process_table(table, r_header, title_header)
+    _ = model._populate_table_rows(table, r_header, title_header)
     return table.string
 
 

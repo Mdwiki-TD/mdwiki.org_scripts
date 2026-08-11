@@ -12,7 +12,6 @@ from src.main_app.jobs_workers.public_jobs_workers.add_r_column.add_rtt import (
     inject_r_column_into_tables,
 )
 
-
 class TestBuildHeaderIndex:
     def test_build_header_index_maps_columns(self):
         table_text = '{| class="wikitable"\n! #\n! R\n! Page title\n|-\n| 1\n| \n| [[Aspirin]]\n|}'
@@ -88,10 +87,10 @@ class TestInjectRColumnIntoTables:
         text = '{| class="wikitable"\n! #\n! Page title\n|-\n| 1\n| [[Aspirin]]\n|}'
         result = inject_r_column_into_tables(text, {}, ["Aspirin"])
 
-        # check _add_r_header_table result:
+        # check add_column result:
         assert "! R" in result
 
-        # check _process_table result
+        # check _populate_table_rows result
         assert "background:#C66A05" in result
 
     def test_inject_with_empty_string(self):
@@ -101,91 +100,6 @@ class TestInjectRColumnIntoTables:
         text = '{| class="wikitable"\n|-\n| onlydata\n| morestuff\n|}'
         result = inject_r_column_into_tables(text)
         assert result != text
-
-
-class TestCheckForRHeader:
-    def test_check_for_r_header_none_table(self):
-        model = AddRColumn("")
-        assert model._check_for_r_header(None) is False
-
-    def test_check_for_r_header_r_present(self):
-        table_text = '{| class="wikitable"\n! Header\n! R\n! Title\n|-\n| data\n| data\n| data\n|}'
-        table = wtp.parse(table_text).tables[0]
-        model = AddRColumn("")
-        assert model._check_for_r_header(table) is True
-
-    def test_check_for_r_header_empty_table_no_rows(self):
-        table_text = '{| class="wikitable"\n|}'
-        table = wtp.parse(table_text).tables[0]
-        model = AddRColumn("")
-        assert model._check_for_r_header(table) is False
-
-    def test_header_has_r_true(self):
-        table_text = '{| class="wikitable"\n! Header\n! R\n! Title\n|-\n| data\n| data\n| data\n|}'
-        parsed = wtp.parse(table_text)
-        table = parsed.tables[0]
-        model = AddRColumn("")
-        assert model._check_for_r_header(table) is True
-
-    def test_header_has_r_false(self):
-        table_text = '{| class="wikitable"\n! Header\n! Other\n! Title\n|-\n| data\n| data\n| data\n|}'
-        parsed = wtp.parse(table_text)
-        table = parsed.tables[0]
-        model = AddRColumn("")
-        assert model._check_for_r_header(table) is False
-
-    def test_header_has_r_with_table_object(self):
-        table_text = '{| class="wikitable"\n! Header\n! R\n! Title\n|-\n| data\n| data\n| data\n|}'
-        table = wtp.parse(table_text).tables[0]
-        model = AddRColumn("")
-        assert model._check_for_r_header(table=table) is True
-
-
-class TestAddRHeader:
-
-    def test_add_r_header_data_rows_get_blank_cell(self):
-        # _add_r_header_table only appends to the first cell (x[0]) of each row,
-        # inserting a new second column; it does not touch every cell.
-        table_text = '{| class="wikitable"\n! Header\n! Title\n|-\n| data1\n| data2\n|}'
-        table = wtp.parse(table_text).tables[0]
-        model = AddRColumn("")
-        _ = model._add_r_header_table(table)
-        result = table.string
-
-        assert "! Header\n! R" in result
-        assert "| data1\n| " in result
-        assert "| data2" in result
-
-    def test_add_r_header_multiple_data_rows(self):
-        table_text = "{| class='wikitable'\n! Header\n! Title\n|-\n| r1c1\n| r1c2\n|-\n| r2c1\n| r2c2\n|}"
-        table = wtp.parse(table_text).tables[0]
-        model = AddRColumn("")
-        _ = model._add_r_header_table(table)
-        result = table.string
-
-        assert result.count("! R") == 1
-        assert "| r1c1\n| " in result
-        assert "| r2c1\n| " in result
-
-    def test_add_header_r_new(self):
-        table_text = '{| class="wikitable"\n! Header\n! Title\n|-\n| data\n| data\n|}'
-        parsed = wtp.parse(table_text)
-        table = parsed.tables[0]
-        model = AddRColumn("")
-        _ = model._add_r_header_table(table)
-        result = table.string
-        assert "! Header\n! R" in result
-        assert "| data\n| " in result
-
-    def test_add_header_r_already_exists(self):
-        table_text = '{| class="wikitable"\n! Header\n! R\n! Title\n|-\n|data1\n|data2\n|data3\n|}'
-        parsed = wtp.parse(table_text)
-        table = parsed.tables[0]
-        model = AddRColumn("")
-        _ = model._add_r_header_table(table)
-        result = table.string
-        assert result == '{| class="wikitable"\n! Header\n! R\n! R\n! Title\n|-\n|data1\n| \n|data2\n|data3\n|}'
-
 
 class TestAddRColumnClass:
     """Sanity checks that the instance-based API works and matches __all__."""
