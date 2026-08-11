@@ -192,7 +192,7 @@ class TestStartJob(TestSetup):
                 return_value={"id": uid, "username": "JobUser"},
             ),
             patch(
-                "src.main_app.public.shared_jobs_routes.start_job",
+                "src.main_app.public.shared_jobs_routes.start_job_form",
                 return_value=1,
             ),
         ):
@@ -214,7 +214,7 @@ class TestStartJob(TestSetup):
                 return_value={"id": uid, "username": "JobUser"},
             ),
             patch(
-                "src.main_app.public.shared_jobs_routes.start_job",
+                "src.main_app.public.shared_jobs_routes.start_job_form",
                 return_value=1,
             ),
         ):
@@ -245,7 +245,7 @@ class TestStartJob(TestSetup):
                 return_value={"id": uid, "username": "JobUser"},
             ),
             patch(
-                "src.main_app.public.shared_jobs_routes.start_job",
+                "src.main_app.public.shared_jobs_routes.start_job_form",
                 side_effect=DuplicateRecordError("A job of type 'fixref' is already active"),
             ),
         ):

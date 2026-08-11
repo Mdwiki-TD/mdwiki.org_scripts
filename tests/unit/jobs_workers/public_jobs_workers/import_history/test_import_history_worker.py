@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from src.main_app.jobs_workers.objects import JobsRunner
 from src.main_app.jobs_workers.public_jobs_workers.import_history.worker import (
     ImportHistoryWorker,
 )
