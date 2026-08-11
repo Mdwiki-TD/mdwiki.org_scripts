@@ -24,6 +24,7 @@ from src.main_app.jobs_workers.jobs_worker import (
     cancel_job_worker,
     start_job,
 )
+from src.main_app.jobs_workers.objects import JobsRunner
 
 
 def test_cancel_event_management():
@@ -45,17 +46,19 @@ def test_runner():
     target_func = MagicMock()
     src = Flask(__name__)
     args = {"foo": "bar"}
-
-    _register_cancel_event(job_id, cancel_event)
-
-    _runner(job_id, user, cancel_event, target_func, src, args)
-
-    target_func.assert_called_once_with(
+    data = JobsRunner(
         job_id=job_id,
         user=user,
         cancel_event=cancel_event,
         args=args,
+        form_data=None,
     )
+
+    _register_cancel_event(job_id, cancel_event)
+
+    _runner(data, target_func, src)
+
+    target_func.assert_called_once_with(data)
     assert _get_jobs_cancel_event(job_id) is None
 
 

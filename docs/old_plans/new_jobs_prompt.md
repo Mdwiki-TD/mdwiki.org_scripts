@@ -57,9 +57,9 @@ class JobWorker(BaseJobWorker):
         cancel_event: threading.Event | None = None,
     ) -> None:
         self.job_id = job_id
-        self.args = args
+        self.args = data.args or {}
         self.site: mwclient.Site | None = None
-        super().__init__(job_id, user, cancel_event)
+        super().__init__(data)
 
     # ------------------------------------------------------------------
     # BaseJobWorker hooks
@@ -117,13 +117,8 @@ def job_worker_entry(
     """
     Background worker entry-point.
     """
-    logger.info(f"Starting job {job_id}: <jobs label>")
-    worker = JobWorker(
-        job_id=job_id,
-        user=user,
-        args=args,
-        cancel_event=cancel_event,
-    )
+    logger.info(f"Starting job {data.job_id}: <jobs label>")
+    worker = JobWorker(data)
     worker.run()
 
 

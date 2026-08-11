@@ -7,13 +7,7 @@ from .clients import (
     get_cronjob_site,
     get_user_site,
 )
-from .files_service import (
-    download_commons_file_core,
-    download_one_file,
-    download_svg_file,
-    get_file_info,
-    upload_fixed_svg,
-)
+from .files_service import FilesService, UploadService
 from .mwclient_page import MwClientPage
 from .query_api import (
     get_page_links,
@@ -24,12 +18,9 @@ from .query_api import (
 )
 
 __all__ = [
-    "download_one_file",
+    "UploadService",
+    "FilesService",
     "CommonsSession",
-    "download_commons_file_core",
-    "get_file_info",
-    "download_svg_file",
-    "upload_fixed_svg",
     "MwClientPage",
     "get_user_site",
     "get_template_pages",

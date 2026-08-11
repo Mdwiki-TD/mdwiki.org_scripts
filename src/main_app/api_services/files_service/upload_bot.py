@@ -3,12 +3,13 @@ from __future__ import annotations
 import logging
 import time
 from pathlib import Path
-from typing import Any
 
 import mwclient
 import mwclient.errors
 import requests
 from mwclient.client import Site
+
+from .objects import UploadResult
 
 logger = logging.getLogger(__name__)
 
@@ -186,19 +187,6 @@ class UploadFile:
 
         return response
 
-    def upload(self) -> dict:
-        check = self._check_kwargs()
-        if check["error"]:
-            return check
-
-        upload_result = self._upload_file()
-
-        if upload_result.get("error") != "ratelimited":
-            return upload_result
-
-        # handle retry
-        return self._upload_with_retry()
-
     def _upload_with_retry(self) -> dict:
         for attempt, delay in enumerate(_RETRY_DELAYS, start=1):
             logger.warning(
@@ -210,95 +198,69 @@ class UploadFile:
             )
             time.sleep(delay)
 
-            upload_result = self._upload_file()
+            _result = self._upload_file()
 
-            if upload_result.get("error") != "ratelimited":
-                return upload_result
+            if _result.get("error") != "ratelimited":
+                return _result
 
         return self._err("ratelimited", "Exceeded rate limit after all retry attempts")
 
+    def upload(self) -> dict:
+        check = self._check_kwargs()
+        if check["error"]:
+            return check
 
-def upload_file(
-    file_name: str,
-    file_path: Path,
-    site: Site | None = None,
-    summary: str | None = None,
-    description: str | None = None,
-    new_file: bool = False,
-) -> dict:
-    """
-    Upload a file to Wikimedia Commons using mwclient.
+        _result = self._upload_file()
 
-    Returns:
-        dict with keys:
-            - result (str): 'Success' on success
-            - error (str | None): error code on failure
-            - error_details (str): additional error info
-    """
-    if not site:
-        return {"success": False, "error": "No site provided", "error_details": ""}
+        if _result.get("error") != "ratelimited":
+            return _result
 
-    bot = UploadFile(
-        file_name=file_name,
-        file_path=file_path,
-        site=site,
-        summary=summary,
-        description=description,
-        new_file=new_file,
-    )
+        # handle retry
+        return self._upload_with_retry()
 
-    return bot.upload()
+    def upload_obj(self) -> UploadResult:
+        if not self.site:
+            return UploadResult(
+                ok=False,
+                error="No site provided",
+                error_details="",
+                msg=None,
+                result=None,
+            )
 
+        upload_result = self.upload()
 
-def upload_fixed_svg(
-    filename: str,
-    file_path: Path,
-    site: Site,
-    summary: str,
-) -> dict[str, Any]:
-    """Upload SVG file to Commons."""
+        result_status = upload_result.get("result") or ""
+        error_details = upload_result.get("error_details", "")
+        result_error = upload_result.get("error", "upload_failed")
 
-    logger.info(f"Uploading file: {filename}")
+        if result_status.lower() == "success":
+            return UploadResult(
+                ok=True,
+                error=None,
+                error_details=error_details,
+                msg=None,
+                result=upload_result,
+            )
 
-    result = upload_file(
-        file_name=filename,
-        file_path=file_path,
-        site=site,
-        summary=summary,
-    )
-    result_status = result.get("result") or ""
-    error_details = result.get("error_details", "")
-    result_error = result.get("error", "upload_failed")
+        if result_error == "fileexists-no-change" or result_status == "fileexists-no-change":
+            return UploadResult(
+                ok=None,
+                error="skipped",
+                error_details=error_details,
+                msg="File already exists with same content",
+                result=None,
+            )
 
-    if result_status.lower() == "success":
-        return {
-            "ok": True,
-            "error": None,
-            "error_details": error_details,
-            "msg": None,
-            "result": result,
-        }
-
-    if result_error == "fileexists-no-change" or result_status == "fileexists-no-change":
-        return {
-            "ok": None,
-            "error": "skipped",
-            "error_details": error_details,
-            "msg": "File already exists with same content",
-            "result": None,
-        }
-
-    return {
-        "ok": False,
-        "error": result_error,
-        "error_details": error_details,
-        "msg": None,
-        "result": None,
-    }
+        return UploadResult(
+            ok=False,
+            error=result_error,
+            error_details=error_details,
+            msg=None,
+            result=None,
+        )
 
 
 __all__ = [
-    "upload_file",
     "UploadFile",
-    "upload_fixed_svg",
 ]

@@ -6,6 +6,7 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
+from src.main_app.jobs_workers.objects import JobsRunner
 from src.main_app.jobs_workers.public_jobs_workers.duplicate_redirect.worker import (
     DuplicateRedirectWorker,
     resolve_redirect_chains,
@@ -34,7 +35,7 @@ def test_resolve_redirect_chains():
 class TestDuplicateRedirectWorker:
     @pytest.fixture
     def worker(self):
-        return DuplicateRedirectWorker(job_id=1, args={}, user={"username": "test_user"})
+        return DuplicateRedirectWorker(JobsRunner(job_id=1, args={}, user={"username": "test_user"}))
 
     @patch("src.main_app.jobs_workers.base_worker.get_user_site")
     @patch("src.main_app.jobs_workers.public_jobs_workers.duplicate_redirect.worker.get_double_redirects")

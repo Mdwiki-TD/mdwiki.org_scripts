@@ -188,11 +188,11 @@ class TestStartJob(TestSetup):
 
         with (
             patch(
-                "src.main_app.public.jobs_routes_utils.load_auth_payload",
+                "src.main_app.public.shared_jobs_routes.load_auth_payload",
                 return_value={"id": uid, "username": "JobUser"},
             ),
             patch(
-                "src.main_app.public.jobs_routes_utils.start_job",
+                "src.main_app.public.shared_jobs_routes.start_job_form",
                 return_value=1,
             ),
         ):
@@ -210,11 +210,11 @@ class TestStartJob(TestSetup):
 
         with (
             patch(
-                "src.main_app.public.jobs_routes_utils.load_auth_payload",
+                "src.main_app.public.shared_jobs_routes.load_auth_payload",
                 return_value={"id": uid, "username": "JobUser"},
             ),
             patch(
-                "src.main_app.public.jobs_routes_utils.start_job",
+                "src.main_app.public.shared_jobs_routes.start_job_form",
                 return_value=1,
             ),
         ):
@@ -230,22 +230,22 @@ class TestStartJob(TestSetup):
         """Starting a duplicate job should flash a warning and redirect."""
 
         mock_flash = Mock()
-        # monkeypatch.setattr("src.main_app.public.jobs_routes_utils.flash", mock_flash)
+        # monkeypatch.setattr("src.main_app.public.shared_jobs_routes.flash", mock_flash)
 
         uid = _seed_user(mock_app, can_run_bg_jobs=True)
         _login_user(mock_client, uid)
 
         with (
             patch(
-                "src.main_app.public.jobs_routes_utils.flash",
+                "src.main_app.public.shared_jobs_routes.flash",
                 mock_flash,
             ),
             patch(
-                "src.main_app.public.jobs_routes_utils.load_auth_payload",
+                "src.main_app.public.shared_jobs_routes.load_auth_payload",
                 return_value={"id": uid, "username": "JobUser"},
             ),
             patch(
-                "src.main_app.public.jobs_routes_utils.start_job",
+                "src.main_app.public.shared_jobs_routes.start_job_form",
                 side_effect=DuplicateRecordError("A job of type 'fixref' is already active"),
             ),
         ):
@@ -295,7 +295,7 @@ class TestCancelJob(TestSetup):
         job_id = self._seed_job(mock_app, VALID_JOB_TYPE, username="Owner")
 
         with patch(
-            "src.main_app.public.jobs_routes_utils.cancel_job_worker",
+            "src.main_app.public.shared_jobs_routes.cancel_job_worker",
             return_value=True,
         ):
             resp = mock_client.post(
@@ -308,7 +308,7 @@ class TestCancelJob(TestSetup):
     def test_cancel_other_user_job_blocked(self, mock_app, mock_client, monkeypatch):
         """Non-owner, non-admin should not be able to cancel another user's job."""
         mock_flash = Mock()
-        monkeypatch.setattr("src.main_app.public.jobs_routes_utils.flash", mock_flash)
+        monkeypatch.setattr("src.main_app.public.shared_jobs_routes.flash", mock_flash)
 
         _seed_user(mock_app, username="Owner")
         other_uid = _seed_user(mock_app, username="Other")
@@ -333,7 +333,7 @@ class TestCancelJob(TestSetup):
         _login_user(mock_client, admin_uid, username="AdminCancel")
 
         with patch(
-            "src.main_app.public.jobs_routes_utils.cancel_job_worker",
+            "src.main_app.public.shared_jobs_routes.cancel_job_worker",
             return_value=True,
         ):
             resp = mock_client.post(
@@ -362,7 +362,7 @@ class TestDeleteJob(TestSetup):
         job_id = self._seed_job(mock_app, VALID_JOB_TYPE, username="Owner")
 
         with patch(
-            "src.main_app.public.jobs_routes_utils.cancel_job_worker",
+            "src.main_app.public.shared_jobs_routes.cancel_job_worker",
             return_value=False,
         ):
             resp = mock_client.post(
@@ -382,7 +382,7 @@ class TestDeleteJob(TestSetup):
         _login_user(mock_client, uid)
 
         with patch(
-            "src.main_app.public.jobs_routes_utils.cancel_job_worker",
+            "src.main_app.public.shared_jobs_routes.cancel_job_worker",
             return_value=False,
         ):
             resp = mock_client.post(
@@ -460,7 +460,7 @@ class TestJobsRouteIntegration(TestSetup):
             job2_id = job2.id
 
         with patch(
-            "src.main_app.public.jobs_routes_utils.cancel_job_worker",
+            "src.main_app.public.shared_jobs_routes.cancel_job_worker",
             return_value=False,
         ):
             mock_client.post(

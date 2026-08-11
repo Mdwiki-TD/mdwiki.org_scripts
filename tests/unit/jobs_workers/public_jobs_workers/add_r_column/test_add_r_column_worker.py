@@ -6,6 +6,7 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
+from src.main_app.jobs_workers.objects import JobsRunner
 from src.main_app.jobs_workers.public_jobs_workers.add_r_column.worker import (
     AddRColumnWorker,
     get_titles_redirects,
@@ -31,7 +32,7 @@ def test_get_titles_redirects():
 class TestAddRColumnWorker:
     @pytest.fixture
     def worker(self):
-        return AddRColumnWorker(job_id=1, args={}, user={"username": "test_user"})
+        return AddRColumnWorker(JobsRunner(job_id=1, args={}, user={"username": "test_user"}))
 
     @patch("src.main_app.jobs_workers.base_worker.get_user_site")
     def test_process_no_site(self, mock_get_user_site, worker):

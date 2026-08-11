@@ -7,15 +7,13 @@ Adds {{RTT}} template to all pages in Category:RTT that don't already have it.
 from __future__ import annotations
 
 import logging
-import threading
-from typing import Any
 
 import wikitextparser as wtp
 from mwclient.client import Site
 
 from ....api_services import MwClientPage, get_template_pages
 from ....api_services.category import get_category_members
-from ...base_worker import BaseObjectsJobWorker
+from ...base_worker import BaseObjectsJobWorker, JobsRunner
 from ...shared_objects import SharedworkerObject, UpdaterOutcome
 
 logger = logging.getLogger(__name__)
@@ -61,17 +59,11 @@ def add_rtt_to_text(text: str, title: str) -> str:
 class AddRttTemplateWorker(BaseObjectsJobWorker):
     """Add {{RTT}} template to pages in Category:RTT."""
 
-    def __init__(
-        self,
-        job_id: int,
-        args: Any,
-        user: dict[str, Any],
-        cancel_event: threading.Event | None = None,
-    ) -> None:
-        self.args = args
+    def __init__(self, data: JobsRunner) -> None:
+        self.args = data.args or {}
         self.site: Site | None = None
 
-        super().__init__(job_id, user, cancel_event)
+        super().__init__(data)
 
         self.result: SharedworkerObject = SharedworkerObject()
 
@@ -212,21 +204,10 @@ class AddRttTemplateWorker(BaseObjectsJobWorker):
         return UpdaterOutcome(kind="error", msg=result.get("error", "Unknown error"))
 
 
-def add_rtt_template_worker_entry(
-    job_id: int,
-    user: dict[str, Any],
-    *,
-    cancel_event: threading.Event | None = None,
-    args: dict[str, Any] | None = None,
-) -> None:
+def add_rtt_template_worker_entry(data: JobsRunner) -> None:
     """Background worker entry-point."""
-    logger.info(f"Starting job {job_id}: add_rtt_template")
-    worker = AddRttTemplateWorker(
-        job_id=job_id,
-        user=user,
-        args=args,
-        cancel_event=cancel_event,
-    )
+    logger.info(f"Starting job {data.job_id}: add_rtt_template")
+    worker = AddRttTemplateWorker(data)
     worker.run()
 
 

@@ -1,14 +1,13 @@
 """
 Worker module for Add R column.
 
-(TODO: import logic from https://github.com/Mdwiki-TD/mdwiki-python-files/blob/main/src/md_core/add_rtt/bot.py)
+(TODO: import logic from https://github.com/Mdwiki-TD/mdwiki-python-files/blob/main/src1/md_core/add_rtt/bot.py)
 """
 
 from __future__ import annotations
 
 import logging
 import re
-import threading
 from datetime import datetime
 from typing import Any
 
@@ -17,7 +16,7 @@ from mwclient.page import Page
 
 from ....api_services import MwClientPage
 from ....api_services.query_api import get_template_pages
-from ...base_worker import BaseObjectsJobWorker
+from ...base_worker import BaseObjectsJobWorker, JobsRunner
 from .add_rtt import count_r_rows, inject_r_column_into_tables
 from .objects import AddRColumnWorkerObject
 from .utils import fix_title
@@ -54,17 +53,11 @@ def get_titles_redirects(
 class AddRColumnWorker(BaseObjectsJobWorker):
     """Add R column to tables."""
 
-    def __init__(
-        self,
-        job_id: int,
-        args: dict[str, Any] | None,
-        user: dict[str, Any],
-        cancel_event: threading.Event | None = None,
-    ) -> None:
-        self.args = args or {}
+    def __init__(self, data: JobsRunner) -> None:
+        self.args = data.args or {}
         self.page: MwClientPage | None = None
 
-        super().__init__(job_id, user, cancel_event)
+        super().__init__(data)
 
         self.result: AddRColumnWorkerObject = AddRColumnWorkerObject()
 
@@ -249,21 +242,10 @@ class AddRColumnWorker(BaseObjectsJobWorker):
         return newtext
 
 
-def add_r_column_worker_entry(
-    job_id: int,
-    user: dict[str, Any],
-    *,
-    cancel_event: threading.Event | None = None,
-    args: dict[str, Any] | None = None,
-) -> None:
+def add_r_column_worker_entry(data: JobsRunner) -> None:
     """Background worker entry-point."""
-    logger.info(f"Starting job {job_id}: add_r_column")
-    worker = AddRColumnWorker(
-        job_id=job_id,
-        user=user,
-        args=args,
-        cancel_event=cancel_event,
-    )
+    logger.info(f"Starting job {data.job_id}: add_r_column")
+    worker = AddRColumnWorker(data)
     worker.run()
 
 

@@ -8,14 +8,12 @@ Imports revision history from English Wikipedia to mdwiki.
 from __future__ import annotations
 
 import logging
-import threading
-from typing import Any
 
 from mwclient.client import Site
 
 from ....api_services import MwClientPage
 from ....api_services.query_api import import_page_from_wiki
-from ...base_worker import BaseObjectsJobWorker
+from ...base_worker import BaseObjectsJobWorker, JobsRunner
 from .objects import ImportHistoryWorkerObject, UpdaterOutcome
 
 logger = logging.getLogger(__name__)
@@ -24,17 +22,11 @@ logger = logging.getLogger(__name__)
 class ImportHistoryWorker(BaseObjectsJobWorker):
     """Import revision history from enwiki to mdwiki."""
 
-    def __init__(
-        self,
-        job_id: int,
-        args: Any,
-        user: dict[str, Any],
-        cancel_event: threading.Event | None = None,
-    ) -> None:
-        self.args = args
+    def __init__(self, data: JobsRunner) -> None:
+        self.args = data.args or {}
         self.site: Site | None = None
 
-        super().__init__(job_id, user, cancel_event)
+        super().__init__(data)
 
         self.result: ImportHistoryWorkerObject = ImportHistoryWorkerObject()
 
@@ -168,21 +160,10 @@ class ImportHistoryWorker(BaseObjectsJobWorker):
         return UpdaterOutcome(kind="error", msg="Unknown error")
 
 
-def import_history_worker_entry(
-    job_id: int,
-    user: dict[str, Any],
-    *,
-    cancel_event: threading.Event | None = None,
-    args: dict[str, Any] | None = None,
-) -> None:
+def import_history_worker_entry(data: JobsRunner) -> None:
     """Background worker entry-point."""
-    logger.info(f"Starting job {job_id}: import_history")
-    worker = ImportHistoryWorker(
-        job_id=job_id,
-        user=user,
-        args=args,
-        cancel_event=cancel_event,
-    )
+    logger.info(f"Starting job {data.job_id}: import_history")
+    worker = ImportHistoryWorker(data)
     worker.run()
 
 

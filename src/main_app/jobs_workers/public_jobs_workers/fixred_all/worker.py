@@ -7,15 +7,13 @@ Migrated from src/main_app/jobs/workers/fixred_all.py.
 from __future__ import annotations
 
 import logging
-import threading
-from typing import Any
 
 from mwclient.client import Site
 
 from ....api_services import MwClientPage
 from ....shared.fixref_shared.fixred_worker import work_on_text
 from ....shared.fixref_shared.objects import RunState
-from ...base_worker import BaseObjectsJobWorker
+from ...base_worker import BaseObjectsJobWorker, JobsRunner
 from ...shared_objects import SharedworkerObject, UpdaterOutcome
 
 logger = logging.getLogger(__name__)
@@ -24,17 +22,11 @@ logger = logging.getLogger(__name__)
 class FixRedAllWorker(BaseObjectsJobWorker):
     """Fix redirect links in all mdwiki pages."""
 
-    def __init__(
-        self,
-        job_id: int,
-        args: Any,
-        user: dict[str, Any],
-        cancel_event: threading.Event | None = None,
-    ) -> None:
-        self.args = args
+    def __init__(self, data: JobsRunner) -> None:
+        self.args = data.args or {}
         self.site: Site | None = None
 
-        super().__init__(job_id, user, cancel_event)
+        super().__init__(data)
 
         self.result: SharedworkerObject = SharedworkerObject()
 
@@ -148,21 +140,10 @@ class FixRedAllWorker(BaseObjectsJobWorker):
         return new_text, summary
 
 
-def fixred_all_worker_entry(
-    job_id: int,
-    user: dict[str, Any],
-    *,
-    cancel_event: threading.Event | None = None,
-    args: dict[str, Any] | None = None,
-) -> None:
+def fixred_all_worker_entry(data: JobsRunner) -> None:
     """Background worker entry-point."""
-    logger.info(f"Starting job {job_id}: fixred_all")
-    worker = FixRedAllWorker(
-        job_id=job_id,
-        user=user,
-        args=args,
-        cancel_event=cancel_event,
-    )
+    logger.info(f"Starting job {data.job_id}: fixred_all")
+    worker = FixRedAllWorker(data)
     worker.run()
 
 

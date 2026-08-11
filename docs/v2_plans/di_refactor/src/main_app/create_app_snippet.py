@@ -42,7 +42,7 @@ def create_app(config_class: type) -> Flask:
         container,
         app=app,
         settings=None,  # pass the real settings object
-        db=None,        # pass the real SQLAlchemy instance
+        db=None,  # pass the real SQLAlchemy instance
     )
     init_di(app, container)
 

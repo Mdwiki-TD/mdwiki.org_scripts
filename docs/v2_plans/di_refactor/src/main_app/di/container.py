@@ -106,9 +106,7 @@ def init_container(container: Container | None = None) -> Container:
 def get_container() -> Container:
     """Return the process-wide container. Raises if not initialised."""
     if _app_container is None:
-        raise RuntimeError(
-            "DI container not initialised. Call init_container() from create_app()."
-        )
+        raise RuntimeError("DI container not initialised. Call init_container() from create_app().")
     return _app_container
 
 

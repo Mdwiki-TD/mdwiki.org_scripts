@@ -14,6 +14,7 @@ logger = logging.getLogger(__name__)
 # PART 1: Structural Manager (Adds Column Header and Default Cells Only)
 # ==============================================================================
 
+
 class WikiTableColumnManager:
     """
     Handles checking, verifying, and inserting column structures into Wikitext tables.
