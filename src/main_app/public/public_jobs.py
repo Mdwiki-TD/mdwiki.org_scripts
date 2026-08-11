@@ -6,6 +6,8 @@ import logging
 
 from flask import (
     Blueprint,
+    flash,
+    render_template,
 )
 
 from ..admin.decorators import admin_required
@@ -40,10 +42,19 @@ class PublicJobsRoutes(JobsBp):
             ("/<string:job_type>/start", "POST", user_login_required(self.start_job)),
             ("/<string:job_type>/<int:job_id>/delete", "POST", admin_required(self.delete_job)),
             ("/<string:job_type>/<int:job_id>/mark_as_completed", "POST", admin_required(self.mark_as_completed)),
+            ("/list", "GET", self.all_jobs_list),
         ]
         for rule, method, target in routes:
             self.bp.route(rule, methods=[method])(target)
 
+    def all_jobs_list(self) -> str:
+        try:
+            jobs = self.shared_service.job_service.list_jobs(limit=100)
+        except Exception:  # pragma: no cover - defensive guard
+            logger.exception("Unable to load jobs list.")
+            flash("Unable to load jobs list.", "danger")
+            jobs = []
+        return render_template("jobs_templates/all_jobs_list.html", jobs=jobs)
 
 __all__ = [
     "PublicJobsRoutes",
