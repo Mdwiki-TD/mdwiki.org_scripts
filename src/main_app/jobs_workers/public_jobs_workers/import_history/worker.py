@@ -8,8 +8,6 @@ Imports revision history from English Wikipedia to mdwiki.
 from __future__ import annotations
 
 import logging
-import threading
-from typing import Any
 
 from mwclient.client import Site
 

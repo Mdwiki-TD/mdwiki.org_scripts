@@ -11,7 +11,6 @@ WPM:Wiki Project Med/Board (redirect) → WikiProjectMed:Wiki Project Med/Board 
 from __future__ import annotations
 
 import logging
-import threading
 from typing import Any
 
 from mwclient.client import Site

@@ -8,9 +8,7 @@ Normalizes cite-template formatting on mdwiki pages.
 from __future__ import annotations
 
 import logging
-import threading
 from datetime import datetime
-from typing import Any
 
 from mwclient.client import Site
 

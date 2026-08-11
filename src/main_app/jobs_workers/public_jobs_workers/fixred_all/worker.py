@@ -7,8 +7,6 @@ Migrated from src/main_app/jobs/workers/fixred_all.py.
 from __future__ import annotations
 
 import logging
-import threading
-from typing import Any
 
 from mwclient.client import Site
 

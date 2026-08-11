@@ -7,8 +7,6 @@ Runs Medical content updater on all pages in Category:RTT.
 from __future__ import annotations
 
 import logging
-import threading
-from typing import Any
 
 from mwclient.client import Site
 

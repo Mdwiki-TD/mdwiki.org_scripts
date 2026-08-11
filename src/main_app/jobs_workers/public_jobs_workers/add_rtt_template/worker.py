@@ -7,8 +7,6 @@ Adds {{RTT}} template to all pages in Category:RTT that don't already have it.
 from __future__ import annotations
 
 import logging
-import threading
-from typing import Any
 
 import wikitextparser as wtp
 from mwclient.client import Site
