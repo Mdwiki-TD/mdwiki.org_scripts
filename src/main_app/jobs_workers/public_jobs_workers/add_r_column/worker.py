@@ -1,7 +1,7 @@
 """
 Worker module for Add R column.
 
-(TODO: import logic from https://github.com/Mdwiki-TD/mdwiki-python-files/blob/main/src/md_core/add_rtt/bot.py)
+(TODO: import logic from https://github.com/Mdwiki-TD/mdwiki-python-files/blob/main/src1/md_core/add_rtt/bot.py)
 """
 
 from __future__ import annotations
