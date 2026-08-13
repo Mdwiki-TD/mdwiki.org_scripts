@@ -137,6 +137,7 @@ class OAuthCallbackView(MethodView):
         # token data
         raw_request_token = session.pop(request_token_key, None)
         oauth_verifier = request.args.get("oauth_verifier")
+
         if not raw_request_token or not oauth_verifier:
             flash("Invalid OAuth verifier", "danger")
             logger.warning("OAuth callback failed: missing request token or verifier")
