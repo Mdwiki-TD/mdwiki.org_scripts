@@ -10,7 +10,7 @@ A Flask web application deployed on **Wikimedia Toolforge** that provides admini
 | ------------------------ | ---------------------------------------------------------- |
 | `main_app/config/`       | Environment-based configuration (frozen dataclasses)       |
 | `main_app/core/`         | Fernet encryption, cookie signing                          |
-| `main_app/db/`           | SQLAlchemy models + CRUD services (users, tokens, jobs)    |
+| `main_app/database/`           | SQLAlchemy models + CRUD services (users, tokens, jobs)    |
 | `main_app/api_services/` | MediaWiki API wrappers (`mwclient`)                        |
 | `main_app/public/`       | Flask Blueprints (auth, jobs, updater, fixred)             |
 | `main_app/jobs/`         | Thread-based background job runner + 8 workers             |

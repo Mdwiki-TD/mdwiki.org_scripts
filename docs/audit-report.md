@@ -18,11 +18,11 @@
 | 5   | **Unauthenticated access to job result files** — `/jobs/job-file/<result_file>` serves operational data with no auth check                                             | Security  | MED    | S      | LOW  | `src/main_app/public/public_jobs.py:292-297`                               |
 | 6   | **Open redirect via unvalidated `post_login_redirect`** — `request.url` stored in session, redirected to after OAuth without domain validation                                | Security  | MED    | S      | LOW  | `src/main_app/public/auth/utils.py:81`, `auth/routes.py:176`               |
 | 7   | **Exception `repr()` leaked to users via flash** — internal paths, DB strings exposed                                                                                         | Security  | MED    | S      | LOW  | `src/main_app/public/fixred.py:62`, `newupdater/route.py:48`               |
-| 8   | **`raise exc` loses original traceback** in `db_guard_rollback`                                                                                                               | Bug       | MED    | S      | LOW  | `src/main_app/db/services/utils.py:28,31`                                      |
+| 8   | **`raise exc` loses original traceback** in `db_guard_rollback`                                                                                                               | Bug       | MED    | S      | LOW  | `src/main_app/database/services/utils.py:28,31`                                      |
 | 9   | **Missing None check for `site` in fixred_one.py** — `get_user_site()` can return None, passed directly to `MwClientPage`                                                     | Bug       | MED    | S      | LOW  | `src/main_app/shared/fixred_one.py:35-37`                                      |
 | 10  | **Job reported "completed" when `before_run()` fails** — `after_run()` coerces pending→completed unconditionally                                                              | Bug       | MED    | S      | LOW  | `src/main_app/jobs_workers/base_worker_object.py:127-132,259-263`              |
 | 11  | **CSRF token leaked into background job args** — `request.form.to_dict()` includes `csrf_token`, persisted in job result files                                                | Security  | MED    | S      | LOW  | `src/main_app/public/public_jobs.py:273`                                   |
-| 12  | **`is_job_cancelled` issues redundant double-query** — `query().first()` then `session.refresh()` on same row; called every 10 edits                                          | Perf      | MED    | S      | LOW  | `src/main_app/db/services/jobs_service.py:92-95`                               |
+| 12  | **`is_job_cancelled` issues redundant double-query** — `query().first()` then `session.refresh()` on same row; called every 10 edits                                          | Perf      | MED    | S      | LOW  | `src/main_app/database/services/jobs_service.py:92-95`                               |
 | 13  | **O(n\*m) list scan in add_rtt_template** — `x not in template_pages` on two lists of ~30K titles each                                                                        | Perf      | MED    | S      | LOW  | `src/main_app/jobs_workers/public_jobs_workers/add_rtt_template/worker.py:115` |
 | 14  | **`DevelopmentConfig` sets `TESTING=True`** — enables exception propagation; dangerous if accidentally deployed                                                               | Security  | LOW    | S      | LOW  | `src/main_app/config/flask_config.py:117-118`                                  |
 | 15  | **Worker `_process_one` page-edit pipeline duplicated across 6 workers**                                                                                                      | Tech debt | MED    | M      | MED  | 6 worker files                                                                 |
@@ -33,7 +33,7 @@
 | 20  | **CI pipeline fragmented** — lint and tests in separate workflows, no combined gate                                                                                           | DX        | MED    | S      | LOW  | `.github/workflows/ci.yaml`, `pytest.yaml`                                     |
 | 21  | **Dead dependency: `tqdm`** in requirements.txt, zero imports in `src/`                                                                                                       | Deps      | LOW    | S      | LOW  | `requirements.txt:15`                                                          |
 | 22  | **`requires-python >= 3.10`** conflicts with all tooling targeting 3.13                                                                                                       | Deps      | LOW    | S      | LOW  | `pyproject.toml:6`                                                             |
-| 23  | **Dead code: `has_active_job`** exported but never called                                                                                                                     | Tech debt | LOW    | S      | LOW  | `src/main_app/db/services/jobs_service.py:233-251`                             |
+| 23  | **Dead code: `has_active_job`** exported but never called                                                                                                                     | Tech debt | LOW    | S      | LOW  | `src/main_app/database/services/jobs_service.py:233-251`                             |
 | 24  | **Hardcoded fallback username** in import_history worker                                                                                                                      | Bug       | LOW    | S      | LOW  | `src/main_app/jobs_workers/public_jobs_workers/import_history/worker.py:155`   |
 
 ---
@@ -155,7 +155,7 @@ flash(f"Error processing {title!r}: {exc!r}", "danger")
 ### Finding 8: `raise exc` loses original traceback
 
 ```python
-# src/main_app/db/services/utils.py:26-31
+# src/main_app/database/services/utils.py:26-31
 except IntegrityError as exc:
     db.session.rollback()
     raise exc  # creates new traceback rooted here
@@ -206,7 +206,7 @@ job_id = _start_job(job_type, args)  # passed to background worker and persisted
 ### Finding 12: Redundant double-query in is_job_cancelled
 
 ```python
-# src/main_app/db/services/jobs_service.py:92-95
+# src/main_app/database/services/jobs_service.py:92-95
 record = db.session.query(JobRecord).filter(...).first()  # fresh SELECT
 if record:
     db.session.refresh(record)  # redundant second SELECT on same row

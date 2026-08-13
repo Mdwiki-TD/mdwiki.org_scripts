@@ -53,7 +53,7 @@ class AuthUsersNewService:
 
 ```python
 from main_app.di.flask_integration import resolve
-from main_app.db.services import JobsService
+from main_app.database.services import JobsService
 
 jobs = resolve(JobsService)
 ```

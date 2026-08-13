@@ -1,6 +1,6 @@
 # ruff: noqa: F401
 """
-Unit tests for src/main_app/db/exceptions.py module.
+Unit tests for src/main_app/database/exceptions.py module.
 
 Classes to test: DatabaseInitError, MaxUserConnectionsError, UserNotFoundError, DuplicateRecordError, InsufficientDatabaseConfigError
 
@@ -11,7 +11,7 @@ from __future__ import annotations
 
 import pytest
 
-from src.main_app.db.exceptions import (
+from src.main_app.database.exceptions import (
     DatabaseInitError,
     DuplicateRecordError,
     InsufficientDatabaseConfigError,

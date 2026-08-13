@@ -1,5 +1,5 @@
 """
-Unit tests for src/main_app/db/services/utils/retry_on_disconnect.py module.
+Unit tests for src/main_app/database/services/utils/retry_on_disconnect.py module.
 
 Functions to test: retry_on_db_disconnect
 """
@@ -11,9 +11,9 @@ from unittest.mock import MagicMock, call
 import pytest
 from sqlalchemy.exc import OperationalError
 
-import src.main_app.db.services.utils.retry_on_disconnect as decorators_module
-from src.main_app.db.models import SettingRecord
-from src.main_app.db.services.utils.retry_on_disconnect import retry_on_db_disconnect
+import src.main_app.database.services.utils.retry_on_disconnect as decorators_module
+from src.main_app.database.models import SettingRecord
+from src.main_app.database.services.utils.retry_on_disconnect import retry_on_db_disconnect
 
 
 def make_operational_error(message="some error", connection_invalidated=False):
