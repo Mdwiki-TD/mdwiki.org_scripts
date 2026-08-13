@@ -12,10 +12,10 @@ from src.main_app.public.auth import utils as auth_utils
 
 @pytest.fixture(autouse=True)
 def mock_settings(monkeypatch: pytest.MonkeyPatch) -> None:
-    import types
+    from types import SimpleNamespace
 
-    fake_settings = types.SimpleNamespace(
-        cookie=types.SimpleNamespace(name="auth_cookie"),
+    fake_settings = SimpleNamespace(
+        cookie=SimpleNamespace(name="auth_cookie"),
     )
     monkeypatch.setattr("src.main_app.public.auth.utils.settings", fake_settings)
 
