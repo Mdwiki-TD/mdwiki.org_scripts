@@ -25,14 +25,16 @@ from mwoauth import RequestToken
 from werkzeug.wrappers import Response as WerkzeugResponse
 
 from ...config import settings
-from ...database.services import UserTokenService
+from ...database.services import UsersService
 from ...services.auth.auth_service import (
     OAuthCallbackError,
     OAuthIdentityError,
-    complete_oauth_callback,
+    OAuthService,
+    complete_login,
+    extract_token_credentials,
     start_login,
 )
-from ...services.auth.utils import set_logged_in_user
+from ...services.auth.utils import TokenManager, set_logged_in_user
 from ...services.core.cookies import (
     extract_user_id,
     sign_state_token,
@@ -46,10 +48,23 @@ logger = logging.getLogger(__name__)
 oauth_state_nonce = settings.sessions.state_key
 request_token_key = settings.sessions.request_token_key
 
-
 # ---------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------
+
+
+class AuthHelper:
+    """Builds OAuth and TokenManager instances from current_app config."""
+
+    def __init__(self) -> None:
+        self.oauth_service: OAuthService = OAuthService()
+        self.token_manager: TokenManager = TokenManager()
+
+    def _resolve_user_id(self, username: str) -> int:
+        """Return the user_id for ``username``, creating a UserRecord if needed."""
+        user_svc = UsersService()
+        record = user_svc.ensure_exists(username)
+        return record.user_id
 
 
 def _client_key() -> str:
@@ -151,11 +166,27 @@ class OAuthCallbackView(MethodView):
             flash("Invalid OAuth request token", "danger")
             return redirect(url_for("main.index", error="Invalid request token"))
 
+        query_string = urlencode(request.args)
         # ------------------
         # access_token, identity
         try:
-            query_string = urlencode(request.args)
-            user_record = complete_oauth_callback(request_token, query_string)
+            access_token, identity = complete_login(request_token, query_string)
+            token_key, token_secret = extract_token_credentials(access_token)
+
+            identity_dict: dict[str, Any] = identity if isinstance(identity, dict) else {}
+            username = identity_dict.get("username") or identity_dict.get("name")
+            if not username:
+                raise OAuthCallbackError("Missing username")
+
+            user_record = TokenManager().save_token(
+                username=username,
+                access_token=token_key,
+                access_secret=token_secret,
+            )
+
+            if not user_record:
+                raise OAuthCallbackError("Failed to process user credentials")
+
         except OAuthIdentityError:
             logger.exception("OAuth identity verification failed")
             flash("Failed to verify OAuth identity", "danger")
@@ -231,7 +262,7 @@ class LogoutView(MethodView):
         # delete user token if possible
         if isinstance(user_id, int):
             try:
-                UserTokenService().delete(user_id)
+                TokenManager().delete_token(user_id)
                 flash("You have been logged out successfully.", "info")
                 logger.info("User token deleted for user_id: %s", user_id)
             except Exception:

@@ -8,6 +8,8 @@ from __future__ import annotations
 
 import logging
 
+from sqlalchemy.exc import IntegrityError
+
 from ...extensions import db
 from ..exceptions import UserNotFoundError
 from ..models import UserRecord
@@ -52,6 +54,25 @@ class UsersService(CRUDService[UserRecord]):
         except Exception as exc:
             logger.error("Failed to create new record: %s", exc)
             return None
+
+    def ensure_exists(self, username: str) -> UserRecord:
+        """Create a UserRecord if one doesn't exist. Returns the record.
+
+        Handles concurrent-create races (IntegrityError) by retrying
+        as a fetch, following the pattern from mdwiki.org_scripts.
+        """
+        record = self.get_user_by_username(username)
+        if record is not None:
+            return record
+        try:
+            return self.create(username=username, is_admin=False)
+        except IntegrityError:
+            # Race condition: another request created the same record
+            self.session.rollback()
+            record = self.get_user_by_username(username)
+            if record is not None:
+                return record
+            raise
 
     def toggle_can_run_jobs(self, user_id: int, value: bool) -> UserRecord:
         """Toggle can_run_jobs."""
