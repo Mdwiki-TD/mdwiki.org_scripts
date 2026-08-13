@@ -7,9 +7,7 @@ import logging
 from flask import Blueprint, flash, g, render_template, request
 
 from ..shared import fixred_one
-from .auth.utils import oauth_required
-
-# from .utils.routes_utils import can_run_jobs
+from .auth.decorators import oauth_required
 
 logger = logging.getLogger(__name__)
 

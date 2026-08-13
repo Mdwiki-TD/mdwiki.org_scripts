@@ -32,6 +32,7 @@ from ...shared.auth.auth_service import (
     complete_oauth_callback,
     start_login,
 )
+from ...shared.auth.utils import set_logged_in_user
 from ...shared.core.cookies import (
     extract_user_id,
     sign_state_token,
@@ -39,7 +40,6 @@ from ...shared.core.cookies import (
     verify_state_token,
 )
 from .rate_limit import callback_rate_limiter, login_rate_limiter
-from .utils import set_logged_in_user
 
 logger = logging.getLogger(__name__)
 
@@ -137,7 +137,6 @@ class OAuthCallbackView(MethodView):
         # token data
         raw_request_token = session.pop(request_token_key, None)
         oauth_verifier = request.args.get("oauth_verifier")
-
         if not raw_request_token or not oauth_verifier:
             flash("Invalid OAuth verifier", "danger")
             logger.warning("OAuth callback failed: missing request token or verifier")

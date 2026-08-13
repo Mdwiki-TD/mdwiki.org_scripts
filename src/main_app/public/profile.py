@@ -5,7 +5,7 @@ import logging
 from flask import Blueprint, flash, render_template
 
 from ..database.services import JobsService
-from .auth.utils import get_current_user
+from ..shared.auth.utils import get_current_user
 
 logger = logging.getLogger(__name__)
 

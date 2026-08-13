@@ -9,7 +9,7 @@ from flask import Blueprint, flash, g, redirect, render_template, request, url_f
 from werkzeug.wrappers.response import Response
 
 from ...shared import newupdater_service as svc
-from ..auth.utils import oauth_required
+from ..auth.decorators import oauth_required
 
 # from ..utils.routes_utils import can_run_jobs
 
