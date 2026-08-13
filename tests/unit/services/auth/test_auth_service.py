@@ -1,12 +1,66 @@
-"""Unit tests for src/main_app/services/auth/auth_service.py."""
+"""Unit tests for auth_service."""
 
 from __future__ import annotations
 
 from types import SimpleNamespace
+from unittest.mock import MagicMock, patch
 
 import pytest
 
 from src.main_app.services.auth import auth_service
+from src.main_app.services.auth.auth_service import (
+    OAuthCallbackError,
+    complete_oauth_callback,
+    extract_token_credentials,
+)
+
+
+def test_extract_token_credentials_object():
+    token = MagicMock()
+    token.key = "key"
+    token.secret = "secret"
+    assert extract_token_credentials(token) == ("key", "secret")
+
+
+def test_extract_token_credentials_sequence():
+    token = ["key_seq", "secret_seq"]
+    assert extract_token_credentials(token) == ("key_seq", "secret_seq")
+
+
+def test_extract_token_credentials_fail():
+    with pytest.raises(OAuthCallbackError, match="Missing OAuth credentials"):
+        extract_token_credentials(None)
+
+
+def test_complete_oauth_callback_success():
+    with (
+        patch("src.main_app.services.auth.auth_service.OAuthService.complete_login") as m_login,
+        patch("src.main_app.services.auth.auth_service.TokenManager.save_token") as m_save,
+    ):
+        m_login.return_value = (MagicMock(key="k", secret="s"), {"username": "user123"})
+        m_save.return_value = MagicMock(username="user123")
+
+        res = complete_oauth_callback("req_token", "query")
+        assert res.username == "user123"
+
+
+def test_complete_oauth_callback_no_username():
+    with patch("src.main_app.services.auth.auth_service.OAuthService.complete_login") as m_login:
+        m_login.return_value = (MagicMock(key="k", secret="s"), {})
+        with pytest.raises(OAuthCallbackError, match="Missing username"):
+            complete_oauth_callback("req_token", "query")
+
+
+def test_complete_oauth_callback_save_fail():
+    with (
+        patch("src.main_app.services.auth.auth_service.OAuthService.complete_login") as m_login,
+        patch("src.main_app.services.auth.auth_service.TokenManager.save_token") as m_save,
+    ):
+        m_login.return_value = (MagicMock(key="k", secret="s"), {"username": "user123"})
+        m_save.return_value = None
+
+        with pytest.raises(OAuthCallbackError, match="Failed to process user credentials"):
+            complete_oauth_callback("req_token", "query")
 
 
 @pytest.fixture(autouse=True)
@@ -58,26 +112,20 @@ def test_get_handshaker_without_config(monkeypatch: pytest.MonkeyPatch) -> None:
 def test_start_login(monkeypatch: pytest.MonkeyPatch) -> None:
     captured_state: list[str] = []
 
-    def fake_url_for(endpoint: str, **params: str) -> str:
-        assert endpoint == "auth.callback"
-        captured_state.append(params["state"])
-        return "https://host/callback"
-
     class DummyHandshaker:
         def initiate(self, *, callback: str):
-            assert callback == "https://host/callback"
+            assert callback == "https://host/callback?state=signed-state"
             return "https://auth", ("token", "secret")
 
-    monkeypatch.setattr("src.main_app.services.auth.auth_service.url_for", fake_url_for)
     monkeypatch.setattr(
         "src.main_app.services.auth.auth_service.OAuthService.get_handshaker", lambda self: DummyHandshaker()
     )
 
-    redirect_url, request_token = auth_service.start_login("signed-state")
+    redirect_url, request_token = auth_service.create_authorization_url("https://host/callback?state=signed-state")
 
     assert redirect_url == "https://auth"
     assert list(request_token) == ["token", "secret"]
-    assert captured_state == ["signed-state"]
+    assert captured_state == []
 
 
 def test_complete_login(monkeypatch: pytest.MonkeyPatch) -> None:

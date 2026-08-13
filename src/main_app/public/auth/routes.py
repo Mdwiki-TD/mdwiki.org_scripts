@@ -26,14 +26,11 @@ from werkzeug.wrappers import Response as WerkzeugResponse
 
 from ...config import settings
 from ...database.services import UsersService
-from ...services.auth.auth_service import (
+from ...services.auth.auth_exceptions import (
     OAuthCallbackError,
     OAuthIdentityError,
-    OAuthService,
-    complete_login,
-    extract_token_credentials,
-    start_login,
 )
+from ...services.auth.auth_service import OAuthService
 from ...services.auth.utils import TokenManager, set_logged_in_user
 from ...services.core.cookies import (
     extract_user_id,
@@ -45,18 +42,26 @@ from .rate_limit import callback_rate_limiter, login_rate_limiter
 
 logger = logging.getLogger(__name__)
 
-oauth_state_nonce = settings.sessions.state_key
 request_token_key = settings.sessions.request_token_key
+oauth_state_nonce = settings.sessions.state_key
 
 # ---------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------
 
 
+def _client_key() -> str:
+    forwarded_for = request.headers.get("X-Forwarded-For")
+    if forwarded_for:
+        return forwarded_for.split(",")[0].strip()
+    return request.remote_addr or "anonymous"
+
+
 class AuthHelper:
-    """Builds OAuth and TokenManager instances from current_app config."""
+    """Builds OAuth and TokenManager instances."""
 
     def __init__(self) -> None:
+        self.rate_limiter_key = _client_key()
         self.oauth_service: OAuthService = OAuthService()
         self.token_manager: TokenManager = TokenManager()
 
@@ -67,30 +72,25 @@ class AuthHelper:
         return record.user_id
 
 
-def _client_key() -> str:
-    forwarded_for = request.headers.get("X-Forwarded-For")
-    if forwarded_for:
-        return forwarded_for.split(",")[0].strip()
-    return request.remote_addr or "anonymous"
-
-
 # ---------------------------------------------------------
 # Routes
 # ---------------------------------------------------------
 
 
-class LoginView(MethodView):
+class LoginView(AuthHelper, MethodView):
     """Start the OAuth flow — redirect user to Meta-Wiki."""
 
     def get(self):
         return self.login()
 
     def login(self) -> WerkzeugResponse:
-        _key = _client_key()
+        # -----
+        # check rate limit
+        # -----
+        _key = self.rate_limiter_key
         logger.info("OAuth login initiated, client: %s", _key)
         if not login_rate_limiter.allow(_key):
-            time_left = login_rate_limiter.try_after(_key).total_seconds()
-            time_left_str = str(time_left).split(".")[0]
+            time_left_str = login_rate_limiter.get_login_rate_limit_seconds(_key)
             flash(f"Too many login attempts. Please try again after {time_left_str}s.", "warning")
             logger.warning("OAuth login rate limited, client: %s, try_after: %ss", _key, time_left_str)
             return redirect(
@@ -103,7 +103,8 @@ class LoginView(MethodView):
         # ------------------
         # start login
         try:
-            redirect_url, request_token = start_login(sign_state_token(state_nonce))
+            callback_url = url_for("auth.callback", _external=True, state=sign_state_token(state_nonce))
+            redirect_url, request_token = self.oauth_service.create_authorization_url(callback_url)
             logger.info("OAuth login started successfully, redirecting to MediaWiki")
         except (RuntimeError, Exception):
             logger.exception("Failed to start OAuth login")
@@ -117,14 +118,14 @@ class LoginView(MethodView):
         return redirect(redirect_url)
 
 
-class OAuthCallbackView(MethodView):
+class OAuthCallbackView(AuthHelper, MethodView):
     """Handle the OAuth callback from Meta-Wiki."""
 
     def get(self):
         return self.callback()
 
     def callback(self) -> WerkzeugResponse:
-        _key = _client_key()
+        _key = self.rate_limiter_key
         logger.info("OAuth callback initiated, client: %s", _key)
         # ------------------
         # callback rate limiter
@@ -170,15 +171,15 @@ class OAuthCallbackView(MethodView):
         # ------------------
         # access_token, identity
         try:
-            access_token, identity = complete_login(request_token, query_string)
-            token_key, token_secret = extract_token_credentials(access_token)
+            access_token, identity = self.oauth_service.complete_login(request_token, query_string)
+            token_key, token_secret = self.oauth_service.extract_token_credentials(access_token)
 
             identity_dict: dict[str, Any] = identity if isinstance(identity, dict) else {}
             username = identity_dict.get("username") or identity_dict.get("name")
             if not username:
                 raise OAuthCallbackError("Missing username")
 
-            user_record = TokenManager().save_token(
+            user_record = self.token_manager.save_token(
                 username=username,
                 access_token=token_key,
                 access_secret=token_secret,
@@ -235,7 +236,7 @@ class OAuthCallbackView(MethodView):
         return RequestToken(raw[0], raw[1])
 
 
-class LogoutView(MethodView):
+class LogoutView(AuthHelper, MethodView):
     """Log out and delete stored token."""
 
     def post(self):
@@ -262,7 +263,7 @@ class LogoutView(MethodView):
         # delete user token if possible
         if isinstance(user_id, int):
             try:
-                TokenManager().delete_token(user_id)
+                self.token_manager.delete_token(user_id)
                 flash("You have been logged out successfully.", "info")
                 logger.info("User token deleted for user_id: %s", user_id)
             except Exception:
