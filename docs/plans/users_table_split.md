@@ -408,8 +408,8 @@ def work_on_title(
 
 | File                                                      | Change                                                                          |
 | --------------------------------------------------------- | ------------------------------------------------------------------------------- |
-| `tests/unit/db/models/test_users.py`                      | Add `UserRecord` tests; update `UserTokenRecord` constructor (no username)     |
-| `tests/unit/db/services/test_user_token_service.py`       | Test `create_user`, `get_user`, `delete_user`; update `upsert_user_token` tests |
+| `tests/unit/database/models/test_users.py`                      | Add `UserRecord` tests; update `UserTokenRecord` constructor (no username)     |
+| `tests/unit/database/services/test_user_token_service.py`       | Test `create_user`, `get_user`, `delete_user`; update `upsert_user_token` tests |
 | `tests/unit/public/utils/test_routes_utils.py`        | Mock `CurrentUser` instead of `UserTokenRecord`                                 |
 | `tests/unit/public/newupdater/test_route.py`          | Construct `CurrentUser` instead of `UserTokenRecord`                            |
 | `tests/unit/public/auth/test_auth_utils.py`           | Mock returns `CurrentUser`                                                      |

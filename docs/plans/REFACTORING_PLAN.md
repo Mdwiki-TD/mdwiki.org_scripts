@@ -45,17 +45,17 @@ This is a well-architected Flask application with a clean layered structure (Con
 
 #### Issues Found:
 
--   [ ] **Controller imports model directly** — `src/main_app/public/public_jobs.py` (line 18) imports `JobRecord` from `..db.models`. Controllers should never import models.
--   [ ] **Controller imports db services directly** — `src/main_app/public/public_jobs.py` (lines 21-25) imports `active_coordinators`, `delete_job`, `get_job`, `list_jobs` from `..db.services`. These should be accessed through `su_services` or a dedicated service layer.
--   [ ] **Admin controller bypasses service layer** — `src/main_app/public/admin/routes.py` (line 21) imports `list_users` from `..db.services` directly.
--   [ ] **`create_app()` factory imports db services** — `src/main_app/__init__.py` (line 18) imports `active_coordinators` from `.db.services`. This couples the app factory to the database layer.
+-   [ ] **Controller imports model directly** — `src/main_app/public/public_jobs.py` (line 18) imports `JobRecord` from `..database.models`. Controllers should never import models.
+-   [ ] **Controller imports db services directly** — `src/main_app/public/public_jobs.py` (lines 21-25) imports `active_coordinators`, `delete_job`, `get_job`, `list_jobs` from `..database.services`. These should be accessed through `su_services` or a dedicated service layer.
+-   [ ] **Admin controller bypasses service layer** — `src/main_app/public/admin/routes.py` (line 21) imports `list_users` from `..database.services` directly.
+-   [ ] **`create_app()` factory imports db services** — `src/main_app/__init__.py` (line 18) imports `active_coordinators` from `.database.services`. This couples the app factory to the database layer.
 -   [ ] **Service-layer logic in route utils** — `src/main_app/public/utils/routes_utils.py::load_auth_payload()` constructs auth payload dicts, which is business logic in a "utils" file.
 
 #### Recommendations:
 
 1. [ ] Create proper service modules in `su_services/` to wrap all `db.services` calls used by controllers
 2. [ ] Move `load_auth_payload()` to `su_services/`
-3. [ ] Remove all `from ..db.models import ...` statements from route files
+3. [ ] Remove all `from ..database.models import ...` statements from route files
 4. [ ] Extract `active_coordinators()` usage from the factory into a lazy-loading pattern
 
 ---
@@ -352,7 +352,7 @@ This is a well-architected Flask application with a clean layered structure (Con
 -   **Issues**: `category.py` mixes API and filtering logic; `query_api.py` has dead function; `mwclient_page.py` retry bug
 -   **Priority**: Phase 1 (retry bug), Phase 3 (refactor)
 
-### `src/main_app/db/`
+### `src/main_app/database/`
 
 -   **Strengths**: Clean model definitions, good service separation, `db_guard` decorator
 -   **Minor**: `utils.py::db_guard` catches all exceptions — consider being more specific

@@ -1,6 +1,6 @@
 ### Improved Prompt
 
-Analyze all database-accessing functions in `src/main_app/db/services`.
+Analyze all database-accessing functions in `src/main_app/database/services`.
 
 #### Objective
 
@@ -12,7 +12,7 @@ Ensure every database interaction is protected either by:
 
 #### Instructions
 
-1. **Identify all functions that interact with the database** within `src/main_app/db/services`.
+1. **Identify all functions that interact with the database** within `src/main_app/database/services`.
 
 2. For each function:
 

@@ -8,8 +8,8 @@ from __future__ import annotations
 import logging
 from typing import TYPE_CHECKING
 
-from ...db.models import UserRecord
-from ...db.services import (
+from ...database.models import UserRecord
+from ...database.services import (
     AdminService,
     UsersService,
     UserTokenService,

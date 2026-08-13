@@ -12,8 +12,8 @@ from unittest.mock import Mock, patch
 import pytest
 from flask.app import Flask
 
-from src.main_app.db.exceptions import DuplicateRecordError
-from src.main_app.db.services import (
+from src.main_app.database.exceptions import DuplicateRecordError
+from src.main_app.database.services import (
     AdminService,
     JobsService,
     UsersService,

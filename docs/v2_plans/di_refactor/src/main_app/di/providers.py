@@ -29,11 +29,11 @@ class ServiceProviders:
         Parameters are optional so unit tests can register only what they need.
         """
         # Late imports avoid circular dependencies at module load time.
-        from ..db.services.admin_service import AdminService
-        from ..db.services.jobs_service import JobsService
-        from ..db.services.settings_service import SettingsService
-        from ..db.services.user_token_service import UserTokenService
-        from ..db.services.users_service import UsersService
+        from ..database.services.admin_service import AdminService
+        from ..database.services.jobs_service import JobsService
+        from ..database.services.settings_service import SettingsService
+        from ..database.services.user_token_service import UserTokenService
+        from ..database.services.users_service import UsersService
         from ..shared.auth.auth_users_service import AuthUsersNewService
 
         # ----- persistence / DB services (singletons per app) -----

@@ -3,7 +3,7 @@
 from dataclasses import dataclass, field
 from typing import Any
 
-from ..db.models import (
+from ..database.models import (
     AdminUserRecord,
     JobRecord,
     SettingRecord,
