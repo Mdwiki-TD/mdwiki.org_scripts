@@ -11,8 +11,8 @@ import logging
 from mwclient.client import Site
 
 from ....api_services import MwClientPage
-from ....shared.fixref_shared.fixred_worker import work_on_text
-from ....shared.fixref_shared.objects import RunState
+from ....services.fixref_shared.fixred_worker import work_on_text
+from ....services.fixref_shared.objects import RunState
 from ...base_worker import BaseObjectsJobWorker, JobsRunner
 from ...shared_objects import SharedworkerObject, UpdaterOutcome
 

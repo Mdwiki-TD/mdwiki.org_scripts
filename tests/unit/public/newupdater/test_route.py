@@ -19,7 +19,7 @@ class TestNewupdaterRoute:
 
     def test_get_with_login(self, mock_client, mock_login, monkeypatch):
         mock_login("TestUser")
-        from src.main_app.shared.auth.current_user import CurrentUser
+        from src.main_app.services.auth.current_user import CurrentUser
 
         monkeypatch.setattr(
             "src.main_app.public.auth.decorators.get_current_user",

@@ -17,7 +17,7 @@ from mwclient.client import Site
 
 from ....api_services import MwClientPage
 from ....api_services.query_api import get_double_redirects
-from ....shared.replace_wikilink import replace_wikilink_destinations
+from ....services.replace_wikilink import replace_wikilink_destinations
 from ...base_worker import BaseObjectsJobWorker, JobsRunner
 from ...shared_objects import SharedworkerObject, UpdaterOutcome
 

@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from typing import Any
+
 from sqlalchemy.exc import DatabaseError
 
 
@@ -21,9 +23,7 @@ class DatabaseInitError(Exception):
 class RecordNotFoundError(LookupError):
     """Raised when a requested record does not exist."""
 
-    def __init__(
-        self, model_name: str, identifier: object | None = None
-    ) -> None:
+    def __init__(self, model_name: str, identifier: object | None = None) -> None:
         self.model_name = model_name
         self.identifier = identifier
         super().__init__(f"{model_name} not found: {identifier}")

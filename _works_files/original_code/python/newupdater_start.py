@@ -7,7 +7,7 @@ import sys
 
 from mdapi import GetPageText, page_put
 
-from src.main_app.shared.new_updater import med_updater_one
+from src.main_app.services.new_updater import med_updater_one
 
 
 def get_new_text(title):

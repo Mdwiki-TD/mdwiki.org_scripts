@@ -6,7 +6,7 @@ import logging
 
 from flask import Blueprint, flash, g, render_template, request
 
-from ..shared import fixred_one
+from ..services import fixred_one
 from .auth.decorators import oauth_required
 
 logger = logging.getLogger(__name__)
