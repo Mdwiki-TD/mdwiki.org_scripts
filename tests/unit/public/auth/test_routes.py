@@ -2,12 +2,9 @@
 
 from __future__ import annotations
 
-from unittest.mock import MagicMock, Mock
+from unittest.mock import Mock
 
 import pytest
-
-from src.main_app.public.auth.routes import OAuthCallbackView
-
 
 @pytest.mark.usefixtures("mock_app")
 class TestAuthRoutes:
