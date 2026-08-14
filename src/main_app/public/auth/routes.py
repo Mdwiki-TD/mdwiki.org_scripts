@@ -224,11 +224,13 @@ class OAuthCallbackView(AuthHelper, MethodView):
             return redirect(url_for("main.index"))
 
         # Save encrypted token
-        user_record = self.token_manager.save_token(
+        self.token_manager.save_token(
             user_id=user_id,
             access_token=token_data.key,
             access_secret=token_data.secret,
         )
+
+        user_record = self.token_manager.get_authenticated_user(user_id)
         if not user_record:
             logger.error("OAuth callback failed while saving user credentials")
             flash("Failed to process user credentials", "danger")
