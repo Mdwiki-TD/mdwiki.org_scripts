@@ -51,7 +51,6 @@ class TestClientKey:
 
 class TestSetResponseCookies:
     def test_sets_cookie(self, monkeypatch):
-        from src.main_app.public.auth.routes import OAuthCallbackView
 
         mock_response = Mock()
         mock_settings = MagicMock()

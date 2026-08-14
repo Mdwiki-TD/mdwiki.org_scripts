@@ -64,10 +64,8 @@ class TokenManager:
             return None
 
     def get_decrypted_token(self, user_id: int) -> dict | None:
-        """Load encrypted tokens for ``user_id`` and return decrypted values.
-
-        Returns:
-            {"access_token": ..., "access_secret": ...} or None if not found.
+        """
+        Load encrypted tokens for ``user_id`` and return decrypted values.
         """
         record = self.user_token_service.get_record_by_id(user_id)
         if record is None:
@@ -77,7 +75,7 @@ class TokenManager:
             "access_secret": self._crypto.decrypt(record.access_secret),
         }
 
-    def touch(self, user_id: int):
+    def touch(self, user_id: int) -> None:
         """Update last_used_at timestamp for ``user_id``."""
         self.user_token_service.update_last_used(user_id)
 
