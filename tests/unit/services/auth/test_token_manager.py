@@ -66,6 +66,19 @@ class TestUserService:
         """
         user_id = self._seed_user("brand_new_user")
 
+        with self.app.app_context():
+            res = self.service.save_token(user_id, "k2", "s2")
+
+        assert res is not None
+        assert res.user_id == user_id
+        assert res.username == "brand_new_user"
+        assert res.is_active_admin is False
+
+        # Verify the token was persisted
+        with self.app.app_context():
+            token = UserTokenService().get_record_by_id(user_id)
+            assert token is not None
+
     def test_save_and_get_user_upsert_fail(self, monkeypatch: pytest.MonkeyPatch):
         """When persisting the token raises, save_token should return None."""
         user_id = self._seed_user("user")
@@ -98,6 +111,10 @@ class TestUserService:
         """Seeded user + token + coordinator should return a valid CurrentUser."""
         user_id = self._seed_user("authuser")
         self._seed_admin("authuser")
+
+        # TokenManager.save_token creates the token row (as the route would)
+        with self.app.app_context():
+            self.service.save_token(user_id, "k", "s")
 
         with self.app.app_context():
             res = self.service.get_authenticated_user(user_id)
