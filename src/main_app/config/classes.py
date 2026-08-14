@@ -65,6 +65,7 @@ class SessionConfig:
 
     state_key: str
     request_token_key: str
+    request_secret_key: str
 
 
 @dataclass(frozen=True)

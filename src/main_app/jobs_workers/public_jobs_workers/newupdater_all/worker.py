@@ -12,8 +12,8 @@ from mwclient.client import Site
 
 from ....api_services import MwClientPage
 from ....api_services.category import get_category_members
-from ....shared.named_param import add_param_named
-from ....shared.new_updater import med_updater_one
+from ....services.named_param import add_param_named
+from ....services.new_updater import med_updater_one
 from ...base_worker import BaseObjectsJobWorker, JobsRunner
 from ...shared_objects import SharedworkerObject, UpdaterOutcome
 

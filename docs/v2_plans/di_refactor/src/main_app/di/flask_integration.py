@@ -25,7 +25,7 @@ def init_di(app: Flask, container: Container) -> None:
         g.pop("_di_request_cache", None)
 
 
-def resolve(interface: type[T]) -> T:
+def resolve[T](interface: type[T]) -> T:
     """Resolve a service from the current application container.
 
     Prefer constructor injection in new code. Use this helper only in

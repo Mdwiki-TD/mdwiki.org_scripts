@@ -1,0 +1,16 @@
+""" """
+
+from src.main_app.services.new_updater.mv_section import MoveExternalLinksSection
+
+text = """"""
+
+expected = """"""
+
+
+def test_it():
+
+    bot = MoveExternalLinksSection(str(text))
+
+    new_text = bot.make_new_txt()
+
+    assert new_text == expected

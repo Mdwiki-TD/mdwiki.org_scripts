@@ -50,7 +50,11 @@ class TestCookieConfig:
 
 class TestSessionConfig:
     def test_fields(self):
-        cfg = SessionConfig(state_key="sk", request_token_key="rtk")
+        cfg = SessionConfig(
+            state_key="sk",
+            request_token_key="rtk",
+            request_secret_key="request_secret",
+        )
         assert cfg.state_key == "sk"
         assert cfg.request_token_key == "rtk"
 
@@ -113,7 +117,11 @@ class TestSettings:
         db = DbConfig(db_name="x", db_host="h", db_user=None, db_password=None)
         paths = Paths(log_dir="/l", jobs_path="/j", public_jobs_path="/n")
         cookie = CookieConfig(name="c", max_age=1, secure=False, httponly=False, samesite="Lax")
-        sessions = SessionConfig(state_key="sk", request_token_key="rtk")
+        sessions = SessionConfig(
+            state_key="sk",
+            request_token_key="rtk",
+            request_secret_key="request_secret",
+        )
         security = SecurityConfig(
             salt="",
             secret_key="s",

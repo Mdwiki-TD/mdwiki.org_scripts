@@ -13,7 +13,7 @@ from datetime import datetime
 from mwclient.client import Site
 
 from ....api_services import MwClientPage, get_category_members
-from ....shared.fixref_shared.fixref_text_new import fix_ref_template
+from ....services.fixref_shared.fixref_text_new import fix_ref_template
 from ...base_worker import BaseObjectsJobWorker, JobsRunner
 from ...shared_objects import SharedworkerObject, UpdaterOutcome
 

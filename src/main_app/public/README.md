@@ -132,7 +132,7 @@ def read_job_result_file(result_file):
 
 ```python
 # After make_response(), these don't affect the response:
-g.current_user = None
+g._current_user = None
 g.is_authenticated = False
 ```
 
