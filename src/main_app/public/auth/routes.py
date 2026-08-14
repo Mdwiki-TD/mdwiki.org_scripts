@@ -311,14 +311,12 @@ class AuthRoutes:
         self._setup_routes()
 
     def _setup_routes(self) -> None:
-        self.bp.before_app_request(self.before_request)
+        # Automatically load the user before any route is processed.
+        self.bp.before_app_request(set_logged_in_user)
+
         self.bp.add_url_rule("/login", view_func=LoginView.as_view("login"))
         self.bp.add_url_rule("/callback", view_func=OAuthCallbackView.as_view("callback"))
         self.bp.add_url_rule("/logout", view_func=LogoutView.as_view("logout"))
-
-    def before_request(self) -> None:
-        """Automatically load the user before any route is processed."""
-        set_logged_in_user()
 
 
 __all__ = [
