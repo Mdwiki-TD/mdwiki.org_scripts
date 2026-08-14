@@ -65,15 +65,16 @@ class AuthHelper:
             consumer_key=settings.oauth.consumer_key,
             consumer_secret=settings.oauth.consumer_secret,
             oauth_mwuri=settings.oauth.mw_uri,
+            user_agent=settings.other.user_agent,
         )
         self.token_manager: TokenManager = TokenManager()
 
         self.rate_limiter_key = _client_key()
+        self.user_svc = UsersService()
 
     def _resolve_user_id(self, username: str) -> int:
         """Return the user_id for ``username``, creating a UserRecord if needed."""
-        user_svc = UsersService()
-        record = user_svc.ensure_exists(username)
+        record = self.user_svc.ensure_exists(username)
         return record.user_id
 
 
@@ -206,21 +207,34 @@ class OAuthCallbackView(AuthHelper, MethodView):
             flash(str(exc), exc.flash_category)
             return redirect(url_for("main.index"))
 
-        username = identity.get("username") or identity.get("name")
+        username = identity.get("username") or identity.get("name") or ""
+
+        if not username:
+            logger.error("OAuth callback failed: missing username in identity")
+            flash("Missing username in OAuth identity", "danger")
+            return redirect(url_for("main.index"))
 
         # Persist the user record (and obtain its stable user_id) before
         # saving the encrypted token, which is keyed by user_id.
-        user_id = self._resolve_user_id(username)
+        try:
+            user_id = self._resolve_user_id(username)
+        except Exception as exc:
+            logger.exception("Failed to resolve user ID: %s", exc)
+            flash("Failed to resolve user ID", "danger")
+            return redirect(url_for("main.index"))
 
         # Save encrypted token
-        user_record = self.token_manager.save_token(
-            username=username,
+        self.token_manager.save_token(
+            user_id=user_id,
             access_token=token_data.key,
             access_secret=token_data.secret,
         )
 
+        user_record = self.token_manager.get_authenticated_user(user_id)
         if not user_record:
-            raise OAuthCallbackError("Failed to process user credentials")
+            logger.error("OAuth callback failed while saving user credentials")
+            flash("Failed to process user credentials", "danger")
+            return redirect(url_for("main.index"))
 
         # Set sessions
         session["uid"] = user_id
@@ -299,14 +313,12 @@ class AuthRoutes:
         self._setup_routes()
 
     def _setup_routes(self) -> None:
-        self.bp.before_app_request(self.before_request)
+        # Automatically load the user before any route is processed.
+        self.bp.before_app_request(set_logged_in_user)
+
         self.bp.add_url_rule("/login", view_func=LoginView.as_view("login"))
         self.bp.add_url_rule("/callback", view_func=OAuthCallbackView.as_view("callback"))
         self.bp.add_url_rule("/logout", view_func=LogoutView.as_view("logout"))
-
-    def before_request(self) -> None:
-        """Automatically load the user before any route is processed."""
-        set_logged_in_user()
 
 
 __all__ = [

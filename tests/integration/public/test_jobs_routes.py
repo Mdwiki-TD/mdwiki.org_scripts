@@ -65,9 +65,12 @@ def _seed_user(mock_app, username="JobUser", *, can_run_bg_jobs=False) -> int:
     """Create a user token record for job ownership. Returns the auto-generated user_id."""
     with mock_app.app_context():
         user = UsersService().create_user(username)
-        if can_run_bg_jobs:
 
+        assert user is not None
+
+        if can_run_bg_jobs:
             UsersService().toggle_can_run_bg_jobs(user.user_id, True)
+
         UserTokenService().upsert_user_token(
             user_id=user.user_id,
             encrypted_token=b"k",
