@@ -206,7 +206,12 @@ class OAuthCallbackView(AuthHelper, MethodView):
             flash(str(exc), exc.flash_category)
             return redirect(url_for("main.index"))
 
-        username = identity.get("username") or identity.get("name")
+        username = identity.get("username") or identity.get("name") or ""
+
+        if not username:
+            logger.error("OAuth callback failed: missing username in identity")
+            flash("Missing username in OAuth identity", "danger")
+            return redirect(url_for("main.index"))
 
         # Persist the user record (and obtain its stable user_id) before
         # saving the encrypted token, which is keyed by user_id.
@@ -218,9 +223,10 @@ class OAuthCallbackView(AuthHelper, MethodView):
             access_token=token_data.key,
             access_secret=token_data.secret,
         )
-
         if not user_record:
-            raise OAuthCallbackError("Failed to process user credentials")
+            logger.error("OAuth callback failed while saving user credentials")
+            flash("Failed to process user credentials", "danger")
+            return redirect(url_for("main.index"))
 
         # Set sessions
         session["uid"] = user_id
