@@ -2,7 +2,7 @@
     <div class="">
         <span class="logo-text">
             <span class="hide-on-collapse-inline fw-bold mb-0 h5">
-                Coordinator Tools
+                Tools
             </span>
             <div class="show-on-collapse">
                 <div class="form-check form-switch">
@@ -22,5 +22,7 @@
 <div class="d-block d-md-none Dropdown_menu_toggle px-3">☰ Open Sidebar</div>
 <hr>
 <div class="div_menu navbar-collapse">
-    {{ sidebar|safe }}
+    {% if create_side %}
+    {{ create_side(request.path, is_admin) | safe }}
+    {% endif %}
 </div>
