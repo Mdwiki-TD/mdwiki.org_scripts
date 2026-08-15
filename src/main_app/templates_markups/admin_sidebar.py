@@ -252,36 +252,7 @@ def load_groups_menu() -> list[SidebarGroup]:
         id="main",
         title="Main",
         icon="bi-file-text",
-        items=[
-            dashboard_item(
-                "templates",
-                "Templates",
-                "bi-list-columns",
-                "adminpanel.templates.dashboard",
-                "/adminpanel/templates/",
-            ),
-            dashboard_item(
-                "templates_need_update",
-                "Templates Need Update",
-                "bi-arrow-repeat",
-                "adminpanel.templates.templates_need_update",
-                "/adminpanel/templates/templates-need-update",
-            ),
-            dashboard_item(
-                "owid_charts",
-                "OWID Charts",
-                "bi-graph-up",
-                "adminpanel.owidcharts.dashboard",
-                "/adminpanel/owidcharts/",
-            ),
-            dashboard_item(
-                "slug_redirects",
-                "Slug Redirects",
-                "bi-arrow-right-circle",
-                "adminpanel.slugredirects.dashboard",
-                "/adminpanel/slugredirects/",
-            ),
-        ],
+        items=[],
     )
 
     users_group = SidebarGroup(
@@ -305,48 +276,6 @@ def load_groups_menu() -> list[SidebarGroup]:
             ),
         ],
     )
-
-    db_jobs = SidebarGroup(
-        id="db_jobs",
-        title="DB Jobs",
-        icon="bi-database-fill",
-        items=[
-            job_item(
-                "collect_templates_data",
-                "Collect Templates data",
-                "bi-kanban",
-            ),
-            job_item(
-                "update_owid_charts",
-                "Update OWID Charts",
-                "bi-arrow-repeat",
-            ),
-        ],
-    )
-
-    files_jobs = SidebarGroup(
-        id="files_jobs",
-        title="Files Jobs",
-        icon="bi-files",
-        items=[
-            job_item("crop_main_files", "Crop Newest World Files", "bi-crop"),
-            job_item("fix_nested_main_files", "Fix Nested Main Files", "bi-tools"),
-            job_item("download_main_files", "Download Main Files", "bi-download", disabled=True),
-        ],
-    )
-
-    owid_temp_pages = SidebarGroup(
-        id="owid_temp_pages",
-        title="OWID Templates/Pages",
-        icon="bi-file-earmark-richtext",
-        items=[
-            job_item("create_owid_pages", "Create OWID Pages", "bi-file-earmark-text"),
-            job_item("rename_owid_pages", "Rename OWID Pages", "bi-fonts"),
-            job_item("add_svglanguages_template", "Add {{SVGLanguages}}", "bi-file-earmark-text"),
-            job_item("add_lang_categories_to_owid_pages", "Add Lang Categories", "bi-tags"),
-        ],
-    )
-
     settings_group = SidebarGroup(
         id="settings",
         title="Settings",
@@ -379,9 +308,6 @@ def load_groups_menu() -> list[SidebarGroup]:
     return [
         main_group,
         users_group,
-        db_jobs,
-        files_jobs,
-        owid_temp_pages,
         settings_group,
     ]
 

@@ -185,9 +185,8 @@ nav_list = [
         text="New Jobs",
         icon="bi-sliders",
         url_endpoint="public_jobs.all_jobs_list",
-        url_kwargs={"job_type": "copy_svg_langs"},
         title="New Jobs",
-        path="/jobs/copy_svg_langs",
+        path="/jobs/",
     ),
     NavLink(
         text="Admins",
