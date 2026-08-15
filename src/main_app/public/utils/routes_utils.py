@@ -7,7 +7,7 @@ from flask import url_for
 
 from ...jobs_workers.public_jobs_workers.workers_list_public import jobs_data_public
 from ...services.auth.utils import get_current_user
-from ...templates_markups.navbar import navbar
+from ...templates_markups import navbar
 
 logger = logging.getLogger(__name__)
 
