@@ -1,5 +1,5 @@
-from .worker import add_r_column_worker_entry
+from .worker import AddRColumnWorker
 
 __all__ = [
-    "add_r_column_worker_entry",
+    "AddRColumnWorker",
 ]

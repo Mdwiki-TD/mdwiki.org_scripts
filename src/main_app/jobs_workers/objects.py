@@ -21,7 +21,8 @@ class JobData:
     job_name: str
     job_list_template: str
 
-    job_callable: Callable
+    job_callable: Callable | None = None
+    job_class: Callable
     job_args: list[dict[str, str]] = field(default_factory=list)
     start_confirm_message: str | None = None
     job_details_template: str | None = "jobs_templates/_help_templates/shared_details.html"
