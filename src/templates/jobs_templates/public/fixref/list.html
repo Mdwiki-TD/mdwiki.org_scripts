@@ -9,7 +9,7 @@
     Provide one of: a title list, a category to walk, or a number of
     mainspace pages to scan.
 </p>
-<form method="post" action="{{ url_for('public_jobs.start_job', job_type=job_type) }}"
+<form method="post" action="{{ url_for('public_jobs.start_job', job_type=template_data.job_type) }}"
     class="row gy-2 gx-3 align-items-center mb-4">
     {{ csrf() }}
     <div class="mb-3">
@@ -25,8 +25,7 @@
         </div>
         <div class="col-md-5">
             <label for="number" class="form-label">Or first N mainspace pages</label>
-            <input id="number" name="number" type="number" min="1" class="form-control"
-                placeholder="e.g. 1000">
+            <input id="number" name="number" type="number" min="1" class="form-control" placeholder="e.g. 1000">
         </div>
         <div class="col-md-2 d-flex align-items-end">
             <button type="submit" class="btn btn-outline-primary w-100">Start</button>

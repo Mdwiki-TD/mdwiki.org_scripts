@@ -1,5 +1,5 @@
-from .worker import add_rtt_template_worker_entry
+from .worker import AddRttTemplateWorker
 
 __all__ = [
-    "add_rtt_template_worker_entry",
+    "AddRttTemplateWorker",
 ]

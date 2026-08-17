@@ -1,5 +1,5 @@
-from .worker import fixref_worker_entry
+from .worker import FixRefWorker
 
 __all__ = [
-    "fixref_worker_entry",
+    "FixRefWorker",
 ]

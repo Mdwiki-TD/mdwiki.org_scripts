@@ -42,13 +42,6 @@ class AddUnlinkedWikibaseWorker(BaseObjectsJobWorker):
         return self.result
 
 
-def add_unlinkedwikibase_worker_entry(data: JobsRunner) -> None:
-    """Background worker entry-point."""
-    logger.info(f"Starting job {data.job_id}: add_unlinkedwikibase")
-    worker = AddUnlinkedWikibaseWorker(data)
-    worker.run()
-
-
 __all__ = [
-    "add_unlinkedwikibase_worker_entry",
+    "AddUnlinkedWikibaseWorker",
 ]

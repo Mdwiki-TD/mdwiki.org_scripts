@@ -10,7 +10,7 @@ Concrete worker implementations for the background job system. Each subdirectory
 public_jobs_workers/
 ├── __init__.py                # Empty
 ├── add_r_column/
-│   ├── __init__.py            # Exports add_r_column_worker_entry
+│   ├── __init__.py            # Exports AddRColumnWorker
 │   ├── worker.py              # AddRColumnWorker — adds "R" column to Popular pages table
 │   ├── objects.py             # AddRColumnWorkerObject, Steps, StepDetail dataclasses
 │   └── add_rtt.py             # Table manipulation helpers (add_column, mark_rows, etc.)

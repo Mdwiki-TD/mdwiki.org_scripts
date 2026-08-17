@@ -1,5 +1,5 @@
-from .worker import newupdater_all_worker_entry
+from .worker import NewUpdaterAllWorker
 
 __all__ = [
-    "newupdater_all_worker_entry",
+    "NewUpdaterAllWorker",
 ]

@@ -140,14 +140,6 @@ class FixRedAllWorker(BaseObjectsJobWorker):
         return new_text, summary
 
 
-def fixred_all_worker_entry(data: JobsRunner) -> None:
-    """Background worker entry-point."""
-    logger.info(f"Starting job {data.job_id}: fixred_all")
-    worker = FixRedAllWorker(data)
-    worker.run()
-
-
 __all__ = [
     "FixRedAllWorker",
-    "fixred_all_worker_entry",
 ]

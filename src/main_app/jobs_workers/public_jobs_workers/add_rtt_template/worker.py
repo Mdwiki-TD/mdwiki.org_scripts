@@ -204,14 +204,6 @@ class AddRttTemplateWorker(BaseObjectsJobWorker):
         return UpdaterOutcome(kind="error", msg=result.get("error", "Unknown error"))
 
 
-def add_rtt_template_worker_entry(data: JobsRunner) -> None:
-    """Background worker entry-point."""
-    logger.info(f"Starting job {data.job_id}: add_rtt_template")
-    worker = AddRttTemplateWorker(data)
-    worker.run()
-
-
 __all__ = [
     "AddRttTemplateWorker",
-    "add_rtt_template_worker_entry",
 ]
