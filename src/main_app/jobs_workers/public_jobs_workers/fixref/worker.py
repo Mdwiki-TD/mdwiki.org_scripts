@@ -207,14 +207,6 @@ class FixRefWorker(BaseObjectsJobWorker):
         summary = summary or "Normalize references"
         return new_text, summary
 
-
-def fixref_worker_entry(data: JobsRunner) -> None:
-    """Background worker entry-point."""
-    logger.info(f"Starting job {data.job_id}: fixref")
-    worker = FixRefWorker(data)
-    worker.run()
-
-
 __all__ = [
-    "fixref_worker_entry",
+    "FixRefWorker",
 ]

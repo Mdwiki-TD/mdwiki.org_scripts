@@ -160,14 +160,6 @@ class CreateRedirectsWorker(BaseObjectsJobWorker):
 
         return counts
 
-
-def create_redirects_worker_entry(data: JobsRunner) -> None:
-    """Background worker entry-point."""
-    logger.info(f"Starting job {data.job_id}: create_redirects")
-    worker = CreateRedirectsWorker(data)
-    worker.run()
-
-
 __all__ = [
-    "create_redirects_worker_entry",
+    "CreateRedirectsWorker",
 ]

@@ -1,5 +1,5 @@
-from .worker import create_redirects_worker_entry
+from .worker import CreateRedirectsWorker
 
 __all__ = [
-    "create_redirects_worker_entry",
+    "CreateRedirectsWorker",
 ]

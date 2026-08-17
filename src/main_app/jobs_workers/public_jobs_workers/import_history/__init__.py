@@ -1,5 +1,5 @@
-from .worker import import_history_worker_entry
+from .worker import ImportHistoryWorker
 
 __all__ = [
-    "import_history_worker_entry",
+    "ImportHistoryWorker",
 ]

@@ -196,14 +196,6 @@ class FindAndReplaceWorker(BaseObjectsJobWorker):
         summary = "Replace via mdwiki.toolforge.org find-and-replace tool."
         return new_text, summary
 
-
-def find_and_replace_worker_entry(data: JobsRunner) -> None:
-    """Background worker entry-point."""
-    logger.info(f"Starting job {data.job_id}: find_and_replace")
-    worker = FindAndReplaceWorker(data)
-    worker.run()
-
-
 __all__ = [
-    "find_and_replace_worker_entry",
+    "FindAndReplaceWorker",
 ]

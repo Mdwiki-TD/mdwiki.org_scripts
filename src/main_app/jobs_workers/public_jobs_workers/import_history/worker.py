@@ -159,14 +159,6 @@ class ImportHistoryWorker(BaseObjectsJobWorker):
         # return UpdaterOutcome(kind="imported")
         return UpdaterOutcome(kind="error", msg="Unknown error")
 
-
-def import_history_worker_entry(data: JobsRunner) -> None:
-    """Background worker entry-point."""
-    logger.info(f"Starting job {data.job_id}: import_history")
-    worker = ImportHistoryWorker(data)
-    worker.run()
-
-
 __all__ = [
-    "import_history_worker_entry",
+    "ImportHistoryWorker",
 ]

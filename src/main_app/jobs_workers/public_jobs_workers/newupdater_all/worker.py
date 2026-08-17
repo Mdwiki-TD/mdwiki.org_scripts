@@ -135,15 +135,6 @@ class NewUpdaterAllWorker(BaseObjectsJobWorker):
         summary = "Med updater."
         return new_text, summary
 
-
-def newupdater_all_worker_entry(data: JobsRunner) -> None:
-    """Background worker entry-point."""
-    logger.info(f"Starting job {data.job_id}: newupdater_all")
-    worker = NewUpdaterAllWorker(data)
-    worker.run()
-
-
 __all__ = [
     "NewUpdaterAllWorker",
-    "newupdater_all_worker_entry",
 ]

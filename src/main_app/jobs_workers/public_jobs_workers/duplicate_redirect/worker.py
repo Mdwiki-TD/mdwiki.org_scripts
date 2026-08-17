@@ -194,14 +194,6 @@ class DuplicateRedirectWorker(BaseObjectsJobWorker):
 
         return new_text, summary
 
-
-def duplicate_redirect_worker_entry(data: JobsRunner) -> None:
-    """Background worker entry-point."""
-    logger.info(f"Starting job {data.job_id}: duplicate_redirect")
-    worker = DuplicateRedirectWorker(data)
-    worker.run()
-
-
 __all__ = [
-    "duplicate_redirect_worker_entry",
+    "DuplicateRedirectWorker",
 ]

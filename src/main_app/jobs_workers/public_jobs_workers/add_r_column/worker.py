@@ -241,14 +241,6 @@ class AddRColumnWorker(BaseObjectsJobWorker):
 
         return newtext
 
-
-def add_r_column_worker_entry(data: JobsRunner) -> None:
-    """Background worker entry-point."""
-    logger.info(f"Starting job {data.job_id}: add_r_column")
-    worker = AddRColumnWorker(data)
-    worker.run()
-
-
 __all__ = [
-    "add_r_column_worker_entry",
+    "AddRColumnWorker",
 ]

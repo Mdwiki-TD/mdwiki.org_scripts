@@ -1,5 +1,5 @@
-from .worker import add_unlinkedwikibase_worker_entry
+from .worker import AddUnlinkedWikibaseWorker
 
 __all__ = [
-    "add_unlinkedwikibase_worker_entry",
+    "AddUnlinkedWikibaseWorker",
 ]
