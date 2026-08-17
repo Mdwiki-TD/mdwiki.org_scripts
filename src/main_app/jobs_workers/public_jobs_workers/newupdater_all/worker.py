@@ -135,6 +135,7 @@ class NewUpdaterAllWorker(BaseObjectsJobWorker):
         summary = "Med updater."
         return new_text, summary
 
+
 __all__ = [
     "NewUpdaterAllWorker",
 ]

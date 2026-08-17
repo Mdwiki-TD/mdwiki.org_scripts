@@ -203,6 +203,7 @@ class AddRttTemplateWorker(BaseObjectsJobWorker):
 
         return UpdaterOutcome(kind="error", msg=result.get("error", "Unknown error"))
 
+
 __all__ = [
     "AddRttTemplateWorker",
 ]

@@ -160,6 +160,7 @@ class CreateRedirectsWorker(BaseObjectsJobWorker):
 
         return counts
 
+
 __all__ = [
     "CreateRedirectsWorker",
 ]

@@ -207,6 +207,7 @@ class FixRefWorker(BaseObjectsJobWorker):
         summary = summary or "Normalize references"
         return new_text, summary
 
+
 __all__ = [
     "FixRefWorker",
 ]

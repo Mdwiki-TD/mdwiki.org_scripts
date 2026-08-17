@@ -194,6 +194,7 @@ class DuplicateRedirectWorker(BaseObjectsJobWorker):
 
         return new_text, summary
 
+
 __all__ = [
     "DuplicateRedirectWorker",
 ]

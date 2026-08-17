@@ -4,8 +4,8 @@ from __future__ import annotations
 
 import logging
 import threading
-from typing import Any
 from collections.abc import Callable
+from typing import Any
 
 from flask import Flask, current_app
 

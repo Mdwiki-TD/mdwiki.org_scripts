@@ -41,6 +41,7 @@ class AddUnlinkedWikibaseWorker(BaseObjectsJobWorker):
 
         return self.result
 
+
 __all__ = [
     "AddUnlinkedWikibaseWorker",
 ]

@@ -241,6 +241,7 @@ class AddRColumnWorker(BaseObjectsJobWorker):
 
         return newtext
 
+
 __all__ = [
     "AddRColumnWorker",
 ]

@@ -159,6 +159,7 @@ class ImportHistoryWorker(BaseObjectsJobWorker):
         # return UpdaterOutcome(kind="imported")
         return UpdaterOutcome(kind="error", msg="Unknown error")
 
+
 __all__ = [
     "ImportHistoryWorker",
 ]

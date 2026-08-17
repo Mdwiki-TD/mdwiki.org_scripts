@@ -139,6 +139,7 @@ class FixRedAllWorker(BaseObjectsJobWorker):
         summary = "Fix redirects"
         return new_text, summary
 
+
 __all__ = [
     "FixRedAllWorker",
 ]
