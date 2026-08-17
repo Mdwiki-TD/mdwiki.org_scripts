@@ -10,7 +10,7 @@ class TestJobData:
         jd = JobData(
             job_type="test",
             job_name="Test Job",
-            job_callable=lambda: None,
+            job_class=lambda: None,
             job_list_template="test/list.html",
         )
         assert jd.job_type == "test"
@@ -22,7 +22,7 @@ class TestJobData:
         jd = JobData(
             job_type="test",
             job_name="Test",
-            job_callable=lambda: None,
+            job_class=lambda: None,
             job_list_template="list.html",
             job_details_template="custom/details.html",
         )
@@ -32,7 +32,7 @@ class TestJobData:
         jd = JobData(
             job_type="x",
             job_name="X",
-            job_callable=lambda: None,
+            job_class=lambda: None,
             job_list_template="x.html",
         )
         assert "shared_details" in jd.job_details_template
@@ -50,9 +50,9 @@ class TestJobsData:
         for key, val in jobs_data_public.items():
             assert val.job_type == key, f"Mismatch: key={key!r}, job_type={val.job_type!r}"
 
-    def test_all_have_callable(self):
+    def test_all_have_class(self):
         for key, val in jobs_data_public.items():
-            assert callable(val.job_callable), f"jobs_data_public[{key!r}].job_callable not callable"
+            assert callable(val.job_class), f"jobs_data_public[{key!r}].job_class not callable"
 
     def test_all_have_list_template(self):
         for key, val in jobs_data_public.items():

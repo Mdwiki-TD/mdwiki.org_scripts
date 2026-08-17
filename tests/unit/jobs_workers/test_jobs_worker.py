@@ -114,7 +114,7 @@ class TestStartJob(TestSetup):
         job_type = "test_type"
 
         mock_job_data = MagicMock()
-        mock_job_data.job_callable = MagicMock()
+        mock_job_data.job_class = MagicMock()
         mock_job_data.job_args = []  # Empty args to avoid SettingsService
         mock_jobs_data.get.return_value = mock_job_data
 
