@@ -13,7 +13,7 @@ import os
 import sys
 from typing import Any
 
-from flask_app_old.main_app.newapi import AllAPIS
+from flask_app_old.main_app.newapi import AllAPIS  # type: ignore
 
 logger = logging.getLogger(__name__)
 

@@ -5,7 +5,7 @@ import functools
 import logging
 import os
 
-from flask_app_old.main_app.newapi import AllAPIS
+from flask_app_old.main_app.newapi import AllAPIS  # type: ignore
 
 logger = logging.getLogger(__name__)
 
