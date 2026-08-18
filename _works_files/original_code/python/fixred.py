@@ -10,6 +10,7 @@ python3 core8/pwb.py md_core/mdpy/fixred
 import functools
 import logging
 import sys
+from typing import Any
 
 import wikitextparser as wtp
 from python.mdwiki_page import NewApi, md_MainPage
@@ -162,7 +163,7 @@ def find_redirects(links):
     # logger.info( "def find_redirects: find %d for normalized" % normalized_numb )
 
 
-def Get_page_links(title, namespace="0", limit="max"):
+def get_page_links(title, namespace="0", limit="max"):
     # ---
     logger.info(f' for title:"{title}", limit:"{limit}",namespace:"{namespace}"')
     # ---
@@ -214,7 +215,7 @@ def treat_page(title):
     text = page.get_text()
     # ---
     # links = page.page_links_query(plnamespace="0")
-    links = Get_page_links(title, namespace="0", limit="max")
+    links = get_page_links(title, namespace="0", limit="max")
     # ---
     normal = links.get("normalized", [])
     logger.info(f"find {len(normal)} normalized..")

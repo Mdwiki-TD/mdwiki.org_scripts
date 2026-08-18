@@ -37,7 +37,7 @@ def post_s(params) -> dict:
     return json1
 
 
-def GetPageText(title, lang="", print_text=True):
+def get_page_text(title, lang="", print_text=True):
     main_api = load_main_api()
     page = main_api.MainPage(title, "www", family="mdwiki")
     return page.get_text()

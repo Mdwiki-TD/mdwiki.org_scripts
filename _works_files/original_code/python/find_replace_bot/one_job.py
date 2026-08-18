@@ -9,6 +9,7 @@ import logging
 import os
 import sys
 from pathlib import Path
+from typing import Any
 
 import tqdm
 from python.mdwiki_page import MainPage, NewApi
