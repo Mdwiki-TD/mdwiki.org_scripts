@@ -43,7 +43,9 @@ class PublicJobsRoutes(JobsBp):
             ("/<string:job_type>/<int:job_id>/mark_as_completed", "POST", admin_required(self.mark_as_completed)),
             ("/<string:job_type>/file/<int:file_number>/<string:list_name>", "GET", self.draw_result_file),
             ("/list", "GET", self.all_jobs_list),
+            ("/<string:job_type>/file/<int:file_number>/<string:list_name>", "GET", self.draw_result_file),
         ]
+
         for rule, method, target in routes:
             self.bp.route(rule, methods=[method])(target)
 

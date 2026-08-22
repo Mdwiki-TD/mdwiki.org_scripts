@@ -59,8 +59,8 @@ class StandardAdminSummary(SharedMapToJson):
 @dataclass
 class Summary(SharedMapToJson):
     total: int = 0
-    changed: int = 0
-    errors: int = 0
+    # changed: int = 0
+    # errors: int = 0
     processed: int = 0
 
 
