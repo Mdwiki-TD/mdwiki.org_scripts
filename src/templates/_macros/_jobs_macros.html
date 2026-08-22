@@ -141,11 +141,7 @@
 </div>
 {%- endmacro -%}
 
-
-
-{# {%- from "_macros/_jobs_macros.html" import template_pages_only_title -%} #}
-
-{% macro template_pages_only_title(domain, title, data, job_id, job_type, bp_name='adminpanel.jobs') %}
+{% macro template_pages_only_title(domain, title, data) %}
 
 <div class="card mb-3">
     <div class="card-header">

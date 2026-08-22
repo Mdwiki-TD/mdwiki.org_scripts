@@ -52,7 +52,7 @@
 {% endif %}
 {% if result_data and result_data.pages_missing %}
 
-{{ template_pages_only_title(wiki_domain, 'Pages missing', result_data.pages_missing, job.id, job_type) }}
+{{ template_pages_only_title(wiki_domain, 'Pages missing', result_data.pages_missing) }}
 
 {% endif %}
 {% endblock %}
