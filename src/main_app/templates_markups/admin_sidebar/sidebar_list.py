@@ -1,15 +1,15 @@
-"""
-"""
+""" """
 
 from __future__ import annotations
 
 import functools
 
 from .objects import (
-    SidebarItem,
     SidebarGroup,
+    SidebarItem,
     dashboard_item,
 )
+
 
 @functools.lru_cache(maxsize=1)
 def load_groups_menu() -> list[SidebarGroup]:
@@ -81,6 +81,7 @@ def load_groups_menu() -> list[SidebarGroup]:
         users_group,
         settings_group,
     ]
+
 
 __all__ = [
     "load_groups_menu",

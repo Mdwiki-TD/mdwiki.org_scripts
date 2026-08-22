@@ -60,7 +60,6 @@ class Paths:
         return cls(
             log_dir=data.get("log_dir", ""),
             jobs_path=data.get("jobs_path", ""),
-
             public_jobs_path=data.get("public_jobs_path", ""),
         )
 

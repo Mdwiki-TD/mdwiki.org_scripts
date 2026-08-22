@@ -9,14 +9,15 @@
 from __future__ import annotations
 
 import logging
+
 from markupsafe import Markup, escape
 
+from .objects import (
+    SidebarGroup,
+    SidebarItem,
+)
 from .sidebar_list import load_groups_menu
 
-from .objects import (
-    SidebarItem,
-    SidebarGroup,
-)
 logger = logging.getLogger(__name__)
 
 
@@ -174,6 +175,7 @@ class Sidebar:
 
         sidebar_parts.append("</ul>")
         return "\n".join(sidebar_parts)
+
 
 def create_side(path: str, is_admin: bool = False) -> str:
     """
