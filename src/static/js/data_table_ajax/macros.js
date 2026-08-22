@@ -34,48 +34,19 @@ function renderStatus(status) {
 }
 
 /**
+ * @param {string} wiki_domain
  * @param {string} title
- * @param {any} _type
- * @param {any} _row
  * @param {string} label
  * @return {string}
  */
 
-function renderWikiLink(title, _type, _row, label) {
+function renderWikiLink(wiki_domain, title, label) {
     if (!title) return '-';
 
     let display_label = label || title;
 
-    const url = 'https://commons.wikimedia.org/wiki/File:' + encodeURIComponent(title.replace(/ /g, '_'));
+    const url = `https://${wiki_domain}/wiki/` + encodeURIComponent(title.replace(/ /g, '_'));
     return `<a href="${url}" target="_blank" rel="noopener noreferrer">${display_label}</a>`;
-}
-
-/**
- * @param {string} title
- * @param {any} _type
- * @param {any} _row
- * @param {string} label
- * @return {string}
- */
-function renderCommonsFileLink(title, _type, _row, label) {
-    if (!title) return '-';
-    const striped = title.replace('File:', '');
-
-    let display_label = label || `File:${striped}`;
-
-    const url = 'https://commons.wikimedia.org/wiki/File:' + encodeURIComponent(striped.replace(/ /g, '_'));
-    return `<a href="${url}" target="_blank" rel="noopener noreferrer">${display_label}</a>`;
-}
-/**
- * @param {string} title
- * @param {any} _type
- * @param {any} _row
- * @return {string}
- */
-function renderCommonsLink(title, _type, _row) {
-    if (!title) return '-';
-    const url = 'https://commons.wikimedia.org/wiki/' + encodeURIComponent(title.replace(/ /g, '_'));
-    return `<a href="${url}" target="_blank" rel="noopener noreferrer">${title}</a>`;
 }
 
 /**
@@ -105,4 +76,16 @@ function renderStep(step) {
         return `<span class="badge bg-secondary" title="${title}"><i class="bi bi-dash"></i></span>`;
     }
     return `<span class="text-muted" title="${title}">-</span>`;
+}
+
+/**
+ * @param {string} wiki_domain
+ * @param {number} newrevid
+ */
+function diffLink(wiki_domain, newrevid) {
+    if (newrevid && newrevid !== 0) {
+        const diffUrl = `https://${wiki_domain}/w/index.php?diff=${newrevid}`;
+        return `<a href="${diffUrl}" target="_blank"><span class="badge bg-success"><i class="bi bi-check-lg"></i> Diff</span></a>`;
+    }
+    return `<span class="text-muted">-</span>`;
 }

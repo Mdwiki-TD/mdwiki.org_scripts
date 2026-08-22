@@ -1,5 +1,4 @@
 {% extends "jobs_templates/base_details_public.html" %}
-{% from "_macros/_jobs_macros.html" import template_pages_changed, template_pages_processed, template_pages_errors, template_pages_only_title %}
 {% from 'jobs_templates/_ajax_templates/_ajax_table.html' import new_pages_table %}
 
 {% block job_summary %}
@@ -10,47 +9,64 @@
 
 {% block job_details %}
 
-{% if result_data and result_data.pages_changed1 %}
+{% if result_data and result_data.pages_changed %}
 
-{{ template_pages_changed(wiki_domain, 'Changed Pages', result_data.pages_changed, job.id, template_data.job_type) }}
+{# {{ template_pages_changed(wiki_domain, 'Changed Pages', result_data.pages_changed, job.id, template_data.job_type) }} #}
+
+{{ new_pages_table(
+    table_title="Changed Pages",
+    job_id=job.id,
+    job_type=template_data.job_type,
+    list_name="pages_changed",
+) }}
 
 {% endif %}
 
 {% if result_data and result_data.pages_processed %}
 
-{{ template_pages_processed(wiki_domain, 'Pages Processed', result_data.pages_processed, job.id, template_data.job_type) }}
+{# {{ template_pages_processed(wiki_domain, 'Pages Processed', result_data.pages_processed, job.id, template_data.job_type) }} #}
 
+{{ new_pages_table(
+    table_title="Pages Processed",
+    job_id=job.id,
+    job_type=template_data.job_type,
+    list_name="pages_processed",
+) }}
 {% endif %}
 
 {% if result_data and result_data.pages_errors %}
 
-{{ template_pages_errors(wiki_domain, 'Pages Errors', result_data.pages_errors, job.id, template_data.job_type) }}
+{# {{ template_pages_errors(wiki_domain, 'Pages Errors', result_data.pages_errors, job.id, template_data.job_type) }} #}
 
+{{ new_pages_table(
+    table_title="Pages Errors",
+    job_id=job.id,
+    job_type=template_data.job_type,
+    list_name="pages_errors",
+) }}
 {% endif %}
 
 {% if result_data and result_data.pages_skipped %}
 
-{{ template_pages_errors(wiki_domain, 'Pages skipped', result_data.pages_skipped, job.id, template_data.job_type) }}
+{# {{ template_pages_errors(wiki_domain, 'Pages skipped', result_data.pages_skipped, job.id, template_data.job_type) }} #}
 
 {{ new_pages_table(
     table_title="Pages skipped",
     job_id=job.id,
     job_type=template_data.job_type,
     list_name="pages_skipped",
-    table_headers=["#", "Title", "Status", "Message"],
 ) }}
 {% endif %}
 
 {% if result_data and result_data.pages_missing %}
 
-{{ template_pages_only_title(wiki_domain, 'Pages missing', result_data.pages_missing) }}
+{# {{ template_pages_only_title(wiki_domain, 'Pages missing', result_data.pages_missing) }} #}
 
 {{ new_pages_table(
     table_title="Pages missing",
     job_id=job.id,
     job_type=template_data.job_type,
     list_name="pages_missing",
-    table_headers=["#", "Title", "Message"],
 ) }}
 
 {% endif %}
@@ -59,10 +75,12 @@
 
 {% block extra_js %}
 <script>
+    const WIKIDOMAIN = "{{ wiki_domain }}";
     function createTableColumns(
         show_status = false,
         show_message = false,
         show_err = false,
+        show_newrevid = false,
     ) {
         return [
             {
@@ -76,30 +94,64 @@
             {
                 data: 'title',
                 title: 'Title',
-                render: renderWikiLink,
+                render: function (data, type, row) {
+                    return renderWikiLink(WIKIDOMAIN, data);
+                },
             },
             {
-                data: 'status',
+                data: null,
                 title: 'Status',
-                render: undefined,
+                orderable: false,
+                // @ts-ignore
+                render: function (row) {
+                    return renderStatus(row.status) || "";
+                },
                 visible: show_status,
             },
             {
-                data: 'msg',
+                data: null,
+                title: 'Diff',
+                orderable: false,
+                // @ts-ignore
+                render: function (row) {
+                    return diffLink(WIKIDOMAIN, row?.newrevid)
+                },
+                visible: show_newrevid,
+            },
+            {
+                data: null,
                 title: 'Message',
-                render: undefined,
+                orderable: false,
+                // @ts-ignore
+                render: function (row) {
+                    return `<code>${row.msg || ''}</code>`;
+                },
                 visible: show_message,
             },
             {
-                data: 'error',
+                data: null,
                 title: 'Error',
-                render: undefined,
-                visible: show_err
-            }
+                orderable: false,
+                // @ts-ignore
+                render: function (row) {
+                    return `<code>${row.error || ''}</code>`;
+                },
+                visible: show_err,
+            },
         ];
     }
 
     $(document).ready(function () {
+        initServerTable(
+            'table-pages_changed',
+            createTableColumns(
+                show_status = false,
+                show_message = true,
+                show_err = false,
+                show_newrevid = true,
+            ),
+        );
+
         initServerTable(
             'table-pages_missing',
             createTableColumns(
@@ -108,10 +160,29 @@
                 show_err = false,
             ),
         );
+
         initServerTable(
-            'table-pages_missing',
+            'table-pages_skipped',
             createTableColumns(
                 show_status = false,
+                show_message = true,
+                show_err = false,
+            ),
+        );
+
+        initServerTable(
+            'table-pages_errors',
+            createTableColumns(
+                show_status = false,
+                show_message = true,
+                show_err = false,
+            ),
+        );
+
+        initServerTable(
+            'table-pages_processed',
+            createTableColumns(
+                show_status = true,
                 show_message = true,
                 show_err = false,
             ),
