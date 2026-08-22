@@ -71,9 +71,10 @@ def _load_security_config() -> SecurityConfig:
     secret_key_fallbacks = tuple(key.strip() for key in secret_key_fallbacks_str.split(",") if key.strip())
 
     secret_key = os.getenv("FLASK_SECRET_KEY", "")
+    secret_salt = os.getenv("SECRET_SALT", "mdwiki")
 
     security_config = SecurityConfig(
-        salt="mdwiki",
+        salt=secret_salt,
         secret_key=secret_key,
         max_content_length=max_content_length,
         max_form_memory_size=max_form_memory_size,
@@ -167,11 +168,14 @@ def load_other_config() -> OtherConfig:
         "Translation Dashboard/1.0 (https://mdwiki.toolforge.org/; tools.mdwiki@toolforge.org)",
     )
 
+    tool_title = os.getenv("TOOL_TITLE") or "Mdwiki.org Tools (UNDER TESTING)"
+
     _config = OtherConfig(
         csrf_time_limit=csrf_time_limit,
         user_agent=user_agent,
         wiki_domain=wiki_domain,
         static_server=static_server,
+        tool_title=tool_title,
     )
 
     return _config
