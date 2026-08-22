@@ -1,6 +1,7 @@
 {% extends "jobs_templates/base_details_public.html" %}
 {% from "_macros.html" import stats_card %}
 {% from "_macros/_jobs_macros.html" import template_pages_changed, template_pages_processed, template_pages_errors, template_pages_only_title %}
+{% from 'jobs_templates/_ajax_templates/_ajax_table.html' import new_pages_table %}
 
 {% block job_summary %}
 <div class="row g-3 mb-4">
@@ -22,35 +23,85 @@
 {% block job_details %}
 
 {% if result_data and result_data.pages_imported %}
-{{ template_pages_changed(wiki_domain, 'Pages imported', result_data.pages_imported, job.id, job_type) }}
+
+{{ template_pages_changed(wiki_domain, 'Pages imported', result_data.pages_imported, job.id, template_data.job_type) }}
 {% endif %}
 
 {% if result_data and result_data.pages_imported_fallback %}
 
-{{ template_pages_changed(wiki_domain, 'Pages imported fallback', result_data.pages_imported_fallback, job.id, job_type) }}
+{{ template_pages_changed(wiki_domain, 'Pages imported fallback', result_data.pages_imported_fallback, job.id, template_data.job_type) }}
 
 {% endif %}
 
 {% if result_data and result_data.pages_processed %}
 
-{{ template_pages_processed(wiki_domain, 'Pages Processed', result_data.pages_processed, job.id, job_type) }}
+{{ template_pages_processed(wiki_domain, 'Pages Processed', result_data.pages_processed, job.id, template_data.job_type) }}
 
 {% endif %}
 
 {% if result_data and result_data.pages_errors %}
 
-{{ template_pages_errors(wiki_domain, 'Pages Errors', result_data.pages_errors, job.id, job_type) }}
+{{ template_pages_errors(wiki_domain, 'Pages Errors', result_data.pages_errors, job.id, template_data.job_type) }}
 
 {% endif %}
 
 {% if result_data and result_data.pages_skipped %}
 
-{{ template_pages_errors(wiki_domain, 'Pages skipped', result_data.pages_skipped, job.id, job_type) }}
+{{ template_pages_errors(wiki_domain, 'Pages skipped', result_data.pages_skipped, job.id, template_data.job_type) }}
 
 {% endif %}
+
 {% if result_data and result_data.pages_missing %}
 
 {{ template_pages_only_title(wiki_domain, 'Pages missing', result_data.pages_missing) }}
 
 {% endif %}
+
+{% if result_data and result_data.pages_missing %}
+
+{{ new_pages_table(
+    table_title="Skipped",
+    job_id=job.id,
+    job_type=job_type,
+    list_name="pages_missing",
+    table_headers=["#", "Title", "message"],
+) }}
+{% endif %}
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    function createMissingTableColumns(
+    ) {
+        return [
+            {
+                data: null,
+                title: "#",
+                // @ts-ignore
+                render: function (data, type, row, meta) {
+                    return meta.row + 1;
+                },
+            },
+            {
+                data: 'title',
+                title: 'Title',
+                render: renderCommonsFileLink,
+            },
+            {
+                data: 'error',
+                title: 'Error',
+                render: undefined,
+                visible: err_colmn
+            }
+        ];
+    }
+
+    $(document).ready(function () {
+        initServerTable(
+            'table-pages_missing',
+            createMissingTableColumns(),
+        );
+    });
+</script>
+
 {% endblock %}
