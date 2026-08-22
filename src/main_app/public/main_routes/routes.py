@@ -12,7 +12,7 @@ from flask import (
     render_template,
     send_from_directory,
 )
-from werkzeug.wrappers.response import Response
+from flask.wrappers import Response
 
 from ...jobs_workers.public_jobs_workers.workers_list_public import (
     jobs_data_for_all_pages,
@@ -28,8 +28,12 @@ class MainRoutes:
         self._setup_routes()
 
     def _setup_routes(self) -> None:
-        self.bp.route("/", methods=["GET"])(self.index)
-        self.bp.get("/favicon.ico")(self.favicon)
+        routes = [
+            ("/", "GET", self.index),
+            ("/favicon.ico", "GET", self.favicon),
+        ]
+        for rule, method, target in routes:
+            self.bp.route(rule, methods=[method])(target)
 
     def index(self) -> str:
         return render_template(

@@ -6,7 +6,7 @@ import logging
 from dataclasses import dataclass, field
 from typing import Any
 
-from ...base_worker import WorkerObject
+from ...base_worker import WorkerMapping
 
 logger = logging.getLogger(__name__)
 
@@ -25,7 +25,7 @@ class RedirectsSummary:
 
 
 @dataclass
-class CreateRedirectsWorkerObject(WorkerObject):
+class CreateRedirectsWorkerObject(WorkerMapping):
     summary: RedirectsSummary = field(default_factory=RedirectsSummary)
     pages_to_work: list[str] = field(default_factory=list)
     pages_processed: list[dict[str, Any]] = field(default_factory=list)

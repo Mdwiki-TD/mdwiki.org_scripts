@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from src.main_app.jobs_workers.base_worker import WorkerObject
+from src.main_app.jobs_workers.base_worker import WorkerMapping
 from src.main_app.jobs_workers.public_jobs_workers.find_and_replace.objects import (
     FindAndReplaceWorkerObject,
 )
@@ -11,7 +11,7 @@ from src.main_app.jobs_workers.public_jobs_workers.find_and_replace.objects impo
 class TestFindAndReplaceWorkerObject:
     def test_inherits_worker_object(self):
         obj = FindAndReplaceWorkerObject()
-        assert isinstance(obj, WorkerObject)
+        assert isinstance(obj, WorkerMapping)
 
     def test_default_text_fields(self):
         obj = FindAndReplaceWorkerObject()

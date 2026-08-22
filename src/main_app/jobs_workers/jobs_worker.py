@@ -45,7 +45,7 @@ def _get_jobs_cancel_event(job_id: int) -> threading.Event | None:
         return JOBS_CANCEL_EVENTS.get(job_id)
 
 
-def _load_job_args(job_args: list[dict[str, str]]) -> dict:
+def _load_job_args(job_args: list[dict[str, str]]) -> dict[str, Any]:
     if not job_args:
         return {}
 
@@ -68,7 +68,7 @@ def _runner(
     flask_app: Flask,
 ) -> None:
     """
-    args=(runner_data, target_class, resolved_flask_app),
+    args=(runner_data, target_class, flask_app),
     """
     with flask_app.app_context():
         try:
@@ -120,9 +120,9 @@ def _start_job_impl(
     flask_app: Flask | None = None,
 ) -> int:
     job_data: JobData | None = load_job_data(job_type)
-    target_class = job_data.job_class if job_data else None
+    job_class = job_data.job_class if job_data else None
 
-    if not job_data or not target_class:
+    if not job_data or not job_class:
         raise ValueError(f"Unknown job type: {job_type}")
 
     username = auth_payload.get("username") if auth_payload else None
@@ -162,7 +162,7 @@ def _start_job_impl(
     # Start background thread
     thread = threading.Thread(
         target=_runner,
-        args=(runner_data, target_class, resolved_flask_app),
+        args=(runner_data, job_class, resolved_flask_app),
         daemon=daemon,
     )
     thread.start()

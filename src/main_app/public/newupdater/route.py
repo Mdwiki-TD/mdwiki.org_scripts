@@ -6,7 +6,7 @@ import logging
 from urllib.parse import unquote
 
 from flask import Blueprint, flash, g, redirect, render_template, request, url_for
-from werkzeug.wrappers.response import Response
+from flask.wrappers import Response
 
 from ...services import newupdater_service as svc
 from ..auth.decorators import oauth_required

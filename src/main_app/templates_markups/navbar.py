@@ -14,11 +14,15 @@ Both methods return a safe Markup object (no need for the |safe filter,
 though adding it doesn't hurt).
 """
 
+import logging
 import random
 from dataclasses import dataclass, field
+from urllib.parse import quote
 
 from flask import request, url_for
 from markupsafe import Markup, escape
+
+logger = logging.getLogger(__name__)
 
 NAV_ITEM_CLASS = "nav-item col-lg-auto col-md-4 col-sm-6 col-6"
 
@@ -33,6 +37,7 @@ class NavLink:
     icon: str
     path: str
 
+    disabled: bool = False
     url_endpoint: str | None = None
     url_kwargs: dict = field(default_factory=dict)
     title: str | None = None
@@ -46,6 +51,10 @@ class NavLink:
     def get_url(self) -> str:
         if self.static_url:
             return self.static_url
+
+        if not self.url_endpoint:
+            return self.path
+
         return url_for(self.url_endpoint, **self.url_kwargs)
 
     def is_active(self) -> bool:
@@ -89,6 +98,7 @@ class NavDropdown:
     items: list[NavLink] = field(default_factory=list)
     dropdown_id: str = field(default_factory=lambda: f"navbarDarkDropdownMenuLink-{random.randint(1000, 9999)}")
     for_admin: bool = False
+    disabled: bool = False
 
     def is_active(self) -> bool:
         return any(item.is_active() for item in self.items)
@@ -99,8 +109,12 @@ class NavDropdown:
 
     def render(self) -> Markup:
         active_class = " active fw-bold" if self.is_active() else ""
+        items = [item for item in self.items if not item.disabled]
 
-        items_html = Markup("").join(self._wrap_li(item.render()) for item in self.items)
+        if not items:
+            return Markup("")
+
+        items_html = Markup("").join(self._wrap_li(item.render()) for item in items if not item.disabled)
 
         return Markup(
             '<li class="dropdown {cls}">'
@@ -141,12 +155,18 @@ class Navbar:
         parts = []
 
         for link in self.links:
+            if link.disabled:
+                continue
+
             if link.for_admin and not is_admin:
                 continue
+
             if isinstance(link, NavDropdown):
-                parts.append(link.render())
+                markup = link.render()
             else:
-                parts.append(self._wrap_li(link.render()))
+                markup = self._wrap_li(link.render())
+            if markup:
+                parts.append(markup)
 
         return Markup("").join(parts)
 
@@ -155,7 +175,8 @@ class Navbar:
         parts = []
         if current_username:
             profile_url = url_for("profile.dashboard", user_name=current_username)
-            active = bool(request and request.path == profile_url)
+            active = bool(request and quote(request.path) == profile_url)
+            logger.debug(f"render_user_links: {profile_url=} {request.path=}")
             active_class = " active" if active else ""
 
             profile_html = Markup(
