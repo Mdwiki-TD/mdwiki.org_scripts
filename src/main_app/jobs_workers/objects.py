@@ -28,8 +28,10 @@ class JobData:
     ready: bool = False
     load_settings: bool = False
     form_class: Callable | None = None
+    used_ajax_table: bool = False
 
 
 __all__ = [
+    "JobsRunner",
     "JobData",
 ]

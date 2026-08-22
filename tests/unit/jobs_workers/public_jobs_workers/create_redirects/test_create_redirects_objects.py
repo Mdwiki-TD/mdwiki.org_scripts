@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from src.main_app.jobs_workers.base_worker import WorkerObject
+from src.main_app.jobs_workers.base_worker import WorkerMapping
 from src.main_app.jobs_workers.public_jobs_workers.create_redirects.objects import (
     CreateRedirectsWorkerObject,
     RedirectsSummary,
@@ -31,7 +31,7 @@ class TestSummary:
 class TestCreateRedirectsWorkerObject:
     def test_inherits_worker_object(self):
         obj = CreateRedirectsWorkerObject()
-        assert isinstance(obj, WorkerObject)
+        assert isinstance(obj, WorkerMapping)
 
     def test_default_lists_are_empty(self):
         obj = CreateRedirectsWorkerObject()

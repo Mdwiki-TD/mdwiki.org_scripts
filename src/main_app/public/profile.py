@@ -4,7 +4,7 @@ import logging
 
 from flask import Blueprint, flash, render_template
 
-from ..database.services import JobsService
+from ..database.services import JobsService, UserJobsStats
 from ..services.auth.utils import get_current_user
 
 logger = logging.getLogger(__name__)
@@ -34,16 +34,13 @@ class ProfileRoutes:
             except Exception:  # pragma: no cover - defensive guard
                 logger.exception("Unable to load user stats.")
                 flash("Unable to load user job statistics.", "danger")
-                data = {
-                    "stats": {"total": 0, "completed": 0, "failed": 0, "cancelled": 0},
-                    "recent_jobs": [],
-                }
+                data = UserJobsStats.empty()
 
             return render_template(
                 "profile.html",
                 username=user_name,
-                stats=data["stats"],
-                recent_jobs=data["recent_jobs"],
+                stats=data.stats,
+                recent_jobs=data.recent_jobs,
             )
 
 
