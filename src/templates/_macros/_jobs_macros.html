@@ -1,69 +1,7 @@
 {% from "_macros.html" import card_header, diff_link, wiki_domain_link, status_icon %}
 
-{# Jobs Shared Jinja macros. #}
-
-{% macro th_titles_columns(title_columns) %}
-{% if title_columns %}
-{% for key, value in title_columns.items() %}
-<th>{{ value }}</th>
-{% endfor %}
-{% else %}
-<th>Title</th>
-{% endif %}
-{%- endmacro -%}
-
-{% macro td_titles_columns(domain, title_columns, item) %}
-{% for key in title_columns %}
-<td> {{ wiki_domain_link(domain, item[key]) }} </td>
-{% endfor %}
-{%- endmacro -%}
-
 {# {%- from "_macros/_jobs_macros.html" import template_pages_changed -%} #}
-
-{% macro template_pages_changed(domain, title, data, job_id, job_type, title_columns={"title": "Title"}, bp_name='adminpanel.jobs') %}
-
-<div class="card mb-3">
-    <div class="card-header">
-        {{ card_header(title ~ " (" ~ data|length ~ ")") }}
-    </div>
-    <div class="card-body">
-        <div class="table-responsive">
-            <table class="table table-striped table-sm">
-                <thead>
-                    <tr>
-                        <th>#</th>
-                        {% if title_columns %}
-                        {{ th_titles_columns(title_columns) }}
-                        {% else %}
-                        <th>Title</th>
-                        {% endif %}
-                        <th>Diff</th>
-                        <th>Message</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for item in data %}
-                    <tr>
-                        <td> {{ loop.index }} </td>
-                        {% if title_columns %}
-                        {{ td_titles_columns(domain, title_columns, item) }}
-                        {% else %}
-                        <td> {{ wiki_domain_link(domain, item.title) }} </td>
-                        {% endif %}
-                        <td> {{ diff_link(domain, item.newrevid) }} </td>
-                        <td><small>{{ item.msg }}</small></td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        </div>
-    </div>
-</div>
-{%- endmacro -%}
-
-{# {%- from "_macros/_jobs_macros.html" import template_pages_processed -%} #}
-
-{% macro template_pages_processed(
+{% macro template_pages_changed(
     domain,
     title,
     data,
@@ -71,54 +9,21 @@
     job_type,
     title_columns={"title": "Title"},
     bp_name='adminpanel.jobs',
-    show_status=True,
 ) %}
-
-<div class="card mb-3">
-    <div class="card-header">
-        {{ card_header(title ~ " (" ~ data|length ~ ")") }}
-    </div>
-    <div class="card-body">
-        <div class="table-responsive">
-            <table class="table table-striped table-sm">
-                <thead>
-                    <tr>
-                        <th>#</th>
-                        {% if title_columns %}
-                        {{ th_titles_columns(title_columns) }}
-                        {% else %}
-                        <th>Title</th>
-                        {% endif %}
-                        {% if show_status %}
-                        <th>Status</th>
-                        {% endif %}
-                        <th>Message</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for item in data %}
-                    <tr>
-                        <td> {{ loop.index }} </td>
-                        {% if title_columns %}
-                        {{ td_titles_columns(domain, title_columns, item) }}
-                        {% else %}
-                        <td> {{ wiki_domain_link(domain, item.title) }} </td>
-                        {% endif %}
-                        {% if show_status %}
-                        <td> {{ status_icon(item.status) }} </td>
-                        {% endif %}
-                        <td><small>{{ item.msg }}</small></td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        </div>
-    </div>
-</div>
+{{
+    template_pages_processed(
+    domain=domain,
+    title=title,
+    data=data,
+    job_id=job_id,
+    job_type=job_type,
+    title_columns=title_columns,
+    bp_name='adminpanel.jobs',
+    show_status=False,
+    show_diff=True
+)
+}}
 {%- endmacro -%}
-
-
-{# {%- from "_macros/_jobs_macros.html" import template_pages_errors -%} #}
 
 {% macro template_pages_errors(
     domain,
@@ -142,6 +47,73 @@
 )
 }}
 {%- endmacro -%}
+
+
+{% macro template_pages_processed(
+    domain,
+    title,
+    data,
+    job_id,
+    job_type,
+    title_columns={"title": "Title"},
+    bp_name='adminpanel.jobs',
+    show_status=False,
+    show_diff=False
+) %}
+
+<div class="card mb-3">
+    <div class="card-header">
+        {{ card_header(title ~ " (" ~ data|length ~ ")") }}
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-striped table-sm">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        {% if title_columns %}
+                        {% for key, value in title_columns.items() %}
+                        <th>{{ value }}</th>
+                        {% endfor %}
+                        {% else %}
+                        <th>Title</th>
+                        {% endif %}
+                        {% if show_status %}<th>Status</th>{% endif %}
+                        {% if show_diff %}<th>Diff</th>{% endif %}
+                        <th>Message</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in data %}
+                    <tr>
+                        <td> {{ loop.index }} </td>
+                        {% if title_columns %}
+                        {% for key in title_columns %}
+                        <td> {{ wiki_domain_link(domain, item[key]) }} </td>
+                        {% endfor %}
+                        {% else %}
+                        <td> {{ wiki_domain_link(domain, item.title) }} </td>
+                        {% endif %}
+                        {% if show_status %}
+                        <td>
+                            {{ status_icon(item.status) }}
+                        </td>
+                        {% endif %}
+                        {% if show_diff %}
+                        <td>
+                            {{ diff_link(domain, item.newrevid) }}
+                        </td>
+                        {% endif %}
+                        <td><small>{{ item.msg }}</small></td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{%- endmacro -%}
+
 
 {% macro template_pages_only_title(domain, title, data) %}
 
