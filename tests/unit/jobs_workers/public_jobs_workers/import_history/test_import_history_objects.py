@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import pytest
 
-from src.main_app.jobs_workers.base_worker import WorkerObject
+from src.main_app.jobs_workers.base_worker import WorkerMapping
 from src.main_app.jobs_workers.public_jobs_workers.import_history.objects import (
     ImportHistoryWorkerObject,
     UpdaterOutcome,
@@ -39,7 +39,7 @@ class TestUpdaterOutcome:
 class TestImportHistoryWorkerObject:
     def test_inherits_worker_object(self):
         obj = ImportHistoryWorkerObject()
-        assert isinstance(obj, WorkerObject)
+        assert isinstance(obj, WorkerMapping)
 
     def test_default_from_lang(self):
         obj = ImportHistoryWorkerObject()

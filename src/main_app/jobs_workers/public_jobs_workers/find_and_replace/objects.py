@@ -6,14 +6,14 @@ import logging
 from dataclasses import dataclass, field
 from typing import Any
 
-from ...base_worker import WorkerObject
+from ...base_worker import WorkerMapping
 from ...shared_objects import Summary
 
 logger = logging.getLogger(__name__)
 
 
 @dataclass
-class FindAndReplaceWorkerObject(WorkerObject):
+class FindAndReplaceWorkerObject(WorkerMapping):
     text_find: str = ""
     text_replace: str = ""
     stopped: bool = False

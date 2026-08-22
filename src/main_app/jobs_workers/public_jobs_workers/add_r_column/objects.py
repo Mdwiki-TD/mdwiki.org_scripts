@@ -5,7 +5,7 @@ from __future__ import annotations
 import logging
 from dataclasses import dataclass, field, fields
 
-from ...base_worker import WorkerObject
+from ...base_worker import WorkerMapping
 
 logger = logging.getLogger(__name__)
 
@@ -28,7 +28,7 @@ class Steps:
 
 
 @dataclass
-class AddRColumnWorkerObject(WorkerObject):
+class AddRColumnWorkerObject(WorkerMapping):
     steps: Steps = field(default_factory=Steps)
     new_text: str = ""
 

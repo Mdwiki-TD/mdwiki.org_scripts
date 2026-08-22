@@ -52,7 +52,7 @@
                 <div class="card-body">
                     <div class="row">
                         <div class="col-md-6">
-                            <table class="table table-striped table-sm">
+                            <table class="table table-striped table-sm table_text_left">
                                 <tr>
                                     <th>Status:</th>
                                     <td>
@@ -139,6 +139,11 @@
             <!-- Job Results -->
             {% if result_data %}
             {% block job_results %}
+
+            {% if result_data.errors %}
+            {{ job_errors_div(result_data.errors, job.username) }}
+            {% endif %}
+
             <div class="card mb-3">
                 <div class="card-header">
                     {{ card_header("Job Summary") }}
@@ -162,10 +167,6 @@
                         </div>
                     </div>
                     {% endif %}
-
-                    {% if result_data.errors %}
-                    {{ job_errors_div(result_data.errors) }}
-                    {% endif %}
                 </div>
             </div>
 
@@ -184,5 +185,4 @@
 {% if job.status | is_job_running %}
 <script src="{{ url_for('static', filename='js/auto-refresh.js') }}"></script>
 {% endif %}
-
 {% endblock %}
