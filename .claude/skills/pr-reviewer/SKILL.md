@@ -17,6 +17,15 @@ Perform a thorough code review of a GitHub pull request and **publish it directl
 
 2. Identify the repo and PR number. If the user gave a URL, parse `owner/repo` and the PR number from it. If they gave only a number, infer the repo from the current git remote (`gh repo view --json nameWithOwner`) or ask if ambiguous.
 
+3. Check whether the authenticated `gh` identity is the PR author:
+   ```bash
+   ME=$(gh api user -q .login)
+   AUTHOR=$(gh pr view <PR_NUMBER> --repo <owner/repo> --json author -q .author.login)
+   ```
+   **GitHub does not allow a user to APPROVE or REQUEST_CHANGES on their own pull request** — the API rejects it with "Cannot request changes on your own pull request" / "Can not approve your own pull request." If `ME == AUTHOR`, the verdict in Step 4 must be forced to `COMMENT` regardless of what the analysis would otherwise conclude. Tell the user this upfront (e.g. "You're the PR author, so GitHub only allows a COMMENT-type review from your own account — I'll still flag blocking issues clearly in the summary and inline comments, but the formal state will be COMMENT, not REQUEST_CHANGES.") so they aren't surprised the verdict field doesn't say "changes requested" even though blocking issues exist.
+   - Still post all inline comments and still write "🔴 Blocking" in the summary body so the severity is visible — only the formal `event` field is constrained, not the content.
+   - If a real REQUEST_CHANGES/APPROVE state is needed, the user must run this under a different account (e.g. a bot/CI account or a teammate's token) — mention this as an option if blocking issues exist.
+
 ## Step 1 — Gather context
 
 ```bash
@@ -59,11 +68,13 @@ Do not invent nitpicks to look thorough. If a PR is genuinely clean, say so — 
 
 ## Step 4 — Decide the review verdict
 
+First check the self-review constraint from the prerequisites: if `ME == AUTHOR`, skip straight to `COMMENT` — GitHub will reject anything else. Otherwise:
+
 - **REQUEST_CHANGES**: any blocking issue (correctness bug, security issue, broken tests, missing critical test coverage for risky logic).
 - **APPROVE**: no blocking issues. Minor style/nitpick comments can still be left alongside an approval.
 - **COMMENT**: you have feedback/questions but it's not clear-cut enough to block or approve outright (e.g. you need clarification from the author on intent), or the user asked only for feedback without a formal verdict.
 
-State this decision explicitly to the user before publishing, in one line, so they can stop you if they disagree.
+State this decision explicitly to the user before publishing, in one line, so they can stop you if they disagree. If the verdict was forced to COMMENT due to self-review, say so explicitly (e.g. "Verdict: COMMENT (forced — you're the PR author; underlying assessment is 🔴 blocking issues found").
 
 ## Step 5 — Publish the review to GitHub
 
@@ -134,7 +145,11 @@ After the `gh api` call succeeds, report back with:
 - Count of inline comments posted.
 - The PR URL so they can view it directly on GitHub.
 
-If the `gh api` call fails (permissions, invalid line numbers because the diff hunk context changed, etc.), show the actual error — don't silently fall back to printing the review in the console only. Diagnose (common cause: `line` doesn't fall within the diff's addressable range — GitHub only allows commenting on lines that appear in the diff hunk) and retry, or ask the user how to proceed.
+If the `gh api` call fails (permissions, invalid line numbers because the diff hunk context changed, etc.), show the actual error — don't silently fall back to printing the review in the console only. Common causes:
+- `line` doesn't fall within the diff's addressable range — GitHub only allows commenting on lines that appear in the diff hunk.
+- `"Cannot request changes on your own pull request"` / `"Can not approve your own pull request"` — this means the self-review check in the prerequisites was missed or the identity changed mid-session; re-check `ME` vs `AUTHOR` and retry with `event: "COMMENT"`.
+
+Diagnose and retry, or ask the user how to proceed.
 
 ## What NOT to do
 
@@ -143,3 +158,4 @@ If the `gh api` call fails (permissions, invalid line numbers because the diff h
 - Don't approve a PR with known blocking issues to be "nice." If there are blocking issues, the verdict is REQUEST_CHANGES regardless of tone.
 - Don't re-approve unchanged code that this reviewer identity already approved (see Step 2).
 - Don't comment on lines outside the diff (GitHub's API will reject it) — only lines actually present in the diff hunks are valid targets for `line`/`start_line`.
+- Don't attempt APPROVE or REQUEST_CHANGES when the authenticated `gh` identity is the PR author — GitHub rejects both; use COMMENT and surface severity in the text instead.
