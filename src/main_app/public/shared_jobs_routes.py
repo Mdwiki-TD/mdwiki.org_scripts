@@ -297,7 +297,7 @@ class JobsBp(ABC):
             abort(404)
 
         # return self.job_details(template_data, job_id, expand_all=True)
-        return self.shared_service.job_detail_handler(job_id, template_data, bp_name=self.bp_name, expand_all=True)
+        return self.shared_service.job_detail_handler(job_id, template_data, expand_all=True)
 
     def delete_job(self, job_type: str, job_id: int) -> Response:
         if job_type not in self.jobs_data_infos:
