@@ -122,4 +122,5 @@ class NavDropdown:
 __all__ = [
     "NavLink",
     "NavDropdown",
+    "NAV_ITEM_CLASS",
 ]

@@ -20,11 +20,9 @@ from urllib.parse import quote
 from flask import request, url_for
 from markupsafe import Markup, escape
 
-from .objects import NavDropdown, NavLink
+from .objects import NAV_ITEM_CLASS, NavDropdown, NavLink
 
 logger = logging.getLogger(__name__)
-
-NAV_ITEM_CLASS = "nav-item col-lg-auto col-md-4 col-sm-6 col-6"
 
 
 class NavigationBar:
