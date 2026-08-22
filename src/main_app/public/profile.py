@@ -5,6 +5,7 @@ import logging
 from flask import Blueprint, flash, render_template
 
 from ..database.services import JobsService, UserJobsStats
+from ..jobs_workers.public_jobs_workers.workers_list_public import jobs_data_public
 from ..services.auth.utils import get_current_user
 
 logger = logging.getLogger(__name__)
@@ -28,9 +29,19 @@ class ProfileRoutes:
                     return render_template("profile.html")
 
                 user_name = user.username
+                show_all = True
+            else:
+                show_all = bool(user and getattr(user, "is_active_admin", False))
 
             try:
-                data = self.jobs_service.get_all_user_jobs_stats(user_name)
+                if show_all:
+                    data = self.jobs_service.get_all_user_jobs_stats(user_name)
+                else:
+                    data = self.jobs_service.get_user_jobs_stats(
+                        username=user_name,
+                        jobs_types=list(jobs_data_public.keys()),
+                    )
+
             except Exception:  # pragma: no cover - defensive guard
                 logger.exception("Unable to load user stats.")
                 flash("Unable to load user job statistics.", "danger")
@@ -41,6 +52,7 @@ class ProfileRoutes:
                 username=user_name,
                 stats=data.stats,
                 recent_jobs=data.recent_jobs,
+                jobs_data_public=list(jobs_data_public.keys()),
             )
 
 

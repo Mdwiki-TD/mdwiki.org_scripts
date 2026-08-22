@@ -16,6 +16,7 @@ from ..database.services import (
     SettingsService,
 )
 from ..io.jobs_files_service import create_job_cancelled_file
+from .admin_jobs_workers.workers_list import jobs_data_admins
 from .objects import JobData, JobsRunner
 from .public_jobs_workers.workers_list_public import jobs_data_public
 
@@ -27,7 +28,7 @@ JOBS_CANCEL_EVENTS_LOCK = threading.Lock()
 
 
 def load_job_data(job_type) -> JobData | None:
-    return jobs_data_public.get(job_type)
+    return jobs_data_admins.get(job_type) or jobs_data_public.get(job_type)
 
 
 def _register_cancel_event(job_id: int, cancel_event: threading.Event) -> None:
