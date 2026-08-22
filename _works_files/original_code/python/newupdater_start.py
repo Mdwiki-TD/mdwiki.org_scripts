@@ -5,7 +5,7 @@ python3 I:/MD_TOOLS/mdwiki.toolforge.org/PYTHON_REPOS/pybot/src/newupdater.py -p
 
 import sys
 
-from mdapi import GetPageText, page_put
+from mdapi import get_page_text, page_put
 
 from src.main_app.services.new_updater import med_updater_one
 
@@ -13,7 +13,7 @@ from src.main_app.services.new_updater import med_updater_one
 def get_new_text(title):
     # ---
     # if not text:
-    text = GetPageText(title)
+    text = get_page_text(title)
     # ---
     newtext = text
     # ---

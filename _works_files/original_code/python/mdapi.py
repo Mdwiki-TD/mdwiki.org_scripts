@@ -5,7 +5,7 @@ import functools
 import logging
 import os
 
-from flask_app_old.main_app.newapi import AllAPIS
+from flask_app_old.main_app.newapi import AllAPIS  # type: ignore
 
 logger = logging.getLogger(__name__)
 
@@ -37,7 +37,7 @@ def post_s(params) -> dict:
     return json1
 
 
-def GetPageText(title, lang="", print_text=True):
+def get_page_text(title, lang="", print_text=True):
     main_api = load_main_api()
     page = main_api.MainPage(title, "www", family="mdwiki")
     return page.get_text()
