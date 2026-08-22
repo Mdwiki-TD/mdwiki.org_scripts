@@ -107,16 +107,33 @@ class TestPaths:
     def test_fields(self, tmp_path):
         _tmp_path = str(tmp_path)
         p = Paths(
-            log_dir=f"/{_tmp_path}/logs", jobs_path=f"/{_tmp_path}/jobs", public_jobs_path=f"/{_tmp_path}/public_jobs"
+            log_dir=f"/{_tmp_path}/logs",
+            jobs_path=f"/{_tmp_path}/jobs",
+            public_jobs_path=f"/{_tmp_path}/public_jobs",
         )
         assert str(p.log_dir) == f"/{_tmp_path}/logs"
 
 
 class TestSettings:
     def test_fields(self):
-        db = DbConfig(db_name="x", db_host="h", db_user=None, db_password=None)
-        paths = Paths(log_dir="/l", jobs_path="/j", public_jobs_path="/n")
-        cookie = CookieConfig(name="c", max_age=1, secure=False, httponly=False, samesite="Lax")
+        db = DbConfig(
+            db_name="x",
+            db_host="h",
+            db_user=None,
+            db_password=None,
+        )
+        paths = Paths(
+            log_dir="/l",
+            jobs_path="/j",
+            public_jobs_path="/n",
+        )
+        cookie = CookieConfig(
+            name="c",
+            max_age=1,
+            secure=False,
+            httponly=False,
+            samesite="Lax",
+        )
         sessions = SessionConfig(
             state_key="sk",
             request_token_key="rtk",
@@ -130,8 +147,16 @@ class TestSettings:
             max_form_parts=1,
             secret_key_fallbacks=(),
         )
-        other = OtherConfig(csrf_time_limit=1, user_agent="t", wiki_domain="w", static_server="s")
-        jobs = JobsConfig(jobs_max_workers=1, jobs_log_lines=1)
+        other = OtherConfig(
+            csrf_time_limit=1,
+            user_agent="t",
+            wiki_domain="w",
+            static_server="s",
+        )
+        jobs = JobsConfig(
+            jobs_max_workers=1,
+            jobs_log_lines=1,
+        )
         s = Settings(
             database_data=db,
             paths=paths,

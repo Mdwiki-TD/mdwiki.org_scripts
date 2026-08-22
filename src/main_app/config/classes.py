@@ -49,6 +49,20 @@ class Paths:
     jobs_path: str
     public_jobs_path: str
 
+    # ------------------------------------------------------------------
+    # Factory helpers
+    # ------------------------------------------------------------------
+    @classmethod
+    def from_any(cls, data: dict[str, Any] | Paths) -> Paths:
+        if isinstance(data, Paths):
+            return data
+
+        return cls(
+            log_dir=data.get("log_dir", ""),
+            jobs_path=data.get("jobs_path", ""),
+            public_jobs_path=data.get("public_jobs_path", ""),
+        )
+
 
 @dataclass(frozen=True)
 class CookieConfig:
