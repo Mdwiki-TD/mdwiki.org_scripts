@@ -1,6 +1,6 @@
 ---
 name: pr-reviewer
-description: Perform a real, published code review on a GitHub pull request using the gh CLI — not just a console summary. Use this skill whenever the user explicitly asks to review a pull request / PR on GitHub (e.g. "review this PR", "راجع هذا الـ PR", "do a code review on PR #123", "check this pull request and leave comments"). The skill fetches the PR diff and metadata, analyzes correctness, security, performance, style, and test coverage, then PUBLISHES the review directly to GitHub as inline comments plus a submitted review (APPROVE / REQUEST_CHANGES / COMMENT) via `gh api` — it does not just print findings to the console. Requires the gh CLI to be installed and authenticated (gh auth status) with a token that has repo write / pull-request write scope. Do not trigger this skill just because a PR link or number is mentioned in passing (e.g. "PR #123 depends on the other one") — only trigger on an explicit request to review, audit, or leave feedback on a PR.
+description: Perform a real, published code review on a GitHub pull request using the gh CLI — not just a console summary. Use this skill whenever the user explicitly asks to review a pull request / PR on GitHub (e.g. "review this PR", "راجع هذا الـ PR", "do a code review on PR #123", "check this pull request and leave comments"). The skill fetches the PR diff and metadata, analyzes correctness, security, performance, style, and test coverage, reviews whether the PR title is accurate/clear and matches the repo's naming convention (suggesting alternatives if not), then PUBLISHES the review directly to GitHub as inline comments plus a submitted review (APPROVE / REQUEST_CHANGES / COMMENT) via `gh api` — it does not just print findings to the console. After publishing, it offers (never assumes) to auto-fix the flagged issues by opening a separate follow-up PR targeting the original PR's branch. Requires the gh CLI to be installed and authenticated (gh auth status) with a token that has repo write / pull-request write scope. Do not trigger this skill just because a PR link or number is mentioned in passing (e.g. "PR #123 depends on the other one") — only trigger on an explicit request to review, audit, or leave feedback on a PR.
 ---
 
 # PR Reviewer (GitHub, live-publishing)
@@ -66,6 +66,19 @@ For each finding, note: exact file path, exact line number (from the diff, right
 
 Do not invent nitpicks to look thorough. If a PR is genuinely clean, say so — a short, honest review beats a padded one.
 
+## Step 3.5 — Review the PR title
+
+Evaluate the PR title (fetched in Step 1 via `title`) against these criteria:
+
+- **Accuracy**: does it actually describe what the diff does? A title like "fix bug" on a PR that adds a new feature, or a title that only mentions one of three unrelated changes, needs revision.
+- **Clarity**: is it understandable without opening the PR? Avoid vague titles ("update code", "changes", "fix stuff").
+- **Convention**: check recent merged PR titles in the repo (`gh pr list --repo <owner/repo> --state merged --limit 15 --json title`) to detect a house style (e.g. Conventional Commits like `feat:`/`fix:`/`chore:`, ticket-ID prefixes like `PROJ-123:`, imperative mood, max length). Match whatever convention the repo already uses rather than imposing an external one.
+- **Length**: flag if it's excessively long or truncated/cut off.
+
+If the title is already accurate, clear, and follows the repo's convention, say so briefly and move on — don't manufacture a suggestion for a title that's already fine.
+
+If it needs improvement, propose 2-3 concrete alternative titles (not just "consider making this clearer") that follow the detected convention, and include this as its own subsection in the summary body (see updated format below). Do not rename the PR yourself — title changes go in the review as a suggestion for the author to apply, the same way inline code suggestions aren't auto-applied.
+
 ## Step 4 — Decide the review verdict
 
 First check the self-review constraint from the prerequisites: if `ME == AUTHOR`, skip straight to `COMMENT` — GitHub will reject anything else. Otherwise:
@@ -128,6 +141,11 @@ Keep the top-level `body` concise — it's a summary, not a repeat of every inli
 
 **Verdict:** <Approve ✅ / Changes requested 🔴 / Comment 💬>
 
+### Title
+<Either: "Title is clear and accurate — no changes needed." OR flag the issue + suggested alternatives:>
+- Current: `<existing title>`
+- Suggested: `<alt 1>` / `<alt 2>` / `<alt 3>`
+
 ### Highlights
 - <what's good, briefly>
 
@@ -151,6 +169,65 @@ If the `gh api` call fails (permissions, invalid line numbers because the diff h
 
 Diagnose and retry, or ask the user how to proceed.
 
+## Step 7 — Offer to auto-fix (optional, only after publishing)
+
+After Step 6's confirmation, if the review found any 🔴 blocking or 🟡 suggestion-level issues (i.e. there's actually something to fix), ask the user — do not do this unprompted and do not assume yes:
+
+> "Want me to apply fixes for the issues found? I'll create a new branch and open a separate PR with the fixes rather than pushing directly to this PR's branch."
+
+Wait for explicit confirmation (e.g. "yes", "تمام", "go ahead") before touching any code. If the user declines or doesn't respond affirmatively, stop here — the published review is the deliverable.
+
+**Never push fixes directly to the original PR's branch**, even if technically possible (you may not own that branch, and silently rewriting someone else's PR is surprising and can conflict with work in progress). Always work through a new branch and a new PR that the original author can review and merge into their branch, or that maintainers can merge separately.
+
+### 7a — Set up the fix branch
+
+```bash
+gh pr checkout <PR_NUMBER> --repo <owner/repo>
+git checkout -b fix/pr-<PR_NUMBER>-review-fixes
+```
+
+If checkout fails because the PR branch is on a fork you can't push to directly, tell the user and ask whether they want the fixes as a patch/diff instead of a live branch — don't silently give up.
+
+### 7b — Apply fixes
+
+Go through the findings from Step 3 (and the title from Step 3.5, only if the user's "yes" clearly covered the title too — ask separately if unclear) one by one:
+
+- Only fix issues you already flagged in the published review — don't use this step to introduce new, previously-unmentioned changes; that erodes trust in what the review said it would do.
+- For each fix, make the minimal correct change — don't refactor unrelated code while you're in there.
+- If a flagged issue is a judgment call you're not fully confident about (e.g. "consider adding a test for X" where the right test design is ambiguous), implement your best attempt but flag it clearly in the new PR's description as needing author input, rather than silently guessing.
+- If applying a fix would require information you don't have (business logic intent, which of several valid approaches the team prefers), skip it and list it explicitly as "not auto-fixed — needs author input" rather than guessing at intent.
+- Run the project's existing tests/lints if available (check for `package.json` scripts, `Makefile`, `tox.ini`, etc.) after applying fixes, and mention the results — don't claim fixes are verified if you didn't actually run anything.
+
+### 7c — Commit, push, and open the new PR
+
+```bash
+git add -A
+git commit -m "fix: address review feedback from PR #<PR_NUMBER>"
+git push -u origin fix/pr-<PR_NUMBER>-review-fixes
+
+gh pr create \
+  --repo <owner/repo> \
+  --base <original PR's head branch, NOT the base branch — this PR should target the original PR's branch so it merges into it> \
+  --title "Fix review feedback for #<PR_NUMBER>" \
+  --body "$(cat <<'EOF'
+Addresses feedback from the review on #<PR_NUMBER>.
+
+### Fixed
+- <issue 1 — brief description, referencing the file/line>
+- <issue 2>
+
+### Not auto-fixed (needs author input)
+- <anything skipped and why>
+EOF
+)"
+```
+
+Note the `--base` here is deliberately the **original PR's branch**, not `main`/`master` — this new PR is meant to feed into the PR being reviewed, so the author can merge it into their own branch and pick up the fixes, rather than fixes landing independently.
+
+### 7d — Report back
+
+Give the user the new PR's URL, a short list of what was fixed vs. skipped, and the test/lint run results from 7b. If nothing meaningful ended up fixed (e.g. everything required author input), say so plainly instead of opening an empty PR.
+
 ## What NOT to do
 
 - Don't just print the review as markdown in the chat and call it done — the review must be posted via `gh api`/`gh pr review` and visible on GitHub.
@@ -159,3 +236,6 @@ Diagnose and retry, or ask the user how to proceed.
 - Don't re-approve unchanged code that this reviewer identity already approved (see Step 2).
 - Don't comment on lines outside the diff (GitHub's API will reject it) — only lines actually present in the diff hunks are valid targets for `line`/`start_line`.
 - Don't attempt APPROVE or REQUEST_CHANGES when the authenticated `gh` identity is the PR author — GitHub rejects both; use COMMENT and surface severity in the text instead.
+- Don't apply fixes without an explicit "yes" from the user after the review is published — Step 7 is opt-in, never automatic.
+- Don't push fixes directly to the original PR's branch — always use a new branch/PR targeting the original PR's branch.
+- Don't fix issues that weren't part of the published review, and don't silently guess at ambiguous intent — list those as needing author input instead.
