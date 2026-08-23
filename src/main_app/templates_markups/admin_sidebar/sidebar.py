@@ -8,58 +8,14 @@
 
 from __future__ import annotations
 
-import functools
 import logging
-from dataclasses import dataclass, field
 
-from flask import has_request_context, url_for
 from markupsafe import Markup, escape
-from werkzeug.routing import BuildError
+
+from .objects import SidebarGroup, SidebarItem
+from .sidebar_list import load_groups_menu
 
 logger = logging.getLogger(__name__)
-
-
-@dataclass
-class SidebarItem:
-    """Sidebar menu item definition.
-
-    The URL is resolved lazily via `resolve_href()`, at render time, rather
-    than when the menu is built. This keeps `load_groups_menu()` free of any
-    Flask request/app-context dependency, which in turn makes it safe to
-    cache with `functools.lru_cache`.
-    """
-
-    id: str
-    title: str
-    icon: str | None = None
-    endpoint: str | None = None
-    endpoint_kwargs: dict = field(default_factory=dict)
-    fallback_href: str = "#"
-    link_target: str | None = None
-    disabled: bool = False
-    requires_admin: bool = True
-
-    def resolve_href(self) -> str:
-        """Resolve this item's URL. Falls back to a static path when there's
-        no active request context, or when `url_for` fails to build the URL
-        (e.g. the endpoint doesn't exist / its blueprint isn't registered).
-        """
-        if self.endpoint and has_request_context():
-            try:
-                return url_for(self.endpoint, **self.endpoint_kwargs)
-            except BuildError:
-                logger.warning("Could not build URL for endpoint '%s', using fallback href", self.endpoint)
-        return self.fallback_href
-
-
-@dataclass
-class SidebarGroup:
-    """Sidebar group item definition."""
-
-    id: str
-    title: str
-    icon: str
-    items: list[SidebarItem]
 
 
 def generate_list_item(item: SidebarItem) -> Markup:
@@ -216,100 +172,6 @@ class Sidebar:
 
         sidebar_parts.append("</ul>")
         return "\n".join(sidebar_parts)
-
-
-# ---------------------------------------------------------------------------
-# Menu item builders — small factories to avoid repeating the same
-# endpoint/fallback wiring for every dashboard or job-list link.
-# ---------------------------------------------------------------------------
-def dashboard_item(id_: str, title: str, icon: str, endpoint: str, fallback_href: str) -> SidebarItem:
-    """Build a SidebarItem pointing at a regular admin-panel dashboard endpoint."""
-    return SidebarItem(id=id_, title=title, icon=icon, endpoint=endpoint, fallback_href=fallback_href)
-
-
-def job_item(job_type: str, title: str, icon: str, *, disabled: bool = False) -> SidebarItem:
-    """Build a SidebarItem pointing at the job-list page for the given job type."""
-    return SidebarItem(
-        id=job_type,
-        title=title,
-        icon=icon,
-        endpoint="adminpanel.jobs.jobs_list",
-        endpoint_kwargs={"job_type": job_type},
-        fallback_href=f"/adminpanel/jobs/{job_type}",
-        disabled=disabled,
-    )
-
-
-@functools.lru_cache(maxsize=1)
-def load_groups_menu() -> list[SidebarGroup]:
-    """Build the static sidebar menu structure.
-
-    No Flask request/app context is touched here — URLs are resolved lazily
-    by `SidebarItem.resolve_href()` at render time — so this result is safe
-    to cache for the lifetime of the process.
-    """
-    main_group = SidebarGroup(
-        id="main",
-        title="Main",
-        icon="bi-file-text",
-        items=[],
-    )
-
-    users_group = SidebarGroup(
-        id="users",
-        title="Users",
-        icon="bi-person",
-        items=[
-            dashboard_item(
-                "admins",
-                "Coordinators",
-                "bi-person-gear",
-                "adminpanel.coordinators.dashboard",
-                "/adminpanel/coordinators/",
-            ),
-            dashboard_item(
-                "users",
-                "Users",
-                "bi-person",
-                "adminpanel.users.dashboard",
-                "/adminpanel/users/",
-            ),
-        ],
-    )
-    settings_group = SidebarGroup(
-        id="settings",
-        title="Settings",
-        icon="bi-sliders",
-        items=[
-            dashboard_item(
-                "settings",
-                "Settings",
-                "bi-gear",
-                "adminpanel.settings.dashboard",
-                "/adminpanel/settings/",
-            ),
-            dashboard_item(
-                "errors",
-                "App Errors",
-                "bi-exclamation-triangle",
-                "adminpanel.errors.dashboard",
-                "/adminpanel/errors/",
-            ),
-            SidebarItem(
-                id="db_admin",
-                requires_admin=1,
-                fallback_href="/adminpanel/db_admin",
-                title="DB admin",
-                icon="bi-database",
-            ),
-        ],
-    )
-
-    return [
-        main_group,
-        users_group,
-        settings_group,
-    ]
 
 
 def create_side(path: str, is_admin: bool = False) -> str:
