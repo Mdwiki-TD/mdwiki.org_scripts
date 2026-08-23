@@ -3,31 +3,19 @@
 from __future__ import annotations
 
 import logging
-from dataclasses import dataclass, field
-from typing import Any
+from dataclasses import dataclass
 
-from ...base_worker import WorkerMapping
-from ...shared_objects import Summary
+from ...shared_objects import SharedworkerObject
 
 logger = logging.getLogger(__name__)
 
 
 @dataclass
-class FindAndReplaceWorkerObject(WorkerMapping):
+class FindAndReplaceWorkerObject(SharedworkerObject):
     text_find: str = ""
     text_replace: str = ""
     stopped: bool = False
     cap: int | None = None
-
-    summary: Summary = field(default_factory=Summary)
-
-    pages_processed: list[dict[str, Any]] = field(default_factory=list)
-
-    pages_changed: list[dict[str, Any]] = field(default_factory=list)
-    pages_errors: list[dict[str, Any]] = field(default_factory=list)
-    pages_skipped: list[dict[str, Any]] = field(default_factory=list)
-
-    pages_missing: list[str] = field(default_factory=list)
 
 
 __all__ = [

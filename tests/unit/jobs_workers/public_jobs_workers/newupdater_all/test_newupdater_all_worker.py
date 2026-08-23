@@ -31,7 +31,7 @@ class TestNewUpdaterAllWorker:
                 return_value="final_text",
             ) as mock_add,
         ):
-            new_text, summary = worker.make_new_text("Title", "original_text")
+            new_text, summary = worker._make_new_text("Title", "original_text")
             assert new_text == "final_text"
             assert summary == "Med updater."
             mock_med.assert_called_once_with("Title", "original_text")
@@ -70,5 +70,5 @@ class TestNewUpdaterAllWorker:
             result = worker.process()
             assert result.summary.total == 1
             assert len(result.pages_changed) == 1
-            assert result.pages_changed[0]["title"] == "Page1"
-            assert result.pages_changed[0]["newrevid"] == "123"
+            assert result.pages_changed[0].title == "Page1"
+            assert result.pages_changed[0].newrevid == 123

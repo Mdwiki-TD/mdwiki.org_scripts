@@ -33,7 +33,6 @@ def get_redirects_for(title: str, *, timeout: int = 10) -> list[str]:
     Returns:
         List of redirect titles (namespace 0 only).
     """
-    session = _enwiki_session()
     params = {
         "action": "query",
         "format": "json",
@@ -43,9 +42,15 @@ def get_redirects_for(title: str, *, timeout: int = 10) -> list[str]:
         "rdprop": "title",
         "rdlimit": "max",
     }
-    response = session.post("https://en.wikipedia.org/w/api.php", data=params, timeout=timeout)
-    response.raise_for_status()
-    payload = response.json() or {}
+    try:
+        session = _enwiki_session()
+        response = session.post("https://en.wikipedia.org/w/api.php", data=params, timeout=timeout)
+        response.raise_for_status()
+        payload = response.json() or {}
+    except Exception as e:
+        logger.error("Error fetching redirects for %s: %s", title, e)
+        return []
+
     pages = (payload.get("query") or {}).get("pages") or {}
 
     out: list[str] = []
@@ -53,8 +58,13 @@ def get_redirects_for(title: str, *, timeout: int = 10) -> list[str]:
     for page in pages.values():
         for r in page.get("redirects", []) or []:
             # if page.get("title") != title: continue
-            if r.get("ns") != 0:
+            if "ns" not in r:
                 continue
+
+            ns = r["ns"]
+            if ns != 0:
+                continue
+
             redirect_title = r.get("title", "")
             if redirect_title and redirect_title not in out:
                 out.append(redirect_title)

@@ -38,20 +38,20 @@
 			</form>
 			{% endif %}
 			{% if outcome %}
-			{% if outcome.kind == "changes" %}
+			{% if outcome.status == "changes" %}
 			<h5>Proposed changes for <code>{{ form_title }}</code></h5>
 			{{ edit_form(wiki_domain, form_title, outcome.new_text) }}
 
-			{% elif outcome.kind == "skipped" %}
+			{% elif outcome.status == "skipped" %}
 			<div class="alert alert-info">
 				<code>{{ form_title }}</code>: page skipped, reason: {{ outcome.msg }}
 			</div>
-			{% elif outcome.kind == "notext" %}
+			{% elif outcome.status == "notext" %}
 			<div class="alert alert-warning">
 				<code>{{ form_title }}</code>: the page is empty, missing, or the
 				rewriter produced empty output.
 			</div>
-			{% elif outcome.kind == "saved" %}
+			{% elif outcome.status == "saved" %}
 			{{ saved_alert(wiki_domain, form_title, outcome.newrevid) }}
 			{% endif %}
 			{% endif %}

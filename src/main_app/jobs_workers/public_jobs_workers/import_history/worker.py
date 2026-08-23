@@ -14,7 +14,7 @@ from mwclient.client import Site
 from ....api_services import MwClientPage
 from ....api_services.query_api import import_page_from_wiki
 from ...base_worker import BaseObjectsJobWorker, JobsRunner
-from .objects import ImportHistoryWorkerObject, UpdaterOutcome
+from .objects import ImportHistoryWorkerObject, ImportUpdaterOutcome
 
 logger = logging.getLogger(__name__)
 
@@ -60,19 +60,13 @@ class ImportHistoryWorker(BaseObjectsJobWorker):
             if self.is_cancelled():
                 break
 
-            self.result.summary.processed += 1
+            info = ImportUpdaterOutcome(title=title)
+            self._process_one(info)
 
-            try:
-                outcome = self._process_one(title)
-            except Exception as exc:
-                logger.exception("job failed for %s", title)
-                self.result.pages_errors.append({"title": title, "msg": str(exc)})
-                continue
-
-            self.record_page_outcome(outcome, title)
+            self.update_status(info)
 
             # Check DB if the job cancelled every N successful edits
-            if outcome.kind in ("imported", "imported_fallback") and self.check_cancel_db_periodic():
+            if info.status in ("imported", "imported_fallback") and self.check_cancel_db_periodic():
                 break
 
             if i == 1 or i % per_item == 0:
@@ -83,81 +77,109 @@ class ImportHistoryWorker(BaseObjectsJobWorker):
 
         return self.result
 
-    def record_page_outcome(self, outcome: UpdaterOutcome, title: str) -> None:
-        page_record = {
-            "title": title,
-            "msg": outcome.msg,
-        }
-        if outcome.kind == "imported":
-            page_record["newrevid"] = str(outcome.newrevid)
-            self.result.pages_imported.append(page_record)
-
-        elif outcome.kind == "imported_fallback":
-            page_record["newrevid"] = str(outcome.newrevid)
-            self.result.pages_imported_fallback.append(page_record)
-
-        elif outcome.kind == "missing":
-            self.result.pages_missing.append(title)
-
-        elif outcome.kind == "error":
-            self.result.pages_errors.append(page_record)
-
-        else:
-            page_record["status"] = outcome.kind
-            self.result.pages_processed.append(page_record)
-
     # ------------------------------------------------------------------
     # Internal helpers
     # ------------------------------------------------------------------
 
-    def _process_one(self, title: str) -> UpdaterOutcome:
+    def _process_one(self, info: ImportUpdaterOutcome) -> ImportUpdaterOutcome:
+        title = info.title
+
         page = MwClientPage(title, self.site)
         if not page.exists():
             logger.info(f"Job {self.job_id}: {title!r}: missing!")
-            return UpdaterOutcome(kind="missing")
+            info.status = "missing"
+            return info
 
         text = page.get_text()
         if not text or not text.strip():
-            return UpdaterOutcome(kind="skipped", msg="Page is empty")
+            info.status = "skipped"
+            info.msg = "Page is empty"
+            return info
 
         result = import_page_from_wiki(self.site, title, family="wikipedia")
         if result.get("error"):
             logger.warning(f"Job {self.job_id}: import_page failed for {title}: {result['error']}")
-            return UpdaterOutcome(kind="error", msg=result["error"])
+            info.status = "failed"
+            info.msg = result["error"]
+            return info
 
-        revisions = (result.get("import") or [{}])[0].get("revisions", 0)
+        import_result = result.get("import")
+        if not import_result or not isinstance(import_result, list):
+            logger.warning(f"Job {self.job_id}: import_page returned invalid result for {title}: {result}")
+            info.status = "failed"
+            info.msg = "Invalid import result"
+            return info
+
+        revisions = import_result[0].get("revisions", 0)
+
         if not revisions:
             logger.info(f"Job {self.job_id}: {title!r}: import returned 0 revisions")
-            return UpdaterOutcome(kind="error", msg="Import returned 0 revisions")
+            info.status = "failed"
+            info.msg = "Import returned 0 revisions"
+            return info
 
         logger.info(f"Job {self.job_id}: {title!r}: imported {revisions} revision(s)")
 
         # Re-save the original body so the page content matches what the operator
         # saw before the import.
-        if text is not None:
+        try:
             saved = page.edit(text, "")
-            if saved.get("success"):
-                return UpdaterOutcome(kind="imported", newrevid=saved.get("newrevid", 0))
+        except Exception as e:
+            logger.warning(f"Job {self.job_id}: {title!r}: failed to save original body: {e}")
+            info.status = "failed"
+            info.msg = f"Failed to save original body: {e}"
+            return info
 
-            assert self.site is not None
-            username = self.site.username or "Mr._Ibrahem"
-            fallback_title = f"User:{username}/{title}"
-            logger.info(f"Job {self.job_id}: {title!r}: top-level save failed; writing to {fallback_title!r}")
+        if saved.get("success"):
+            info.status = "imported"
+            info.newrevid = saved.get("newrevid", 0)
+            return info
 
-            fallback_result = MwClientPage(fallback_title, self.site).edit(
-                text,
-                "Returns the article text after importing the history",
-            )
+        # assert self.site is not None
 
-            if fallback_result.get("success"):
-                return UpdaterOutcome(kind="imported_fallback", newrevid=fallback_result.get("newrevid", 0))
+        username = "Mr._Ibrahem"
+        if self.site and self.site.username:
+            username = self.site.username
 
-            logger.warning(f"Job {self.job_id}: fallback save failed too for {fallback_title}")
+        fallback_title = f"User:{username}/{title}"
+        logger.info(f"Job {self.job_id}: {title!r}: top-level save failed; writing to {fallback_title!r}")
 
-            return UpdaterOutcome(kind="error", msg=fallback_result.get("error", "Unknown error"))
+        fallback_page = MwClientPage(fallback_title, self.site)
 
-        # return UpdaterOutcome(kind="imported")
-        return UpdaterOutcome(kind="error", msg="Unknown error")
+        fallback_result = fallback_page.edit(
+            text=text,
+            summary="Returns the article text after importing the history",
+        )
+
+        if fallback_result.get("success"):
+            info.status = "imported_fallback"
+            info.newrevid = fallback_result.get("newrevid", 0)
+            return info
+
+        logger.warning(f"Job {self.job_id}: fallback save failed too for {fallback_title}")
+
+        info.status = "failed"
+        info.msg = fallback_result.get("error", "Unknown error")
+        return info
+
+    def update_status(self, info: ImportUpdaterOutcome) -> None:
+        self.result.summary.processed += 1
+        if info.status in ["pending", "running"]:
+            info.status = "completed"
+
+        if info.status == "imported":
+            self.result.pages_imported.append(info)
+
+        elif info.status == "imported_fallback":
+            self.result.pages_imported_fallback.append(info)
+
+        elif info.status == "missing":
+            self.result.pages_missing.append(info)
+
+        elif info.status == "failed":
+            self.result.pages_errors.append(info)
+        else:
+            self.result.pages_processed.append(info)
 
 
 __all__ = [

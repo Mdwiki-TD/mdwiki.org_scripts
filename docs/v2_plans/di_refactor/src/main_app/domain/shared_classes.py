@@ -6,15 +6,17 @@ from dataclasses import asdict, dataclass
 from typing import Any, Literal
 
 
-@dataclass(frozen=True)
+@dataclass
 class UpdaterTextOutcome:
     """Result of running a single-page content transform."""
 
-    kind: Literal["notext", "skipped", "changes", "saved"]
+    status: Literal["notext", "skipped", "changes", "saved"]
     old_text: str = ""
     new_text: str = ""
-    newrevid: int = 0
+
+    title: str = ""
     msg: str = ""
+    newrevid: int = 0
 
     def to_json(self) -> dict[str, Any]:
         return asdict(self)

@@ -103,7 +103,7 @@ Normalizes cite-template formatting. Accepts three input modes: explicit titles,
 
 #### import_history
 
-Imports revision history from English Wikipedia to mdwiki using `action=import`. For each title: checks existence → imports history → re-saves original text to preserve content. Falls back to saving at `User:{username}/{title}` if the main save fails. Defines its own `UpdaterOutcome` with different `kind` values (`"imported"`, `"imported_fallback"`) instead of extending the shared one.
+Imports revision history from English Wikipedia to mdwiki using `action=import`. For each title: checks existence → imports history → re-saves original text to preserve content. Falls back to saving at `User:{username}/{title}` if the main save fails. Defines its own `UpdaterOutcome` with different `status` values (`"imported"`, `"imported_fallback"`) instead of extending the shared one.
 
 ### API Interaction Patterns
 
@@ -119,7 +119,7 @@ Consistent pattern across workers:
 ```python
 try:
     result = self._process_one(title)
-    # route to appropriate list based on result.kind
+    # route to appropriate list based on result.status
 except Exception as e:
     logger.exception(f"Error processing {title}")
     self.result.pages_errors.append({"title": title, "error": str(e)})
@@ -148,7 +148,7 @@ pytest tests/unit/jobs/workers --cov=src/main_app/jobs/workers
 ## Weaknesses
 
 -   **`add_unlinkedwikibase` is unimplemented** — dead code registered in `workers_list.py`
--   **Duplicate `UpdaterOutcome`** — `import_history/objects.py` defines its own with different `kind` values instead of extending the shared one
+-   **Duplicate `UpdaterOutcome`** — `import_history/objects.py` defines its own with different `status` values instead of extending the shared one
 -   **Inconsistent `Summary` definitions** — `create_redirects` defines a custom `Summary` with extra fields; others import from `shared_objects`
 -   **Hardcoded page title** — `add_r_column` hardcodes `WikiProjectMed:WikiProject Medicine/Popular pages` (not configurable via args)
 -   **`tqdm` in background thread** — `add_rtt.py` uses `tqdm` progress bar (output goes to stderr, invisible to users)
@@ -163,10 +163,10 @@ pytest tests/unit/jobs/workers --cov=src/main_app/jobs/workers
 
 ```python
 # shared_objects.py:18
-kind: Literal["missing", "skipped", "changed", "error"]
+status: Literal["missing", "skipped", "changed", "failed"]
 ```
 
-Multiple workers handle `"skipped"` outcomes via `record_page_outcome()`, but the shared `UpdaterOutcome` type doesn't include it. The type annotation is inaccurate.
+Multiple workers handle `"skipped"` outcomes via `update_status()`, but the shared `UpdaterOutcome` type doesn't include it. The type annotation is inaccurate.
 
 ### 2. `WorkerObject` Not in `__all__`
 
@@ -189,8 +189,8 @@ Session is shared across all job invocations in the same process. Fine for threa
 ## Areas That Need Attention
 
 -   [ ] Implement `add_unlinkedwikibase` or remove from registry
--   [ ] Unify `UpdaterOutcome` definitions — extend shared version to support all worker-specific `kind` values
--   [ ] Add `"skipped"` to shared `UpdaterOutcome.kind` Literal
+-   [ ] Unify `UpdaterOutcome` definitions — extend shared version to support all worker-specific `status` values
+-   [ ] Add `"skipped"` to shared `UpdaterOutcome.status` Literal
 -   [ ] Add retry logic for transient API failures
 -   [ ] Add unit tests for all workers
 -   [ ] Remove `tqdm` dependency from `add_rtt.py`
@@ -201,7 +201,7 @@ Session is shared across all job invocations in the same process. Fine for threa
 
 ### Quick Wins
 
-1. Add `"skipped"` to shared `UpdaterOutcome.kind` Literal type
+1. Add `"skipped"` to shared `UpdaterOutcome.status` Literal type
 2. Export `WorkerObject` in `base_worker_object.py` `__all__`
 3. Remove or no-op the `tqdm` import in `add_rtt.py`
 4. Mark `add_unlinkedwikibase` as inactive in the UI or implement basic logic

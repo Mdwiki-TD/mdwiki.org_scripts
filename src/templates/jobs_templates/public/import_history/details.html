@@ -23,8 +23,6 @@
 
 {% if result_data and result_data.pages_imported %}
 
-{# {{ template_pages_changed(wiki_domain, 'Pages imported', result_data.pages_imported, job.id, template_data.job_type) }} #}
-
 {{ new_pages_table(
     table_title="Pages imported",
     job_id=job.id,
@@ -34,8 +32,6 @@
 {% endif %}
 
 {% if result_data and result_data.pages_imported_fallback %}
-
-{# {{ template_pages_changed(wiki_domain, 'Pages imported fallback', result_data.pages_imported_fallback, job.id, template_data.job_type) }} #}
 
 {{ new_pages_table(
     table_title="Pages imported fallback",

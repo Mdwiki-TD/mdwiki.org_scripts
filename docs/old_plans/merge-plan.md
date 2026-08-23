@@ -46,8 +46,8 @@ scripts (`python/*.py`) with **first-class Flask blueprints** under
 
 ## 2. Tooling Inventory
 
-| URL                | PHP source               | Python source              | Flask blueprint             | Auth       | Long-running?  |
-| ------------------ | ------------------------ | -------------------------- | --------------------------- | ---------- | -------------- |
+| URL                | PHP source               | Python source              | Flask blueprint         | Auth       | Long-running?  |
+| ------------------ | ------------------------ | -------------------------- | ----------------------- | ---------- | -------------- |
 | `/dup/`            | `php/dup.php`            | `python/fix_duplicate.py`  | `public/dup`            | logged-in  | yes (job)      |
 | `/fixred/`         | `php/fixred.php`         | `python/fixred.py`         | `public/fixred`         | logged-in  | yes (per page) |
 | `/fixref/`         | `php/fixref.php`         | `python/fixref/start.py`   | `public/fixref`         | logged-in  | yes (job)      |
@@ -248,7 +248,7 @@ save: bool = True, on_progress=None) -> JobResult`. Per title:
 -   **Auth:** `@login_required`.
 -   **Behaviour:** **synchronous** (legacy is fast; no toolforge job).
 -   **Service:** `services.newupdater.work_on_title(title) ->
-UpdaterOutcome(kind, old_text, new_text)` where `kind ∈ {notext, no_changes,
+UpdaterOutcome(status, old_text, new_text)` where `status ∈ {notext, no_changes,
 changes}`. Plus `services.newupdater.save_page(title, new_text) -> bool`.
 -   **Flow:**
     1. GET with no `title` → render form.

@@ -15,8 +15,6 @@
 } %}
 {% if result_data and result_data.pages_changed %}
 
-{# {{ template_pages_changed(wiki_domain, 'Changed Pages', result_data.pages_changed, job.id, template_data.job_type) }} #}
-
 {{ new_pages_table(
     table_title="Changed Pages",
     job_id=job.id,
@@ -27,8 +25,6 @@
 {% endif %}
 
 {% if result_data and result_data.pages_processed %}
-
-{# {{ template_pages_processed(wiki_domain, 'Pages Processed', result_data.pages_processed, job.id, template_data.job_type) }} #}
 
 {{ new_pages_table(
     table_title="Pages Processed",
@@ -41,8 +37,6 @@
 
 {% if result_data and result_data.pages_errors %}
 
-{# {{ template_pages_errors(wiki_domain, 'Pages Errors', result_data.pages_errors, job.id, template_data.job_type) }} #}
-
 {{ new_pages_table(
     table_title="Pages Errors",
     job_id=job.id,
@@ -52,8 +46,6 @@
 {% endif %}
 
 {% if result_data and result_data.pages_skipped %}
-
-{# {{ template_pages_errors(wiki_domain, 'Pages skipped', result_data.pages_skipped, job.id, template_data.job_type) }} #}
 
 {{ new_pages_table(
     table_title="Pages skipped",
@@ -65,8 +57,6 @@
 {% endif %}
 
 {% if result_data and result_data.pages_missing %}
-
-{# {{ template_pages_only_title(wiki_domain, 'Pages missing', result_data.pages_missing) }} #}
 
 {{ new_pages_table(
     table_title="Pages missing",

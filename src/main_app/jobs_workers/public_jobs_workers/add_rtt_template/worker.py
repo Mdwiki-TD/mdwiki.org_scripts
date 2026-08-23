@@ -121,18 +121,12 @@ class AddRttTemplateWorker(BaseObjectsJobWorker):
             if self.is_cancelled():
                 break
 
-            self.result.summary.processed += 1
+            info = UpdaterOutcome(title=title)
+            self._process_one(info)
 
-            try:
-                outcome = self._process_one(title)
-            except Exception as exc:
-                logger.exception("job failed for %s", title)
-                self.result.pages_errors.append({"title": title, "msg": str(exc)})
-                continue
+            self.update_status(info)
 
-            self.record_page_outcome(outcome, title)
-
-            if outcome.kind == "changed" and self.check_cancel_db_periodic():
+            if info.status == "changed" and self.check_cancel_db_periodic():
                 break
 
             if i == 1 or i % per_item == 0:
@@ -143,65 +137,90 @@ class AddRttTemplateWorker(BaseObjectsJobWorker):
 
         return self.result
 
-    def record_page_outcome(self, outcome: UpdaterOutcome, title: str) -> None:
-        page_record = {
-            "title": title,
-            "msg": outcome.msg,
-        }
-        if outcome.kind == "changed":
-            page_record["newrevid"] = str(outcome.newrevid)
-            self.result.pages_changed.append(page_record)
-
-        elif outcome.kind == "missing":
-            self.result.pages_missing.append(title)
-
-        elif outcome.kind == "skipped":
-            self.result.pages_skipped.append(page_record)
-
-        elif outcome.kind == "error":
-            self.result.pages_errors.append(page_record)
-
-        else:
-            page_record["status"] = outcome.kind
-            self.result.pages_processed.append(page_record)
-
     # ------------------------------------------------------------------
     # Internal helpers
     # ------------------------------------------------------------------
 
-    def _process_one(self, title: str) -> UpdaterOutcome:
+    def _process_one(self, info: UpdaterOutcome) -> UpdaterOutcome:
+        title = info.title
+
         page = MwClientPage(title, self.site)
         if not page.exists():
             logger.info(f"Job {self.job_id}: {title!r}: missing!")
-            return UpdaterOutcome(kind="missing")
+            info.status = "missing"
+            info.msg = "Page is missing"
+            return info
 
         ns = page.namespace
         if ns != 0:
-            return UpdaterOutcome(kind="skipped", msg="Not in main namespace")
+            info.status = "skipped"
+            info.msg = "Not in main namespace"
+            return info
 
         text = page.get_text()
         if not text or not text.strip():
-            return UpdaterOutcome(kind="skipped", msg="Page is empty")
+            info.status = "skipped"
+            info.msg = "Page is empty"
+            return info
 
         parsed = wtp.parse(text)
         if any(str(t.normal_name()).strip().lower().replace("_", " ") == "rtt" for t in parsed.templates):
-            return UpdaterOutcome(kind="skipped", msg="Already has RTT template")
+            info.status = "skipped"
+            info.msg = "Already has RTT template"
+            return info
 
-        new_text = add_rtt_to_text(text, title)
+        try:
+            new_text = add_rtt_to_text(text, title)
+        except Exception as e:
+            logger.exception(f"Job {self.job_id}: {title!r}: error")
+            info.status = "failed"
+            info.msg = str(e)
+            return info
 
         if new_text == text:
-            return UpdaterOutcome(kind="skipped", msg="No changes")
+            info.status = "skipped"
+            info.msg = "No changes"
+            return info
 
-        result = page.edit(
-            text=new_text,
-            summary="Added {{RTT}}",
-            nocreate=True,
-        )
+        try:
+            result = page.edit(
+                text=new_text,
+                summary="Added {{RTT}}",
+                nocreate=True,
+            )
+        except Exception as e:
+            logger.exception(f"Job {self.job_id}: {title!r}: error")
+            info.status = "failed"
+            info.msg = str(e)
+            return info
 
         if result.get("success"):
-            return UpdaterOutcome(kind="changed", newrevid=result.get("newrevid", 0))
+            info.status = "changed"
+            info.newrevid = result.get("newrevid", 0)
+            return info
 
-        return UpdaterOutcome(kind="error", msg=result.get("error", "Unknown error"))
+        info.status = "failed"
+        info.msg = result.get("error", "Unknown error")
+        return info
+
+    def update_status(self, info: UpdaterOutcome) -> None:
+        self.result.summary.processed += 1
+        if info.status in ["pending", "running"]:
+            info.status = "completed"
+
+        if info.status == "changed":
+            self.result.pages_changed.append(info)
+
+        elif info.status == "missing":
+            self.result.pages_missing.append(info)
+
+        elif info.status == "skipped":
+            self.result.pages_skipped.append(info)
+
+        elif info.status == "failed":
+            self.result.pages_errors.append(info)
+        else:
+            self.result.pages_processed.append(info)
 
 
 __all__ = [

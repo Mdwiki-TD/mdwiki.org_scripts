@@ -2,29 +2,28 @@
 
 from __future__ import annotations
 
-import logging
 from dataclasses import asdict, dataclass
-from typing import Any, Literal
+from typing import Any
 
-logger = logging.getLogger(__name__)
+from ...shared_objects import OUTCOME_STATUS
 
 
 @dataclass
-class UpdaterTextOutcome:
+class RedirectUpdaterOutcome:
     """Result of running the updater on one page."""
 
-    status: Literal["notext", "skipped", "changes", "saved"]
-    old_text: str = ""
-    new_text: str = ""
-
+    status: OUTCOME_STATUS = "pending"
     title: str = ""
     msg: str = ""
     newrevid: int = 0
+
+    redirect_to: str | None = None
+    final_target: str | None = None
 
     def to_json(self) -> dict[str, Any]:
         return asdict(self)
 
 
 __all__ = [
-    "UpdaterTextOutcome",
+    "RedirectUpdaterOutcome",
 ]

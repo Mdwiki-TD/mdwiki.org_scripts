@@ -11,7 +11,6 @@ WPM:Wiki Project Med/Board (redirect) → WikiProjectMed:Wiki Project Med/Board 
 from __future__ import annotations
 
 import logging
-from typing import Any
 
 from mwclient.client import Site
 
@@ -19,7 +18,8 @@ from ....api_services import MwClientPage
 from ....api_services.query_api import get_double_redirects
 from ....services.replace_wikilink import replace_wikilink_destinations
 from ...base_worker import BaseObjectsJobWorker, JobsRunner
-from ...shared_objects import SharedworkerObject, UpdaterOutcome
+from ...shared_objects import SharedworkerObject
+from .objects import RedirectUpdaterOutcome
 
 logger = logging.getLogger(__name__)
 
@@ -104,26 +104,18 @@ class DuplicateRedirectWorker(BaseObjectsJobWorker):
             redirect_to = entry["redirect_to"]
             final_target = entry["final_target"]
 
-            self.result.summary.processed += 1
+            info = RedirectUpdaterOutcome(
+                title=from_title,
+                redirect_to=redirect_to,
+                final_target=final_target,
+            )
 
-            try:
-                outcome = self._process_one(from_title, redirect_to, final_target)
-            except Exception as exc:
-                logger.exception("job failed for %s", from_title)
-                self.result.pages_errors.append(
-                    {
-                        "from_title": from_title,
-                        "redirect_to": redirect_to,
-                        "final_target": final_target,
-                        "msg": str(exc),
-                    }
-                )
-                continue
+            self._process_one(info)
 
-            self.record_page_outcome(outcome, entry)
+            self.update_status(info)
 
             # Check DB if the job cancelled every N successful edits
-            if outcome.kind == "changed" and self.check_cancel_db_periodic():
+            if info.status == "changed" and self.check_cancel_db_periodic():
                 break
 
             if i == 1 or i % per_item == 0:
@@ -134,65 +126,77 @@ class DuplicateRedirectWorker(BaseObjectsJobWorker):
 
         return self.result
 
-    def record_page_outcome(self, outcome: UpdaterOutcome, entry: dict[str, Any]) -> None:
-        title = entry["title"]
-        redirect_to = entry["redirect_to"]
-        final_target = entry["final_target"]
-
-        page_record = {
-            "from_title": title,
-            "redirect_to": redirect_to,
-            "final_target": final_target,
-            "msg": outcome.msg,
-        }
-        if outcome.kind == "changed":
-            page_record["newrevid"] = str(outcome.newrevid)
-            self.result.pages_changed.append(page_record)
-
-        elif outcome.kind == "missing":
-            self.result.pages_missing.append(title)
-
-        elif outcome.kind == "skipped":
-            self.result.pages_skipped.append(page_record)
-
-        elif outcome.kind == "error":
-            self.result.pages_errors.append(page_record)
-
-        else:
-            page_record["status"] = outcome.kind
-            self.result.pages_processed.append(page_record)
-
     # ------------------------------------------------------------------
     # Internal helpers
     # ------------------------------------------------------------------
 
-    def _process_one(self, title: str, redirect_to: str, final_target: str) -> UpdaterOutcome:
+    def _process_one(self, info: RedirectUpdaterOutcome) -> RedirectUpdaterOutcome:
+        title = info.title
+
+        redirect_to = info.redirect_to
+        final_target = info.final_target
+
         page = MwClientPage(title, self.site)
         if not page.exists():
             logger.info(f"Job {self.job_id}: {title!r}: missing!")
-            return UpdaterOutcome(kind="missing")
+            info.status = "missing"
+            return info
 
         text = page.get_text()
         if not text or not text.strip():
-            return UpdaterOutcome(kind="skipped", msg="Page is empty")
+            info.status = "skipped"
+            info.msg = "Page is empty"
+            return info
 
-        new_text, summary = self.make_new_text(text, redirect_to, final_target)
+        new_text, summary = self._make_new_text(text, redirect_to, final_target)
 
         if new_text == text:
-            return UpdaterOutcome(kind="skipped", msg="No changes")
+            info.status = "skipped"
+            info.msg = "No changes"
+            return info
 
-        result = page.edit(new_text, summary)
+        try:
+            result = page.edit(new_text, summary)
+        except Exception as exc:
+            logger.exception("job failed for %s", info.title)
+            info.status = "failed"
+            info.msg = str(exc)
+            return info
 
         if result.get("success"):
-            return UpdaterOutcome(kind="changed", newrevid=result.get("newrevid", 0))
+            info.status = "changed"
+            info.newrevid = result.get("newrevid", 0)
+            return info
 
-        return UpdaterOutcome(kind="error", msg=result.get("error", "Unknown error"))
+        info.status = "failed"
+        info.msg = result.get("error", "Unknown error")
+        return info
 
-    def make_new_text(self, text: str, redirect_to: str, final_target: str) -> tuple[str, str]:
+    def _make_new_text(self, text: str, redirect_to: str, final_target: str) -> tuple[str, str]:
         new_text = replace_wikilink_destinations(text, redirect_to, final_target)
         summary = f"fix duplicate redirect to [[{final_target}]]"
 
         return new_text, summary
+
+    def update_status(self, info: RedirectUpdaterOutcome) -> None:
+        self.result.summary.processed += 1
+        if info.status in ["pending", "running"]:
+            info.status = "completed"
+
+        if info.status == "changed":
+            self.result.pages_changed.append(info)
+
+        elif info.status == "missing":
+            self.result.pages_missing.append(info)
+
+        elif info.status == "skipped":
+            self.result.pages_skipped.append(info)
+
+        elif info.status == "failed":
+            self.result.pages_errors.append(info)
+
+        else:
+            self.result.pages_processed.append(info)
 
 
 __all__ = [

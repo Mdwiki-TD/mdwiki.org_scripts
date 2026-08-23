@@ -2,11 +2,11 @@
 
 from __future__ import annotations
 
-from src.main_app.jobs_workers.base_worker import WorkerMapping
 from src.main_app.jobs_workers.public_jobs_workers.create_redirects.objects import (
     CreateRedirectsWorkerObject,
     RedirectsSummary,
 )
+from src.main_app.jobs_workers.shared_objects import WorkerMapping
 
 
 class TestSummary:
@@ -35,7 +35,6 @@ class TestCreateRedirectsWorkerObject:
 
     def test_default_lists_are_empty(self):
         obj = CreateRedirectsWorkerObject()
-        assert obj.pages_to_work == []
         assert obj.pages_processed == []
         assert obj.pages_errors == []
 
@@ -46,12 +45,9 @@ class TestCreateRedirectsWorkerObject:
     def test_lists_are_independent(self):
         a = CreateRedirectsWorkerObject()
         b = CreateRedirectsWorkerObject()
-        a.pages_to_work.append("Page1")
-        assert b.pages_to_work == []
 
     def test_to_json(self):
         obj = CreateRedirectsWorkerObject(status="completed")
         d = obj.to_json()
         assert d["status"] == "completed"
         assert "summary" in d
-        assert "pages_to_work" in d

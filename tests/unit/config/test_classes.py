@@ -25,7 +25,7 @@ class TestDbConfig:
 
     def test_to_dict(self):
         cfg = DbConfig(db_name="mydb", db_host="localhost", db_user="user", db_password="pass")
-        d = cfg.to_dict()
+        d = cfg.to_json()
         assert d == {"db_name": "mydb", "db_host": "localhost", "db_user": "user", "db_password": "pass"}
 
     def test_none_user_password(self):

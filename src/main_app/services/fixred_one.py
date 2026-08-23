@@ -27,10 +27,10 @@ def work_on_title(
     """
     title = (title or "").strip()
     if not title:
-        return UpdaterTextOutcome(kind="skipped", msg="Invalid title")
+        return UpdaterTextOutcome(status="skipped", msg="Invalid title")
 
     if user is None:
-        return UpdaterTextOutcome(kind="skipped", msg="No user")
+        return UpdaterTextOutcome(status="skipped", msg="No user")
 
     site = get_user_site(user.to_auth_payload())
 
@@ -38,7 +38,7 @@ def work_on_title(
     old_text = page.get_text()
 
     if not old_text or not old_text.strip():
-        return UpdaterTextOutcome(kind="notext", old_text=old_text)
+        return UpdaterTextOutcome(status="notext", old_text=old_text)
 
     state = RunState()
     try:
@@ -48,17 +48,17 @@ def work_on_title(
         raise
 
     if not new_text or not new_text.strip():
-        return UpdaterTextOutcome(kind="notext", old_text=old_text)
+        return UpdaterTextOutcome(status="notext", old_text=old_text)
 
     if new_text == old_text:
-        return UpdaterTextOutcome(kind="skipped", msg="No changes")
+        return UpdaterTextOutcome(status="skipped", msg="No changes")
 
     if save:
         result = page.edit(new_text, summary)
         if result.get("success"):
-            return UpdaterTextOutcome(kind="saved", newrevid=result.get("newrevid", 0))
+            return UpdaterTextOutcome(status="saved", newrevid=result.get("newrevid", 0))
 
-    return UpdaterTextOutcome(kind="changes", old_text=old_text, new_text=new_text)
+    return UpdaterTextOutcome(status="changes", old_text=old_text, new_text=new_text)
 
 
 __all__ = [

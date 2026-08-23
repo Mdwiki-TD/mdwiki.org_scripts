@@ -59,18 +59,12 @@ class NewUpdaterAllWorker(BaseObjectsJobWorker):
             if self.is_cancelled():
                 break
 
-            self.result.summary.processed += 1
+            info = UpdaterOutcome(title=title)
+            self._process_one(info)
 
-            try:
-                outcome = self._process_one(title)
-            except Exception as exc:
-                logger.exception("job failed for %s", title)
-                self.result.pages_errors.append({"title": title, "msg": str(exc)})
-                continue
+            self.update_status(info)
 
-            self.record_page_outcome(outcome, title)
-
-            if outcome.kind == "changed" and self.check_cancel_db_periodic():
+            if info.status == "changed" and self.check_cancel_db_periodic():
                 break
 
             if i == 1 or i % per_item == 0:
@@ -81,59 +75,74 @@ class NewUpdaterAllWorker(BaseObjectsJobWorker):
 
         return self.result
 
-    def record_page_outcome(self, outcome: UpdaterOutcome, title: str) -> None:
-        page_record = {
-            "title": title,
-            "msg": outcome.msg,
-        }
-        if outcome.kind == "changed":
-            page_record["newrevid"] = str(outcome.newrevid)
-            self.result.pages_changed.append(page_record)
-
-        elif outcome.kind == "missing":
-            self.result.pages_missing.append(title)
-
-        elif outcome.kind == "skipped":
-            self.result.pages_skipped.append(page_record)
-
-        elif outcome.kind == "error":
-            self.result.pages_errors.append(page_record)
-
-        else:
-            page_record["status"] = outcome.kind
-            self.result.pages_processed.append(page_record)
-
     # ------------------------------------------------------------------
     # Internal helpers
     # ------------------------------------------------------------------
 
-    def _process_one(self, title: str) -> UpdaterOutcome:
+    def _process_one(self, info: UpdaterOutcome) -> UpdaterOutcome:
+        title = info.title
+
         page = MwClientPage(title, self.site)
         if not page.exists():
             logger.info(f"Job {self.job_id}: {title!r}: missing!")
-            return UpdaterOutcome(kind="missing")
+            info.status = "missing"
+            info.msg = "Page is missing"
+            return info
 
         text = page.get_text()
         if not text or not text.strip():
-            return UpdaterOutcome(kind="skipped", msg="Page is empty")
+            info.status = "skipped"
+            info.msg = "Page is empty"
+            return info
 
-        new_text, summary = self.make_new_text(title, text)
+        new_text, summary = self._make_new_text(title, text)
 
         if new_text == text:
-            return UpdaterOutcome(kind="skipped", msg="No changes")
+            info.status = "skipped"
+            info.msg = "No changes"
+            return info
 
-        result = page.edit(new_text, summary)
+        try:
+            result = page.edit(new_text, summary)
+        except Exception as e:
+            info.status = "failed"
+            info.msg = str(e)
+            return info
 
         if result.get("success"):
-            return UpdaterOutcome(kind="changed", newrevid=result.get("newrevid", 0))
+            info.status = "changed"
+            info.newrevid = result.get("newrevid", 0)
+            return info
 
-        return UpdaterOutcome(kind="error", msg=result.get("error", "Unknown error"))
+        info.status = "failed"
+        info.msg = result.get("error", "Unknown error")
+        return info
 
-    def make_new_text(self, title: str, text: str) -> tuple[str, str]:
+    def _make_new_text(self, title: str, text: str) -> tuple[str, str]:
         new_text = med_updater_one(title, text)
         new_text = add_param_named(new_text)
         summary = "Med updater."
         return new_text, summary
+
+    def update_status(self, info: UpdaterOutcome) -> None:
+        self.result.summary.processed += 1
+        if info.status in ["pending", "running"]:
+            info.status = "completed"
+
+        if info.status == "changed":
+            self.result.pages_changed.append(info)
+
+        elif info.status == "missing":
+            self.result.pages_missing.append(info)
+
+        elif info.status == "skipped":
+            self.result.pages_skipped.append(info)
+
+        elif info.status == "failed":
+            self.result.pages_errors.append(info)
+
+        else:
+            self.result.pages_processed.append(info)
 
 
 __all__ = [
