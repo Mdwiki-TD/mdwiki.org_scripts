@@ -11,9 +11,7 @@ logger = logging.getLogger(__name__)
 
 STATUS_LITERAL = Literal["cancelled", "completed", "failed", "pending", "running", "skipped", "success"]
 
-STATUS_LIST = Literal["completed", "created", "failed", "pending", "skipped", "updated", "uploaded"]
-
-STATUS_LIST3 = Literal["failed", "pending", "redirected", "renamed", "skipped_target_exists"]
+OUTCOME_STATUS = Literal["missing", "changed", "failed", "skipped", "completed", "pending", "running"]
 
 
 @dataclass
@@ -33,7 +31,7 @@ class SharedMapToJson:
 class UpdaterOutcome:
     """Result of running the updater on one page."""
 
-    status: Literal["missing", "changed", "error", "skipped", "completed", "pending", "running"] = "pending"
+    status: OUTCOME_STATUS = "pending"
 
     title: str = ""
     msg: str = ""

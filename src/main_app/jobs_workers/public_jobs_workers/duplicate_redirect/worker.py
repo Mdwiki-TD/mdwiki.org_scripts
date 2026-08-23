@@ -159,7 +159,7 @@ class DuplicateRedirectWorker(BaseObjectsJobWorker):
             result = page.edit(new_text, summary)
         except Exception as exc:
             logger.exception("job failed for %s", info.title)
-            info.status = "error"
+            info.status = "failed"
             info.msg = str(exc)
             return info
 
@@ -168,7 +168,7 @@ class DuplicateRedirectWorker(BaseObjectsJobWorker):
             info.newrevid = result.get("newrevid", 0)
             return info
 
-        info.status = "error"
+        info.status = "failed"
         info.msg = result.get("error", "Unknown error")
         return info
 
@@ -192,7 +192,7 @@ class DuplicateRedirectWorker(BaseObjectsJobWorker):
         elif info.status == "skipped":
             self.result.pages_skipped.append(info)
 
-        elif info.status == "error":
+        elif info.status == "failed":
             self.result.pages_errors.append(info)
 
         else:

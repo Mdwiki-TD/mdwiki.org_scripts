@@ -111,7 +111,7 @@ class FixRedAllWorker(BaseObjectsJobWorker):
         try:
             result = page.edit(new_text, summary)
         except Exception as e:
-            info.status = "error"
+            info.status = "failed"
             info.msg = str(e)
             return info
 
@@ -120,7 +120,7 @@ class FixRedAllWorker(BaseObjectsJobWorker):
             info.newrevid = result.get("newrevid", 0)
             return info
 
-        info.status = "error"
+        info.status = "failed"
         info.msg = result.get("error", "Unknown error")
         return info
 

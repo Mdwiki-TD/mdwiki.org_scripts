@@ -150,7 +150,7 @@ class CreateRedirectsWorker(BaseObjectsJobWorker):
         info.status = "completed"
 
         if info.counts.created:
-            info.status = "created"
+            info.status = "success"
 
         info.msg = f"created={info.counts.created} exists={info.counts.already_exists}"
 
@@ -161,7 +161,7 @@ class CreateRedirectsWorker(BaseObjectsJobWorker):
         if info.status in ["pending", "running"]:
             info.status = "completed"
 
-        if info.status == "created":
+        if info.status == "success":
             self.result.pages_created.append(info)
 
         elif info.status == "skipped":

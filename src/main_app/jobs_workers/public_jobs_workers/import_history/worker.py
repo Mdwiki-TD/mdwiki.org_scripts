@@ -99,7 +99,7 @@ class ImportHistoryWorker(BaseObjectsJobWorker):
         result = import_page_from_wiki(self.site, title, family="wikipedia")
         if result.get("error"):
             logger.warning(f"Job {self.job_id}: import_page failed for {title}: {result['error']}")
-            info.status = "error"
+            info.status = "failed"
             info.msg = result["error"]
             return info
 
@@ -107,7 +107,7 @@ class ImportHistoryWorker(BaseObjectsJobWorker):
 
         if not revisions:
             logger.info(f"Job {self.job_id}: {title!r}: import returned 0 revisions")
-            info.status = "error"
+            info.status = "failed"
             info.msg = "Import returned 0 revisions"
             return info
 
@@ -119,7 +119,7 @@ class ImportHistoryWorker(BaseObjectsJobWorker):
             saved = page.edit(text, "")
         except Exception as e:
             logger.warning(f"Job {self.job_id}: {title!r}: failed to save original body: {e}")
-            info.status = "error"
+            info.status = "failed"
             info.msg = f"Failed to save original body: {e}"
             return info
 
@@ -151,7 +151,7 @@ class ImportHistoryWorker(BaseObjectsJobWorker):
 
         logger.warning(f"Job {self.job_id}: fallback save failed too for {fallback_title}")
 
-        info.status = "error"
+        info.status = "failed"
         info.msg = fallback_result.get("error", "Unknown error")
         return info
 

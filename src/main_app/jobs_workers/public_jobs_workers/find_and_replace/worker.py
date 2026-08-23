@@ -167,7 +167,7 @@ class FindAndReplaceWorker(BaseObjectsJobWorker):
         try:
             result = page.edit(new_text, summary)
         except Exception as e:
-            info.status = "error"
+            info.status = "failed"
             info.msg = str(e)
             return info
 
@@ -176,7 +176,7 @@ class FindAndReplaceWorker(BaseObjectsJobWorker):
             info.newrevid = result.get("newrevid", 0)
             return info
 
-        info.status = "error"
+        info.status = "failed"
         info.msg = result.get("error", "Unknown error")
         return info
 
@@ -199,7 +199,7 @@ class FindAndReplaceWorker(BaseObjectsJobWorker):
         elif info.status == "skipped":
             self.result.pages_skipped.append(info)
 
-        elif info.status == "error":
+        elif info.status == "failed":
             self.result.pages_errors.append(info)
 
         else:

@@ -2,19 +2,17 @@
 
 from __future__ import annotations
 
-import logging
 from dataclasses import asdict, dataclass
-from typing import Any, Literal
+from typing import Any
 
-logger = logging.getLogger(__name__)
+from ...shared_objects import OUTCOME_STATUS
 
 
 @dataclass
 class RedirectUpdaterOutcome:
     """Result of running the updater on one page."""
 
-    status: Literal["pending", "missing", "changed", "error", "skipped", "completed"] = "pending"
-
+    status: OUTCOME_STATUS = "pending"
     title: str = ""
     msg: str = ""
     newrevid: int = 0

@@ -15,7 +15,7 @@ logger = logging.getLogger(__name__)
 class ImportUpdaterOutcome:
     """Result of running the updater on one page."""
 
-    status: Literal["missing", "imported", "imported_fallback", "error", "skipped", "completed", "pending"] = "pending"
+    status: Literal["missing", "imported", "imported_fallback", "failed", "skipped", "completed", "pending"] = "pending"
 
     title: str = ""
     msg: str = ""

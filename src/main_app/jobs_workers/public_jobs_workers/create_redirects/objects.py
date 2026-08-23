@@ -4,9 +4,9 @@ from __future__ import annotations
 
 import logging
 from dataclasses import asdict, dataclass, field
-from typing import Any, Literal
+from typing import Any
 
-from ...shared_objects import WorkerMapping
+from ...shared_objects import STATUS_LITERAL, WorkerMapping
 
 logger = logging.getLogger(__name__)
 
@@ -23,7 +23,7 @@ class TitleCounts:
 @dataclass
 class OneTitleInfo:
     title: str
-    status: Literal["completed", "created", "failed", "pending", "skipped"] = "pending"
+    status: STATUS_LITERAL = "pending"
     error: str | None = None
     msg: str | None = None
     counts: TitleCounts = field(default_factory=TitleCounts)

@@ -173,7 +173,7 @@ class AddRttTemplateWorker(BaseObjectsJobWorker):
             new_text = add_rtt_to_text(text, title)
         except Exception as e:
             logger.exception(f"Job {self.job_id}: {title!r}: error")
-            info.status = "error"
+            info.status = "failed"
             info.msg = str(e)
             return info
 
@@ -190,7 +190,7 @@ class AddRttTemplateWorker(BaseObjectsJobWorker):
             )
         except Exception as e:
             logger.exception(f"Job {self.job_id}: {title!r}: error")
-            info.status = "error"
+            info.status = "failed"
             info.msg = str(e)
             return info
 
@@ -199,7 +199,7 @@ class AddRttTemplateWorker(BaseObjectsJobWorker):
             info.newrevid = result.get("newrevid", 0)
             return info
 
-        info.status = "error"
+        info.status = "failed"
         info.msg = result.get("error", "Unknown error")
         return info
 
@@ -217,7 +217,7 @@ class AddRttTemplateWorker(BaseObjectsJobWorker):
         elif info.status == "skipped":
             self.result.pages_skipped.append(info)
 
-        elif info.status == "error":
+        elif info.status == "failed":
             self.result.pages_errors.append(info)
         else:
             self.result.pages_processed.append(info)
