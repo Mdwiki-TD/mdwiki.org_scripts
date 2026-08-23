@@ -2,38 +2,30 @@
 
 from __future__ import annotations
 
-import pytest
-
-from src.main_app.jobs_workers.base_worker import WorkerMapping
 from src.main_app.jobs_workers.public_jobs_workers.import_history.objects import (
     ImportHistoryWorkerObject,
-    UpdaterOutcome,
 )
+from src.main_app.jobs_workers.shared_objects import UpdaterOutcome, WorkerMapping
 
 
 class TestUpdaterOutcome:
     def test_create_with_defaults(self):
-        o = UpdaterOutcome(kind="missing")
-        assert o.kind == "missing"
+        o = UpdaterOutcome(status="missing")
+        assert o.status == "missing"
         assert o.newrevid == 0
         assert o.msg == ""
 
-    def test_frozen(self):
-        o = UpdaterOutcome(kind="imported")
-        with pytest.raises(AttributeError):
-            o.kind = "error"  # type: ignore
-
     def test_to_json(self):
-        o = UpdaterOutcome(kind="imported_fallback", newrevid=123, msg="ok")
+        o = UpdaterOutcome(status="imported_fallback", newrevid=123, msg="ok")
         d = o.to_json()
-        assert d["kind"] == "imported_fallback"
+        assert d["status"] == "imported_fallback"
         assert d["newrevid"] == 123
         assert d["msg"] == "ok"
 
     def test_all_kind_values(self):
-        for kind in ("missing", "imported", "imported_fallback", "error"):
-            o = UpdaterOutcome(kind=kind)
-            assert o.kind == kind
+        for status in ("missing", "imported", "imported_fallback", "error"):
+            o = UpdaterOutcome(status=status)
+            assert o.status == status
 
 
 class TestImportHistoryWorkerObject:

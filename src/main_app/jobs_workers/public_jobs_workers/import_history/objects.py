@@ -11,13 +11,15 @@ from ...shared_objects import Summary, WorkerMapping
 logger = logging.getLogger(__name__)
 
 
-@dataclass(frozen=True)
+@dataclass
 class ImportUpdaterOutcome:
     """Result of running the updater on one page."""
 
-    kind: Literal["missing", "imported", "imported_fallback", "error", "skipped"]
-    newrevid: int = 0
+    status: Literal["missing", "imported", "imported_fallback", "error", "skipped", "completed", "pending"] = "pending"
+
+    title: str = ""
     msg: str = ""
+    newrevid: int = 0
 
     def to_json(self) -> dict[str, Any]:
         return asdict(self)
@@ -29,14 +31,14 @@ class ImportHistoryWorkerObject(WorkerMapping):
 
     summary: Summary = field(default_factory=Summary)
 
-    pages_processed: list[dict[str, Any]] = field(default_factory=list)
+    pages_processed: list[ImportUpdaterOutcome] = field(default_factory=list)
 
-    pages_imported: list[dict[str, Any]] = field(default_factory=list)
-    pages_imported_fallback: list[dict[str, Any]] = field(default_factory=list)
-    pages_errors: list[dict[str, Any]] = field(default_factory=list)
-    pages_skipped: list[dict[str, Any]] = field(default_factory=list)
+    pages_imported: list[ImportUpdaterOutcome] = field(default_factory=list)
+    pages_imported_fallback: list[ImportUpdaterOutcome] = field(default_factory=list)
+    pages_errors: list[ImportUpdaterOutcome] = field(default_factory=list)
+    pages_skipped: list[ImportUpdaterOutcome] = field(default_factory=list)
 
-    pages_missing: list[str] = field(default_factory=list)
+    pages_missing: list[ImportUpdaterOutcome] = field(default_factory=list)
 
 
 __all__ = [

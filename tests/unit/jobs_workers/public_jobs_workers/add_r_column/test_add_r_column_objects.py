@@ -2,12 +2,12 @@
 
 from __future__ import annotations
 
-from src.main_app.jobs_workers.base_worker import WorkerMapping
 from src.main_app.jobs_workers.public_jobs_workers.add_r_column.objects import (
     AddRColumnWorkerObject,
     StepDetail,
     Steps,
 )
+from src.main_app.jobs_workers.shared_objects import WorkerMapping
 
 
 class TestStepDetail:

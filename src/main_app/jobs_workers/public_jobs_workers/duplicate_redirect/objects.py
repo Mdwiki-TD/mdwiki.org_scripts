@@ -10,21 +10,22 @@ logger = logging.getLogger(__name__)
 
 
 @dataclass
-class UpdaterTextOutcome:
+class RedirectUpdaterOutcome:
     """Result of running the updater on one page."""
 
-    status: Literal["notext", "skipped", "changes", "saved"]
-    old_text: str = ""
-    new_text: str = ""
+    status: Literal["pending", "missing", "changed", "error", "skipped", "completed"] = "pending"
 
     title: str = ""
     msg: str = ""
     newrevid: int = 0
+
+    redirect_to: str | None = None
+    final_target: str | None = None
 
     def to_json(self) -> dict[str, Any]:
         return asdict(self)
 
 
 __all__ = [
-    "UpdaterTextOutcome",
+    "RedirectUpdaterOutcome",
 ]

@@ -10,15 +10,15 @@ from src.main_app.services.newupdater_service import newupdater_one_title
 class TestWorkOnTitle:
     def test_no_user_returns_notext(self):
         result = newupdater_one_title("Test", False, user=None)
-        assert result.kind == "skipped"
+        assert result.status == "skipped"
         assert result.msg == "No user"
 
     def test_empty_title_returns_notitle(self):
         result = newupdater_one_title("", False, user=MagicMock())
-        assert result.kind == "skipped"
+        assert result.status == "skipped"
         assert result.msg == "Invalid title"
 
     def test_empty_title_with_spaces_returns_notext(self):
         result = newupdater_one_title("   ", False, user=MagicMock())
-        assert result.kind == "skipped"
+        assert result.status == "skipped"
         assert result.msg == "Invalid title"

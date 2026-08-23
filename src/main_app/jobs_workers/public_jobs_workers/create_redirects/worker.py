@@ -97,9 +97,8 @@ class CreateRedirectsWorker(BaseObjectsJobWorker):
     # ------------------------------------------------------------------
 
     def _process_one(self, info: OneTitleInfo) -> OneTitleInfo:
-        """Copy missing redirects for one source title; return per-title counts."""
-
         title = info.title
+
         page = MwClientPage(title, self.site)
 
         if not page.exists():
@@ -158,7 +157,6 @@ class CreateRedirectsWorker(BaseObjectsJobWorker):
         return info
 
     def update_status(self, info: OneTitleInfo) -> None:
-        """ """
         self.result.summary.processed += 1
         if info.status in ["pending", "running"]:
             info.status = "completed"
@@ -175,6 +173,7 @@ class CreateRedirectsWorker(BaseObjectsJobWorker):
             self.result.pages_processed.append(info)
 
         self.result.summary.update_from_counts(info.counts)
+
 
 __all__ = [
     "CreateRedirectsWorker",

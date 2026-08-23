@@ -51,19 +51,19 @@ class FixRedirectsService:
     ) -> UpdaterTextOutcome:
         title = (title or "").strip()
         if not title:
-            return UpdaterTextOutcome(kind="skipped", msg="Invalid title")
+            return UpdaterTextOutcome(status="skipped", msg="Invalid title")
         if user_payload is None:
-            return UpdaterTextOutcome(kind="skipped", msg="No user")
+            return UpdaterTextOutcome(status="skipped", msg="No user")
 
         site = self._site_factory(user_payload)
         if site is None:
-            return UpdaterTextOutcome(kind="skipped", msg="Failed to get site")
+            return UpdaterTextOutcome(status="skipped", msg="Failed to get site")
 
         page = self._page_factory(title, site)
         old_text = page.get_text()
 
         if not old_text or not old_text.strip():
-            return UpdaterTextOutcome(kind="notext", old_text=old_text or "")
+            return UpdaterTextOutcome(status="notext", old_text=old_text or "")
 
         state = self._run_state_factory()
         try:
@@ -73,21 +73,21 @@ class FixRedirectsService:
             raise
 
         if not new_text or not new_text.strip():
-            return UpdaterTextOutcome(kind="notext", old_text=old_text)
+            return UpdaterTextOutcome(status="notext", old_text=old_text)
 
         if new_text == old_text:
-            return UpdaterTextOutcome(kind="skipped", msg="No changes")
+            return UpdaterTextOutcome(status="skipped", msg="No changes")
 
         if save:
             result = page.edit(new_text, summary)
             if result.get("success"):
                 return UpdaterTextOutcome(
-                    kind="saved",
+                    status="saved",
                     newrevid=int(result.get("newrevid") or 0),
                 )
 
         return UpdaterTextOutcome(
-            kind="changes",
+            status="changes",
             old_text=old_text,
             new_text=new_text,
         )

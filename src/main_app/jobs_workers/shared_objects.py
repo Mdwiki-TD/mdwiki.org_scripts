@@ -29,25 +29,18 @@ class SharedMapToJson:
         return asdict(self)
 
 
-@dataclass(frozen=True)
+@dataclass
 class UpdaterOutcome:
     """Result of running the updater on one page."""
 
-    kind: Literal["missing", "changed", "error", "skipped"]
-    newrevid: int = 0
+    status: Literal["missing", "changed", "error", "skipped", "completed", "pending", "running"] = "pending"
+
+    title: str = ""
     msg: str = ""
+    newrevid: int = 0
 
     def to_json(self) -> dict[str, Any]:
         return asdict(self)
-
-
-@dataclass
-class StandardAdminSummary(SharedMapToJson):
-    total: int = 0
-    processed: int = 0
-    success: int = 0
-    failed: int = 0
-    skipped: int = 0
 
 
 @dataclass
@@ -82,25 +75,14 @@ class WorkerMapping(SharedMapToJson):
 class SharedworkerObject(WorkerMapping):
     summary: Summary = field(default_factory=Summary)
 
-    pages_processed: list[dict[str, Any]] = field(default_factory=list)
+    pages_processed: list[UpdaterOutcome] = field(default_factory=list)
 
-    pages_changed: list[dict[str, Any]] = field(default_factory=list)
-    pages_errors: list[dict[str, Any]] = field(default_factory=list)
-    pages_skipped: list[dict[str, Any]] = field(default_factory=list)
+    pages_changed: list[UpdaterOutcome] = field(default_factory=list)
+    pages_errors: list[UpdaterOutcome] = field(default_factory=list)
+    pages_skipped: list[UpdaterOutcome] = field(default_factory=list)
 
-    pages_missing: list[str] = field(default_factory=list)
+    pages_missing: list[UpdaterOutcome] = field(default_factory=list)
     note: str = ""
-
-
-@dataclass
-class StandardAdminWorkerObject(WorkerMapping):
-    summary: StandardAdminSummary = field(default_factory=StandardAdminSummary)
-    pages_processed: list[dict[str, Any]] = field(default_factory=list)
-    pages_success: list[dict[str, Any]] = field(default_factory=list)
-    pages_skipped: list[dict[str, Any]] = field(default_factory=list)
-    pages_errors: list[dict[str, Any]] = field(default_factory=list)
-    note: str = ""
-    args: dict[str, Any] = field(default_factory=dict)
 
 
 __all__ = [
@@ -108,6 +90,4 @@ __all__ = [
     "Summary",
     "SharedworkerObject",
     "UpdaterOutcome",
-    "StandardAdminSummary",
-    "StandardAdminWorkerObject",
 ]
