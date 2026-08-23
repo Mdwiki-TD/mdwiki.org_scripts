@@ -92,6 +92,7 @@ class TestOtherConfig:
             user_agent="test/1.0",
             wiki_domain="example.org",
             static_server="https://cdn.example.org",
+            tool_title="tool_title",
         )
         assert cfg.csrf_time_limit == 3600
 
@@ -152,6 +153,7 @@ class TestSettings:
             user_agent="t",
             wiki_domain="w",
             static_server="s",
+            tool_title="tool_title",
         )
         jobs = JobsConfig(
             jobs_max_workers=1,
