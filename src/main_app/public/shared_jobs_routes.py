@@ -394,7 +394,7 @@ class JobsBp(ABC):
         result_file = f"{job_type}_job_{file_number}.json"
 
         result_data = load_job_result(result_file)
-        list_data = result_data.get(list_name, []) if result_data else []
+        list_data = (result_data.get(list_name) or []) if result_data else []
 
         if list_data and not isinstance(list_data, list):
             logger.warning(
@@ -436,8 +436,17 @@ class JobsBp(ABC):
         Extend this list if you want status/step messages searchable too.
         """
         title = str(item.get("title", "")).lower()
+        from_title = str(item.get("from_title", "")).lower()
+        redirect_to = str(item.get("redirect_to", "")).lower()
+        final_target = str(item.get("final_target", "")).lower()
         status = str(item.get("status", "")).lower()
-        return search_value in title or search_value in status
+        return (
+            search_value in title
+            or search_value in from_title
+            or search_value in redirect_to
+            or search_value in final_target
+            or search_value in status
+        )
 
     def convert_str_list_to_dict(self, list_data: list[str], list_name: str) -> list[dict[str, Any] | str]:
         """

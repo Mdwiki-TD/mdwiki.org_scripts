@@ -1,7 +1,6 @@
 {% extends "jobs_templates/base_details_public.html" %}
 {% from "_macros.html" import card_header, status_icon, stats_card %}
-{% from "_macros/_jobs_macros.html" import template_pages_changed, template_pages_processed, template_pages_errors, template_pages_only_title %}
-
+{% from 'jobs_templates/_ajax_templates/_ajax_table.html' import new_pages_table %}
 
 {% block job_summary %}
 {% include 'jobs_templates/_help_templates/_job_summary.html' %}
@@ -9,38 +8,196 @@
 
 {% block job_details %}
 
-{% set title_columns = {
-    "from_title": "Title",
-    "redirect_to": "Redirect to",
-    "final_target": "Final target"
-} %}
-
 {% if result_data and result_data.pages_processed %}
 
-{{ template_pages_processed(wiki_domain, 'Pages Processed', result_data.pages_processed, job.id, template_data.job_type, title_columns=title_columns) }}
+{{ new_pages_table(
+    table_title="Pages Processed",
+    job_id=job.id,
+    job_type=template_data.job_type,
+    list_name="pages_processed",
+) }}
 
 {% endif %}
 
 {% if result_data and result_data.pages_changed %}
 
-{{ template_pages_changed(wiki_domain, 'Changed Pages', result_data.pages_changed, job.id, template_data.job_type, title_columns=title_columns) }}
+{{ new_pages_table(
+    table_title="Changed Pages",
+    job_id=job.id,
+    job_type=template_data.job_type,
+    list_name="pages_changed",
+) }}
 
 {% endif %}
 
 {% if result_data and result_data.pages_errors %}
 
-{{ template_pages_errors(wiki_domain, 'Pages Errors', result_data.pages_errors, job.id, template_data.job_type, title_columns=title_columns) }}
+{{ new_pages_table(
+    table_title="Pages Errors",
+    job_id=job.id,
+    job_type=template_data.job_type,
+    list_name="pages_errors",
+) }}
 
 {% endif %}
 
 {% if result_data and result_data.pages_skipped %}
 
-{{ template_pages_errors(wiki_domain, 'Pages skipped', result_data.pages_skipped, job.id, template_data.job_type, title_columns=title_columns) }}
+{{ new_pages_table(
+    table_title="Pages skipped",
+    job_id=job.id,
+    job_type=template_data.job_type,
+    list_name="pages_skipped",
+) }}
 
 {% endif %}
+
 {% if result_data and result_data.pages_missing %}
 
-{{ template_pages_only_title(wiki_domain, 'Pages missing', result_data.pages_missing) }}
+{{ new_pages_table(
+    table_title="Pages missing",
+    job_id=job.id,
+    job_type=template_data.job_type,
+    list_name="pages_missing",
+) }}
 
 {% endif %}
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    const WIKIDOMAIN = "{{ wiki_domain }}";
+
+    function createRedirectColumns(
+        show_status = false,
+        show_message = false,
+        show_newrevid = false,
+    ) {
+        return [
+            {
+                data: null,
+                title: "#",
+                // @ts-ignore
+                render: function (data, type, row, meta) {
+                    return meta.row + 1;
+                },
+            },
+            {
+                data: 'from_title',
+                title: 'From Title',
+                render: function (data, type, row) {
+                    return renderWikiLink(WIKIDOMAIN, data);
+                },
+            },
+            {
+                data: 'redirect_to',
+                title: 'Redirect to',
+                render: function (data, type, row) {
+                    return renderWikiLink(WIKIDOMAIN, data);
+                },
+            },
+            {
+                data: 'final_target',
+                title: 'Final target',
+                render: function (data, type, row) {
+                    return renderWikiLink(WIKIDOMAIN, data);
+                },
+            },
+            {
+                data: null,
+                title: 'Status',
+                orderable: false,
+                // @ts-ignore
+                render: function (row) {
+                    return renderStatus(row.status) || "";
+                },
+                visible: show_status,
+            },
+            {
+                data: null,
+                title: 'Diff',
+                orderable: false,
+                // @ts-ignore
+                render: function (row) {
+                    return diffLink(WIKIDOMAIN, row?.newrevid)
+                },
+                visible: show_newrevid,
+            },
+            {
+                data: null,
+                title: 'Message',
+                orderable: false,
+                // @ts-ignore
+                render: function (row) {
+                    return `<code>${row.msg || ''}</code>`;
+                },
+                visible: show_message,
+            },
+        ];
+    }
+
+    function createMissingColumns() {
+        return [
+            {
+                data: null,
+                title: "#",
+                // @ts-ignore
+                render: function (data, type, row, meta) {
+                    return meta.row + 1;
+                },
+            },
+            {
+                data: 'title',
+                title: 'Title',
+                render: function (data, type, row) {
+                    return renderWikiLink(WIKIDOMAIN, data);
+                },
+            },
+        ];
+    }
+
+    $(document).ready(function () {
+        initServerTable(
+            'table-pages_changed',
+            createRedirectColumns(
+                show_status = false,
+                show_message = true,
+                show_newrevid = true,
+            ),
+        );
+
+        initServerTable(
+            'table-pages_missing',
+            createMissingColumns(),
+        );
+
+        initServerTable(
+            'table-pages_skipped',
+            createRedirectColumns(
+                show_status = false,
+                show_message = true,
+                show_newrevid = false,
+            ),
+        );
+
+        initServerTable(
+            'table-pages_errors',
+            createRedirectColumns(
+                show_status = false,
+                show_message = true,
+                show_newrevid = false,
+            ),
+        );
+
+        initServerTable(
+            'table-pages_processed',
+            createRedirectColumns(
+                show_status = true,
+                show_message = true,
+                show_newrevid = false,
+            ),
+        );
+    });
+
+</script>
 {% endblock %}
