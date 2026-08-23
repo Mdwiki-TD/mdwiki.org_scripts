@@ -5,7 +5,6 @@
 **/old/**
 *.pyc
 .vscode/**
-src/app1.py
 patch-diff.diff
 coverage.xml
 .coverage
