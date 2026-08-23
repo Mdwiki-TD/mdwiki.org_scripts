@@ -103,7 +103,14 @@ class ImportHistoryWorker(BaseObjectsJobWorker):
             info.msg = result["error"]
             return info
 
-        revisions = (result.get("import") or [{}])[0].get("revisions", 0)
+        import_result = result.get("import")
+        if not import_result or not isinstance(import_result, list):
+            logger.warning(f"Job {self.job_id}: import_page returned invalid result for {title}: {result}")
+            info.status = "failed"
+            info.msg = "Invalid import result"
+            return info
+
+        revisions = import_result[0].get("revisions", 0)
 
         if not revisions:
             logger.info(f"Job {self.job_id}: {title!r}: import returned 0 revisions")
@@ -169,7 +176,7 @@ class ImportHistoryWorker(BaseObjectsJobWorker):
         elif info.status == "missing":
             self.result.pages_missing.append(info)
 
-        elif info.status == "error":
+        elif info.status == "failed":
             self.result.pages_errors.append(info)
         else:
             self.result.pages_processed.append(info)

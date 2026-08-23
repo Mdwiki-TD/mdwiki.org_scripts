@@ -25,4 +25,31 @@
 {% endblock %}
 
 {% block sub_job_details %}
+{% if result_data and result_data.pages_created %}
+
+{{ new_pages_table(
+    table_title="Pages Created",
+    job_id=job.id,
+    job_type=template_data.job_type,
+    list_name="pages_created",
+) }}
+{% endif %}
+
+{% endblock %}
+
+{% block sub_extra_js %}
+<script>
+    $(document).ready(function () {
+        initServerTable(
+            'table-pages_created',
+            createSharedTableColumns(
+                show_status = false,
+                show_message = true,
+                show_err = false,
+                show_newrevid = true,
+            ),
+        )
+    });
+</script>
+
 {% endblock %}

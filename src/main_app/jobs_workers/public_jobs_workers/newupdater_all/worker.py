@@ -138,7 +138,7 @@ class NewUpdaterAllWorker(BaseObjectsJobWorker):
         elif info.status == "skipped":
             self.result.pages_skipped.append(info)
 
-        elif info.status == "error":
+        elif info.status == "failed":
             self.result.pages_errors.append(info)
 
         else:
