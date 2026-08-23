@@ -36,11 +36,11 @@ function renderStatus(status) {
 /**
  * @param {string} wiki_domain
  * @param {string} title
- * @param {string} label
+ * @param {string | null} label
  * @return {string}
  */
 
-function renderWikiLink(wiki_domain, title, label) {
+function renderWikiLink(wiki_domain, title, label=null) {
     if (!title) return '-';
 
     let display_label = label || title;
@@ -58,14 +58,14 @@ function renderWikiLink(wiki_domain, title, label) {
  * result: string | boolean | null;
  * newrevid: number | null;
  * }} step
+ * @param {string} wiki_domain
  */
-function renderStep(step) {
+function renderStep(step, wiki_domain) {
     if (!step) return '<span class="text-muted">-</span>';
     const title = step.msg || step.message || step.new_value || step.value || '';
     if (step.result === true || step.result === 'updated') {
         if (step.newrevid && step.newrevid !== 0) {
-            const diffUrl = `https://commons.wikimedia.org/w/index.php?diff=${step.newrevid}`;
-            return `<a href="${diffUrl}" target="_blank"><span class="badge bg-success" title="${title}"><i class="bi bi-check-lg"></i> Diff</span></a>`;
+            return diffLink(wiki_domain, step.newrevid, title);
         }
         return `<span class="badge bg-success" title="${title}"><i class="bi bi-check-lg"></i></span>`;
     }
@@ -81,11 +81,18 @@ function renderStep(step) {
 /**
  * @param {string} wiki_domain
  * @param {number} newrevid
+ * @param {string | null} title
  */
-function diffLink(wiki_domain, newrevid) {
+function diffLink(wiki_domain, newrevid, title = null) {
     if (newrevid && newrevid !== 0) {
         const diffUrl = `https://${wiki_domain}/w/index.php?diff=${newrevid}`;
-        return `<a href="${diffUrl}" target="_blank"><span class="badge bg-success"><i class="bi bi-check-lg"></i> Diff</span></a>`;
+        const title_attr = title ? `title="${title}"` : '';
+        return `<a href="${diffUrl}" target="_blank">
+                    <span class="badge bg-success" ${title_attr}>
+                        <i class="bi bi-check-lg"></i> Diff
+                    </span>
+                </a>
+        `;
     }
     return `<span class="text-muted">-</span>`;
 }
