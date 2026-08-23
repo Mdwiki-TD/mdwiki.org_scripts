@@ -8,7 +8,6 @@ Copies redirects from English Wikipedia to mdwiki.
 from __future__ import annotations
 
 import logging
-from typing import Any
 
 from mwclient.client import Site
 
@@ -16,7 +15,7 @@ from ....api_services import MwClientPage
 from ....api_services.enwiki_api import get_redirects_for
 from ....api_services.query_api import is_pages_exists
 from ...base_worker import BaseObjectsJobWorker, JobsRunner
-from .objects import CreateRedirectsWorkerObject
+from .objects import CreateRedirectsWorkerObject, OneTitleInfo
 
 logger = logging.getLogger(__name__)
 
@@ -63,6 +62,7 @@ class CreateRedirectsWorker(BaseObjectsJobWorker):
 
         total = len(titles)
         self.result.summary.total = total
+
         per_item = self.get_priority(total) if total else 1
 
         logger.info(f"Job {self.job_id}: Processing {total} titles")
@@ -71,33 +71,10 @@ class CreateRedirectsWorker(BaseObjectsJobWorker):
             if self.is_cancelled():
                 break
 
-            self.result.summary.processed += 1
+            info = OneTitleInfo(title=title)
 
-            try:
-                counts = self._process_one(title)
-            except Exception as exc:
-                logger.exception("redirect run failed for %s", title)
-                self.result.summary.errors += 1
-                self.result.pages_errors.append({"title": title, "msg": str(exc)})
-                continue
-
-            self.result.summary.target_missing += counts.get("target_missing", 0)
-            self.result.summary.created += counts.get("created", 0)
-            self.result.summary.already_exists += counts.get("already_exists", 0)
-            self.result.summary.skipped += counts.get("skipped", 0)
-            self.result.summary.errors += counts.get("errors", 0)
-
-            status = "created" if counts.get("created") else "skipped"
-
-            msg = counts.get("msg") or f"created={counts.get('created', 0)} exists={counts.get('already_exists', 0)}"
-
-            page_record = {
-                "title": title,
-                "status": status,
-                "msg": msg,
-            }
-
-            self.result.pages_processed.append(page_record)
+            self._process_one(info)
+            self.update_status(info)
 
             if i == 1 or i % per_item == 0:
                 self._save_progress()
@@ -107,59 +84,97 @@ class CreateRedirectsWorker(BaseObjectsJobWorker):
 
         return self.result
 
-    def _resolve_titles(self):
+    def _resolve_titles(self) -> list[str]:
         titles_raw = self.args.get("titles", [])
-        if isinstance(titles_raw, str):
-            titles = [t.strip() for t in titles_raw.splitlines() if t.strip()]
-        else:
-            titles = [t.replace("_", " ").strip() for t in titles_raw if t and t.strip()]
 
-        self.result.pages_to_work = titles
-        return titles
+        if isinstance(titles_raw, str):
+            return [t.strip() for t in titles_raw.splitlines() if t.strip()]
+
+        return [t.replace("_", " ").strip() for t in titles_raw if t and t.strip()]
 
     # ------------------------------------------------------------------
     # Internal helpers
     # ------------------------------------------------------------------
 
-    def _process_one(self, title: str) -> dict[str, Any]:
+    def _process_one(self, info: OneTitleInfo) -> OneTitleInfo:
         """Copy missing redirects for one source title; return per-title counts."""
-        counts = {"target_missing": 0, "created": 0, "already_exists": 0, "skipped": 0, "errors": 0, "msg": ""}
 
+        title = info.title
         page = MwClientPage(title, self.site)
+
         if not page.exists():
             logger.info(f"Job {self.job_id}: {title!r}: missing!")
-            counts["msg"] = "target page missing"
-            counts["target_missing"] = 1
-            return counts
+            info.msg = "target page missing"
+            info.status = "skipped"
+            info.counts.target_missing = 1
+            return info
 
         redirect_titles = get_redirects_for(title)
         if not redirect_titles:
-            counts["msg"] = "no redirects on enwiki"
+            info.msg = "no redirects on enwiki"
             logger.info(f"Job {self.job_id}: {title!r}: no redirects on enwiki")
-            return counts
+            info.status = "skipped"
+            return info
 
-        existing = is_pages_exists(redirect_titles, self.site)
+        try:
+            existing = is_pages_exists(redirect_titles, self.site)
+        except Exception as e:
+            info.counts.errors += 1
+            info.msg = f"error checking redirects: {e}"
+            logger.error(f"Job {self.job_id}: {title!r}: error checking redirects: {e}")
+            info.status = "failed"
+            return info
+
         redirect_text = f"#redirect [[{title}]]"
         summary = f"Redirected page to [[{title}]]"
 
         for r_title, r_exists in existing.items():
             if r_exists:
-                counts["already_exists"] += 1
-                continue
-            if not _valid_title(r_title):
-                counts["skipped"] += 1
+                info.counts.already_exists += 1
                 continue
 
-            result = MwClientPage(r_title, self.site).create(redirect_text, summary)
+            if not _valid_title(r_title):
+                info.counts.skipped += 1
+                continue
+
+            r_page = MwClientPage(r_title, self.site)
+
+            result = r_page.create(redirect_text, summary)
+
             if result.get("success"):
-                counts["created"] += 1
+                info.counts.created += 1
                 logger.info(f"Job {self.job_id}: created {r_title!r} -> {title!r}")
             else:
-                counts["errors"] += 1
+                info.counts.errors += 1
                 logger.warning(f"Job {self.job_id}: create redirect failed: {r_title} -> {title}: {result}")
 
-        return counts
+        info.status = "completed"
 
+        if info.counts.created:
+            info.status = "created"
+
+        info.msg = f"created={info.counts.created} exists={info.counts.already_exists}"
+
+        return info
+
+    def update_status(self, info: OneTitleInfo) -> None:
+        """ """
+        self.result.summary.processed += 1
+        if info.status in ["pending", "running"]:
+            info.status = "completed"
+
+        if info.status == "created":
+            self.result.pages_created.append(info)
+
+        elif info.status == "skipped":
+            self.result.pages_skipped.append(info)
+
+        elif info.status == "failed":
+            self.result.pages_errors.append(info)
+        else:
+            self.result.pages_processed.append(info)
+
+        self.result.summary.update_from_counts(info.counts)
 
 __all__ = [
     "CreateRedirectsWorker",

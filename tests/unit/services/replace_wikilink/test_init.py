@@ -1,5 +1,3 @@
-
-
 from src.main_app.services.replace_wikilink import replace_wikilink_destinations
 
 

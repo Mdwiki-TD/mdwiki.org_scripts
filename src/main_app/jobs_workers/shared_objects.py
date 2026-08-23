@@ -26,10 +26,7 @@ class OneStep:
 @dataclass
 class SharedMapToJson:
     def to_json(self) -> dict[str, Any]:
-        """
-        Converts the dataclass instance back to its original dictionary format.
-        """
-        return asdict(self)  # pyright: ignore[reportCallIssue]
+        return asdict(self)
 
 
 @dataclass(frozen=True)
@@ -41,10 +38,7 @@ class UpdaterOutcome:
     msg: str = ""
 
     def to_json(self) -> dict[str, Any]:
-        """
-        Converts the dataclass instance back to its original dictionary format.
-        """
-        return asdict(self)  # pyright: ignore[reportCallIssue]
+        return asdict(self)
 
 
 @dataclass
@@ -104,7 +98,7 @@ class StandardAdminWorkerObject(WorkerMapping):
     pages_processed: list[dict[str, Any]] = field(default_factory=list)
     pages_success: list[dict[str, Any]] = field(default_factory=list)
     pages_skipped: list[dict[str, Any]] = field(default_factory=list)
-    pages_failed: list[dict[str, Any]] = field(default_factory=list)
+    pages_errors: list[dict[str, Any]] = field(default_factory=list)
     note: str = ""
     args: dict[str, Any] = field(default_factory=dict)
 

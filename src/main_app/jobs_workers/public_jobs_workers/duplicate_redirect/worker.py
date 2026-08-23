@@ -120,7 +120,7 @@ class DuplicateRedirectWorker(BaseObjectsJobWorker):
                 )
                 continue
 
-            self.record_page_outcome(outcome, entry)
+            self.update_status(outcome, entry)
 
             # Check DB if the job cancelled every N successful edits
             if outcome.kind == "changed" and self.check_cancel_db_periodic():
@@ -133,34 +133,6 @@ class DuplicateRedirectWorker(BaseObjectsJobWorker):
             self.result.status = "completed"
 
         return self.result
-
-    def record_page_outcome(self, outcome: UpdaterOutcome, entry: dict[str, Any]) -> None:
-        title = entry["title"]
-        redirect_to = entry["redirect_to"]
-        final_target = entry["final_target"]
-
-        page_record = {
-            "from_title": title,
-            "redirect_to": redirect_to,
-            "final_target": final_target,
-            "msg": outcome.msg,
-        }
-        if outcome.kind == "changed":
-            page_record["newrevid"] = str(outcome.newrevid)
-            self.result.pages_changed.append(page_record)
-
-        elif outcome.kind == "missing":
-            self.result.pages_missing.append(title)
-
-        elif outcome.kind == "skipped":
-            self.result.pages_skipped.append(page_record)
-
-        elif outcome.kind == "error":
-            self.result.pages_errors.append(page_record)
-
-        else:
-            page_record["status"] = outcome.kind
-            self.result.pages_processed.append(page_record)
 
     # ------------------------------------------------------------------
     # Internal helpers
@@ -194,6 +166,34 @@ class DuplicateRedirectWorker(BaseObjectsJobWorker):
 
         return new_text, summary
 
+
+    def update_status(self, outcome: UpdaterOutcome, entry: dict[str, Any]) -> None:
+        title = entry["title"]
+        redirect_to = entry["redirect_to"]
+        final_target = entry["final_target"]
+
+        page_record = {
+            "from_title": title,
+            "redirect_to": redirect_to,
+            "final_target": final_target,
+            "msg": outcome.msg,
+        }
+        if outcome.kind == "changed":
+            page_record["newrevid"] = str(outcome.newrevid)
+            self.result.pages_changed.append(page_record)
+
+        elif outcome.kind == "missing":
+            self.result.pages_missing.append(title)
+
+        elif outcome.kind == "skipped":
+            self.result.pages_skipped.append(page_record)
+
+        elif outcome.kind == "error":
+            self.result.pages_errors.append(page_record)
+
+        else:
+            page_record["status"] = outcome.kind
+            self.result.pages_processed.append(page_record)
 
 __all__ = [
     "DuplicateRedirectWorker",

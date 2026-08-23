@@ -166,7 +166,7 @@ pytest tests/unit/jobs/workers --cov=src/main_app/jobs/workers
 kind: Literal["missing", "skipped", "changed", "error"]
 ```
 
-Multiple workers handle `"skipped"` outcomes via `record_page_outcome()`, but the shared `UpdaterOutcome` type doesn't include it. The type annotation is inaccurate.
+Multiple workers handle `"skipped"` outcomes via `update_status()`, but the shared `UpdaterOutcome` type doesn't include it. The type annotation is inaccurate.
 
 ### 2. `WorkerObject` Not in `__all__`
 

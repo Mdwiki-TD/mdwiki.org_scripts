@@ -130,7 +130,7 @@ class AddRttTemplateWorker(BaseObjectsJobWorker):
                 self.result.pages_errors.append({"title": title, "msg": str(exc)})
                 continue
 
-            self.record_page_outcome(outcome, title)
+            self.update_status(outcome, title)
 
             if outcome.kind == "changed" and self.check_cancel_db_periodic():
                 break
@@ -142,28 +142,6 @@ class AddRttTemplateWorker(BaseObjectsJobWorker):
             self.result.status = "completed"
 
         return self.result
-
-    def record_page_outcome(self, outcome: UpdaterOutcome, title: str) -> None:
-        page_record = {
-            "title": title,
-            "msg": outcome.msg,
-        }
-        if outcome.kind == "changed":
-            page_record["newrevid"] = str(outcome.newrevid)
-            self.result.pages_changed.append(page_record)
-
-        elif outcome.kind == "missing":
-            self.result.pages_missing.append(title)
-
-        elif outcome.kind == "skipped":
-            self.result.pages_skipped.append(page_record)
-
-        elif outcome.kind == "error":
-            self.result.pages_errors.append(page_record)
-
-        else:
-            page_record["status"] = outcome.kind
-            self.result.pages_processed.append(page_record)
 
     # ------------------------------------------------------------------
     # Internal helpers
@@ -202,6 +180,28 @@ class AddRttTemplateWorker(BaseObjectsJobWorker):
             return UpdaterOutcome(kind="changed", newrevid=result.get("newrevid", 0))
 
         return UpdaterOutcome(kind="error", msg=result.get("error", "Unknown error"))
+
+    def update_status(self, outcome: UpdaterOutcome, title: str) -> None:
+        page_record = {
+            "title": title,
+            "msg": outcome.msg,
+        }
+        if outcome.kind == "changed":
+            page_record["newrevid"] = str(outcome.newrevid)
+            self.result.pages_changed.append(page_record)
+
+        elif outcome.kind == "missing":
+            self.result.pages_missing.append(title)
+
+        elif outcome.kind == "skipped":
+            self.result.pages_skipped.append(page_record)
+
+        elif outcome.kind == "error":
+            self.result.pages_errors.append(page_record)
+
+        else:
+            page_record["status"] = outcome.kind
+            self.result.pages_processed.append(page_record)
 
 
 __all__ = [

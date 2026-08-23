@@ -6,14 +6,13 @@ import logging
 from dataclasses import asdict, dataclass, field
 from typing import Any, Literal
 
-from ...base_worker import WorkerMapping
-from ...shared_objects import Summary
+from ...shared_objects import Summary, WorkerMapping
 
 logger = logging.getLogger(__name__)
 
 
 @dataclass(frozen=True)
-class UpdaterOutcome:
+class ImportUpdaterOutcome:
     """Result of running the updater on one page."""
 
     kind: Literal["missing", "imported", "imported_fallback", "error", "skipped"]
@@ -42,5 +41,5 @@ class ImportHistoryWorkerObject(WorkerMapping):
 
 __all__ = [
     "ImportHistoryWorkerObject",
-    "UpdaterOutcome",
+    "ImportUpdaterOutcome",
 ]

@@ -13,12 +13,13 @@ from src.main_app.jobs_workers.public_jobs_workers.create_redirects.worker impor
 )
 
 
-def test_valid_title():
-    assert _valid_title("Aspirin") is True
-    assert _valid_title("Aspirin (disambiguation)") is False
-    assert _valid_title("Category:Medical") is False
-    assert _valid_title("Template:Medical") is False
-    assert _valid_title("User:Test") is False
+class TestVlidTitle:
+    def test_valid_title(self):
+        assert _valid_title("Aspirin") is True
+        assert _valid_title("Aspirin (disambiguation)") is False
+        assert _valid_title("Category:Medical") is False
+        assert _valid_title("Template:Medical") is False
+        assert _valid_title("User:Test") is False
 
 
 class TestCreateRedirectsWorker:
