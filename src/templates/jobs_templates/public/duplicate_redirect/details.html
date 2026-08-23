@@ -90,17 +90,18 @@
                 },
             },
             {
-                data: 'redirect_to',
+                data: null,
                 title: 'Redirect to',
                 render: function (data, type, row) {
-                    return renderWikiLink(WIKIDOMAIN, data);
+                    return renderWikiLink(WIKIDOMAIN, data?.redirect_to);
                 },
             },
             {
-                data: 'final_target',
+                data: null,
                 title: 'Final target',
                 render: function (data, type, row) {
-                    return renderWikiLink(WIKIDOMAIN, data);
+                    let final_target = data?.final_target || data?.to_title;
+                    return renderWikiLink(WIKIDOMAIN, final_target);
                 },
             },
             {
