@@ -104,8 +104,6 @@ class DuplicateRedirectWorker(BaseObjectsJobWorker):
             redirect_to = entry["redirect_to"]
             final_target = entry["final_target"]
 
-            self.result.summary.processed += 1
-
             try:
                 outcome = self._process_one(from_title, redirect_to, final_target)
             except Exception as exc:
@@ -168,6 +166,8 @@ class DuplicateRedirectWorker(BaseObjectsJobWorker):
 
 
     def update_status(self, outcome: UpdaterOutcome, entry: dict[str, Any]) -> None:
+        self.result.summary.processed += 1
+
         title = entry["title"]
         redirect_to = entry["redirect_to"]
         final_target = entry["final_target"]

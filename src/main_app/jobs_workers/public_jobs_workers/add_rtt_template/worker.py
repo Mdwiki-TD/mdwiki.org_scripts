@@ -121,8 +121,6 @@ class AddRttTemplateWorker(BaseObjectsJobWorker):
             if self.is_cancelled():
                 break
 
-            self.result.summary.processed += 1
-
             try:
                 outcome = self._process_one(title)
             except Exception as exc:
@@ -182,6 +180,7 @@ class AddRttTemplateWorker(BaseObjectsJobWorker):
         return UpdaterOutcome(kind="error", msg=result.get("error", "Unknown error"))
 
     def update_status(self, outcome: UpdaterOutcome, title: str) -> None:
+        self.result.summary.processed += 1
         page_record = {
             "title": title,
             "msg": outcome.msg,

@@ -60,8 +60,6 @@ class ImportHistoryWorker(BaseObjectsJobWorker):
             if self.is_cancelled():
                 break
 
-            self.result.summary.processed += 1
-
             try:
                 outcome = self._process_one(title)
             except Exception as exc:
@@ -138,6 +136,8 @@ class ImportHistoryWorker(BaseObjectsJobWorker):
 
 
     def update_status(self, outcome: ImportUpdaterOutcome, title: str) -> None:
+        self.result.summary.processed += 1
+
         page_record = {
             "title": title,
             "msg": outcome.msg,

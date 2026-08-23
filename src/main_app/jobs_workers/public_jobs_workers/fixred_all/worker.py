@@ -64,7 +64,6 @@ class FixRedAllWorker(BaseObjectsJobWorker):
                 break
 
             title = page.name if hasattr(page, "name") else str(page)
-            self.result.summary.processed += 1
 
             try:
                 outcome = self._process_one(title, state)
@@ -119,6 +118,8 @@ class FixRedAllWorker(BaseObjectsJobWorker):
 
 
     def update_status(self, outcome: UpdaterOutcome, title: str) -> None:
+        self.result.summary.processed += 1
+
         page_record = {
             "title": title,
             "msg": outcome.msg,

@@ -84,8 +84,6 @@ class FindAndReplaceWorker(BaseObjectsJobWorker):
                 logger.info(f"Job {self.job_id}: Reached cap of {cap} modifications")
                 break
 
-            self.result.summary.processed += 1
-
             try:
                 outcome = self._process_one(title, str_find, str_replace)
             except Exception as exc:
@@ -175,6 +173,8 @@ class FindAndReplaceWorker(BaseObjectsJobWorker):
         return new_text, summary
 
     def update_status(self, outcome: UpdaterOutcome, title: str) -> None:
+        self.result.summary.processed += 1
+
         page_record = {
             "title": title,
             "msg": outcome.msg,
