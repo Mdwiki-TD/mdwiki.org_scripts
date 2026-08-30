@@ -43,11 +43,11 @@ def _env_int(name: str, default: int, safe: bool = False) -> int:
             return default
 
 
-def resolve_path(_path) -> Path:
+def resolve_path(_path: str) -> Path:
     """Expand environment variables and user home directory in paths."""
     _path = os.path.expandvars(str(_path))
-    _path = Path(_path).expanduser()
-    return _path
+    path = Path(_path).expanduser()
+    return path
 
 
 # --- Configuration Loaders ---

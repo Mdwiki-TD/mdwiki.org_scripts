@@ -40,7 +40,7 @@ function renderStatus(status) {
  * @return {string}
  */
 
-function renderWikiLink(wiki_domain, title, label=null) {
+function renderWikiLink(wiki_domain, title, label = null) {
     if (!title) return '-';
 
     let display_label = label || title;
