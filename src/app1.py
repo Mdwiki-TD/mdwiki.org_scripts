@@ -25,18 +25,7 @@ try:
 except Exception:
     logging.warning(f"Failed to load .env file from {str(_env_file_path)}")
 
-CopySVGTranslation_PATH = os.getenv("CopySVGTranslation_PATH", "")
-try:
-    import CopySVGTranslation  # type: ignore  # noqa: F401
-except ImportError:
-    if CopySVGTranslation_PATH and Path(CopySVGTranslation_PATH).is_dir():
-        sys.path.insert(0, str(Path(CopySVGTranslation_PATH).parent))
-
 # import app here
-from main_app.logger_config import configure_logging  # noqa: E402
-
-configure_logging(logging.DEBUG, use_colorlog=True, name="CopySVGTranslation")
-
 from main_app import AppFactory  # noqa: E402
 
 app = AppFactory.create()
