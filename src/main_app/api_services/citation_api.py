@@ -6,7 +6,7 @@ import logging
 
 import requests
 
-from ..config import settings
+from ..config import app_settings
 
 logger = logging.getLogger(__name__)
 
@@ -28,7 +28,7 @@ def get_citation_title(url_encoded_fields: str, *, timeout: int = 10) -> str:
         req = requests.get(
             url,
             timeout=timeout,
-            headers={"User-Agent": settings.other.user_agent},
+            headers={"User-Agent": app_settings.other.user_agent},
         )
 
         if 500 <= req.status_code < 600:

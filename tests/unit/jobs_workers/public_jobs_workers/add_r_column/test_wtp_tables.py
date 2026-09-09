@@ -5,15 +5,13 @@ from __future__ import annotations
 import wikitextparser as wtp
 from wikitextparser._cell import Cell
 
-table = wtp.Table(
-    """
+table = wtp.Table("""
 {|
 | A || colspan="2" | B
 |- test="test"
 | class='ss' | C || D || E
 |}
-"""
-)
+""")
 
 
 def test_table_data():
@@ -36,16 +34,14 @@ def test_table_cells():
     assert cells[0][2].string == Cell('|| colspan="2" | B').string
 
 
-table_header = wtp.Table(
-    """
+table_header = wtp.Table("""
 {|
 ! Head1
 ! Head2
 |-
 | C || D
 |}
-"""
-)
+""")
 
 
 def test_table_head_cells():
