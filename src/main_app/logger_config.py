@@ -13,6 +13,18 @@ from pathlib import Path
 import colorlog
 
 
+def _daily_log_namer(default_name: str) -> str:
+    """Rename rotated log from 'errors.log.2024-01-15' to '2024-01-15.log'."""
+    directory = os.path.dirname(default_name)
+    basename = os.path.basename(default_name)
+    # default format: "errors.log.YYYY-MM-DD"
+    parts = basename.rsplit(".", 1)
+    if len(parts) == 2:
+        date_part = parts[1]
+        return os.path.join(directory, f"{date_part}.log")
+    return default_name
+
+
 def prepare_log_file(
     log_file: str | None,
     project_logger: logging.Logger,
@@ -35,16 +47,18 @@ def prepare_log_file(
 
 def setup_file_handler(
     project_logger: logging.Logger,
-    log_file: Path,
+    log_file: Path | None,
     level: int,
     daily_rotation: bool = False,
 ) -> None:
     if not log_file:
         return
+
     file_formatter = logging.Formatter(
         fmt="%(asctime)s - %(name)s - %(levelname)-8s - %(message)s",
         datefmt="%Y-%m-%d %H:%M:%S",
     )
+    # file_handler = logging.FileHandler(log_file, mode="a", encoding="utf-8")
     if daily_rotation:
         file_handler = TimedRotatingFileHandler(
             log_file,
@@ -78,8 +92,10 @@ def setup_logging(
     if project_logger.handlers:
         return
 
-    numeric_level = getattr(logging, level.upper(), logging.INFO) if isinstance(level, str) else level
+    if use_colorlog is None:
+        use_colorlog = sys.stderr.isatty()
 
+    numeric_level = getattr(logging, level.upper(), logging.INFO) if isinstance(level, str) else level
     project_logger.setLevel(numeric_level)
     project_logger.propagate = False
 
@@ -105,7 +121,9 @@ def setup_logging(
 
     console_handler = logging.StreamHandler(sys.stdout)
     console_handler.setFormatter(console_formatter)
+
     console_handler.setLevel(numeric_level)
+
     project_logger.addHandler(console_handler)
 
     project_logger.debug("Setting up logging for '%s' with level '%s'", name, level)
@@ -124,18 +142,6 @@ def setup_logging(
                 logging.WARNING,
                 daily_rotation=daily_rotation,
             )
-
-
-def _daily_log_namer(default_name: str) -> str:
-    """Rename rotated log from 'errors.log.2024-01-15' to '2024-01-15.log'."""
-    directory = os.path.dirname(default_name)
-    basename = os.path.basename(default_name)
-    # default format: "errors.log.YYYY-MM-DD"
-    parts = basename.rsplit(".", 1)
-    if len(parts) == 2:
-        date_part = parts[1]
-        return os.path.join(directory, f"{date_part}.log")
-    return default_name
 
 
 def get_log_dir() -> Path:
@@ -165,7 +171,10 @@ def configure_logging(
         log_dir = get_log_dir()
     except OSError as exc:
         setup_logging(level=level, name=name, use_colorlog=use_colorlog)
-        logging.getLogger(name).warning("Falling back to console logging; could not create log directory %s", exc)
+        logging.getLogger(name).warning(
+            "Falling back to console logging; could not create log directory %s",
+            exc,
+        )
         return
 
     # Define paths
