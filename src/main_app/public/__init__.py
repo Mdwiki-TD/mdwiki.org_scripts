@@ -10,7 +10,7 @@ from .auth.routes import AuthRoutes
 from .fixred import FixRedRoutes
 from .main_routes import MainRoutes
 from .newupdater.route import NewUpdaterRoutes
-from .profile import ProfileRoutes
+from .profile import ProfileView
 from .public_jobs import PublicJobsRoutes
 
 
@@ -25,7 +25,7 @@ class PublicRouteModule:
 PUBLIC_ROUTE_MODULES: list[PublicRouteModule] = [
     PublicRouteModule(MainRoutes, "main", ""),
     PublicRouteModule(AuthRoutes, "auth", ""),  # /auth
-    PublicRouteModule(ProfileRoutes, "profile", "/profile"),
+    PublicRouteModule(ProfileView, "profile", "/profile"),
     PublicRouteModule(FixRedRoutes, "fixred", "/fixred"),
     PublicRouteModule(NewUpdaterRoutes, "newupdater", "/newupdater"),
     PublicRouteModule(
@@ -47,8 +47,8 @@ class RouteRegistrar:
     def register(app: Flask):
         for module in PUBLIC_ROUTE_MODULES:
             bp = Blueprint(module.name, __name__, url_prefix=module.url_prefix)
-            route_instance = module.route_cls(bp=bp, **module.extra_kwargs)
-            app.register_blueprint(route_instance.bp)
+            module.route_cls(**module.extra_kwargs).register(bp)
+            app.register_blueprint(bp)
 
 
 __all__ = [
