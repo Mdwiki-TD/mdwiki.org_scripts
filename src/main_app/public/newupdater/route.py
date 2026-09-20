@@ -64,18 +64,15 @@ def _newupdater(title: str, save: bool) -> str:
 
 
 class NewUpdaterRoutes:
-    def __init__(self, bp: Blueprint) -> None:
-        self.bp = bp
-        self._setup_routes()
 
-    def _setup_routes(self) -> None:
-        @self.bp.route("/<path:title>", methods=["GET"])
+    def register(self, bp: Blueprint) -> None:
+        @bp.route("/<path:title>", methods=["GET"])
         @oauth_required
         def worker(title: str) -> str:
             title = _parse_title(title)
             return _newupdater(title, False)
 
-        @self.bp.route("/save/<path:title>", methods=["GET"])
+        @bp.route("/save/<path:title>", methods=["GET"])
         @oauth_required
         def auto_save(title: str) -> str:
             """
@@ -92,7 +89,7 @@ class NewUpdaterRoutes:
             title = _parse_title(title)
             return _newupdater(title, True)
 
-        @self.bp.route("/update", methods=["GET"])
+        @bp.route("/update", methods=["GET"])
         @oauth_required
         def newupdater() -> str | Response:
             title = _parse_title(request.args.get("title") or "")
@@ -109,7 +106,7 @@ class NewUpdaterRoutes:
                 # Redirect to worker route: /<path:title>
                 return redirect(url_for("newupdater.worker", title=title))
 
-        @self.bp.route("/", methods=["GET"])
+        @bp.route("/", methods=["GET"])
         def index() -> str:
             return render_template(
                 "newupdater.html",

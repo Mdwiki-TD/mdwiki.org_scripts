@@ -17,12 +17,9 @@ def _normalize_title(raw: str) -> str:
 
 
 class FixRedRoutes:
-    def __init__(self, bp: Blueprint) -> None:
-        self.bp = bp
-        self._setup_routes()
 
-    def _setup_routes(self) -> None:
-        @self.bp.route("/", methods=["GET"])
+    def register(self, bp: Blueprint) -> None:
+        @bp.route("/", methods=["GET"])
         @oauth_required
         def index() -> str:
             title = _normalize_title(request.args.get("title", ""))
@@ -35,7 +32,7 @@ class FixRedRoutes:
                 save=save,
             )
 
-        @self.bp.route("/", methods=["POST"])
+        @bp.route("/", methods=["POST"])
         @oauth_required
         def fixred_post() -> str:
             title = _normalize_title(request.form.get("title", ""))
