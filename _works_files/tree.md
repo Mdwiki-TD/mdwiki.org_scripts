@@ -5,19 +5,30 @@ src/
 │   │   ├── routes/
 │   │   │   ├── __init__.py
 │   │   │   ├── coordinators.py
+│   │   │   ├── errors_route.py
 │   │   │   ├── jobs.py
 │   │   │   ├── settings.py
 │   │   │   └── users.py
 │   │   ├── __init__.py
+│   │   ├── admin_panel.py
 │   │   ├── decorators.py
-│   │   ├── route.py
-│   │   └── sidebar.py
+│   │   ├── flask_admin_panel.py
+│   │   └── flask_admin_panel_models.py
 │   ├── api_services/
 │   │   ├── clients/
 │   │   │   ├── __init__.py
 │   │   │   ├── commons_client.py
+│   │   │   ├── objects.py
 │   │   │   └── wiki_client.py
 │   │   ├── files_service/
+│   │   │   ├── __init__.py
+│   │   │   ├── downloader.py
+│   │   │   ├── exceptions.py
+│   │   │   ├── files_helpers.py
+│   │   │   ├── objects.py
+│   │   │   ├── save_file.py
+│   │   │   ├── service.py
+│   │   │   └── uploader.py
 │   │   ├── mwclient_page/
 │   │   │   ├── __init__.py
 │   │   │   ├── mwclient_error.py
@@ -28,62 +39,41 @@ src/
 │   │   ├── enwiki_api.py
 │   │   ├── query_api.py
 │   │   └── README.md
-│   ├── public/
-│   │   ├── auth/
-│   │   │   ├── __init__.py
-│   │   │   ├── rate_limit.py
-│   │   │   ├── routes.py
-│   │   │   └── utils.py
-│   │   ├── main_routes/
-│   │   │   ├── __init__.py
-│   │   │   └── routes.py
-│   │   ├── newupdater/
-│   │   │   ├── __init__.py
-│   │   │   └── route.py
-│   │   ├── utils/
-│   │   │   ├── __init__.py
-│   │   │   └── routes_utils.py
-│   │   ├── __init__.py
-│   │   ├── fixred.py
-│   │   ├── jobs_routes_utils.py
-│   │   ├── profile.py
-│   │   ├── public_jobs.py
-│   │   └── README.md
 │   ├── config/
 │   │   ├── __init__.py
 │   │   ├── classes.py
 │   │   ├── flask_config.py
 │   │   ├── main_settings.py
 │   │   └── README.md
-│   ├── core/
-│   │   ├── cookies/
-│   │   │   ├── __init__.py
-│   │   │   ├── cookie.py
-│   │   │   └── cookie_header_client.py
-│   │   ├── __init__.py
-│   │   ├── crypto.py
-│   │   ├── jinja_filters.py
-│   │   └── README.md
-│   ├── db/
+│   ├── database/
 │   │   ├── models/
 │   │   │   ├── __init__.py
+│   │   │   ├── base.py
 │   │   │   ├── jobs.py
 │   │   │   ├── settings.py
 │   │   │   └── users.py
 │   │   ├── services/
 │   │   │   ├── utils/
 │   │   │   │   ├── __init__.py
-│   │   │   │   ├── db_guard_model.py
 │   │   │   │   └── retry_on_disconnect.py
 │   │   │   ├── __init__.py
 │   │   │   ├── admin_service.py
-│   │   │   ├── delete_service.py
+│   │   │   ├── crud_service.py
 │   │   │   ├── jobs_service.py
 │   │   │   ├── settings_service.py
 │   │   │   ├── user_token_service.py
 │   │   │   └── users_service.py
 │   │   ├── __init__.py
+│   │   ├── create_helper.py
 │   │   ├── exceptions.py
+│   │   └── README.md
+│   ├── extensions/
+│   │   ├── __init__.py
+│   │   ├── _csrf.py
+│   │   └── data_base.py
+│   ├── io/
+│   │   ├── __init__.py
+│   │   ├── jobs_files_service.py
 │   │   └── README.md
 │   ├── jobs_workers/
 │   │   ├── admin_jobs_workers/
@@ -93,7 +83,9 @@ src/
 │   │   │   │   ├── __init__.py
 │   │   │   │   ├── add_rtt.py
 │   │   │   │   ├── objects.py
-│   │   │   │   └── worker.py
+│   │   │   │   ├── utils.py
+│   │   │   │   ├── worker.py
+│   │   │   │   └── wtp_table_manager.py
 │   │   │   ├── add_rtt_template/
 │   │   │   │   ├── __init__.py
 │   │   │   │   └── worker.py
@@ -106,6 +98,7 @@ src/
 │   │   │   │   └── worker.py
 │   │   │   ├── duplicate_redirect/
 │   │   │   │   ├── __init__.py
+│   │   │   │   ├── objects.py
 │   │   │   │   └── worker.py
 │   │   │   ├── find_and_replace/
 │   │   │   │   ├── __init__.py
@@ -128,13 +121,52 @@ src/
 │   │   │   ├── README.md
 │   │   │   └── workers_list_public.py
 │   │   ├── __init__.py
-│   │   ├── base_worker_object.py
+│   │   ├── _shared_objects.py
+│   │   ├── base_worker.py
 │   │   ├── cli_jobs.py
 │   │   ├── jobs_worker.py
 │   │   ├── objects.py
 │   │   ├── shared_objects.py
 │   │   └── utils.py
-│   ├── shared/
+│   ├── public/
+│   │   ├── auth/
+│   │   │   ├── __init__.py
+│   │   │   ├── decorators.py
+│   │   │   ├── rate_limit.py
+│   │   │   └── routes.py
+│   │   ├── main_routes/
+│   │   │   ├── __init__.py
+│   │   │   └── routes.py
+│   │   ├── newupdater/
+│   │   │   ├── __init__.py
+│   │   │   └── route.py
+│   │   ├── utils/
+│   │   │   ├── __init__.py
+│   │   │   └── routes_utils.py
+│   │   ├── __init__.py
+│   │   ├── fixred.py
+│   │   ├── profile.py
+│   │   ├── public_jobs.py
+│   │   ├── README.md
+│   │   └── shared_jobs_routes.py
+│   ├── services/
+│   │   ├── auth/
+│   │   │   ├── __init__.py
+│   │   │   ├── auth_exceptions.py
+│   │   │   ├── auth_service.py
+│   │   │   ├── current_user.py
+│   │   │   ├── flow.py
+│   │   │   ├── token_manager.py
+│   │   │   └── utils.py
+│   │   ├── core/
+│   │   │   ├── cookies/
+│   │   │   │   ├── __init__.py
+│   │   │   │   ├── cookie.py
+│   │   │   │   └── cookie_header_client.py
+│   │   │   ├── __init__.py
+│   │   │   ├── crypto.py
+│   │   │   ├── jinja_filters.py
+│   │   │   └── README.md
 │   │   ├── fixref_shared/
 │   │   │   ├── __init__.py
 │   │   │   ├── fixred_worker.py
@@ -149,7 +181,7 @@ src/
 │   │   │   │   ├── expend.py
 │   │   │   │   ├── expend_new.py
 │   │   │   │   ├── old_params.py
-│   │   │   │   └── Remove.py
+│   │   │   │   └── remove_worker.py
 │   │   │   ├── lists/
 │   │   │   │   ├── __init__.py
 │   │   │   │   ├── bot_params.py
@@ -159,30 +191,37 @@ src/
 │   │   │   ├── __init__.py
 │   │   │   ├── chembox.py
 │   │   │   ├── drugbox.py
-│   │   │   ├── MedWorkNew.py
+│   │   │   ├── med_work_new.py
 │   │   │   ├── mv_section.py
 │   │   │   └── resources_new.py
 │   │   ├── replace_wikilink/
 │   │   │   └── __init__.py
+│   │   ├── utils/
+│   │   │   ├── __init__.py
+│   │   │   └── decode_bytes.py
 │   │   ├── __init__.py
-│   │   ├── decode_bytes.py
 │   │   ├── fixred_one.py
 │   │   ├── newupdater_service.py
 │   │   ├── README.md
 │   │   └── shared_classes.py
-│   ├── su_services/
-│   │   ├── __init__.py
-│   │   ├── auth_service.py
-│   │   ├── auth_users_service.py
-│   │   ├── current_user.py
-│   │   ├── jobs_files_service.py
-│   │   ├── mwoauth_handshake.py
-│   │   └── README.md
+│   ├── templates_markups/
+│   │   ├── admin_sidebar/
+│   │   │   ├── __init__.py
+│   │   │   ├── mapping.py
+│   │   │   ├── sidebar.py
+│   │   │   └── sidebar_list.py
+│   │   ├── navbar/
+│   │   │   ├── __init__.py
+│   │   │   ├── nav_bar.py
+│   │   │   ├── navbar_list.py
+│   │   │   └── objects.py
+│   │   └── __init__.py
 │   ├── utils/
 │   │   ├── README.md
 │   │   └── verify.py
 │   ├── __init__.py
-│   ├── extensions.py
+│   ├── error_pages.py
+│   ├── logger_config.py
 │   └── README.md
 ├── static/
 │   ├── css/
@@ -190,16 +229,28 @@ src/
 │   │   ├── sidebar-desktop.css
 │   │   ├── sidebar-mobile.css
 │   │   └── style.css
-│   └── js/
-│       ├── auto-refresh.js
-│       ├── autocomplete.js
-│       ├── card-tools.js
-│       ├── dark-mode.js
-│       └── sidebar.js
+│   ├── js/
+│   │   ├── data_table_ajax/
+│   │   │   ├── macros.js
+│   │   │   └── table.js
+│   │   ├── auto-refresh.js
+│   │   ├── autocomplete.js
+│   │   ├── card-tools.js
+│   │   ├── dark-mode.js
+│   │   └── sidebar.js
+│   └── favicon.ico
 ├── templates/
 │   ├── _macros/
+│   ├── admin/
+│   │   └── bs4_admin/
+│   │       ├── file/
+│   │       │   └── modals/
+│   │       ├── model/
+│   │       │   └── modals/
+│   │       └── rediscli/
 │   ├── admins/
 │   ├── jobs_templates/
+│   │   ├── _ajax_templates/
 │   │   ├── _help_templates/
 │   │   └── public/
 │   │       ├── add_rtt_template/
@@ -215,7 +266,6 @@ src/
 │       └── add_r_column/
 ├── __init__.py
 ├── app.py
-├── logger_config.py
 ├── README.md
 └── uwsgi.ini
 
