@@ -32,7 +32,7 @@ class TestNormalizeTitle:
 
 
 @pytest.mark.usefixtures("mock_app")
-class TestFixredRoutes:
+class TestFixRedView:
     """Tests for the fixred blueprint routes."""
 
     def test_get_index_requires_auth(self, mock_client):

@@ -354,7 +354,7 @@ from flask_security import roles_required
 # In routes:
 @bp_admin.route("/", methods=["GET"])
 @roles_required("admin")
-def admin_dashboard() -> str:
+def dashboard() -> str:
     ...
 ```
 

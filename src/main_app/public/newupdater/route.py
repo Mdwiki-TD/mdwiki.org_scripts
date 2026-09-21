@@ -14,7 +14,6 @@ from ..auth.decorators import oauth_required
 
 logger = logging.getLogger(__name__)
 
-
 def _parse_title(title: str) -> str:
     title = title.replace("+", " ").replace("_", " ").strip()
     title = unquote(title)
@@ -77,10 +76,17 @@ class NewUpdaterAutoSaveView(NewUpdaterBaseView):
     """Update a title and save the result automatically."""
 
     def get(self, title: str) -> str:
-        """Render the saved result for the title extracted from the URL.
+        """
+        Render the saved result for the title extracted from the URL.
 
         NOTE: this route is already used in https://mdwiki.org/wiki/MediaWiki:Sidebars:
             `**https://mdw.toolforge.org/newupdater/save/{{urlencode:{{PAGENAME}}}}|Med updater`
+
+        Args:
+            title (str): The raw title string to be processed.
+
+        Returns:
+            str: The result returned by the `self._render_outcome` function after processing the title.
         """
         return self._render_outcome(_parse_title(title), save=True)
 
@@ -100,6 +106,7 @@ class NewUpdaterUpdateView(NewUpdaterBaseView):
         if save:
             # Redirect to the auto_save route: /save/<path:title>
             return redirect(url_for("newupdater.auto_save", title=title))
+
         # Redirect to the worker route: /<path:title>
         return redirect(url_for("newupdater.worker", title=title))
 
@@ -146,12 +153,6 @@ class NewUpdaterRoutes:
             methods=["GET"],
         )
 
-
 __all__ = [
-    "NewUpdaterAutoSaveView",
-    "NewUpdaterBaseView",
-    "NewUpdaterIndexView",
     "NewUpdaterRoutes",
-    "NewUpdaterUpdateView",
-    "NewUpdaterWorkerView",
 ]
