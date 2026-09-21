@@ -68,3 +68,43 @@ class TestAdminEndpointGuards:
         resp = mock_client.post("/adminpanel/users/1/can_run_jobs", data={"can_run_jobs": "1"})
         assert resp.status_code == 302
         assert "login" in resp.headers["Location"]
+
+
+@pytest.mark.usefixtures("mock_app")
+class TestAdminBlueprintGuard:
+    """The single blueprint-level ``admin_guard`` must cover every admin endpoint.
+
+    Flask propagates a parent blueprint's ``before_request`` to its nested child
+    blueprints, so registering the guard once on ``adminpanel`` protects the
+    sub-blueprints (users, settings, coordinators, jobs, errors) too.
+    """
+
+    def test_guard_lets_active_admin_through(self, mock_client, monkeypatch):
+        from types import SimpleNamespace
+
+        admin_user = SimpleNamespace(username="test_admin", is_active_admin=True)
+        monkeypatch.setattr("src.main_app.admin.decorators.get_current_user", lambda: admin_user)
+
+        resp = mock_client.get("/adminpanel/")
+        assert resp.status_code == 200
+
+    def test_guard_blocks_non_admin(self, mock_client, monkeypatch):
+        from types import SimpleNamespace
+
+        regular_user = SimpleNamespace(username="regular", is_active_admin=False)
+        monkeypatch.setattr("src.main_app.admin.decorators.get_current_user", lambda: regular_user)
+
+        for url in ("/adminpanel/", "/adminpanel/users/", "/adminpanel/settings/", "/adminpanel/coordinators/"):
+            resp = mock_client.get(url)
+            assert resp.status_code == 403, f"{url} should be 403 for a non-admin, got {resp.status_code}"
+
+    def test_guard_redirects_anonymous_user(self, mock_client):
+        for url in ("/adminpanel/", "/adminpanel/users/", "/adminpanel/settings/", "/adminpanel/coordinators/"):
+            resp = mock_client.get(url)
+            assert resp.status_code == 302, f"{url} should redirect anonymous users, got {resp.status_code}"
+            assert "login" in resp.headers["Location"]
+
+    def test_guard_leaves_public_routes_untouched(self, mock_client):
+        # The guard is scoped to the admin blueprint and must not leak elsewhere.
+        resp = mock_client.get("/")
+        assert resp.status_code == 200
