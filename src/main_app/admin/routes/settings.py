@@ -6,7 +6,14 @@ import logging
 import re
 from typing import Any
 
-from flask import Blueprint, flash, redirect, render_template, request, url_for
+from flask import (
+    Blueprint,
+    flash,
+    redirect,
+    render_template,
+    request,
+    url_for,
+)
 from flask.typing import ResponseReturnValue
 from flask.views import MethodView
 from werkzeug.datastructures import ImmutableMultiDict
@@ -32,6 +39,8 @@ def _parse_setting_value(v_type: str, raw_val: str) -> tuple[Any, bool]:
 
 class SettingsFuncs:
     """Shared service access and form-processing logic for the settings views."""
+
+    decorators = [admin_required]
 
     def __init__(self) -> None:
         self.service = SettingsService()
