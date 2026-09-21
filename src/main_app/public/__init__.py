@@ -6,7 +6,7 @@ from typing import Any
 from flask import Blueprint, Flask
 
 from ..jobs_workers.public_jobs_workers.workers_list_public import jobs_data_public
-from .auth.routes import AuthRoutes
+from .auth.routes import AuthView
 from .fixred import FixRedRoutes
 from .main_routes import MainRoutes
 from .newupdater.route import NewUpdaterRoutes
@@ -24,7 +24,7 @@ class PublicRouteModule:
 
 PUBLIC_ROUTE_MODULES: list[PublicRouteModule] = [
     PublicRouteModule(MainRoutes, "main", ""),
-    PublicRouteModule(AuthRoutes, "auth", ""),  # /auth
+    PublicRouteModule(AuthView, "auth", ""),  # /auth
     PublicRouteModule(ProfileView, "profile", "/profile"),
     PublicRouteModule(FixRedRoutes, "fixred", "/fixred"),
     PublicRouteModule(NewUpdaterRoutes, "newupdater", "/newupdater"),

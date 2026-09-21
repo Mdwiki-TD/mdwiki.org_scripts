@@ -140,7 +140,7 @@ class LogoutView(MethodView):
         return result.response
 
 
-class AuthRoutes:
+class AuthView:
 
     @classmethod
     def register(cls, bp: Blueprint) -> None:
@@ -153,5 +153,5 @@ class AuthRoutes:
 
 
 __all__ = [
-    "AuthRoutes",
+    "AuthView",
 ]
