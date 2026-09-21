@@ -48,24 +48,19 @@ class UsersDashboardView(MethodView):
         )
 
 
-class BaseTogglePermissionView(MethodView):
-    """Base view toggling a single boolean permission flag for a user."""
+class UpdateCanRunJobsView(MethodView):
+    """View to toggle the can_run_jobs column for a user."""
 
     decorators = [admin_required]
-
-    # Name of the submitted form field and of the permission being changed.
-    form_field = "can_run_jobs"
-    permission_label = "can_run_jobs"
 
     def __init__(self) -> None:
         self.user_service = UsersService()
 
     def post(self, user_id: int) -> ResponseReturnValue:
-        """Flip the permission for ``user_id`` and redirect back to the dashboard."""
-        desired = 1 if request.form.get(self.form_field, "0") == "1" else 0
-
+        """Toggle the can_run_jobs column for a user."""
+        desired = 1 if request.form.get("can_run_jobs", "0") == "1" else 0
         try:
-            record = self._toggle(user_id, bool(desired))
+            record = self.user_service.toggle_can_run_jobs(user_id, bool(desired))
         except LookupError:
             logger.exception("Unable to update user permissions.")
             flash(f"User with id {user_id} was not found", "warning")
@@ -77,33 +72,39 @@ class BaseTogglePermissionView(MethodView):
                 flash("Unable to update user permissions. Please try again.", "danger")
             else:
                 flash(f"User '{record.username}' permissions updated.", "success")
-                logger.info("User '%s' [%s]=%s updated.", record.username, self.permission_label, desired)
+                logger.info(f"User '{record.username}' [can_run_jobs]={desired} updated.")
 
         return redirect(url_for("adminpanel.users.dashboard"))
 
-    def _toggle(self, user_id: int, enabled: bool) -> Any:
-        """Persist the new flag value, returning the updated record (or None)."""
-        raise NotImplementedError
 
+class UpdateCanRunBgJobsView(MethodView):
+    """View to toggle the can_run_bg_jobs column for a user."""
 
-class UpdateCanRunJobsView(BaseTogglePermissionView):
-    """View toggling the ``can_run_jobs`` permission."""
+    decorators = [admin_required]
 
-    form_field = "can_run_jobs"
-    permission_label = "can_run_jobs"
+    def __init__(self) -> None:
+        self.user_service = UsersService()
 
-    def _toggle(self, user_id: int, enabled: bool) -> Any:
-        return self.user_service.toggle_can_run_jobs(user_id, enabled)
+    def post(self, user_id: int) -> ResponseReturnValue:
+        """Toggle the can_run_bg_jobs column for a user."""
+        desired = 1 if request.form.get("can_run_bg_jobs", "0") == "1" else 0
 
+        try:
+            record = self.user_service.toggle_can_run_bg_jobs(user_id, bool(desired))
+        except LookupError:
+            logger.exception("Unable to update user permissions.")
+            flash(f"User with id {user_id} was not found", "warning")
+        except Exception:  # pragma: no cover - defensive guard
+            logger.exception("Unable to update user permissions.")
+            flash("Unable to update user permissions. Please try again.", "danger")
+        else:
+            if record is None:
+                flash("Unable to update user permissions. Please try again.", "danger")
+            else:
+                flash(f"User '{record.username}' permissions updated.", "success")
+                logger.info(f"User '{record.username}' [can_run_bg_jobs]={desired} updated.")
 
-class UpdateCanRunBgJobsView(BaseTogglePermissionView):
-    """View toggling the ``can_run_bg_jobs`` permission."""
-
-    form_field = "can_run_bg_jobs"
-    permission_label = "can_run_bg_jobs"
-
-    def _toggle(self, user_id: int, enabled: bool) -> Any:
-        return self.user_service.toggle_can_run_bg_jobs(user_id, enabled)
+        return redirect(url_for("adminpanel.users.dashboard"))
 
 
 class UsersRoutes:
@@ -127,6 +128,24 @@ class UsersRoutes:
             view_func=UpdateCanRunBgJobsView.as_view("update_can_run_bg_jobs"),
             methods=["POST"],
         )
+
+    # ----------------------------------------------------------------------
+    # TODO: Backward Compatibility
+    # Legacy handler methods kept so callers/tests that invoked them
+    # directly on the registrar still work. Remove once all consumers
+    # use the MethodView classes above.
+    # ----------------------------------------------------------------------
+    def dashboard(self) -> str:
+        """Render the user management dashboard."""
+        return UsersDashboardView().get()
+
+    def update_can_run_jobs(self, user_id: int) -> ResponseReturnValue:
+        """Toggle the can_run_jobs column for a user."""
+        return UpdateCanRunJobsView().post(user_id)
+
+    def update_can_run_bg_jobs(self, user_id: int) -> ResponseReturnValue:
+        """Toggle the can_run_bg_jobs column for a user."""
+        return UpdateCanRunBgJobsView().post(user_id)
 
 
 __all__ = [
