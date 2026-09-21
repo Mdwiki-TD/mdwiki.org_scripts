@@ -22,7 +22,7 @@ from ..decorators import admin_required
 logger = logging.getLogger(__name__)
 
 
-class UserDashboardView(MethodView):
+class UsersDashboardView(MethodView):
     """View rendering the user management dashboard."""
 
     decorators = [admin_required]
@@ -114,7 +114,7 @@ class UsersRoutes:
         """Register the dashboard and the two permission-toggle endpoints."""
         bp.add_url_rule(
             "/",
-            view_func=UserDashboardView.as_view("dashboard"),
+            view_func=UsersDashboardView.as_view("dashboard"),
             methods=["GET"],
         )
         bp.add_url_rule(
