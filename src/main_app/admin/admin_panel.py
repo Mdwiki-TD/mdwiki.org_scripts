@@ -70,7 +70,7 @@ class AdminPanel:
 
         bp.add_url_rule(
             "/",
-            view_func=AdminDashboardView.as_view("admin_dashboard"),
+            view_func=AdminDashboardView.as_view("dashboard"),
             methods=["GET"],
         )
 
