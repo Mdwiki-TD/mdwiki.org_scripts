@@ -1,11 +1,11 @@
-"""
-Defines the main routes for the application, such as the homepage.
-"""
+"""Main routes for the application (homepage and favicon)."""
 
 from __future__ import annotations
 
-from .routes import MainRoutes
+from .routes import FaviconView, MainIndexView, MainRoutes
 
 __all__ = [
+    "FaviconView",
+    "MainIndexView",
     "MainRoutes",
 ]

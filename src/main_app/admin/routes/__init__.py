@@ -7,7 +7,7 @@ from flask import Blueprint
 
 from ...jobs_workers.admin_jobs_workers.workers_list import jobs_data_admins
 from .coordinators import CoordinatorView
-from .errors_route import CheckErrorsdView
+from .errors_route import CheckErrorsView
 from .jobs import AdminJobsRoutes
 from .settings import SettingsRoutes
 from .users import UsersRoutes
@@ -34,18 +34,22 @@ ADMIN_ROUTE_MODULES: list[AdminRouteModule] = [
             "bp_name": "adminpanel.jobs",
         },
     ),
-    AdminRouteModule(route_cls=CheckErrorsdView, name="errors", url_prefix="/errors"),
+    AdminRouteModule(route_cls=CheckErrorsView, name="errors", url_prefix="/errors"),
 ]
 
 
-def register_admin_blueprints(bp_admin: Blueprint) -> None:
-    for module in ADMIN_ROUTE_MODULES:
-        bp = Blueprint(module.name, __name__, url_prefix=module.url_prefix)
-        module.route_cls(**module.extra_kwargs).register(bp)
-        bp_admin.register_blueprint(bp)
+class AdminRouteRegister:
+
+    @staticmethod
+    def register(bp_admin: Blueprint) -> None:
+        for module in ADMIN_ROUTE_MODULES:
+            bp = Blueprint(module.name, __name__, url_prefix=module.url_prefix)
+            instance = module.route_cls(**module.extra_kwargs)
+            instance.register(bp)
+            bp_admin.register_blueprint(bp)
 
 
 __all__ = [
-    "register_admin_blueprints",
+    "AdminRouteRegister",
     "ADMIN_ROUTE_MODULES",
 ]

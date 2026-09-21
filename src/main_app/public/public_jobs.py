@@ -4,17 +4,13 @@ from __future__ import annotations
 
 import logging
 
-from flask import (
-    Blueprint,
-    flash,
-    render_template,
-)
+from flask import Blueprint
 
 from ..admin.decorators import admin_required
 from ..jobs_workers.objects import JobData
 from .auth.decorators import oauth_required
 from .shared_jobs_routes import (
-    BaseJobView,
+    AllJobsListView,
     CancelJobView,
     DeleteJobView,
     DrawResultFileView,
@@ -26,17 +22,6 @@ from .shared_jobs_routes import (
 )
 
 logger = logging.getLogger(__name__)
-
-
-class AllJobsListView(BaseJobView):
-    def get(self) -> str:
-        try:
-            jobs = self.shared_service.job_service.list_jobs(limit=100)
-        except Exception:  # pragma: no cover - defensive guard
-            logger.exception("Unable to load jobs list.")
-            flash("Unable to load jobs list.", "danger")
-            jobs = []
-        return render_template("jobs_templates/all_jobs_list.html", jobs=jobs)
 
 
 class PublicJobsRoutes:

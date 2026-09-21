@@ -7,7 +7,7 @@ from flask import Blueprint, Flask
 
 from ..jobs_workers.public_jobs_workers.workers_list_public import jobs_data_public
 from .auth.routes import AuthView
-from .fixred import FixRedRoutes
+from .fixred import FixRedView
 from .main_routes import MainRoutes
 from .newupdater.route import NewUpdaterRoutes
 from .profile import ProfileView
@@ -26,7 +26,7 @@ PUBLIC_ROUTE_MODULES: list[PublicRouteModule] = [
     PublicRouteModule(MainRoutes, "main", ""),
     PublicRouteModule(AuthView, "auth", ""),  # /auth
     PublicRouteModule(ProfileView, "profile", "/profile"),
-    PublicRouteModule(FixRedRoutes, "fixred", "/fixred"),
+    PublicRouteModule(FixRedView, "fixred", "/fixred"),
     PublicRouteModule(NewUpdaterRoutes, "newupdater", "/newupdater"),
     PublicRouteModule(
         PublicJobsRoutes,
@@ -40,17 +40,18 @@ PUBLIC_ROUTE_MODULES: list[PublicRouteModule] = [
 ]
 
 
-class RouteRegistrar:
+class PublicRouteRegister:
     """Registers all route blueprints on a Flask app."""
 
     @staticmethod
-    def register(app: Flask):
+    def register(app: Flask) -> None:
         for module in PUBLIC_ROUTE_MODULES:
             bp = Blueprint(module.name, __name__, url_prefix=module.url_prefix)
-            module.route_cls(**module.extra_kwargs).register(bp)
+            instance = module.route_cls(**module.extra_kwargs)
+            instance.register(bp)
             app.register_blueprint(bp)
 
 
 __all__ = [
-    "RouteRegistrar",
+    "PublicRouteRegister",
 ]

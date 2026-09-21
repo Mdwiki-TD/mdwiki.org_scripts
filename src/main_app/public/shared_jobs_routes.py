@@ -479,6 +479,17 @@ class DrawResultFileView(BaseJobView):
         return list_data
 
 
+class AllJobsListView(BaseJobView):
+    def get(self) -> str:
+        try:
+            jobs = self.shared_service.job_service.list_jobs(limit=100)
+        except Exception:  # pragma: no cover - defensive guard
+            logger.exception("Unable to load jobs list.")
+            flash("Unable to load jobs list.", "danger")
+            jobs = []
+        return render_template("jobs_templates/all_jobs_list.html", jobs=jobs)
+
+
 __all__ = [
     "BaseJobView",
     "CancelJobView",
@@ -490,4 +501,5 @@ __all__ = [
     "ReadJobResultFileView",
     "SharedJobRoutes",
     "StartJobView",
+    "AllJobsListView",
 ]
