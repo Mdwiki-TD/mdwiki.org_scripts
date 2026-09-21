@@ -478,6 +478,7 @@ class DrawResultFileView(BaseJobView):
             return [{"title": item, "msg": "", "status": "skipped"} for item in list_data]
         return list_data
 
+
 class AllJobsListView(BaseJobView):
     def get(self) -> str:
         try:

@@ -10,6 +10,7 @@ from ..admin.decorators import admin_required
 from ..jobs_workers.objects import JobData
 from .auth.decorators import oauth_required
 from .shared_jobs_routes import (
+    AllJobsListView,
     CancelJobView,
     DeleteJobView,
     DrawResultFileView,
@@ -18,10 +19,10 @@ from .shared_jobs_routes import (
     MarkJobCompletedView,
     ReadJobResultFileView,
     StartJobView,
-    AllJobsListView,
 )
 
 logger = logging.getLogger(__name__)
+
 
 class PublicJobsRoutes:
     """Registrar class for binding Public Job MethodViews to a Blueprint."""

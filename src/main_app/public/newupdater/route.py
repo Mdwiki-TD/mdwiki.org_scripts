@@ -14,6 +14,7 @@ from ..auth.decorators import oauth_required
 
 logger = logging.getLogger(__name__)
 
+
 def _parse_title(title: str) -> str:
     title = title.replace("+", " ").replace("_", " ").strip()
     title = unquote(title)
@@ -152,6 +153,7 @@ class NewUpdaterRoutes:
             view_func=NewUpdaterIndexView.as_view("index"),
             methods=["GET"],
         )
+
 
 __all__ = [
     "NewUpdaterRoutes",
