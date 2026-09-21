@@ -1,5 +1,5 @@
 {% extends "jobs_templates/base_details_public.html" %}
-{% from "_macros.html" import card_header, status_icon %}
+{% from "_macros.html" import card_header, status_icon, diff_link %}
 
 {% block job_summary %}
 
@@ -38,6 +38,18 @@
                 <td><strong>Message</strong></td>
                 {% for stage_key, stage in stages %}
                 <td><small>{{ stage.message }}</small></td>
+                {% endfor %}
+            </tr>
+            <tr>
+                <td><strong>Diff</strong></td>
+                {% for stage_key, stage in stages %}
+                <td>
+                    {% if stage.newrevid %}
+                    {{ diff_link(wiki_domain, stage.newrevid) }}
+                    {% else %}
+                    <span class="text-muted">-</span>
+                    {% endif %}
+                </td>
                 {% endfor %}
             </tr>
         </tbody>
