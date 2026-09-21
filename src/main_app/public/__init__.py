@@ -7,7 +7,7 @@ from flask import Blueprint, Flask
 
 from ..jobs_workers.public_jobs_workers.workers_list_public import jobs_data_public
 from .auth.routes import AuthView
-from .fixred import FixRedRoutes
+from .fixred import FixRedView
 from .main_routes import MainRoutes
 from .newupdater.route import NewUpdaterRoutes
 from .profile import ProfileView
@@ -26,7 +26,7 @@ PUBLIC_ROUTE_MODULES: list[PublicRouteModule] = [
     PublicRouteModule(MainRoutes, "main", ""),
     PublicRouteModule(AuthView, "auth", ""),  # /auth
     PublicRouteModule(ProfileView, "profile", "/profile"),
-    PublicRouteModule(FixRedRoutes, "fixred", "/fixred"),
+    PublicRouteModule(FixRedView, "fixred", "/fixred"),
     PublicRouteModule(NewUpdaterRoutes, "newupdater", "/newupdater"),
     PublicRouteModule(
         PublicJobsRoutes,
