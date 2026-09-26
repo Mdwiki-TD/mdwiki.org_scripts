@@ -15,8 +15,7 @@ from mwclient.client import Site
 from ....api_services import MwClientPage, get_category_members
 from ...base_worker import BaseObjectsJobWorker, JobsRunner
 from ...shared_objects import SharedworkerObject, UpdaterOutcome
-from .bot import OnePageArchive
-from .bot import OnePage
+from .bot import OnePage, OnePageArchive
 
 logger = logging.getLogger(__name__)
 

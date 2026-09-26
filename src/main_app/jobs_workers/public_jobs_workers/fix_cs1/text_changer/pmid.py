@@ -6,11 +6,8 @@ https://pubmed.ncbi.nlm.nih.gov/29083719/
 python pwb.py pub type:PMC id:29083719
 """
 
-# import sys
-# import wikitextparser as wtp
 import logging
 
-# import re
 import requests
 
 logger = logging.getLogger(__name__)

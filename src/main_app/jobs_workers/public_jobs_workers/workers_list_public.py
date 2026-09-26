@@ -90,7 +90,7 @@ jobs_data_for_all_pages: dict[str, JobData] = {
         job_class=FixCs1Worker,
         job_args=[],
         start_confirm_message="Start task for `Category:CS1 errors: missing periodical` pages?",
-        ready=False,
+        ready=True,
     ),
 }
 

@@ -2,6 +2,7 @@
 """ """
 
 import logging
+
 import wikitextparser as wtp
 
 from .archive_date_maker import make_archive_date, make_archive_date_and_url
@@ -53,6 +54,7 @@ old_to_new_params = {}
 for new, old in dup_args.items():
     for x in old:
         old_to_new_params[x] = new
+
 
 def gt_arg(temp: wtp.Template, name: str) -> str | bool:
     if temp.has_arg(name):
@@ -109,7 +111,6 @@ class OnePageArchive:
                 temp.set_arg("archive-date", archive_date)
 
                 self.param_added_plus("archive-date")
-
 
         chapterurl = gt_arg(temp, "chapter-url") or gt_arg(temp, "chapterurl")
 

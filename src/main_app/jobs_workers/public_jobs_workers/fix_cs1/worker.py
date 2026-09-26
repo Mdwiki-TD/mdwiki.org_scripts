@@ -2,10 +2,7 @@
 Worker module for fix_cs1.
 
 Migrated from
-
 https://github.com/Mdwiki-TD/mdwiki-python-files/tree/main/src/md_core/fix_cs1
-
-TODO: import logic from _works_files/original_code/python/fix_cs1
 
 """
 
@@ -18,6 +15,7 @@ from mwclient.client import Site
 from ....api_services import MwClientPage, get_category_members
 from ...base_worker import BaseObjectsJobWorker, JobsRunner
 from ...shared_objects import SharedworkerObject, UpdaterOutcome
+from .text_changer import fix_it
 
 logger = logging.getLogger(__name__)
 
@@ -121,9 +119,12 @@ class FixCs1Worker(BaseObjectsJobWorker):
         return info
 
     def _make_new_text(self, title: str, text: str) -> tuple[str, str]:
-        # TODO: import logic from _works_files/original_code/python/fix_cs1_params
-        new_text = text
-        summary = ".."
+        new_text = fix_it(text)
+        if new_text == text:
+            return new_text, ""
+
+        summary = "Fix missing periodical"
+        logger.info("Job %s: %r: %s", self.job_id, title, summary)
         return new_text, summary
 
 
