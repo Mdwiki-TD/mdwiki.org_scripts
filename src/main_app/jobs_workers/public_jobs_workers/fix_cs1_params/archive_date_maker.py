@@ -71,3 +71,9 @@ def make_archive_date_and_url(archiveurl):
             break
     # ---
     return found_it, archivedate, url, archiveurl
+
+
+__all__ = [
+    "make_archive_date",
+    "make_archive_date_and_url",
+]

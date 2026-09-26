@@ -39,3 +39,8 @@ class FilesService:
             session=self.session,
             overwrite_download=overwrite_download,
         )
+
+
+__all__ = [
+    "FilesService",
+]

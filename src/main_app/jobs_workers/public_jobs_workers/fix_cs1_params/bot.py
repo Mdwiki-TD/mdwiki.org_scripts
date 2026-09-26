@@ -63,7 +63,7 @@ def gt_arg(temp, name: str):
 
 
 class OnePageArchive:
-    def __init__(self, title, text) -> None:
+    def __init__(self, title: str, text: str) -> None:
         self.title = title
         self.text = text
         self.summary = "Fix reference parameters "
@@ -84,23 +84,18 @@ class OnePageArchive:
         return newtext
 
     def fix_it(self, text: str) -> str:
-
         parser = wtp.parse(text)
-
         for temp in parser.templates:
-
             temp_str = temp.string
-
             if not temp_str or temp_str.strip() == "":
                 continue
 
             self.archive_param(temp)
-
             # temp.rm_dup_args_safe()
 
         return parser.string
 
-    def archive_param(self, temp):
+    def archive_param(self, temp: wtp.Template) -> wtp.Template:
 
         url = gt_arg(temp, "url")
         archiveurl = gt_arg(temp, "archive-url")
@@ -131,7 +126,7 @@ class OnePageArchive:
 
         return temp
 
-    def param_added_plus(self, param) -> None:
+    def param_added_plus(self, param: str) -> None:
         self.added.setdefault(param, 0)
         self.added[param] += 1
 
@@ -163,7 +158,7 @@ class OnePage:
 
         return newtext
 
-    def one_fix(self, temp, old_p, new_p) -> None:
+    def one_fix(self, temp: wtp.Template, old_p: str, new_p: str) -> None:
         if temp.has_arg(old_p) and temp.has_arg(new_p):
 
             p1_value = gt_arg(temp, old_p)
@@ -184,7 +179,7 @@ class OnePage:
 
             temp.del_arg(old_p)
 
-    def fix_dupls(self, temp) -> None:
+    def fix_dupls(self, temp: wtp.Template) -> None:
         for new, old in dup_args.items():
             for x in old:
                 self.one_fix(temp, x, new)
@@ -238,3 +233,10 @@ class OnePage:
         text = parser.string
 
         return text
+
+
+__all__ = [
+    "OnePageArchive",
+    "OnePage",
+    "gt_arg",
+]

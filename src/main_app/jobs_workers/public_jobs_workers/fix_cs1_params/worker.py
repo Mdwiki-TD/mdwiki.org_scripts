@@ -2,10 +2,7 @@
 Worker module for fix_cs1_params.
 
 Migrated from
-
 https://github.com/Mdwiki-TD/mdwiki-python-files/tree/main/src/md_core/fix_cs1/fix_cs_params
-
-TODO: import logic from .bot.py
 
 """
 
@@ -18,6 +15,8 @@ from mwclient.client import Site
 from ....api_services import MwClientPage, get_category_members
 from ...base_worker import BaseObjectsJobWorker, JobsRunner
 from ...shared_objects import SharedworkerObject, UpdaterOutcome
+from .bot import OnePageArchive
+from .bot import OnePage
 
 logger = logging.getLogger(__name__)
 
@@ -121,9 +120,17 @@ class FixCs1ParamsWorker(BaseObjectsJobWorker):
         return info
 
     def _make_new_text(self, title: str, text: str) -> tuple[str, str]:
-        # TODO: import logic from _works_files/original_code/python/fix_cs1_params
-        new_text = text
-        summary = ".."
+        fixer = OnePage(title, text)
+        new_text = fixer.run()
+        summary = fixer.summary
+
+        archive_fixer = OnePageArchive(title, new_text)
+        is_diff = new_text != text
+        new_text = archive_fixer.run()
+
+        if not is_diff:
+            summary = archive_fixer.summary
+
         return new_text, summary
 
 
