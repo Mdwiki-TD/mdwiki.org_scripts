@@ -9,8 +9,8 @@ import pytest
 
 from src.main_app.database.services import JobsService
 from src.main_app.jobs_workers.base_worker import BaseObjectsJobWorker
-from src.main_app.jobs_workers.shared_objects import WorkerMapping
 from src.main_app.jobs_workers.objects import JobsRunner
+from src.main_app.jobs_workers.shared_objects import WorkerMapping
 
 
 @pytest.fixture

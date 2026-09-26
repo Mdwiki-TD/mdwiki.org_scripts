@@ -185,6 +185,7 @@ class FindAndReplaceWorker(BaseObjectsJobWorker):
         summary = "Replace via mdwiki.toolforge.org find-and-replace tool."
         return new_text, summary
 
+
 __all__ = [
     "FindAndReplaceWorker",
 ]

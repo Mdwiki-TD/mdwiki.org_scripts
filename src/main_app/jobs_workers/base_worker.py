@@ -299,6 +299,7 @@ class BaseObjectsJobWorker(ABC):
         else:
             self.result.pages_processed.append(info)
 
+
 __all__ = [
     "BaseObjectsJobWorker",
 ]
