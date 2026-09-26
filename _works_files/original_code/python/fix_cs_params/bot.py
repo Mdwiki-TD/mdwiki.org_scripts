@@ -13,7 +13,6 @@ import logging
 import sys
 
 import wikitextparser as wtp
-
 from md_core.fix_cs1.archive_date_maker import make_archive_date, make_archive_date_and_url
 from mdwiki_api.mdwiki_page import CatDepth, NewApi, md_MainPage
 

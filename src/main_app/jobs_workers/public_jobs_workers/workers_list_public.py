@@ -5,12 +5,12 @@ from .add_unlinkedwikibase.worker import AddUnlinkedWikibaseWorker
 from .create_redirects.worker import CreateRedirectsWorker
 from .duplicate_redirect.worker import DuplicateRedirectWorker
 from .find_and_replace.worker import FindAndReplaceWorker
+from .fix_cs1.worker import FixCs1Worker
+from .fix_cs1_params.worker import FixCs1ParamsWorker
 from .fixred_all.worker import FixRedAllWorker
 from .fixref.worker import FixRefWorker
 from .import_history.worker import ImportHistoryWorker
 from .newupdater_all.worker import NewUpdaterAllWorker
-from .fix_cs1.worker import FixCs1Worker
-from .fix_cs1_params.worker import FixCs1ParamsWorker
 
 jobs_data_for_all_pages: dict[str, JobData] = {
     "newupdater_all": JobData(

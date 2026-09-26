@@ -156,5 +156,5 @@ class FixCs1ParamsWorker(BaseObjectsJobWorker):
 
 
 __all__ = [
-    "FixCs1Worker",
+    "FixCs1ParamsWorker",
 ]
