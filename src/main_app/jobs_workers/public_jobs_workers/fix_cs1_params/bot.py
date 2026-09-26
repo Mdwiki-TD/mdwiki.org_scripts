@@ -1,12 +1,6 @@
 #!/usr/bin/python3
 """
 
-python3 core8/pwb.py md_core/fix_cs1/fix_cs_params/bot -cat:Category:CS1_errors:_archive-url archive ask
-python3 core8/pwb.py md_core/fix_cs1/fix_cs_params/bot -cat:Category:RTT fix2 ask
-python3 core8/pwb.py md_core/fix_cs1/fix_cs_params/bot
-
-tfj run fixrefs1 --image python3.9 --command "$HOME/local/bin/python3 core8/pwb.py md_core/fix_cs1/fix_cs_params/bot all"
-
 """
 
 import logging

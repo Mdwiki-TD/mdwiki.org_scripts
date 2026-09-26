@@ -185,27 +185,6 @@ class FindAndReplaceWorker(BaseObjectsJobWorker):
         summary = "Replace via mdwiki.toolforge.org find-and-replace tool."
         return new_text, summary
 
-    def update_status(self, info: UpdaterOutcome) -> None:
-        self.result.summary.processed += 1
-        if info.status in ["pending", "running"]:
-            info.status = "completed"
-
-        if info.status == "changed":
-            self.result.pages_changed.append(info)
-
-        elif info.status == "missing":
-            self.result.pages_missing.append(info)
-
-        elif info.status == "skipped":
-            self.result.pages_skipped.append(info)
-
-        elif info.status == "failed":
-            self.result.pages_errors.append(info)
-
-        else:
-            self.result.pages_processed.append(info)
-
-
 __all__ = [
     "FindAndReplaceWorker",
 ]
