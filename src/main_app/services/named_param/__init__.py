@@ -13,7 +13,6 @@ def gt_arg(temp: wtp.Template, name: str) -> str | bool:
             return va.value.strip()
     return False
 
-
 def add_param_named(text: str) -> str:
     parsed = wtp.parse(text)
 

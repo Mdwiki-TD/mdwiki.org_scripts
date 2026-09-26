@@ -133,20 +133,16 @@ class FixCs1ParamsWorker(BaseObjectsJobWorker):
         # Create a new OnePage instance with the given title and text
         fixer = OnePage(title, text)
         new_text = fixer.run()
-
-        # Get the summary from the OnePage instance
-        summary = fixer.summary
+        is_diff = new_text != text
 
         # Create a new OnePageArchive instance with the title and processed text
         archive_fixer = OnePageArchive(title, new_text)
-        is_diff = new_text != text
 
         # Process the text again using the OnePageArchive instance
         new_text = archive_fixer.run()
 
         # Use archive_fixer summary if OnePage made no changes
-        if not is_diff:
-            summary = archive_fixer.summary
+        summary = fixer.summary if is_diff else archive_fixer.summary
 
         return new_text, summary
 

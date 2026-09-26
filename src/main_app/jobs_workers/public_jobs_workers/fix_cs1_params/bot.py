@@ -54,7 +54,7 @@ for new, old in dup_args.items():
     for x in old:
         old_to_new_params[x] = new
 
-def gt_arg(temp, name: str):
+def gt_arg(temp: wtp.Template, name: str) -> str | bool:
     if temp.has_arg(name):
         va = temp.get_arg(name)
         if va and va.value and va.value.strip():
@@ -238,5 +238,4 @@ class OnePage:
 __all__ = [
     "OnePageArchive",
     "OnePage",
-    "gt_arg",
 ]
