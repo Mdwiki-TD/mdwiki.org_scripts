@@ -81,7 +81,7 @@ jobs_data_for_all_pages: dict[str, JobData] = {
         job_class=FixCs1ParamsWorker,
         job_args=[],
         start_confirm_message="Start task for `Category:CS1 errors: redundant parameter` pages?",
-        ready=False,
+        ready=True,
     ),
     "fix_cs1": JobData(
         job_type="fix_cs1",
