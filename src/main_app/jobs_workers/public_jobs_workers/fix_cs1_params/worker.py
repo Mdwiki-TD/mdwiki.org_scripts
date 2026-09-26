@@ -120,14 +120,31 @@ class FixCs1ParamsWorker(BaseObjectsJobWorker):
         return info
 
     def _make_new_text(self, title: str, text: str) -> tuple[str, str]:
+        """
+        Processes text and its associated archive to generate a modified version and a summary.
+
+        Args:
+            title (str): The title of the page.
+            text (str): The original text content of the page.
+
+        Returns:
+            tuple[str, str]: A tuple containing the new processed text and the corresponding summary.
+        """
+        # Create a new OnePage instance with the given title and text
         fixer = OnePage(title, text)
         new_text = fixer.run()
+
+        # Get the summary from the OnePage instance
         summary = fixer.summary
 
+        # Create a new OnePageArchive instance with the title and processed text
         archive_fixer = OnePageArchive(title, new_text)
         is_diff = new_text != text
+
+        # Process the text again using the OnePageArchive instance
         new_text = archive_fixer.run()
 
+        # Use archive_fixer summary if OnePage made no changes
         if not is_diff:
             summary = archive_fixer.summary
 
