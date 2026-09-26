@@ -16,7 +16,7 @@ from ..config import app_settings
 from ..database.services import JobsService
 from ..io import is_job_cancelled_file_exist, save_job_result_by_name
 from .objects import JobsRunner
-from .shared_objects import WorkerMapping
+from .shared_objects import SharedworkerObject, UpdaterOutcome
 from .utils import generate_result_file_name
 
 logger = logging.getLogger(__name__)
@@ -53,7 +53,8 @@ class BaseObjectsJobWorker(ABC):
 
         self._edit_count: int = 0
         self.site: Site | None = None
-        self.result: WorkerMapping = WorkerMapping()
+        self.result: SharedworkerObject = SharedworkerObject()
+        # self.result: WorkerMapping = WorkerMapping()
         self._jobs_service = JobsService()
 
     @abstractmethod
@@ -66,14 +67,14 @@ class BaseObjectsJobWorker(ABC):
         ...
 
     @abstractmethod
-    def process(self) -> WorkerMapping:
+    def process(self) -> SharedworkerObject:
         """Execute the main processing logic.
 
         This method should contain the actual work of the job.
         It should check for cancellation via self.cancel_event periodically.
 
         Returns:
-            The populated result WorkerMapping
+            The populated result SharedworkerObject
         """
         ...
 
@@ -277,6 +278,26 @@ class BaseObjectsJobWorker(ABC):
             self.after_run()
 
         return self.result.to_json()
+
+    def update_status(self, info: UpdaterOutcome) -> None:
+        self.result.summary.processed += 1
+        if info.status in ["pending", "running"]:
+            info.status = "completed"
+
+        if info.status == "changed":
+            self.result.pages_changed.append(info)
+
+        elif info.status == "missing":
+            self.result.pages_missing.append(info)
+
+        elif info.status == "skipped":
+            self.result.pages_skipped.append(info)
+
+        elif info.status == "failed":
+            self.result.pages_errors.append(info)
+
+        else:
+            self.result.pages_processed.append(info)
 
 
 __all__ = [

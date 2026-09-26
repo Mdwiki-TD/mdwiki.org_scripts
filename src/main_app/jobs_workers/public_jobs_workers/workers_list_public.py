@@ -5,6 +5,8 @@ from .add_unlinkedwikibase.worker import AddUnlinkedWikibaseWorker
 from .create_redirects.worker import CreateRedirectsWorker
 from .duplicate_redirect.worker import DuplicateRedirectWorker
 from .find_and_replace.worker import FindAndReplaceWorker
+from .fix_cs1.worker import FixCs1Worker
+from .fix_cs1_params.worker import FixCs1ParamsWorker
 from .fixred_all.worker import FixRedAllWorker
 from .fixref.worker import FixRefWorker
 from .import_history.worker import ImportHistoryWorker
@@ -17,7 +19,7 @@ jobs_data_for_all_pages: dict[str, JobData] = {
         job_list_template="jobs_templates/public/newupdater_all/list.html",
         job_class=NewUpdaterAllWorker,
         job_args=[],
-        start_confirm_message="Start medical content updater for all Category:RTT pages?",
+        start_confirm_message="Start medical content updater for all `Category:RTT` pages?",
         ready=True,
     ),
     "add_unlinkedwikibase": JobData(
@@ -71,6 +73,24 @@ jobs_data_for_all_pages: dict[str, JobData] = {
         job_class=AddRttTemplateWorker,
         job_args=[],
         start_confirm_message="Start adding RTT template to all Category:RTT pages?",
+    ),
+    "fix_cs1_params": JobData(
+        job_type="fix_cs1_params",
+        job_name="Fix reference parameters (Category:CS1 errors: redundant parameter)",
+        job_list_template="jobs_templates/public/fix_cs1_params/list.html",
+        job_class=FixCs1ParamsWorker,
+        job_args=[],
+        start_confirm_message="Start task for `Category:CS1 errors: redundant parameter` pages?",
+        ready=True,
+    ),
+    "fix_cs1": JobData(
+        job_type="fix_cs1",
+        job_name="Fix missing periodical (Category:CS1 errors: missing periodical)",
+        job_list_template="jobs_templates/public/fix_cs1/list.html",
+        job_class=FixCs1Worker,
+        job_args=[],
+        start_confirm_message="Start task for `Category:CS1 errors: missing periodical` pages?",
+        ready=True,
     ),
 }
 

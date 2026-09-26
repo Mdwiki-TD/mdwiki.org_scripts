@@ -1,0 +1,10 @@
+{% extends "jobs_templates/base_list_public.html" %}
+{% from "_macros.html" import csrf, wiki_domain_link %}
+
+{% set _job_name_title %}
+Fix missing periodical in ({{ wiki_domain_link('mdwiki.org', 'Category:CS1 errors: missing periodical') }}).
+{% endset %}
+{% block list_info %}
+<p class="text-muted">
+</p>
+{% endblock %}

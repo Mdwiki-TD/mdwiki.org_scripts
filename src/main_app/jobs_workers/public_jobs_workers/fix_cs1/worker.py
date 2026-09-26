@@ -1,7 +1,9 @@
 """
-Worker module for fixred_all.
+Worker module for fix_cs1.
 
-Migrated from src/main_app/jobs/workers/fixred_all.py.
+Migrated from
+https://github.com/Mdwiki-TD/mdwiki-python-files/tree/main/src/md_core/fix_cs1
+
 """
 
 from __future__ import annotations
@@ -10,16 +12,15 @@ import logging
 
 from mwclient.client import Site
 
-from ....api_services import MwClientPage
-from ....services.fixref_shared.fixred_worker import work_on_text
-from ....services.fixref_shared.objects import RunState
+from ....api_services import MwClientPage, get_category_members
 from ...base_worker import BaseObjectsJobWorker, JobsRunner
 from ...shared_objects import SharedworkerObject, UpdaterOutcome
+from .text_changer import fix_it
 
 logger = logging.getLogger(__name__)
 
 
-class FixRedAllWorker(BaseObjectsJobWorker):
+class FixCs1Worker(BaseObjectsJobWorker):
     """Fix redirect links in all mdwiki pages."""
 
     def __init__(self, data: JobsRunner) -> None:
@@ -35,21 +36,16 @@ class FixRedAllWorker(BaseObjectsJobWorker):
     # ------------------------------------------------------------------
 
     def get_job_type(self) -> str:
-        return "fixred_all"
+        return "fix_cs1"
 
     def process(self) -> SharedworkerObject:
         if not self._check_site():
             return self.result
 
-        state = RunState()
-        titles = list(
-            self.site.allpages(  # type: ignore
-                start="!",
-                namespace=0,
-                filterredir="nonredirects",
-                dir="ascending",
-                generator=True,
-            )
+        titles: list[str] = get_category_members(
+            site=self.site,
+            category_title="Category:CS1 errors: missing periodical",
+            namespace=0,
         )
 
         total = len(titles)
@@ -58,15 +54,13 @@ class FixRedAllWorker(BaseObjectsJobWorker):
 
         logger.info(f"Job {self.job_id}: Processing {total} pages")
 
-        for i, page in enumerate(titles, start=1):
-            logger.debug(f"i: {i}/{total}, page: {page}.")
+        for i, title in enumerate(titles, start=1):
+            logger.debug(f"i: {i}/{total}, page: {title}.")
             if self.is_cancelled():
                 break
 
-            title = page.name if hasattr(page, "name") else str(page)
-
             info = UpdaterOutcome(title=title)
-            self._process_one(info, state)
+            self._process_one(info)
 
             self.update_status(info)
 
@@ -85,7 +79,7 @@ class FixRedAllWorker(BaseObjectsJobWorker):
     # Internal helpers
     # ------------------------------------------------------------------
 
-    def _process_one(self, info: UpdaterOutcome, state: RunState) -> UpdaterOutcome:
+    def _process_one(self, info: UpdaterOutcome) -> UpdaterOutcome:
         title = info.title
 
         page = MwClientPage(title, self.site)
@@ -101,7 +95,7 @@ class FixRedAllWorker(BaseObjectsJobWorker):
             info.msg = "Page is empty"
             return info
 
-        new_text, summary = self._make_new_text(title, state, text)
+        new_text, summary = self._make_new_text(title, text)
 
         if new_text == text:
             info.status = "skipped"
@@ -124,12 +118,16 @@ class FixRedAllWorker(BaseObjectsJobWorker):
         info.msg = result.get("error", "Unknown error")
         return info
 
-    def _make_new_text(self, title: str, state: RunState, text: str) -> tuple[str, str]:
-        new_text = work_on_text(title, text, self.site, state)
-        summary = "Fix redirects"
+    def _make_new_text(self, title: str, text: str) -> tuple[str, str]:
+        new_text = fix_it(text)
+        if new_text == text:
+            return new_text, ""
+
+        summary = "Fix missing periodical"
+        logger.info("Job %s: %r: %s", self.job_id, title, summary)
         return new_text, summary
 
 
 __all__ = [
-    "FixRedAllWorker",
+    "FixCs1Worker",
 ]
