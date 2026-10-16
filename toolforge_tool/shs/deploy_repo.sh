@@ -15,11 +15,11 @@ fi
 
 COPY_TO_TARGET="${COPY_TO_TARGET:-}"
 
-BRANCH="${3:-main}"
 SUB_DIR_COPY="${SUB_DIR_COPY:-}"
-USER_NAME="${USER_NAME:-MrIbrahem}"
 BASE_DIR="${BASE_DIR:-${HOME}}"
 
+BRANCH="${3:-main}"
+USER_NAME="${USER_NAME:-MrIbrahem}"
 CLONE_DIR="${BASE_DIR}/${REPO_NAME}_tmp"
 
 # Optional clean of TARGET_DIR
@@ -38,10 +38,10 @@ COMPILE_PYTHON_FILES="${COMPILE_PYTHON_FILES:-0}"
 
 REPO_URL="https://github.com/${USER_NAME}/${REPO_NAME}.git"
 
+echo ">>> Deploying ${REPO_NAME} (branch: ${BRANCH})"
+
 # Navigate to the project directory
 cd "$BASE_DIR" || exit
-
-echo ">>> Deploying ${REPO_NAME} (branch: ${BRANCH})"
 
 # Remove any existing clone directory
 rm -rf "$CLONE_DIR"
