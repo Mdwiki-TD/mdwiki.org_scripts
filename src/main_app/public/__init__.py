@@ -1,8 +1,5 @@
 """ """
 
-from dataclasses import dataclass, field
-from typing import Any
-
 from flask import Blueprint, Flask
 
 from ..jobs_workers.public_jobs_workers.workers_list_public import jobs_data_public
@@ -13,22 +10,15 @@ from .newupdater.route import NewUpdaterRoutes
 from .profile import ProfileView
 from .public_jobs import PublicJobsRoutes
 
+from ..models import RouteModule
 
-@dataclass(frozen=True)
-class PublicRouteModule:
-    route_cls: type
-    name: str
-    url_prefix: str = ""
-    extra_kwargs: dict[str, Any] = field(default_factory=dict)
-
-
-PUBLIC_ROUTE_MODULES: list[PublicRouteModule] = [
-    PublicRouteModule(MainRoutes, "main", ""),
-    PublicRouteModule(AuthView, "auth", ""),  # /auth
-    PublicRouteModule(ProfileView, "profile", "/profile"),
-    PublicRouteModule(FixRedView, "fixred", "/fixred"),
-    PublicRouteModule(NewUpdaterRoutes, "newupdater", "/newupdater"),
-    PublicRouteModule(
+PUBLIC_ROUTE_MODULES: list[RouteModule] = [
+    RouteModule(MainRoutes, "main", ""),
+    RouteModule(AuthView, "auth", ""),  # /auth
+    RouteModule(ProfileView, "profile", "/profile"),
+    RouteModule(FixRedView, "fixred", "/fixred"),
+    RouteModule(NewUpdaterRoutes, "newupdater", "/newupdater"),
+    RouteModule(
         PublicJobsRoutes,
         "public_jobs",
         "/jobs",
