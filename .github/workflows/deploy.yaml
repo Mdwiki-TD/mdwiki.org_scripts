@@ -41,7 +41,7 @@ jobs:
                   script: |
                       become mdw bash -lc "
                         rm -rf ~/tmp_repo &&
-                        cp -r /mnt/nfs/labstore-secondary-tools-home/${{ secrets.USERNAME }}/mdw_repo_tmp ~/tmp_repo &&
+                        cp -r /home/${{ secrets.USERNAME }}/mdw_repo_tmp ~/tmp_repo &&
                         cp -r ~/tmp_repo/toolforge_tool/shs/* ~/shs &&
                         sed -i 's/\r$//' ~/shs/*.sh &&
                         chmod +x ~/shs/*.sh &&

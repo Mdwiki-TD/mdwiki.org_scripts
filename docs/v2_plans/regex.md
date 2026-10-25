@@ -86,11 +86,13 @@ Example – replace section-comment stripping & re-insertion:
 ```python
 import wikitextparser as wtp
 
+
 def strip_section_comments(text: str) -> str:
     parsed = wtp.parse(text)
     # Walk comments or use string replacement only on known comment nodes if exposed
     # Or rebuild the Drugbox template from its arguments while ignoring comment-only “parameters”
     ...
+
 
 def normalize_drugbox_sections(template: wtp.Template) -> str:
     # Rebuild the template using the ordered section list already defined in bot_params.py
@@ -127,7 +129,7 @@ Example – NLM cite-web detection:
 ```python
 def find_nlm_cite_web(parsed: wtp.WikiText, title: str):
     for tag in parsed.get_tags("ref") + parsed.templates:  # or top-level
-        for t in (tag.templates if hasattr(tag, "templates") else [tag]):
+        for t in tag.templates if hasattr(tag, "templates") else [tag]:
             if t.normal_name().lower() == "cite web":
                 url = (t.get_arg("url") or "").value or ""
                 if "druginfo.nlm.nih.gov/drugportal" in url and title.lower() in url.lower():
@@ -142,6 +144,7 @@ If wtp’s public API is insufficient for some cases (e.g. precise comment posit
 ```python
 from typing import Callable
 import wikitextparser as wtp
+
 
 def walk(node, visitors: dict[type, Callable]):
     visitor = visitors.get(type(node))

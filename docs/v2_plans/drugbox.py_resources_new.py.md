@@ -20,9 +20,11 @@
   if sectionname == "combo":
       ...
       if _type:
-          if empty: ...
+          if empty:
+              ...
           if _type in combo_titles:
-              for p in all_combo: ...
+              for p in all_combo:
+                  ...
   ```
 
 **`resources_new.py`**
@@ -70,7 +72,7 @@ Key principles:
    @dataclass
    class DrugboxModel:
        title: str
-       params: dict[str, str]          # original order preserved if needed
+       params: dict[str, str]  # original order preserved if needed
        used_params: set[str] = field(default_factory=set)
    ```
 

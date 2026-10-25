@@ -113,7 +113,8 @@ class UserRecord(db.Model):
     username = Column(String(255), unique=True, nullable=False)
     created_at = Column(DateTime, nullable=False, server_default=func.current_timestamp())
     updated_at = Column(
-        DateTime, nullable=False,
+        DateTime,
+        nullable=False,
         server_default=func.current_timestamp(),
         server_onupdate=func.current_timestamp(),
     )
@@ -142,8 +143,10 @@ class AdminUserRecord(db.Model):
 
     id = Column(Integer, primary_key=True, autoincrement=True)
     username = Column(
-        String(255), db.ForeignKey("users.username", ondelete="CASCADE"),
-        unique=True, nullable=False,
+        String(255),
+        db.ForeignKey("users.username", ondelete="CASCADE"),
+        unique=True,
+        nullable=False,
     )
     # ... rest unchanged
 ```
@@ -171,9 +174,11 @@ __all__ = [
 ```python
 from dataclasses import dataclass
 
+
 @dataclass(frozen=True)
 class CurrentUser:
     """Composite user identity + credentials for request handling."""
+
     user_id: int
     username: str
     access_token: bytes
@@ -216,11 +221,14 @@ def create_user(user_id: int, username: str) -> UserRecord:
     db.session.refresh(record)
     return record
 
+
 def get_user(user_id: int) -> UserRecord | None:
     return db.session.query(UserRecord).filter(UserRecord.user_id == user_id).first()
 
+
 def get_user_by_username(username: str) -> UserRecord | None:
     return db.session.query(UserRecord).filter(UserRecord.username == username).first()
+
 
 def delete_user(user_id: int) -> bool:
     """Delete user + cascading token + admin record."""
@@ -232,18 +240,14 @@ def delete_user(user_id: int) -> bool:
 **Modify `upsert_user_token`:**
 
 ```python
-def upsert_user_token(
-    *, user_id: int, username: str, access_key: str, access_secret: str
-) -> None:
+def upsert_user_token(*, user_id: int, username: str, access_key: str, access_secret: str) -> None:
     # Ensure user row exists first
     create_user(user_id, username)
 
     encrypted_token = encrypt_value(access_key)
     encrypted_secret = encrypt_value(access_secret)
 
-    orm_obj = db.session.query(UserTokenRecord).filter(
-        UserTokenRecord.user_id == user_id
-    ).first()
+    orm_obj = db.session.query(UserTokenRecord).filter(UserTokenRecord.user_id == user_id).first()
 
     if orm_obj:
         orm_obj.access_token = encrypted_token
@@ -264,9 +268,7 @@ def upsert_user_token(
 ```python
 def delete_user_token(user_id: int) -> bool:
     """Delete token only (user identity persists for job history)."""
-    affected = db.session.query(UserTokenRecord).filter(
-        UserTokenRecord.user_id == user_id
-    ).delete()
+    affected = db.session.query(UserTokenRecord).filter(UserTokenRecord.user_id == user_id).delete()
     db.session.commit()
     return affected > 0
 ```
@@ -278,9 +280,7 @@ def get_user_token_by_username(username: str) -> UserTokenRecord | None:
     user = db.session.query(UserRecord).filter(UserRecord.username == username).first()
     if not user:
         return None
-    return db.session.query(UserTokenRecord).filter(
-        UserTokenRecord.user_id == user.user_id
-    ).first()
+    return db.session.query(UserTokenRecord).filter(UserTokenRecord.user_id == user.user_id).first()
 ```
 
 **Modify `list_users`:**
@@ -311,15 +311,16 @@ from .user_token_service import (
 ```python
 from .current_user import CurrentUser
 
+
 class UserService:
     @staticmethod
-    def save_and_get_user(
-        user_id: int, username: str, access_key: str, access_secret: str
-    ) -> CurrentUser | None:
+    def save_and_get_user(user_id: int, username: str, access_key: str, access_secret: str) -> CurrentUser | None:
         try:
             upsert_user_token(
-                user_id=user_id, username=username,
-                access_key=access_key, access_secret=access_secret,
+                user_id=user_id,
+                username=username,
+                access_key=access_key,
+                access_secret=access_secret,
             )
             token = get_user_token(user_id)
             if not token:

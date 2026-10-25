@@ -1,20 +1,20 @@
 ---
 name: wikitextparser-parser-functions
 description: >
-  Inspect MediaWiki parser functions like {{#if:...}}, {{#switch:...}},
-  {{#ifeq:...}}, {{#expr:...}}, magic words, and template-with-colon-syntax
-  invocations. Covers the ParserFunction class, name vs arguments, the
-  shared SubWikiTextWithArgs machinery with Template, and the important
-  fact that wikitextparser DOES NOT evaluate parser functions.
+    Inspect MediaWiki parser functions like {{#if:...}}, {{#switch:...}},
+    {{#ifeq:...}}, {{#expr:...}}, magic words, and template-with-colon-syntax
+    invocations. Covers the ParserFunction class, name vs arguments, the
+    shared SubWikiTextWithArgs machinery with Template, and the important
+    fact that wikitextparser DOES NOT evaluate parser functions.
 applies_to:
-  - "ParserFunction"
-  - "{{#if:}}"
-  - "{{#switch:}}"
-  - "{{#ifeq:}}"
-  - "{{#ifexist:}}"
-  - "{{#expr:}}"
-  - "{{ucfirst:}}"
-  - "{{lc:}}"
+    - "ParserFunction"
+    - "{{#if:}}"
+    - "{{#switch:}}"
+    - "{{#ifeq:}}"
+    - "{{#ifexist:}}"
+    - "{{#expr:}}"
+    - "{{ucfirst:}}"
+    - "{{lc:}}"
 ---
 
 # 11 — Parser Functions (`{{#if:...}}`, magic words)
@@ -58,14 +58,14 @@ function name from its first argument:
 
 ## Quick reference
 
-| Attribute / method                                 | Description                                    |
-| -------------------------------------------------- | ---------------------------------------------- |
-| `parsed.parser_functions`                          | All parser functions (recursive)               |
-| `pf.name`                                          | Function name (often starts with `#`)          |
-| `pf.arguments`                                     | `list[Argument]` (first one is the condition)  |
-| `pf.nesting_level`                                 | 0 = top-level; +1 per enclosing template/PF    |
-| `pf.parser_functions`                              | Nested parser functions (excludes self)        |
-| `pf.get_lists(pattern=...)`                        | Lists across all arguments                     |
+| Attribute / method          | Description                                   |
+| --------------------------- | --------------------------------------------- |
+| `parsed.parser_functions`   | All parser functions (recursive)              |
+| `pf.name`                   | Function name (often starts with `#`)         |
+| `pf.arguments`              | `list[Argument]` (first one is the condition) |
+| `pf.nesting_level`          | 0 = top-level; +1 per enclosing template/PF   |
+| `pf.parser_functions`       | Nested parser functions (excludes self)       |
+| `pf.get_lists(pattern=...)` | Lists across all arguments                    |
 
 The `Argument` class is identical to the one used by `Template`. See
 `02-templates.md` for its full surface (`name`, `value`, `positional`).
@@ -77,7 +77,7 @@ The `Argument` class is identical to the one used by `Template`. See
 ```python
 parsed = wtp.parse("Result: {{#if:{{{x|}}}|yes|no}}")
 for pf in parsed.parser_functions:
-    print(pf.name, '->', [a.value for a in pf.arguments])
+    print(pf.name, "->", [a.value for a in pf.arguments])
 # #if  ->  ['{{{x|}}}', 'yes', 'no']
 ```
 
@@ -87,19 +87,19 @@ trailing whitespace from the source.
 ### 2. Distinguish parser functions from templates
 
 `Template` has its first separator as `|`, `ParserFunction` as `:`. The
-library disambiguates automatically — but a template called *with* a
+library disambiguates automatically — but a template called _with_ a
 colon-prefixed name (interwiki/namespace) is still a Template.
 
 ```python
 parsed = wtp.parse("{{en:Foo}}")
-parsed.templates              # one Template (because there's no | inside)
-parsed.parser_functions       # []
+parsed.templates  # one Template (because there's no | inside)
+parsed.parser_functions  # []
 ```
 
 ```python
 parsed = wtp.parse("{{lc:HELLO}}")
-parsed.parser_functions       # one ParserFunction with name='lc'
-parsed.templates              # []
+parsed.parser_functions  # one ParserFunction with name='lc'
+parsed.templates  # []
 ```
 
 `{{lc:...}}` is a magic-word parser function (lower-case). It does not start
@@ -117,9 +117,9 @@ parsed = wtp.parse("""
 }}
 """)
 pf = parsed.parser_functions[0]
-pf.name              # '#switch'
+pf.name  # '#switch'
 for a in pf.arguments:
-    print(repr(a.name), '=>', repr(a.value))
+    print(repr(a.name), "=>", repr(a.value))
 ```
 
 In `#switch`, each `key=value` pair is an `Argument` with `positional == False`,
@@ -130,17 +130,17 @@ expression being switched on (positional).
 
 ```python
 for pf in parsed.parser_functions:
-    if pf.name.strip() == '#switch':
+    if pf.name.strip() == "#switch":
         for arg in pf.arguments:
-            if arg.name.strip() == '#default':
-                arg.value = 'unknown'
+            if arg.name.strip() == "#default":
+                arg.value = "unknown"
 ```
 
 ### 5. Negate an `{{#if:}}` (swap then/else)
 
 ```python
 for pf in parsed.parser_functions:
-    if pf.name.strip() == '#if':
+    if pf.name.strip() == "#if":
         args = pf.arguments
         if len(args) >= 3:
             args[1].value, args[2].value = args[2].value, args[1].value
@@ -150,9 +150,9 @@ for pf in parsed.parser_functions:
 
 ```python
 for pf in parsed.parser_functions:
-    if pf.name.strip() == '#if' and pf.arguments[0].value.strip() == '':
+    if pf.name.strip() == "#if" and pf.arguments[0].value.strip() == "":
         # `{{#if:|then|else}}` always picks "else"
-        pf[:] = pf.arguments[2].value if len(pf.arguments) > 2 else ''
+        pf[:] = pf.arguments[2].value if len(pf.arguments) > 2 else ""
 ```
 
 This is essentially manual evaluation; for non-trivial cases prefer
@@ -162,8 +162,8 @@ server-side expansion.
 
 ```python
 for pf in parsed.parser_functions:
-    nested_templates = pf.templates       # all templates inside any branch
-    lists_in_branches = pf.get_lists()    # convenience across all arguments
+    nested_templates = pf.templates  # all templates inside any branch
+    lists_in_branches = pf.get_lists()  # convenience across all arguments
 ```
 
 ### 8. Nesting
@@ -177,7 +177,7 @@ parsed.parser_functions[0].nesting_level  # 0
 
 ## Edge cases & gotchas
 
-- **No evaluation.** `wtp` will *never* compute the result of `{{#if:}}` or
+- **No evaluation.** `wtp` will _never_ compute the result of `{{#if:}}` or
   `{{#expr:}}`. Treat the AST as static. Use the MediaWiki API for
   expansion if you need rendered output.
 - **Magic words without arguments** like `{{NAMESPACE}}` or
@@ -189,7 +189,7 @@ parsed.parser_functions[0].nesting_level  # 0
   parser functions. Always use `parsed.parser_functions` and
   `parsed.templates` together if you want both.
 - **The argument with `name == '1'`** (or any positional) carries the
-  *condition* in `#if` / `#ifeq` / `#switch`. Use the position string,
+  _condition_ in `#if` / `#ifeq` / `#switch`. Use the position string,
   not the value, to identify it.
 - **Whitespace inside arguments is meaningful** for parser functions
   (especially conditions). Always `.strip()` when comparing values.
@@ -205,10 +205,10 @@ def list_conditions(parsed) -> list[str]:
     out = []
     for pf in parsed.parser_functions:
         n = pf.name.strip()
-        if n == '#if' and pf.arguments:
+        if n == "#if" and pf.arguments:
             out.append(pf.arguments[0].value.strip())
-        elif n == '#ifeq' and len(pf.arguments) >= 2:
-            out.append(f'{pf.arguments[0].value.strip()} == {pf.arguments[1].value.strip()}')
+        elif n == "#ifeq" and len(pf.arguments) >= 2:
+            out.append(f"{pf.arguments[0].value.strip()} == {pf.arguments[1].value.strip()}")
     return out
 ```
 
@@ -216,13 +216,13 @@ def list_conditions(parsed) -> list[str]:
 
 ```python
 for pf in parsed.parser_functions:
-    if pf.name.strip() != '#switch':
+    if pf.name.strip() != "#switch":
         continue
-    default = next((a for a in pf.arguments if a.name.strip() == '#default'), None)
+    default = next((a for a in pf.arguments if a.name.strip() == "#default"), None)
     if default is None or len(pf.arguments) < 2:
         continue
     # Swap with the first keyed arg
-    first_keyed = next((a for a in pf.arguments[1:] if not a.positional and a.name.strip() != '#default'), None)
+    first_keyed = next((a for a in pf.arguments[1:] if not a.positional and a.name.strip() != "#default"), None)
     if first_keyed:
         first_keyed.value, default.value = default.value, first_keyed.value
 ```
@@ -231,6 +231,7 @@ for pf in parsed.parser_functions:
 
 ```python
 from collections import Counter
+
 counts = Counter(pf.name.strip() for pf in parsed.parser_functions)
 ```
 
@@ -238,12 +239,12 @@ counts = Counter(pf.name.strip() for pf in parsed.parser_functions)
 
 ```python
 for pf in parsed.parser_functions:
-    if pf.name.strip() != '#if':
+    if pf.name.strip() != "#if":
         continue
     branches = pf.arguments[1:]
     empties = [i for i, a in enumerate(branches) if not a.value.strip()]
     if empties:
-        print(f'#if has empty branch(es): {empties}')
+        print(f"#if has empty branch(es): {empties}")
 ```
 
 ## See also

@@ -1,31 +1,23 @@
 """Admin blueprint package."""
 
-from dataclasses import dataclass, field
-from typing import Any
+from __future__ import annotations
 
 from flask import Blueprint
 
 from ...jobs_workers.admin_jobs_workers.workers_list import jobs_data_admins
+from ...models import RouteModule
 from .coordinators import CoordinatorView
+from .error_logs import CheckErrorLogsView
 from .errors_route import CheckErrorsView
 from .jobs import AdminJobsRoutes
 from .settings import SettingsRoutes
 from .users import UsersRoutes
 
-
-@dataclass(frozen=True)
-class AdminRouteModule:
-    route_cls: type
-    name: str
-    url_prefix: str = ""
-    extra_kwargs: dict[str, Any] = field(default_factory=dict)
-
-
-ADMIN_ROUTE_MODULES: list[AdminRouteModule] = [
-    AdminRouteModule(route_cls=CoordinatorView, name="coordinators", url_prefix="/coordinators"),
-    AdminRouteModule(route_cls=UsersRoutes, name="users", url_prefix="/users"),
-    AdminRouteModule(route_cls=SettingsRoutes, name="settings", url_prefix="/settings"),
-    AdminRouteModule(
+ADMIN_ROUTE_MODULES: list[RouteModule] = [
+    RouteModule(route_cls=CoordinatorView, name="coordinators", url_prefix="/coordinators"),
+    RouteModule(route_cls=UsersRoutes, name="users", url_prefix="/users"),
+    RouteModule(route_cls=SettingsRoutes, name="settings", url_prefix="/settings"),
+    RouteModule(
         route_cls=AdminJobsRoutes,
         name="jobs",
         url_prefix="/jobs",
@@ -34,12 +26,12 @@ ADMIN_ROUTE_MODULES: list[AdminRouteModule] = [
             "bp_name": "adminpanel.jobs",
         },
     ),
-    AdminRouteModule(route_cls=CheckErrorsView, name="errors", url_prefix="/errors"),
+    RouteModule(route_cls=CheckErrorsView, name="errors", url_prefix="/errors"),
+    RouteModule(route_cls=CheckErrorLogsView, name="error_logs", url_prefix="/error-logs"),
 ]
 
 
-class AdminRouteRegister:
-
+class AdminSubRoutesRegister:
     @staticmethod
     def register(bp_admin: Blueprint) -> None:
         for module in ADMIN_ROUTE_MODULES:
@@ -50,6 +42,5 @@ class AdminRouteRegister:
 
 
 __all__ = [
-    "AdminRouteRegister",
-    "ADMIN_ROUTE_MODULES",
+    "AdminSubRoutesRegister",
 ]

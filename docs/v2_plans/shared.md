@@ -133,6 +133,7 @@ During migration keep shims:
 ```python
 # src/main_app/shared/new_updater/__init__.py  (temporary)
 from main_app.domain.wikitext.medical import med_updater_one
+
 __all__ = ["med_updater_one"]
 ```
 

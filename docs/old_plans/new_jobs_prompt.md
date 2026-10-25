@@ -23,7 +23,6 @@ from .worker import job_worker_entry
 __all__ = [
     "job_worker_entry",
 ]
-
 ```
 
 -   `worker.py` placeholder:

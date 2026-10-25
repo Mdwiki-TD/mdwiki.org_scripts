@@ -17,6 +17,7 @@ Lightweight, explicit dependency injection for `main_app` services.
 from .di import init_container, ServiceProviders
 from .di.flask_integration import init_di
 
+
 def create_app(config_class: type) -> Flask:
     app = Flask(...)
     # ... existing config, db, csrf ...

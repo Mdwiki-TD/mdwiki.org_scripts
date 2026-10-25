@@ -161,7 +161,6 @@ class OnePage:
 
     def one_fix(self, temp: wtp.Template, old_p: str, new_p: str) -> None:
         if temp.has_arg(old_p) and temp.has_arg(new_p):
-
             p1_value = gt_arg(temp, old_p)
             p2_value = gt_arg(temp, new_p)
 
@@ -190,7 +189,6 @@ class OnePage:
         parser = wtp.parse(text)
 
         for temp in parser.templates:
-
             temp_str = temp.string
 
             if not temp_str or temp_str.strip() == "":
@@ -201,7 +199,6 @@ class OnePage:
             # temp.rm_dup_args_safe()
 
         for temp in parser.templates:
-
             temp_str = temp.string
 
             if not temp_str or temp_str.strip() == "":
@@ -210,9 +207,7 @@ class OnePage:
             changed = False
 
             for arg in temp.arguments:
-
                 if arg.name.strip() in old_to_new_params:
-
                     old_name = arg.name.strip()
                     new_name = old_to_new_params[arg.name.strip()]
 

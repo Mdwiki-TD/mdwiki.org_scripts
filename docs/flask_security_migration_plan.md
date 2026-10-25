@@ -201,7 +201,7 @@ roles_users = Table(
     "roles_users",
     db.Model.metadata,
     Column("user_id", Integer(), ForeignKey("users.user_id", ondelete="CASCADE")),
-    Column("role_id", Integer(), ForeignKey("roles.id", ondelete="CASCADE"))
+    Column("role_id", Integer(), ForeignKey("roles.id", ondelete="CASCADE")),
 )
 
 
@@ -209,6 +209,7 @@ class Role(db.Model, RoleMixin):
     """
     Standard Flask-Security role representation.
     """
+
     __tablename__ = "roles"
 
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
@@ -239,9 +240,7 @@ class UserRecord(db.Model, UserMixin):
     token: Mapped[UserTokenRecord | None] = relationship(back_populates="user", uselist=False)
 
     # Roles relationship
-    roles: Mapped[list[Role]] = relationship(
-        "Role", secondary=roles_users, backref="users"
-    )
+    roles: Mapped[list[Role]] = relationship("Role", secondary=roles_users, backref="users")
 
     # Flask-Security compatibility getters
     @property
@@ -290,6 +289,7 @@ security = Security()
 ```python
 from .extensions import security
 from .db.models.users import UserRecord, Role
+
 
 def init_app_and_db(app, _db) -> bool:
     _db.init_app(app)
@@ -343,6 +343,7 @@ def admin_required(view: FuncType) -> FuncType:
             logger.warning("User %s tried to access admin-only route", user.username)
             abort(403)
         return view(*args, **kwargs)
+
     return cast(FuncType, wrapped)
 ```
 
@@ -351,11 +352,11 @@ def admin_required(view: FuncType) -> FuncType:
 ```python
 from flask_security import roles_required
 
+
 # In routes:
 @bp_admin.route("/", methods=["GET"])
 @roles_required("admin")
-def dashboard() -> str:
-    ...
+def dashboard() -> str: ...
 ```
 
 _Why this replacement is correct:_ By leveraging `@roles_required("admin")`, we eliminate manual user checking, standardise logging, and offload session lookup to the underlying security package.
@@ -375,6 +376,7 @@ def oauth_required(func: FuncType) -> FuncType:
             session["post_login_redirect"] = request.url
             return redirect(url_for("auth.login"))
         return func(*args, **kwargs)
+
     return cast(FuncType, wrapper)
 ```
 
@@ -383,11 +385,11 @@ def oauth_required(func: FuncType) -> FuncType:
 ```python
 from flask_security import auth_required
 
+
 # In routes:
 @bp_newupdater.route("/update", methods=["GET"])
 @auth_required()
-def newupdater() -> str | Response:
-    ...
+def newupdater() -> str | Response: ...
 ```
 
 _Why this replacement is correct:_ `@auth_required` guarantees active authentication. If combined with a custom security login entry point, it matches the native behavior of `post_login_redirect` out-of-the-box.

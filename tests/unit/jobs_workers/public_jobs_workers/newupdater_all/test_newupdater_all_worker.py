@@ -51,7 +51,6 @@ class TestNewUpdaterAllWorker:
                 "src.main_app.jobs_workers.public_jobs_workers.newupdater_all.worker.add_param_named"
             ) as mock_add_param,
         ):
-
             mock_get_site.return_value = MagicMock()
             mock_get_members.return_value = ["Page1"]
 
