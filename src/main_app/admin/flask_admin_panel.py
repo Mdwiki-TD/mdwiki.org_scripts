@@ -89,10 +89,10 @@ def add_admin_dashboard(app: Flask, _db: SQLAlchemy) -> None:
         fluid=True,
     )
     admin_index_view = MyAdminIndexView(
-            name="DB admin",
-            template="admin/index_with_sidebar.html",
-            url="/adminpanel/db_admin",
-        )
+        name="DB admin",
+        template="admin/index_with_sidebar.html",
+        url="/adminpanel/db_admin",
+    )
     admin = Admin(
         app,
         name="DB admin",

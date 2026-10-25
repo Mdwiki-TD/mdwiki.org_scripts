@@ -268,6 +268,7 @@ site = get_user_site(user)
 SERVICE_ACCOUNT_TOKEN = os.getenv("SERVICE_ACCOUNT_TOKEN")
 SERVICE_ACCOUNT_SECRET = os.getenv("SERVICE_ACCOUNT_SECRET")
 
+
 # Factory:
 def get_service_site() -> mwclient.Site:
     """Create an mwclient.Site using the service account."""
@@ -297,6 +298,7 @@ from typing import Any, Dict, Optional
 import mwclient
 from ...config import settings
 from ...core.crypto import decrypt_value
+
 
 class SiteFactory:
     """Thread-safe factory for mwclient.Site instances."""
@@ -343,6 +345,7 @@ class SiteFactory:
         with self._lock:
             self._cache.clear()
 
+
 # Module-level singleton
 _site_factory = SiteFactory()
 get_user_site = _site_factory.get_user_site
@@ -359,6 +362,7 @@ get_service_site = _site_factory.get_service_site
 
 ```python
 _thread_local = threading.local()
+
 
 def get_user_site(user):
     if not hasattr(_thread_local, "sites"):
@@ -428,11 +432,11 @@ def _load_jobs_config() -> JobsConfig:
 def get_page_text(site: mwclient.Site, title: str) -> str:
     """Fetch wikitext. Delegates to text_bot.get_page_text."""
     from .text_bot import get_page_text
+
     return get_page_text(title, site)
 
 
-def search_pages(site: mwclient.Site, value: str, ns: str = "*",
-                 srlimit: str = "max", **kwargs) -> list[str]:
+def search_pages(site: mwclient.Site, value: str, ns: str = "*", srlimit: str = "max", **kwargs) -> list[str]:
     """Full-text search. Returns list of titles."""
     params = {
         "action": "query",
@@ -447,8 +451,9 @@ def search_pages(site: mwclient.Site, value: str, ns: str = "*",
     return [item["title"] for item in data.get("query", {}).get("search", [])]
 
 
-def get_all_pages(site: mwclient.Site, start: str = "", namespace: str = "0",
-                  limit: int = 100000, filterredir: str = "all") -> list[str]:
+def get_all_pages(
+    site: mwclient.Site, start: str = "", namespace: str = "0", limit: int = 100000, filterredir: str = "all"
+) -> list[str]:
     """List all pages in a namespace. Returns list of titles."""
     kwargs = {"start": start, "namespace": int(namespace), "filterredir": filterredir}
     titles = []
@@ -468,10 +473,15 @@ def import_page(site: mwclient.Site, title: str, family: str = "wikipedia") -> d
     """Import page history from another wiki family."""
     page = site.pages[title]
     try:
-        result = site.raw_api("import", token=site.get_token("csrf"),
-                              summary="", interwiki=family,
-                              fullhistory=1, templates=1,
-                              **{"forupdate": 1})
+        result = site.raw_api(
+            "import",
+            token=site.get_token("csrf"),
+            summary="",
+            interwiki=family,
+            fullhistory=1,
+            templates=1,
+            **{"forupdate": 1},
+        )
         site.raw_api("purge", titles=title)  # purge after import
         return {"success": True, "result": result}
     except Exception as exc:
@@ -490,8 +500,9 @@ def raw_query(site: mwclient.Site, **params) -> dict:
 #### 1b. `api_services/category.py` additions
 
 ```python
-def get_category_depth(site: mwclient.Site, title: str, depth: int = 0,
-                       namespace: str = "0", limit: int = 100000) -> dict[str, dict]:
+def get_category_depth(
+    site: mwclient.Site, title: str, depth: int = 0, namespace: str = "0", limit: int = 100000
+) -> dict[str, dict]:
     """Recursive category member traversal.
 
     Replacement for newapi.CatDepth / subcatquery.
@@ -749,6 +760,7 @@ Already uses `api_services` for `resolve_redirects` and `get_user_site`. Remaini
 -   `newapi/__init__.py` — add deprecation warning:
     ```python
     import warnings
+
     warnings.warn(
         "newapi is deprecated. Use api_services instead.",
         DeprecationWarning,
@@ -908,9 +920,7 @@ class TestEditPage:
     def test_protected_page(self, mock_site):
         page = MagicMock()
         page.exists = True
-        page.edit.side_effect = mwclient.errors.ProtectedPageError(
-            code="protected", info="Page is protected"
-        )
+        page.edit.side_effect = mwclient.errors.ProtectedPageError(code="protected", info="Page is protected")
         mock_site.pages.__getitem__.return_value = page
         result = edit_page(mock_site, "Test", "new text", "summary")
         assert result["success"] is False
@@ -974,6 +984,7 @@ class TestReplaceWorker:
 
 ```python
 # tests/test_oauth_failures.py
+
 
 class TestOAuthFailures:
     def test_revoked_token_returns_none(self):
@@ -1062,6 +1073,7 @@ In route handlers:
 ```python
 from ...api_services.clients.wiki_client import get_user_site
 from ...su_services.users_service import current_user, oauth_required
+
 
 @bp.route("/replace/", methods=["POST"])
 @oauth_required

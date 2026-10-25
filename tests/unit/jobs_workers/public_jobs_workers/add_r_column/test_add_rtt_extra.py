@@ -22,7 +22,6 @@ def _process_table_rows(
 
 
 class TestProcessTableRowsExtra:
-
     def test_short_row_missing_title_cell_is_skipped(self):
         table_text = "{| class=wikitable\n! #\n! R\n! Title\n|-\n| 1\n| \n|-\n| 2\n| \n| [[Aspirin]]\n|}"
         model = AddRColumn(table_text, {}, ["Aspirin"])

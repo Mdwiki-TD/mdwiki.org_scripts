@@ -12,10 +12,15 @@ Add `is_active_coordinator(username: str) -> bool` that does a single-row lookup
 
 ```python
 def is_active_coordinator(username: str) -> bool:
-    return db.session.query(AdminUserRecord).filter(
-        AdminUserRecord.username == username,
-        AdminUserRecord.is_active,
-    ).first() is not None
+    return (
+        db.session.query(AdminUserRecord)
+        .filter(
+            AdminUserRecord.username == username,
+            AdminUserRecord.is_active,
+        )
+        .first()
+        is not None
+    )
 ```
 
 Keep `active_coordinators()` — it's still needed for the coordinators dashboard (listing all).
@@ -25,7 +30,7 @@ Keep `active_coordinators()` — it's still needed for the coordinators dashboar
 In both `save_and_get_user()` and `get_authenticated_user()`, call the new query and pass the result:
 
 ```python
-is_active_admin=is_active_coordinator(username),
+is_active_admin = (is_active_coordinator(username),)
 ```
 
 ### Step 3 — Replace all single-user admin checks

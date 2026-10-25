@@ -46,7 +46,6 @@ class TestCheckForRHeader:
 
 
 class TestAddRHeader:
-
     def test_add_r_header_data_rows_get_blank_cell(self):
         # add_column only appends to the first cell (x[0]) of each row,
         # inserting a new second column; it does not touch every cell.

@@ -21,6 +21,7 @@ def encrypt_value(value: str) -> bytes:
     """Encrypt a UTF-8 string and return the raw Fernet token bytes."""
     return _require_fernet().encrypt(value.encode("utf-8"))
 
+
 def decrypt_value(token: bytes) -> str:
     """Decrypt a Fernet token and return the UTF-8 string contents."""
     decrypted = _require_fernet().decrypt(token)

@@ -3,14 +3,13 @@
 from flask import Blueprint, Flask
 
 from ..jobs_workers.public_jobs_workers.workers_list_public import jobs_data_public
+from ..models import RouteModule
 from .auth.routes import AuthView
 from .fixred import FixRedView
 from .main_routes import MainRoutes
 from .newupdater.route import NewUpdaterRoutes
 from .profile import ProfileView
 from .public_jobs import PublicJobsRoutes
-
-from ..models import RouteModule
 
 PUBLIC_ROUTE_MODULES: list[RouteModule] = [
     RouteModule(MainRoutes, "main", ""),
