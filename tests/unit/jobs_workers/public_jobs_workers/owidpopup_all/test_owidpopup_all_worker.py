@@ -8,13 +8,32 @@ import pytest
 
 from src.main_app.jobs_workers.objects import JobsRunner
 from src.main_app.jobs_workers.public_jobs_workers.owidpopup_all.worker import (
+    OWID_POPUP_RENAME,
     OwidPopupAllWorker,
-    replace_owid_popup,
+    TemplateRename,
+    replace_templates,
 )
 from src.main_app.jobs_workers.shared_objects import SharedworkerObject, UpdaterOutcome
 
 
-class TestReplaceOwidPopup:
+class TestTemplateRenameConfig:
+    def test_dataclass_fields(self):
+        rename = TemplateRename(
+            old_names=["OldName", "Old_Name"],
+            new_name="NewName",
+            arguments={"oldarg": "newarg"},
+        )
+        assert rename.old_names == ["OldName", "Old_Name"]
+        assert rename.new_name == "NewName"
+        assert rename.arguments == {"oldarg": "newarg"}
+
+    def test_owid_popup_rename_config(self):
+        assert OWID_POPUP_RENAME.old_names == ["OWIDPopup", "OWID_popup"]
+        assert OWID_POPUP_RENAME.new_name == "OWID"
+        assert OWID_POPUP_RENAME.arguments == {"owid": "chart"}
+
+
+class TestReplaceTemplates:
     def test_basic_transformation(self):
         before = (
             "{{OWIDPopup\n"
@@ -27,28 +46,33 @@ class TestReplaceOwidPopup:
             "| title = Malnutrition death rates\n"
             "}}"
         )
-        assert replace_owid_popup(before) == expected
+        assert replace_templates(before, [OWID_POPUP_RENAME]) == expected
+
+    def test_underscore_template_name(self):
+        before = "{{OWID_popup | owid = grapher/test | title = Test }}"
+        expected = "{{OWID|chart= grapher/test | title = Test }}"
+        assert replace_templates(before, [OWID_POPUP_RENAME]) == expected
 
     def test_case_insensitivity_and_inline(self):
         before = "{{owidpopup | OWID = grapher/test | title = Test }}"
         expected = "{{OWID|chart= grapher/test | title = Test }}"
-        assert replace_owid_popup(before) == expected
+        assert replace_templates(before, [OWID_POPUP_RENAME]) == expected
 
     def test_other_arguments_preserved(self):
         before = "{{OWIDPopup|owid=grapher/abc|title=Title|extra=value|foo=bar}}"
         expected = "{{OWID|chart=grapher/abc|title=Title|extra=value|foo=bar}}"
-        assert replace_owid_popup(before) == expected
+        assert replace_templates(before, [OWID_POPUP_RENAME]) == expected
 
     def test_other_templates_untouched(self):
         before = "{{OtherTemplate | owid = 123 | title = Test}}"
-        assert replace_owid_popup(before) == before
+        assert replace_templates(before, [OWID_POPUP_RENAME]) == before
 
     def test_multiple_templates_and_nested(self):
         before = (
             "Leading text\n"
             "{{OWIDPopup | owid = grapher/chart-1 | title = Chart 1}}\n"
             "Middle text\n"
-            "{{Wrapper | inner = {{OWIDPopup | owid = grapher/chart-2 | title = Chart 2}} }}\n"
+            "{{Wrapper | inner = {{OWID_popup | owid = grapher/chart-2 | title = Chart 2}} }}\n"
             "Trailing text"
         )
         expected = (
@@ -58,11 +82,27 @@ class TestReplaceOwidPopup:
             "{{Wrapper | inner = {{OWID|chart= grapher/chart-2 | title = Chart 2}} }}\n"
             "Trailing text"
         )
-        assert replace_owid_popup(before) == expected
+        assert replace_templates(before, [OWID_POPUP_RENAME]) == expected
 
     def test_no_templates_returns_same_text(self):
         text = "This is plain text with no templates."
-        assert replace_owid_popup(text) == text
+        assert replace_templates(text, [OWID_POPUP_RENAME]) == text
+
+    def test_idempotency(self):
+        before = "{{OWIDPopup | owid = grapher/test | title = Test }}"
+        first_pass = replace_templates(before, [OWID_POPUP_RENAME])
+        second_pass = replace_templates(first_pass, [OWID_POPUP_RENAME])
+        assert first_pass == second_pass
+
+    def test_generic_multi_argument_config(self):
+        custom_rename = TemplateRename(
+            old_names=["OldTemplate", "Old_Template"],
+            new_name="NewTemplate",
+            arguments={"oldarg": "newarg", "legacy": "current"},
+        )
+        before = "{{Old_Template | oldarg = val1 | legacy = val2 | stay = val3}}"
+        expected = "{{NewTemplate|newarg= val1 |current= val2 | stay = val3}}"
+        assert replace_templates(before, [custom_rename]) == expected
 
 
 class TestOwidPopupAllWorker:

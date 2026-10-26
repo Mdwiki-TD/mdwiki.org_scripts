@@ -6,6 +6,7 @@ Replaces OWIDPopup templates with OWID templates on MediaWiki pages belonging to
 
 from __future__ import annotations
 
+from dataclasses import dataclass
 import logging
 
 from mwclient.client import Site
@@ -18,20 +19,47 @@ from ...shared_objects import SharedworkerObject, UpdaterOutcome
 logger = logging.getLogger(__name__)
 
 
-def replace_owid_popup(text: str) -> str:
-    """
-    Replace OWIDPopup templates with OWID templates using wikitextparser.
+@dataclass(frozen=True)
+class TemplateRename:
+    old_names: list[str]
+    new_name: str
+    arguments: dict[str, str]
 
-    Renames argument 'owid' to 'chart' while preserving all other arguments and values.
+
+OWID_POPUP_RENAME = TemplateRename(
+    old_names=["OWIDPopup", "OWID_popup"],
+    new_name="OWID",
+    arguments={
+        "owid": "chart",
+    },
+)
+
+
+def replace_templates(
+    text: str,
+    renames: list[TemplateRename],
+) -> str:
     """
+    Replace wikitext templates and arguments based on configuration rules.
+    """
+    rename_map: dict[str, tuple[str, dict[str, str]]] = {}
+    for r in renames:
+        args_map = {k.strip().lower(): v for k, v in r.arguments.items()}
+        for old_name in r.old_names:
+            norm_name = old_name.strip().lower().replace("_", " ")
+            rename_map[norm_name] = (r.new_name, args_map)
+
     parsed = wtp.parse(text)
     for template in parsed.templates:
-        if template.name.strip().lower() == "owidpopup":
-            template.name = "OWID"
+        norm_t_name = template.name.strip().lower().replace("_", " ")
+        if norm_t_name in rename_map:
+            new_t_name, args_map = rename_map[norm_t_name]
+            template.name = new_t_name
 
             for arg in template.arguments:
-                if arg.name.strip().lower() == "owid":
-                    arg.name = "chart"
+                norm_arg_name = arg.name.strip().lower()
+                if norm_arg_name in args_map:
+                    arg.name = args_map[norm_arg_name]
 
     return parsed.string
 
@@ -145,7 +173,7 @@ class OwidPopupAllWorker(BaseObjectsJobWorker):
         return info
 
     def _make_new_text(self, title: str, text: str) -> tuple[str, str]:
-        new_text = replace_owid_popup(text)
+        new_text = replace_templates(text, [OWID_POPUP_RENAME])
         if new_text == text:
             return new_text, ""
 
@@ -156,5 +184,7 @@ class OwidPopupAllWorker(BaseObjectsJobWorker):
 
 __all__ = [
     "OwidPopupAllWorker",
-    "replace_owid_popup",
+    "TemplateRename",
+    "OWID_POPUP_RENAME",
+    "replace_templates",
 ]
