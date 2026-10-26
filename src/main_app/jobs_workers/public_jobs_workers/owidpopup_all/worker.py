@@ -58,11 +58,7 @@ class OwidPopupAllWorker(BaseObjectsJobWorker):
         if not self._check_site():
             return self.result
 
-        category = (
-            self.args.get("category")
-            or self.args.get("cat")
-            or self.args.get("category_title")
-        )
+        category = self.args.get("category")
         if not category or not str(category).strip():
             category = "Category:Gadget:OWIDPopup"
         else:

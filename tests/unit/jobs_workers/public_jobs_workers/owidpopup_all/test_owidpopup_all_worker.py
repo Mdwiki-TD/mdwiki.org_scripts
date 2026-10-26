@@ -96,7 +96,7 @@ class TestOwidPopupAllWorker:
 
     def test_custom_category(self, mock_site):
         worker = OwidPopupAllWorker(
-            JobsRunner(job_id=1, args={"cat": "Gadget:OWIDPopup"}, user=None)
+            JobsRunner(job_id=1, args={"category": "Gadget:OWIDPopup"}, user=None)
         )
         worker.site = mock_site
 
