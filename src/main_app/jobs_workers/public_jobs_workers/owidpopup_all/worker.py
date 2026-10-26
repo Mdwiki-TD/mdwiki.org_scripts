@@ -6,7 +6,6 @@ Replaces OWIDPopup templates with OWID templates on MediaWiki pages belonging to
 
 from __future__ import annotations
 
-from dataclasses import dataclass
 import logging
 
 from mwclient.client import Site
@@ -15,24 +14,9 @@ import wikitextparser as wtp
 from ....api_services import MwClientPage, get_category_members
 from ...base_worker import BaseObjectsJobWorker, JobsRunner
 from ...shared_objects import SharedworkerObject, UpdaterOutcome
+from .mapping import OWID_POPUP_RENAME, TemplateRename
 
 logger = logging.getLogger(__name__)
-
-
-@dataclass(frozen=True)
-class TemplateRename:
-    old_names: list[str]
-    new_name: str
-    arguments: dict[str, str]
-
-
-OWID_POPUP_RENAME = TemplateRename(
-    old_names=["OWIDPopup", "OWID_popup"],
-    new_name="OWID",
-    arguments={
-        "owid": "chart",
-    },
-)
 
 
 def replace_templates(

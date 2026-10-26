@@ -7,10 +7,12 @@ from unittest.mock import MagicMock, patch
 import pytest
 
 from src.main_app.jobs_workers.objects import JobsRunner
-from src.main_app.jobs_workers.public_jobs_workers.owidpopup_all.worker import (
+from src.main_app.jobs_workers.public_jobs_workers.owidpopup_all.mapping import (
     OWID_POPUP_RENAME,
-    OwidPopupAllWorker,
     TemplateRename,
+)
+from src.main_app.jobs_workers.public_jobs_workers.owidpopup_all.worker import (
+    OwidPopupAllWorker,
     replace_templates,
 )
 from src.main_app.jobs_workers.shared_objects import SharedworkerObject, UpdaterOutcome
