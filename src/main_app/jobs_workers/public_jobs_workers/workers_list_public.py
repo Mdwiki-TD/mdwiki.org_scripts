@@ -11,6 +11,7 @@ from .fixred_all.worker import FixRedAllWorker
 from .fixref.worker import FixRefWorker
 from .import_history.worker import ImportHistoryWorker
 from .newupdater_all.worker import NewUpdaterAllWorker
+from .owidpopup_all.worker import OwidPopupAllWorker
 
 jobs_data_for_all_pages: dict[str, JobData] = {
     "newupdater_all": JobData(
@@ -90,6 +91,15 @@ jobs_data_for_all_pages: dict[str, JobData] = {
         job_class=FixCs1Worker,
         job_args=[],
         start_confirm_message="Start task for `Category:CS1 errors: missing periodical` pages?",
+        ready=True,
+    ),
+    "owidpopup_all": JobData(
+        job_type="owidpopup_all",
+        job_name="Replace OWIDPopup with OWID",
+        job_list_template="jobs_templates/public/owidpopup_all/list.html",
+        job_class=OwidPopupAllWorker,
+        job_args=[],
+        start_confirm_message="Start task for `Category:Gadget:OWIDPopup` pages?",
         ready=True,
     ),
 }
