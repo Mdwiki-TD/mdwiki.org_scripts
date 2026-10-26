@@ -22,22 +22,17 @@ def replace_owid_popup(text: str) -> str:
     """
     Replace OWIDPopup templates with OWID templates using wikitextparser.
 
-    Renames argument 'owid' to 'chart' while preserving all other arguments,
-    their values, and surrounding formatting/whitespace.
+    Renames argument 'owid' to 'chart' while preserving all other arguments and values.
     """
     parsed = wtp.parse(text)
-    for t in parsed.templates:
-        raw_name = t.name
-        if raw_name.strip().lower() == "owidpopup":
-            l_ws = raw_name[: len(raw_name) - len(raw_name.lstrip())]
-            r_ws = raw_name[len(raw_name.rstrip()) :]
-            t.name = f"{l_ws}OWID{r_ws}"
-            for arg in t.arguments:
-                raw_arg = arg.name
-                if raw_arg.strip().lower() == "owid":
-                    arg_l_ws = raw_arg[: len(raw_arg) - len(raw_arg.lstrip())]
-                    arg_r_ws = raw_arg[len(raw_arg.rstrip()) :]
-                    arg.name = f"{arg_l_ws}chart{arg_r_ws}"
+    for template in parsed.templates:
+        if template.name.strip().lower() == "owidpopup":
+            template.name = "OWID"
+
+            for arg in template.arguments:
+                if arg.name.strip().lower() == "owid":
+                    arg.name = "chart"
+
     return parsed.string
 
 

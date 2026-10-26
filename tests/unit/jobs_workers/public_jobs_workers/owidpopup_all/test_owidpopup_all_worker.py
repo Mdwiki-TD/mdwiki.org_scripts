@@ -23,8 +23,7 @@ class TestReplaceOwidPopup:
             "}}"
         )
         expected = (
-            "{{OWID\n"
-            "| chart = grapher/malnutrition-death-rates\n"
+            "{{OWID|chart= grapher/malnutrition-death-rates\n"
             "| title = Malnutrition death rates\n"
             "}}"
         )
@@ -32,7 +31,7 @@ class TestReplaceOwidPopup:
 
     def test_case_insensitivity_and_inline(self):
         before = "{{owidpopup | OWID = grapher/test | title = Test }}"
-        expected = "{{OWID | chart = grapher/test | title = Test }}"
+        expected = "{{OWID|chart= grapher/test | title = Test }}"
         assert replace_owid_popup(before) == expected
 
     def test_other_arguments_preserved(self):
@@ -54,9 +53,9 @@ class TestReplaceOwidPopup:
         )
         expected = (
             "Leading text\n"
-            "{{OWID | chart = grapher/chart-1 | title = Chart 1}}\n"
+            "{{OWID|chart= grapher/chart-1 | title = Chart 1}}\n"
             "Middle text\n"
-            "{{Wrapper | inner = {{OWID | chart = grapher/chart-2 | title = Chart 2}} }}\n"
+            "{{Wrapper | inner = {{OWID|chart= grapher/chart-2 | title = Chart 2}} }}\n"
             "Trailing text"
         )
         assert replace_owid_popup(before) == expected
@@ -186,7 +185,7 @@ class TestOwidPopupAllWorker:
             assert info.status == "changed"
             assert info.newrevid == 12345
             mock_page.edit.assert_called_once_with(
-                "{{OWID | chart = grapher/test | title = Test}}",
+                "{{OWID|chart= grapher/test | title = Test}}",
                 "Replace OWIDPopup with OWID",
             )
 
