@@ -14,7 +14,7 @@ import wikitextparser as wtp
 from ....api_services import MwClientPage, get_category_members
 from ...base_worker import BaseObjectsJobWorker, JobsRunner
 from ...shared_objects import SharedworkerObject, UpdaterOutcome
-from .mapping import OWID_POPUP_RENAME, TemplateRename
+from .mapping import OWID_POPUP_RENAME, TemplateRename, _norm_template_name
 
 logger = logging.getLogger(__name__)
 
@@ -26,24 +26,15 @@ def replace_templates(
     """
     Replace wikitext templates and arguments based on configuration rules.
     """
-    rename_map: dict[str, tuple[str, dict[str, str]]] = {}
-    for r in renames:
-        args_map = {k.strip().lower(): v for k, v in r.arguments.items()}
-        for old_name in r.old_names:
-            norm_name = old_name.strip().lower().replace("_", " ")
-            rename_map[norm_name] = (r.new_name, args_map)
+    rename_map: dict[str, TemplateRename] = {
+        name: r for r in renames for name in r._old_names_norm
+    }
 
     parsed = wtp.parse(text)
     for template in parsed.templates:
-        norm_t_name = template.name.strip().lower().replace("_", " ")
-        if norm_t_name in rename_map:
-            new_t_name, args_map = rename_map[norm_t_name]
-            template.name = new_t_name
-
-            for arg in template.arguments:
-                norm_arg_name = arg.name.strip().lower()
-                if norm_arg_name in args_map:
-                    arg.name = args_map[norm_arg_name]
+        rename = rename_map.get(_norm_template_name(template.name))
+        if rename:
+            rename.rename_temp(template)
 
     return parsed.string
 

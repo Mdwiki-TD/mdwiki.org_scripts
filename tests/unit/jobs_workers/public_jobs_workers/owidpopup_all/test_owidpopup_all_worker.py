@@ -10,6 +10,7 @@ from src.main_app.jobs_workers.objects import JobsRunner
 from src.main_app.jobs_workers.public_jobs_workers.owidpopup_all.mapping import (
     OWID_POPUP_RENAME,
     TemplateRename,
+    _norm_template_name,
 )
 from src.main_app.jobs_workers.public_jobs_workers.owidpopup_all.worker import (
     OwidPopupAllWorker,
@@ -19,7 +20,10 @@ from src.main_app.jobs_workers.shared_objects import SharedworkerObject, Updater
 
 
 class TestTemplateRenameConfig:
-    def test_dataclass_fields(self):
+    def test_norm_template_name(self):
+        assert _norm_template_name("  OWID_Popup  ") == "owid popup"
+
+    def test_dataclass_fields_and_post_init(self):
         rename = TemplateRename(
             old_names=["OldName", "Old_Name"],
             new_name="NewName",
@@ -28,11 +32,14 @@ class TestTemplateRenameConfig:
         assert rename.old_names == ["OldName", "Old_Name"]
         assert rename.new_name == "NewName"
         assert rename.arguments == {"oldarg": "newarg"}
+        assert rename._old_names_norm == frozenset({"oldname", "old name"})
+        assert rename._args_map == {"oldarg": "newarg"}
 
     def test_owid_popup_rename_config(self):
         assert OWID_POPUP_RENAME.old_names == ["OWIDPopup", "OWID_popup"]
         assert OWID_POPUP_RENAME.new_name == "OWID"
         assert OWID_POPUP_RENAME.arguments == {"owid": "chart"}
+        assert OWID_POPUP_RENAME._old_names_norm == frozenset({"owidpopup", "owid popup"})
 
 
 class TestReplaceTemplates:
