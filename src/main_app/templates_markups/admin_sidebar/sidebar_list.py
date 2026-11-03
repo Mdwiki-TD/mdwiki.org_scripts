@@ -88,6 +88,14 @@ def load_groups_menu() -> list[SidebarGroup]:
                 title="DB admin",
                 icon="bi-database",
             ),
+        ],
+    )
+
+    errors_group = SidebarGroup(
+        id="errors_group",
+        title="Errors",
+        icon="bi-exclamation-triangle",
+        items=[
             dashboard_item(
                 "errors",
                 "App Errors",
@@ -105,10 +113,27 @@ def load_groups_menu() -> list[SidebarGroup]:
         ],
     )
 
+    other_group = SidebarGroup(
+        id="other_group",
+        title="Other",
+        icon="bi-exclamation-triangle",
+        items=[
+            SidebarItem(
+                id="tf_jobs",
+                requires_admin=True,
+                fallback_href="/adminpanel/tfj",
+                title="ToolForge Jobs",
+                icon="bi-hdd-network",
+            ),
+        ],
+    )
+
     return [
         main_group,
         users_group,
         settings_group,
+        errors_group,
+        other_group,
     ]
 
 
