@@ -21,25 +21,25 @@ class TestMakeTitle:
         assert make_title("") == ""
         assert make_title("   ") == ""
 
-    @patch("src.main_app.services.fixref_shared.make_title_bot.get_citation_title")
+    @patch("src.main_app.services.fixref_shared.make_title_bot.CitationApi.get_citation_title")
     def test_valid_response_returns_title(self, mock_get_citation):
         mock_get_citation.return_value = "Aspirin"
         result = make_title("https://example.com/article")
         assert result == "Aspirin"
 
-    @patch("src.main_app.services.fixref_shared.make_title_bot.get_citation_title")
+    @patch("src.main_app.services.fixref_shared.make_title_bot.CitationApi.get_citation_title")
     def test_empty_response_returns_empty(self, mock_get_citation):
         mock_get_citation.return_value = ""
         result = make_title("https://example.com/empty")
         assert result == ""
 
-    @patch("src.main_app.services.fixref_shared.make_title_bot.get_citation_title")
+    @patch("src.main_app.services.fixref_shared.make_title_bot.CitationApi.get_citation_title")
     def test_not_found_title_returns_empty(self, mock_get_citation):
         mock_get_citation.return_value = "Not found."
         result = make_title("https://example.com/404")
         assert result == ""
 
-    @patch("src.main_app.services.fixref_shared.make_title_bot.get_citation_title")
+    @patch("src.main_app.services.fixref_shared.make_title_bot.CitationApi.get_citation_title")
     def test_caching(self, mock_get_citation):
         mock_get_citation.return_value = "Cached Title"
         result1 = make_title("https://example.com/cached")

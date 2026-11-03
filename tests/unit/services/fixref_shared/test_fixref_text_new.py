@@ -6,7 +6,7 @@ from src.main_app.services.fixref_shared.fixref_text_new import fix_ref_template
 @pytest.fixture
 def mock_make_title(monkeypatch: pytest.MonkeyPatch):
     title = "Infectieziekten | Regionaal & Internationaal | Coronavirus (COVID-19) | Volksgezondheidenzorg.info"
-    monkeypatch.setattr("src.main_app.services.fixref_shared.make_title_bot.get_citation_title", lambda x: title)
+    monkeypatch.setattr("src.main_app.services.fixref_shared.make_title_bot.CitationApi.get_citation_title", lambda *args: title)
 
 
 def test_fix_ref_template(mock_make_title):
