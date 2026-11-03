@@ -25,3 +25,4 @@ docs/v2_plans/di_refactor/files-461830e3.zip
 src/main_app/jobs_workers/_shared_objects.py
 **/__pycache__/**
 .claude/skills/flask-methodview-refactoring/SKILL.md
+state/**
