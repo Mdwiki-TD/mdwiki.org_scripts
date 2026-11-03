@@ -2,12 +2,9 @@
 
 from .category import get_category_members
 from .clients import (
-    CommonsSession,
-    create_commons_session,
     get_cronjob_site,
     get_user_site,
 )
-from .files_service import FilesService, UploadService
 from .mwclient_page import MwClientPage
 from .query_api import (
     get_page_links,
@@ -18,9 +15,6 @@ from .query_api import (
 )
 
 __all__ = [
-    "UploadService",
-    "FilesService",
-    "CommonsSession",
     "MwClientPage",
     "get_user_site",
     "get_template_pages",
@@ -29,6 +23,5 @@ __all__ = [
     "resolve_redirects",
     "search_pages",
     "get_category_members",
-    "create_commons_session",
     "get_cronjob_site",
 ]

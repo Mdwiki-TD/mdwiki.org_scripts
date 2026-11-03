@@ -9,8 +9,6 @@ from typing import Any
 
 import requests
 
-from ...config import app_settings
-
 logger = logging.getLogger(__name__)
 
 

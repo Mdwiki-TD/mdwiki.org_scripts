@@ -11,7 +11,7 @@ import logging
 import re
 from urllib.parse import quote
 
-from ...api_services.citation_api import get_citation_title
+from ...api_services.citation_api import CitationApi
 
 logger = logging.getLogger(__name__)
 
@@ -70,7 +70,7 @@ def make_title(url: str) -> str:
     url2 = url2.replace("&", "%26")
     url2 = url2.replace("#", "%23")
 
-    title = get_citation_title(url2)
+    title = CitationApi().get_citation_title(url2)
 
     if not title or title.strip().lower() == "not found.":
         return ""

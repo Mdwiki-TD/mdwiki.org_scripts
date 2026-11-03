@@ -15,7 +15,7 @@ import logging
 
 import wikitextparser as wtp
 
-from .pmid import pmid_journal
+from .pmid import PMIDService
 
 in_params_en = [
     "journal",
@@ -63,7 +63,7 @@ def get_journal_value(temp):
             continue
         # ---
         # logger.info(f"** temp has |{param} = {va}")
-        journal = pmid_journal(va, param)
+        journal = PMIDService().pmid_journal(va, param)
         # ---
         if journal:
             break
