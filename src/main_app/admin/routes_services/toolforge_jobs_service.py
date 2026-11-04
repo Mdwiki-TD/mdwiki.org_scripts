@@ -211,8 +211,8 @@ class JobsPageService(JobsPageServiceHelpers):
             payload = call()
 
             # Check if the API returned a structured error body despite a 200/400 JSON response
-            if isinstance(payload, dict) and "error" in payload:
-                messages_data = self._extract_messages(payload)
+            messages_data = self._extract_messages(payload)
+            if isinstance(payload, dict) and "error" in messages_data:
                 error_texts = messages_data.get("error", [])
                 messages = [(str(err), "danger") for err in error_texts]
                 logger.warning("Failed to %s: %s", action, error_texts)
