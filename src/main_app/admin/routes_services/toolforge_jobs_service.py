@@ -92,33 +92,47 @@ class JobsPageService(JobsPageServiceHelpers):
     def __init__(self, toolforge: ToolforgeJobsService | None = None) -> None:
         self.toolforge = toolforge or ToolforgeJobsService(check=False)
 
-    def _failure_message(self, action: str, exc: Exception) -> Message:
+    def _failure_messages(self, action: str, exc: Exception) -> list[Message]:
         """Log an API failure and return the flash message for it."""
         if isinstance(exc, requests.HTTPError) and exc.response is not None:
+            try:
+                payload = exc.response.json()
+            except Exception:
+                payload = {}
+
+            messages = self._convert_messages(self._extract_messages(payload))
             code = exc.response.status_code
             if code == 400:
                 logger.warning("Failed to %s: bad request", action)
-                return (f"Failed to {action}: bad request (400).", "danger")
+                messages.insert(0, (f"Failed to {action}: bad request (400).", "danger"))
+                return messages
 
             if code == 404:
                 logger.warning("Failed to %s: not found", action)
-                return (f"Failed to {action}: not found (404).", "danger")
+                messages.insert(0, (f"Failed to {action}: not found (404).", "danger"))
+                return messages
 
             if code == 401:
                 logger.warning("Failed to %s: unauthorized", action)
-                return (
-                    f"Failed to {action}: unauthorized (401), check the client certificate or deploy token.",
-                    "danger",
+                messages.insert(
+                    0,
+                    (
+                        f"Failed to {action}: unauthorized (401), check the client certificate or deploy token.",
+                        "danger",
+                    ),
                 )
+                return messages
 
         if isinstance(exc, (requests.RequestException, ValueError)):
             # No traceback here: the exception text can contain the token URL.
             reason = self.toolforge.api.redact(str(exc))
             logger.error("Failed to %s: %s", action, reason)
-            return (f"Failed to {action}: {reason}", "danger")
+            messages.insert(0, (f"Failed to {action}: {reason}", "danger"))
+            return messages
 
         logger.exception("Failed to %s", action)
-        return (f"Failed to {action}: Could not find the TLS certificate file", "danger")
+        messages.insert(0, (f"Failed to {action}: Could not find the TLS certificate file", "danger"))
+        return messages
 
     # ------------------------------------------------------------------
     # Pages
@@ -132,7 +146,7 @@ class JobsPageService(JobsPageServiceHelpers):
             # payload = self.toolforge.list_jobs_test()
         except (requests.RequestException, ValueError, OSError) as exc:
             return JobsPage(
-                messages=[self._failure_message(action, exc)],
+                messages=self._failure_messages(action, exc),
                 error=True,
             )
 
@@ -160,7 +174,7 @@ class JobsPageService(JobsPageServiceHelpers):
         except (requests.RequestException, ValueError, OSError) as exc:
             return JobDetailPage(
                 job_id=job_id,
-                messages=[self._failure_message(action, exc)],
+                messages=self._failure_messages(action, exc),
                 error=True,
             )
 
@@ -184,7 +198,7 @@ class JobsPageService(JobsPageServiceHelpers):
             return JobLogsPage(
                 job_id=job_id,
                 lines=lines,
-                messages=[self._failure_message(action, exc)],
+                messages=self._failure_messages(action, exc),
                 error=True,
             )
 
@@ -210,24 +224,24 @@ class JobsPageService(JobsPageServiceHelpers):
         try:
             payload = call()
 
-            # Check if the API returned a structured error body despite a 200/400 JSON response
-            messages_data = self._extract_messages(payload)
-            if isinstance(payload, dict) and "error" in messages_data:
-                error_texts = messages_data.get("error", [])
-                messages = [(str(err), "danger") for err in error_texts]
-                logger.warning("Failed to %s: %s", action, error_texts)
-                return JobActionResult(messages=messages, ok=False)
-
         except (requests.RequestException, ValueError, OSError, Exception) as exc:
             return JobActionResult(
-                messages=[self._failure_message(action, exc)],
+                messages=self._failure_messages(action, exc),
                 ok=False,
             )
 
+        # Check if the API returned a structured error body despite a 200/400 JSON response
         messages_data = self._extract_messages(payload)
+        messages_ready = self._convert_messages(messages_data)
+
+        if isinstance(payload, dict) and "error" in messages_data:
+            error_texts = messages_data.get("error", [])
+            # messages = [(str(err), "danger") for err in error_texts]
+            logger.warning("Failed to %s: %s", action, error_texts)
+            return JobActionResult(messages=messages_ready, ok=False)
 
         messages: list[Message] = [(success_text, "success")]
-        messages.extend(self._convert_messages(messages_data))
+        messages.extend(messages_ready)
         return JobActionResult(messages=messages)
 
     def restart_job(self, job_id: str) -> JobActionResult:

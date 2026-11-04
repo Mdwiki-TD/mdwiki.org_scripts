@@ -15,7 +15,6 @@ from src.main_app.api_services.clients.toolforge_api_service import (
     EXTERNAL_API_URL,
     REQUEST_TIMEOUT,
     TOKEN_ENV,
-    ToolforgeApiService,
 )
 from src.main_app.api_services.clients.toolforge_jobs_api_service import (
     ToolforgeJobsService,
@@ -351,7 +350,7 @@ class TestWriteEndpoints:
         self, make_service, mock_http_client, make_response, method_name: str, args: tuple, client_method: str
     ) -> None:
         mock_http_client.request.return_value = make_response(status_code=400)
-        service = make_service()
+        service = make_service(check=True)
 
         with pytest.raises(requests.HTTPError):
             getattr(service, method_name)(*args)
@@ -426,7 +425,7 @@ class TestErrors:
 
     def test_list_jobs_raises_on_server_error(self, make_service, mock_http_client, make_response) -> None:
         mock_http_client.request.return_value = make_response(status_code=500)
-        service = make_service()
+        service = make_service(check=True)
 
         with pytest.raises(requests.HTTPError):
             service.list_jobs()
@@ -502,7 +501,7 @@ def test_restart_job_handles_api_error_response3(make_service, mock_http_client,
     mock_response = make_response(status_code=400, json_data=error_payload)
     mock_http_client.request.return_value = mock_response
 
-    service = make_service()
+    service = make_service(check=True)
 
     # 2. Execute and assert that HTTPError is raised by default
     with pytest.raises(requests.HTTPError):

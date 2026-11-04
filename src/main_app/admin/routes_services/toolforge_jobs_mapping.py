@@ -14,6 +14,7 @@ Message = tuple[str, str]
 DEFAULT_LOG_LINES = 200
 MAX_LOG_LINES = 2000
 
+
 @dataclass
 class JobsPage:
     """Everything the jobs table template needs, plus messages to flash."""
