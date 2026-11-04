@@ -113,7 +113,7 @@ class JobsPageService(JobsPageServiceHelpers):
 
         if isinstance(exc, (requests.RequestException, ValueError)):
             # No traceback here: the exception text can contain the token URL.
-            reason = self.toolforge.redact(str(exc))
+            reason = self.toolforge.api.redact(str(exc))
             logger.error("Failed to %s: %s", action, reason)
             return (f"Failed to {action}: {reason}", "danger")
 
@@ -224,6 +224,8 @@ class JobsPageService(JobsPageServiceHelpers):
         invalid = self._invalid_name_message(job_id)
         if invalid:
             return JobActionResult(messages=[invalid], ok=False)
+
+        # self.toolforge.restart_job(job_id)
 
         return self._run_action(
             action=f"restart job '{job_id}'",

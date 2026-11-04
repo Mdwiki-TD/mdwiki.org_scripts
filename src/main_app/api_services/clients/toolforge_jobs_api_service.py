@@ -28,7 +28,7 @@ from .toolforge_jobs_types import (
 logger = logging.getLogger(__name__)
 
 
-class ToolforgeJobsService(ToolforgeApiService):
+class ToolforgeJobsService:
     """Thin client for the Toolforge Jobs API."""
 
     def __init__(
@@ -42,7 +42,7 @@ class ToolforgeJobsService(ToolforgeApiService):
         internal: bool | None = None,
         check: bool | None = None,
     ) -> None:
-        super().__init__(
+        self.api = ToolforgeApiService(
             api_route="jobs",
             tool_name=tool_name,
             home_dir=home_dir,
@@ -67,14 +67,27 @@ class ToolforgeJobsService(ToolforgeApiService):
         json: Any = None,
     ) -> Any:
         """Send a request to a JSON endpoint and return the decoded body (ValueError if not JSON)."""
-        json_response = self.request(
+        json_response = self.api.request(
             method,
             path,
             params=params,
             json=json,
             check=self.check,
         )
-        return json_response.json()
+        try:
+            return json_response.json()
+        except Exception:
+            logger.warning(
+                "JSON response not decoded: %s",
+                json_response.text,
+            )
+
+            # raise the HTTPError if it's not a 200
+            if json_response.status_code != 200:
+                json_response.raise_for_status()
+
+            # raise the `json_response.json()` error if it's not JSON
+            raise
 
     # ------------------------------------------------------------------
     # Endpoints (healthcheck() and metrics() are inherited)
@@ -84,14 +97,14 @@ class ToolforgeJobsService(ToolforgeApiService):
         """GET /jobs/v1/tool/{tool}/images: ``{"images": [{shortname, image}], "messages"}``."""
         return self._json(
             "GET",
-            self._tool_path("/images"),
+            self.api._tool_path("/images"),
         )
 
     def quotas(self) -> QuotaResponse:
         """GET /jobs/v1/tool/{tool}/quotas: ``{"quota": {"categories": [...]}, "messages"}``."""
         return self._json(
             "GET",
-            self._tool_path("/quotas"),
+            self.api._tool_path("/quotas"),
         )
 
     def list_jobs(self, include_unset: bool | None = None) -> JobListResponse:
@@ -102,7 +115,7 @@ class ToolforgeJobsService(ToolforgeApiService):
         """
         return self._json(
             "GET",
-            self._tool_path("/jobs"),
+            self.api._tool_path("/jobs"),
             params={"include_unset": include_unset},
         )
 
@@ -110,7 +123,7 @@ class ToolforgeJobsService(ToolforgeApiService):
         """POST /jobs/v1/tool/{tool}/jobs: create a job, returns ``{"job": Job, "messages"}``."""
         return self._json(
             "POST",
-            self._tool_path("/jobs"),
+            self.api._tool_path("/jobs"),
             json=data,
         )
 
@@ -118,7 +131,7 @@ class ToolforgeJobsService(ToolforgeApiService):
         """PATCH /jobs/v1/tool/{tool}/jobs: update or create a job, ``{"messages", "job_changed"}``."""
         return self._json(
             "PATCH",
-            self._tool_path("/jobs"),
+            self.api._tool_path("/jobs"),
             json=data,
         )
 
@@ -126,7 +139,7 @@ class ToolforgeJobsService(ToolforgeApiService):
         """DELETE /jobs/v1/tool/{tool}/jobs: delete ALL jobs of the tool, ``{"messages"}``."""
         return self._json(
             "DELETE",
-            self._tool_path("/jobs"),
+            self.api._tool_path("/jobs"),
         )
 
     # ------------------------------------------------------------------
@@ -137,14 +150,14 @@ class ToolforgeJobsService(ToolforgeApiService):
         """GET /jobs/v1/tool/{tool}/jobs/{id}: ``{"job": Job, "messages"}``. 404 if it does not exist."""
         return self._json(
             "GET",
-            self._tool_path(self._job_path(job_id)),
+            self.api._tool_path(self._job_path(job_id)),
         )
 
     def delete_job(self, job_id: str | int) -> MessagesResponse:
         """DELETE /jobs/v1/tool/{tool}/jobs/{id}: ``{"messages"}``. 404 if it does not exist."""
         return self._json(
             "DELETE",
-            self._tool_path(self._job_path(job_id)),
+            self.api._tool_path(self._job_path(job_id)),
         )
 
     def get_logs(self, job_id: str | int) -> str:
@@ -152,9 +165,9 @@ class ToolforgeJobsService(ToolforgeApiService):
 
         The endpoint takes no query parameters, so the lines cannot be limited here.
         """
-        response_data = self.request(
+        response_data = self.api.request(
             "GET",
-            self._tool_path(f"{self._job_path(job_id)}/logs"),
+            self.api._tool_path(f"{self._job_path(job_id)}/logs"),
         )
         return response_data.text
 
@@ -165,7 +178,7 @@ class ToolforgeJobsService(ToolforgeApiService):
         """POST /jobs/v1/tool/{tool}/jobs/{id}/restart: ``{"messages"}`` (a cronjob runs right now)."""
         return self._json(
             "POST",
-            self._tool_path(f"{self._job_path(job_id)}/restart"),
+            self.api._tool_path(f"{self._job_path(job_id)}/restart"),
         )
 
     def list_jobs_test(self, include_unset: bool | None = None) -> JobListResponse:
