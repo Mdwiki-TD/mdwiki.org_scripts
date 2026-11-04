@@ -52,7 +52,7 @@ class ToolforgeJobsService:
             token=token,
             internal=internal,
         )
-        self.check = check if check is not None else False
+        self.check = check if check is not None else True
 
     @staticmethod
     def _job_path(job_id: str | int) -> str:

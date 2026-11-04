@@ -234,9 +234,14 @@ class JobsPageService(JobsPageServiceHelpers):
         messages_data = self._extract_messages(payload)
         messages_ready = self._convert_messages(messages_data)
 
-        messages: list[Message] = [(success_text, "success")]
+        messages: list[Message] = []
+        success = "error" not in messages_data
+        if success:
+            messages.append((success_text, "success"))
+
         messages.extend(messages_ready)
-        return JobActionResult(messages=messages)
+
+        return JobActionResult(messages=messages, ok=success)
 
     def restart_job(self, job_id: str) -> JobActionResult:
         """Restart one job (a cronjob runs right now)."""

@@ -144,10 +144,11 @@ def test_restart_job_handles_api_error_response():
     result = page_service.restart_job("one-off-job")
 
     # 3. Assertions
-    assert result.ok is False
     assert ("Unable to restart a one-off job", "danger") in result.messages
     assert ("Job 'one-off-job' restarted.", "success") not in result.messages
     # mock_toolforge.restart_job.assert_called_once_with("one-off-job")
+
+    assert result.ok is False
 
 
 def test_restart_job_invalid_job_name():
