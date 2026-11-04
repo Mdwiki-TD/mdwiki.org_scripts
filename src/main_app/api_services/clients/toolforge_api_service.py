@@ -128,6 +128,12 @@ class ToolforgeApiService:
             url=self.build_url(path, params),
             **kwargs,
         )
+        # Relies on HttpClient exposing get/post/put/patch/delete.
+        # send = getattr(self.http_client, method.lower())
+        # response = send(
+        #     self.build_url(path, params),
+        #     **kwargs,
+        # )
         if check:
             response.raise_for_status()
         return response
