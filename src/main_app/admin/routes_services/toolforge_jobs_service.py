@@ -110,6 +110,7 @@ class JobsPageService:
         try:
             payload = call()
         except (requests.RequestException, ValueError, OSError) as exc:
+            logger.exception("Failed to %s", action)
             return JobActionResult(messages=[self._failure_message(action, exc)], ok=False)
 
         messages: list[tuple[str, str]] = [(success_text, "success")]
@@ -128,6 +129,7 @@ class JobsPageService:
             if not isinstance(payload, dict):
                 raise ValueError("Unexpected response from the Toolforge API")
         except (requests.RequestException, ValueError, OSError) as exc:
+            logger.exception("Failed to %s", action)
             return JobsPage(messages=[self._failure_message(action, exc)], error=True)
 
         jobs = [self._normalize_job(job) for job in payload.get("jobs") or []]
@@ -146,6 +148,7 @@ class JobsPageService:
             if not isinstance(payload, dict):
                 raise ValueError("Unexpected response from the Toolforge API")
         except (requests.RequestException, ValueError, OSError) as exc:
+            logger.exception("Failed to %s", action)
             return JobDetailPage(job_id=job_id, messages=[self._failure_message(action, exc)], error=True)
 
         job = payload.get("job") if isinstance(payload.get("job"), dict) else payload
@@ -162,6 +165,7 @@ class JobsPageService:
         try:
             payload = self.toolforge.get_logs(job_id)
         except (requests.RequestException, ValueError, OSError) as exc:
+            logger.exception("Failed to %s", action)
             return JobLogsPage(job_id=job_id, lines=lines, messages=[self._failure_message(action, exc)], error=True)
 
         all_lines = self._normalize_logs(payload)
