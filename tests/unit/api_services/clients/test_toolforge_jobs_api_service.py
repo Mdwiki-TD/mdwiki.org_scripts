@@ -66,10 +66,9 @@ def make_response() -> Callable[..., MagicMock]:
 
 @pytest.fixture
 def mock_http_client(make_response: Callable[..., MagicMock]) -> MagicMock:
-    """Return a fake HttpClient whose every verb answers with HTTP 200."""
+    """Return a fake HttpClient whose request() answers with HTTP 200."""
     client = MagicMock()
-    for method in HTTP_METHODS:
-        getattr(client, method).return_value = make_response()
+    client.request.return_value = make_response()
     return client
 
 
@@ -163,8 +162,9 @@ class TestReadEndpoints:
 
         getattr(service, method_name)(*args)
 
-        mock_http_client.get.assert_called_once()
-        assert mock_http_client.get.call_args.args[0] == f"{BASE}{expected_path}"
+        mock_http_client.request.assert_called_once()
+        assert mock_http_client.request.call_args.kwargs["method"] == "GET"
+        assert mock_http_client.request.call_args.kwargs["url"] == f"{BASE}{expected_path}"
 
     @pytest.mark.parametrize(
         ("method_name", "args"),
@@ -178,7 +178,7 @@ class TestReadEndpoints:
     def test_returns_decoded_payload(
         self, make_service, mock_http_client, make_response, method_name: str, args: tuple
     ) -> None:
-        mock_http_client.get.return_value = make_response(json_data={"key": "value"})
+        mock_http_client.request.return_value = make_response(json_data={"key": "value"})
         service = make_service()
 
         assert getattr(service, method_name)(*args) == {"key": "value"}
@@ -188,11 +188,11 @@ class TestReadEndpoints:
 
         service.show_job("my job")
 
-        assert mock_http_client.get.call_args.args[0] == f"{BASE}/jobs/my%20job"
+        assert mock_http_client.request.call_args.kwargs["url"] == f"{BASE}/jobs/my%20job"
 
     def test_list_jobs_returns_the_api_payload(self, make_service, mock_http_client, make_response) -> None:
         payload = {"jobs": [{"name": "update"}], "messages": {"info": [], "warning": [], "error": []}}
-        mock_http_client.get.return_value = make_response(json_data=payload)
+        mock_http_client.request.return_value = make_response(json_data=payload)
         service = make_service()
 
         assert service.list_jobs() == payload
@@ -204,7 +204,7 @@ class TestReadEndpoints:
     def test_non_json_body_raises_value_error(
         self, make_service, mock_http_client, make_response, method_name: str, args: tuple
     ) -> None:
-        mock_http_client.get.return_value = make_response(content=b"oops", text="oops", json_error=True)
+        mock_http_client.request.return_value = make_response(content=b"oops", text="oops", json_error=True)
         service = make_service()
 
         with pytest.raises(ValueError):
@@ -219,7 +219,7 @@ class TestListJobsIncludeUnset:
 
         service.list_jobs()
 
-        assert mock_http_client.get.call_args.args[0] == f"{BASE}/jobs"
+        assert mock_http_client.request.call_args.kwargs["url"] == f"{BASE}/jobs"
 
     @pytest.mark.parametrize(("value", "expected"), [(True, "true"), (False, "false")])
     def test_include_unset_is_sent_lowercase(self, make_service, mock_http_client, value: bool, expected: str) -> None:
@@ -227,28 +227,28 @@ class TestListJobsIncludeUnset:
 
         service.list_jobs(include_unset=value)
 
-        assert _query(mock_http_client.get.call_args.args[0]) == {"include_unset": [expected]}
+        assert _query(mock_http_client.request.call_args.kwargs["url"]) == {"include_unset": [expected]}
 
 
 class TestGetLogs:
     """The logs endpoint returns text/plain and takes no query parameters."""
 
     def test_returns_the_plain_text(self, make_service, mock_http_client, make_response) -> None:
-        mock_http_client.get.return_value = make_response(content=b"line 1\nline 2", text="line 1\nline 2")
+        mock_http_client.request.return_value = make_response(content=b"line 1\nline 2", text="line 1\nline 2")
         service = make_service()
 
         assert service.get_logs("update") == "line 1\nline 2"
 
     def test_text_that_looks_like_json_is_not_decoded(self, make_service, mock_http_client, make_response) -> None:
         response = make_response(content=b"123", text="123", json_data=123)
-        mock_http_client.get.return_value = response
+        mock_http_client.request.return_value = response
         service = make_service()
 
         assert service.get_logs("update") == "123"
         response.json.assert_not_called()
 
     def test_empty_logs_return_empty_string(self, make_service, mock_http_client, make_response) -> None:
-        mock_http_client.get.return_value = make_response(content=b"", text="")
+        mock_http_client.request.return_value = make_response(content=b"", text="")
         service = make_service()
 
         assert service.get_logs("update") == ""
@@ -258,10 +258,10 @@ class TestGetLogs:
 
         service.get_logs("update")
 
-        assert mock_http_client.get.call_args.args[0] == f"{BASE}/jobs/update/logs"
+        assert mock_http_client.request.call_args.kwargs["url"] == f"{BASE}/jobs/update/logs"
 
     def test_http_error_is_raised(self, make_service, mock_http_client, make_response) -> None:
-        mock_http_client.get.return_value = make_response(status_code=404)
+        mock_http_client.request.return_value = make_response(status_code=404)
         service = make_service()
 
         with pytest.raises(requests.HTTPError):
@@ -277,9 +277,10 @@ class TestWriteEndpoints:
 
         service.create_job(data)
 
-        mock_http_client.post.assert_called_once()
-        assert mock_http_client.post.call_args.args[0] == f"{BASE}/jobs"
-        assert mock_http_client.post.call_args.kwargs["json"] == data
+        mock_http_client.request.assert_called_once()
+        assert mock_http_client.request.call_args.kwargs["method"] == "POST"
+        assert mock_http_client.request.call_args.kwargs["url"] == f"{BASE}/jobs"
+        assert mock_http_client.request.call_args.kwargs["json"] == data
 
     def test_update_job_patches_the_data(self, make_service, mock_http_client) -> None:
         service = make_service()
@@ -287,50 +288,54 @@ class TestWriteEndpoints:
 
         service.update_job(data)
 
-        mock_http_client.patch.assert_called_once()
-        assert mock_http_client.patch.call_args.args[0] == f"{BASE}/jobs"
-        assert mock_http_client.patch.call_args.kwargs["json"] == data
+        mock_http_client.request.assert_called_once()
+        assert mock_http_client.request.call_args.kwargs["method"] == "PATCH"
+        assert mock_http_client.request.call_args.kwargs["url"] == f"{BASE}/jobs"
+        assert mock_http_client.request.call_args.kwargs["json"] == data
 
     def test_flush_jobs_deletes_the_collection(self, make_service, mock_http_client) -> None:
         service = make_service()
 
         service.flush_jobs()
 
-        mock_http_client.delete.assert_called_once()
-        assert mock_http_client.delete.call_args.args[0] == f"{BASE}/jobs"
-        assert "json" not in mock_http_client.delete.call_args.kwargs
+        mock_http_client.request.assert_called_once()
+        assert mock_http_client.request.call_args.kwargs["method"] == "DELETE"
+        assert mock_http_client.request.call_args.kwargs["url"] == f"{BASE}/jobs"
+        assert "json" not in mock_http_client.request.call_args.kwargs
 
     def test_delete_job_deletes_one_job(self, make_service, mock_http_client) -> None:
         service = make_service()
 
         service.delete_job("update")
 
-        mock_http_client.delete.assert_called_once()
-        assert mock_http_client.delete.call_args.args[0] == f"{BASE}/jobs/update"
+        mock_http_client.request.assert_called_once()
+        assert mock_http_client.request.call_args.kwargs["method"] == "DELETE"
+        assert mock_http_client.request.call_args.kwargs["url"] == f"{BASE}/jobs/update"
 
     def test_restart_job_posts_to_the_restart_path(self, make_service, mock_http_client) -> None:
         service = make_service()
 
         service.restart_job("update")
 
-        mock_http_client.post.assert_called_once()
-        assert mock_http_client.post.call_args.args[0] == f"{BASE}/jobs/update/restart"
-        assert "json" not in mock_http_client.post.call_args.kwargs
+        mock_http_client.request.assert_called_once()
+        assert mock_http_client.request.call_args.kwargs["method"] == "POST"
+        assert mock_http_client.request.call_args.kwargs["url"] == f"{BASE}/jobs/update/restart"
+        assert "json" not in mock_http_client.request.call_args.kwargs
 
     @pytest.mark.parametrize(
         ("method_name", "args", "client_method"),
         [
-            ("create_job", ({"name": "x"},), "post"),
-            ("update_job", ({"name": "x"},), "patch"),
-            ("flush_jobs", (), "delete"),
-            ("delete_job", ("x",), "delete"),
-            ("restart_job", ("x",), "post"),
+            ("create_job", ({"name": "x"},), "POST"),
+            ("update_job", ({"name": "x"},), "PATCH"),
+            ("flush_jobs", (), "DELETE"),
+            ("delete_job", ("x",), "DELETE"),
+            ("restart_job", ("x",), "POST"),
         ],
     )
     def test_returns_decoded_payload(
         self, make_service, mock_http_client, make_response, method_name: str, args: tuple, client_method: str
     ) -> None:
-        getattr(mock_http_client, client_method).return_value = make_response(json_data={"messages": {"info": ["ok"]}})
+        mock_http_client.request.return_value = make_response(json_data={"messages": {"info": ["ok"]}})
         service = make_service()
 
         assert getattr(service, method_name)(*args) == {"messages": {"info": ["ok"]}}
@@ -338,17 +343,17 @@ class TestWriteEndpoints:
     @pytest.mark.parametrize(
         ("method_name", "args", "client_method"),
         [
-            ("create_job", ({"name": "x"},), "post"),
-            ("update_job", ({"name": "x"},), "patch"),
-            ("flush_jobs", (), "delete"),
-            ("delete_job", ("x",), "delete"),
-            ("restart_job", ("x",), "post"),
+            ("create_job", ({"name": "x"},), "POST"),
+            ("update_job", ({"name": "x"},), "PATCH"),
+            ("flush_jobs", (), "DELETE"),
+            ("delete_job", ("x",), "DELETE"),
+            ("restart_job", ("x",), "POST"),
         ],
     )
     def test_http_error_is_raised(
         self, make_service, mock_http_client, make_response, method_name: str, args: tuple, client_method: str
     ) -> None:
-        getattr(mock_http_client, client_method).return_value = make_response(status_code=400)
+        mock_http_client.request.return_value = make_response(status_code=400)
         service = make_service()
 
         with pytest.raises(requests.HTTPError):
@@ -363,7 +368,7 @@ class TestAuthentication:
 
         service.list_jobs()
 
-        kwargs = mock_http_client.get.call_args.kwargs
+        kwargs = mock_http_client.request.call_args.kwargs
         assert kwargs["cert"] == ("/home/tester/.toolskube/client.crt", "/home/tester/.toolskube/client.key")
         assert kwargs["verify"] is False
         assert kwargs["timeout"] == REQUEST_TIMEOUT
@@ -373,21 +378,23 @@ class TestAuthentication:
 
         service.list_jobs()
 
-        assert "token" not in mock_http_client.get.call_args.args[0]
+        assert "token" not in mock_http_client.request.call_args.kwargs["url"]
 
     def test_external_request_appends_the_token(self, make_service, mock_http_client) -> None:
         service = make_service(token="secret")
 
         service.list_jobs()
 
-        assert mock_http_client.get.call_args.args[0] == (f"{EXTERNAL_API_URL}/jobs/v1/tool/mytool/jobs?token=secret")
+        assert mock_http_client.request.call_args.kwargs["url"] == (
+            f"{EXTERNAL_API_URL}/jobs/v1/tool/mytool/jobs?token=secret"
+        )
 
     def test_external_request_sends_no_cert(self, make_service, mock_http_client) -> None:
         service = make_service(token="secret")
 
         service.list_jobs()
 
-        kwargs = mock_http_client.get.call_args.kwargs
+        kwargs = mock_http_client.request.call_args.kwargs
         assert "cert" not in kwargs
         assert kwargs["verify"] is True
 
@@ -396,14 +403,17 @@ class TestAuthentication:
 
         service.list_jobs(include_unset=False)
 
-        assert _query(mock_http_client.get.call_args.args[0]) == {"include_unset": ["false"], "token": ["secret"]}
+        assert _query(mock_http_client.request.call_args.kwargs["url"]) == {
+            "include_unset": ["false"],
+            "token": ["secret"],
+        }
 
     def test_write_requests_also_carry_the_token(self, make_service, mock_http_client) -> None:
         service = make_service(token="secret")
 
         service.create_job({"name": "x"})
 
-        assert mock_http_client.post.call_args.args[0].endswith("/jobs?token=secret")
+        assert mock_http_client.request.call_args.kwargs["url"].endswith("/jobs?token=secret")
 
     def test_external_mode_without_token_raises(self, make_service, mock_http_client) -> None:
         service = make_service(internal=False)
@@ -411,28 +421,28 @@ class TestAuthentication:
         with pytest.raises(ValueError, match=TOKEN_ENV):
             service.list_jobs()
 
-        mock_http_client.get.assert_not_called()
+        mock_http_client.request.assert_not_called()
 
 
 class TestErrors:
     """Error propagation."""
 
     def test_list_jobs_raises_on_server_error(self, make_service, mock_http_client, make_response) -> None:
-        mock_http_client.get.return_value = make_response(status_code=500)
+        mock_http_client.request.return_value = make_response(status_code=500)
         service = make_service()
 
         with pytest.raises(requests.HTTPError):
             service.list_jobs()
 
     def test_connection_errors_are_not_swallowed(self, make_service, mock_http_client) -> None:
-        mock_http_client.get.side_effect = requests.ConnectionError("down")
+        mock_http_client.request.side_effect = requests.ConnectionError("down")
         service = make_service()
 
         with pytest.raises(requests.ConnectionError):
             service.list_jobs()
 
     def test_missing_cert_oserror_is_not_swallowed(self, make_service, mock_http_client) -> None:
-        mock_http_client.get.side_effect = OSError("Could not find the TLS certificate file")
+        mock_http_client.request.side_effect = OSError("Could not find the TLS certificate file")
         service = make_service()
 
         with pytest.raises(OSError, match="TLS certificate"):
@@ -447,10 +457,10 @@ class TestInheritedEndpoints:
 
         service.healthcheck()
 
-        assert mock_http_client.get.call_args.args[0] == f"{API_URL}/jobs/v1/healthz"
+        assert mock_http_client.request.call_args.kwargs["url"] == f"{API_URL}/jobs/v1/healthz"
 
     def test_healthcheck_returns_payload(self, make_service, mock_http_client, make_response) -> None:
-        mock_http_client.get.return_value = make_response(json_data={"status": "ok"})
+        mock_http_client.request.return_value = make_response(json_data={"status": "ok"})
         service = make_service()
 
         assert service.healthcheck() == {"status": "ok"}
@@ -460,10 +470,10 @@ class TestInheritedEndpoints:
 
         service.metrics()
 
-        assert mock_http_client.get.call_args.args[0] == f"{API_URL}/jobs/v1/metrics"
+        assert mock_http_client.request.call_args.kwargs["url"] == f"{API_URL}/jobs/v1/metrics"
 
     def test_metrics_returns_text(self, make_service, mock_http_client, make_response) -> None:
-        mock_http_client.get.return_value = make_response(content=b"# HELP x", text="# HELP x")
+        mock_http_client.request.return_value = make_response(content=b"# HELP x", text="# HELP x")
         service = make_service()
 
         assert service.metrics() == "# HELP x"
@@ -479,7 +489,7 @@ class TestRawRequest:
 
     def test_returns_response_with_status_code(self, make_service, mock_http_client, make_response) -> None:
         response = make_response(status_code=404)
-        mock_http_client.get.return_value = response
+        mock_http_client.request.return_value = response
         service = make_service()
 
         result = service.request("GET", "/jobs/v1/tool/mytool/jobs/missing", check=False)
