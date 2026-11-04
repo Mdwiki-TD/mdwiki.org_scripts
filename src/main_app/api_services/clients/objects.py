@@ -1,13 +1,6 @@
 from dataclasses import asdict, dataclass
 from typing import Any
 
-
-@dataclass
-class RawGrapherMetadataResponse:
-    data: dict[str, Any] | None = None
-    status_code: int | None = None
-
-
 @dataclass
 class SharedMapToJson:
     def to_json(self) -> dict[str, Any]:
@@ -25,5 +18,6 @@ class GetWithRetryData(SharedMapToJson):
 
 
 __all__ = [
+    "SharedMapToJson",
     "GetWithRetryData",
 ]

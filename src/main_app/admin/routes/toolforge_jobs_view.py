@@ -12,7 +12,7 @@ from flask import Blueprint, flash, render_template
 from flask.views import MethodView
 
 from ..decorators import admin_required
-from ..routes_services import Message, ToolforgeJobsService
+from ..routes_services import JobsPageService
 
 logger = logging.getLogger(__name__)
 
@@ -22,11 +22,11 @@ class BaseJobsView(MethodView):
 
     decorators = [admin_required]
 
-    def __init__(self, service: ToolforgeJobsService | None = None) -> None:
-        self.service = service or ToolforgeJobsService()
+    def __init__(self, service: JobsPageService | None = None) -> None:
+        self.service = service or JobsPageService()
 
     @staticmethod
-    def _flash_all(messages: list[Message]) -> None:
+    def _flash_all(messages: list[tuple[str, str]]) -> None:
         """Flash every message returned by the service."""
         for text, category in messages:
             flash(text, category)
