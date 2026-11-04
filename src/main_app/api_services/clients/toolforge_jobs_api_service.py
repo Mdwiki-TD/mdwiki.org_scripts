@@ -74,7 +74,7 @@ class ToolforgeJobsService:
             path,
             params=params,
             json=json,
-            # check=self.check,
+            check=False,
         )
 
         # Response (400) might return {'error': ['Unable to restart a one-off job']}

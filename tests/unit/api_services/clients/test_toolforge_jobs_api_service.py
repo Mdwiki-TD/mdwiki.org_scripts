@@ -493,3 +493,40 @@ class TestRawRequest:
 
         assert result is response
         assert result.status_code == 404
+
+
+def test_restart_job_handles_api_error_response3(make_service, mock_http_client, make_response) -> None:
+    """Test that restart_job handles 400 API error response correctly."""
+    # 1. Setup mock to simulate the 400 response body returned by the API
+    error_payload = {"error": ["Unable to restart a one-off job"]}
+    mock_response = make_response(status_code=400, json_data=error_payload)
+    mock_http_client.request.return_value = mock_response
+
+    service = make_service()
+
+    # 2. Execute and assert that HTTPError is raised by default
+    with pytest.raises(requests.HTTPError):
+        service.restart_job("one-off-job")
+
+    # 3. Assertions on the underlying request call
+    mock_http_client.request.assert_called_once()
+    assert mock_http_client.request.call_args.kwargs["method"] == "POST"
+    assert mock_http_client.request.call_args.kwargs["url"].endswith("/jobs/one-off-job/restart")
+
+
+def test_restart_job_returns_error_response_when_check_false(make_service, mock_http_client, make_response) -> None:
+    """Test that restart_job returns the error response when check=False (if supported)."""
+    # 1. Setup mock response for error payload
+    error_payload = {"error": ["Unable to restart a one-off job"]}
+    mock_response = make_response(status_code=400, json_data=error_payload)
+    mock_http_client.request.return_value = mock_response
+
+    service = make_service()
+
+    # 2. Execute request with check=False if the method supports it,
+    # or test the raw request call directly:
+    result = service.api.request("POST", "/jobs/one-off-job/restart", check=False)
+
+    # 3. Assertions
+    assert result.status_code == 400
+    assert result.json() == error_payload

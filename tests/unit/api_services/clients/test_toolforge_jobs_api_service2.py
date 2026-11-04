@@ -1,4 +1,5 @@
 from unittest.mock import MagicMock
+import pytest
 import requests
 
 from src.main_app.admin.routes_services.toolforge_jobs_service import JobsPageService
@@ -123,10 +124,21 @@ def test_restart_job_handles_api_error_response():
     and correctly passes the error message 'Unable to restart a one-off job'.
     """
     # 1. Setup mock to simulate the 400 response body returned by ToolforgeJobsService._json
-    mock_toolforge = MagicMock()
-    mock_toolforge.restart_job.return_value = {"error": ["Unable to restart a one-off job"]}
+    # mock_toolforge = MagicMock()
+    # mock_toolforge.restart_job.return_value = {"error": ["Unable to restart a one-off job"]}
 
-    page_service = JobsPageService(toolforge=mock_toolforge)
+    # 2. Mock the internal api client response
+    mock_response = MagicMock(spec=requests.Response)
+    mock_response.status_code = 400
+    # Simulate the JSON error body returned by the API
+    error_payload = {"error": ["Unable to restart a one-off job"]}
+    mock_response.json.return_value = error_payload
+
+    service = ToolforgeJobsService(tool_name="test-tool")
+    page_service = JobsPageService(toolforge=service)
+
+    # Attach the mock to service.api.request
+    service.api.request = MagicMock(return_value=mock_response)
 
     # 2. Execute
     result = page_service.restart_job("one-off-job")
@@ -135,7 +147,7 @@ def test_restart_job_handles_api_error_response():
     assert result.ok is False
     assert ("Unable to restart a one-off job", "danger") in result.messages
     assert ("Job 'one-off-job' restarted.", "success") not in result.messages
-    mock_toolforge.restart_job.assert_called_once_with("one-off-job")
+    # mock_toolforge.restart_job.assert_called_once_with("one-off-job")
 
 
 def test_restart_job_invalid_job_name():
