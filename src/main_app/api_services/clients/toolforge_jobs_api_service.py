@@ -59,6 +59,22 @@ class ToolforgeJobsService(ToolforgeApiService):
         """GET /jobs/v1/tool/{tool}/jobs: list all jobs of the tool."""
         return self._payload(self.request("GET", self._tool_path("/jobs")))
 
+    def create_job(self, data: dict[str, Any]) -> Any:
+        """POST /jobs/v1/tool/{tool}/jobs: create a job."""
+        return self._payload(self.request("POST", self._tool_path("/jobs"), json=data))
+
+    def update_job(self, data: dict[str, Any]) -> Any:
+        """PATCH /jobs/v1/tool/{tool}/jobs: update a job."""
+        return self._payload(self.request("PATCH", self._tool_path("/jobs"), json=data))
+
+    def flush_jobs(self) -> Any:
+        """DELETE /jobs/v1/tool/{tool}/jobs: delete ALL jobs of the tool."""
+        return self._payload(self.request("DELETE", self._tool_path("/jobs")))
+
+    # ------------------------------------------------------------------
+    # Per jobs endpoints
+    # ------------------------------------------------------------------
+
     def show_job(self, job_id: str | int) -> Any:
         """GET /jobs/v1/tool/{tool}/jobs/{id}: show one job."""
         return self._payload(self.request("GET", self._tool_path(self._job_path(job_id))))
@@ -75,22 +91,10 @@ class ToolforgeJobsService(ToolforgeApiService):
         path = self._tool_path(f"{self._job_path(job_id)}/logs")
         return self._payload(self.request("GET", path, params=params))
 
-    def create_job(self, data: dict[str, Any]) -> Any:
-        """POST /jobs/v1/tool/{tool}/jobs: create a job."""
-        return self._payload(self.request("POST", self._tool_path("/jobs"), json=data))
-
     def restart_job(self, job_id: str | int) -> Any:
         """POST /jobs/v1/tool/{tool}/jobs/{id}/restart: restart one job."""
         path = self._tool_path(f"{self._job_path(job_id)}/restart")
         return self._payload(self.request("POST", path))
-
-    def update_job(self, data: dict[str, Any]) -> Any:
-        """PATCH /jobs/v1/tool/{tool}/jobs: update a job."""
-        return self._payload(self.request("PATCH", self._tool_path("/jobs"), json=data))
-
-    def flush_jobs(self) -> Any:
-        """DELETE /jobs/v1/tool/{tool}/jobs: delete ALL jobs of the tool."""
-        return self._payload(self.request("DELETE", self._tool_path("/jobs")))
 
 
 __all__ = [
