@@ -9,6 +9,7 @@ endpoint raises ``ValueError``. Use ``request()`` directly to get the raw
 
 from __future__ import annotations
 
+import logging
 from typing import Any
 from urllib.parse import quote
 
@@ -23,6 +24,8 @@ from .toolforge_jobs_types import (
     QuotaResponse,
     UpdateResponse,
 )
+
+logger = logging.getLogger(__name__)
 
 
 class ToolforgeJobsService(ToolforgeApiService):

@@ -7,6 +7,7 @@ token redaction. Route-specific clients subclass ToolforgeApiService.
 
 from __future__ import annotations
 
+import logging
 import os
 from pathlib import Path
 from typing import Any, Literal
@@ -15,6 +16,8 @@ from urllib.parse import quote, quote_plus, urlencode
 import requests
 
 from .http_client import HttpClient
+
+logger = logging.getLogger(__name__)
 
 API_URL = "https://api.svc.tools.eqiad1.wikimedia.cloud:30003"  # inside toolforge environment
 
@@ -133,6 +136,7 @@ class ToolforgeApiService:
         if check:
             response.raise_for_status()
 
+        logger.debug("response status: %s", response.status_code)
         return response
 
     @staticmethod
