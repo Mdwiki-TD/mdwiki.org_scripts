@@ -16,7 +16,7 @@ from typing import Any
 import requests
 
 from ...api_services.clients import ToolforgeJobsService
-from ...api_services.clients.toolforge_jobs_mapping import (
+from .toolforge_jobs_mapping import (
     DEFAULT_LOG_LINES,
     MAX_LOG_LINES,
     JobActionResult,
@@ -118,7 +118,10 @@ class JobsPageService:
         try:
             payload = call()
         except (requests.RequestException, ValueError, OSError) as exc:
-            return JobActionResult(messages=[self._failure_message(action, exc)], ok=False)
+            return JobActionResult(
+                messages=[self._failure_message(action, exc)],
+                ok=False,
+            )
 
         messages: list[Message] = [(success_text, "success")]
         messages.extend(self._convert_messages(payload.get("messages")))
@@ -132,9 +135,13 @@ class JobsPageService:
         """Fetch the jobs and build the page data, never raising."""
         action = "load Toolforge jobs"
         try:
-            payload = self.toolforge.list_jobs()
+            # payload = self.toolforge.list_jobs()
+            payload = self.toolforge.list_jobs_test()
         except (requests.RequestException, ValueError, OSError) as exc:
-            return JobsPage(messages=[self._failure_message(action, exc)], error=True)
+            return JobsPage(
+                messages=[self._failure_message(action, exc)],
+                error=True,
+            )
 
         jobs = [self._normalize_job(job) for job in payload.get("jobs") or []]
         summary = Counter(job["status_key"] for job in jobs)
@@ -157,7 +164,11 @@ class JobsPageService:
             if not isinstance(job, dict):
                 raise ValueError("Unexpected response from the Toolforge API")
         except (requests.RequestException, ValueError, OSError) as exc:
-            return JobDetailPage(job_id=job_id, messages=[self._failure_message(action, exc)], error=True)
+            return JobDetailPage(
+                job_id=job_id,
+                messages=[self._failure_message(action, exc)],
+                error=True,
+            )
 
         return JobDetailPage(
             job_id=job_id,
@@ -176,7 +187,12 @@ class JobsPageService:
         try:
             text = self.toolforge.get_logs(job_id)
         except (requests.RequestException, ValueError, OSError) as exc:
-            return JobLogsPage(job_id=job_id, lines=lines, messages=[self._failure_message(action, exc)], error=True)
+            return JobLogsPage(
+                job_id=job_id,
+                lines=lines,
+                messages=[self._failure_message(action, exc)],
+                error=True,
+            )
 
         all_lines = text.splitlines()
         return JobLogsPage(
@@ -195,6 +211,7 @@ class JobsPageService:
         invalid = self._invalid_name_message(job_id)
         if invalid:
             return JobActionResult(messages=[invalid], ok=False)
+
         return self._run_action(
             f"restart job '{job_id}'",
             lambda: self.toolforge.restart_job(job_id),

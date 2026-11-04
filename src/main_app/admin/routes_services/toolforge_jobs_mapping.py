@@ -14,10 +14,6 @@ Message = tuple[str, str]
 DEFAULT_LOG_LINES = 200
 MAX_LOG_LINES = 2000
 
-# Endpoint (relative to the current blueprint) to go back to after an action.
-JOBS_ENDPOINT = "jobs"
-
-
 @dataclass
 class JobsPage:
     """Everything the jobs table template needs, plus messages to flash."""
@@ -80,7 +76,7 @@ class JobActionResult:
 
     messages: list[Message] = field(default_factory=list)
     ok: bool = True
-    redirect_endpoint: str = JOBS_ENDPOINT
+    redirect_endpoint: str = "jobs"
 
 
 __all__ = [

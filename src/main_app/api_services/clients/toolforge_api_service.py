@@ -116,9 +116,11 @@ class ToolforgeApiService:
             raise ValueError(f"{TOKEN_ENV} is not set")
 
         kwargs: dict[str, Any] = {"verify": self.verify, "timeout": self.timeout}
+
         if self.internal:
             # The client certificate is only used by the internal endpoint.
             kwargs["cert"] = self.client_cert
+
         if json is not None:
             kwargs["json"] = json
 
@@ -128,14 +130,9 @@ class ToolforgeApiService:
             url=self.build_url(path, params),
             **kwargs,
         )
-        # Relies on HttpClient exposing get/post/put/patch/delete.
-        # send = getattr(self.http_client, method.lower())
-        # response = send(
-        #     self.build_url(path, params),
-        #     **kwargs,
-        # )
         if check:
             response.raise_for_status()
+
         return response
 
     @staticmethod

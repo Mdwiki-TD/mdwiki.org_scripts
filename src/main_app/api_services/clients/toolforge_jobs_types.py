@@ -9,23 +9,24 @@ dict. Endpoints that are not JSON return ``str`` instead:
 
 from __future__ import annotations
 
-from typing import Literal, TypedDict
+from dataclasses import dataclass
+from typing import Any, Literal, TypedDict
 
 JobType = Literal["one-off", "scheduled", "continuous", "webservice"]
 JobStatusShort = Literal["pending", "running", "succeeded", "failed", "unknown"]
 EmailOption = Literal["none", "all", "onfinish", "onfailure"]
 MountOption = Literal["all", "none"]
 
-
-class ResponseMessages(TypedDict, total=False):
+@dataclass
+class ResponseMessages:
     """Messages by priority, present in almost every response."""
 
     info: list[str]
     warning: list[str]
     error: list[str]
 
-
-class JobStatus(TypedDict, total=False):
+@dataclass
+class JobStatus:
     """``job["status"]``: standardized status (``short`` and ``duration`` are always present)."""
 
     short: JobStatusShort
@@ -36,7 +37,8 @@ class JobStatus(TypedDict, total=False):
     next_schedule: str  # scheduled jobs only, ISO 8601
 
 
-class HealthCheck(TypedDict, total=False):
+@dataclass
+class HealthCheck:
     """``job["health_check"]``: ``script`` for type "script", ``path`` for type "http"."""
 
     type: Literal["script", "http"]
@@ -44,7 +46,8 @@ class HealthCheck(TypedDict, total=False):
     path: str
 
 
-class Job(TypedDict, total=False):
+@dataclass
+class Job:
     """A defined job. The fields present depend on ``job_type`` (the spec uses oneOf).
 
     - all types: name, imagename, image, image_state, memory, cpu, emails, mount,
@@ -84,8 +87,13 @@ class Job(TypedDict, total=False):
     status_long: str  # legacy extended text
     status: JobStatus
 
+    @classmethod
+    def load(cls, data: dict[str, Any]) -> Job:
+        return cls(**data)
 
-class NewJob(TypedDict, total=False):
+
+@dataclass
+class NewJob:
     """Request body of create_job / update_job (a Job without the status fields).
 
     Required: ``name`` and ``imagename`` (``name`` defaults to "webservice" for
@@ -114,49 +122,60 @@ class NewJob(TypedDict, total=False):
     filelog_stdout: str | None
     filelog_stderr: str | None
 
+    @classmethod
+    def load(cls, data: dict[str, Any]) -> NewJob:
+        return cls(**data)
 
-class JobListResponse(TypedDict, total=False):
+
+@dataclass
+class JobListResponse:
     """GET /jobs."""
 
     jobs: list[Job]
     messages: ResponseMessages
 
 
-class JobResponse(TypedDict, total=False):
+@dataclass
+class JobResponse:
     """GET /jobs/{id} and POST /jobs."""
 
     job: Job
     messages: ResponseMessages
 
 
-class MessagesResponse(TypedDict, total=False):
+@dataclass
+class MessagesResponse:
     """DELETE /jobs, DELETE /jobs/{id} and POST /jobs/{id}/restart."""
 
     messages: ResponseMessages
 
 
-class UpdateResponse(TypedDict, total=False):
+@dataclass
+class UpdateResponse:
     """PATCH /jobs."""
 
     messages: ResponseMessages
     job_changed: bool
 
 
-class Image(TypedDict, total=False):
+@dataclass
+class Image:
     """One entry of the images list."""
 
     shortname: str
     image: str
 
 
-class ImagesResponse(TypedDict, total=False):
+@dataclass
+class ImagesResponse:
     """GET /images."""
 
     images: list[Image]
     messages: ResponseMessages
 
 
-class QuotaItem(TypedDict, total=False):
+@dataclass
+class QuotaItem:
     """One quota line; ``limit`` and ``used`` are strings (e.g. "1G")."""
 
     name: str
@@ -164,34 +183,39 @@ class QuotaItem(TypedDict, total=False):
     used: str
 
 
-class QuotaCategory(TypedDict, total=False):
+@dataclass
+class QuotaCategory:
     """A group of quota lines."""
 
     name: str
     items: list[QuotaItem]
 
 
-class Quota(TypedDict, total=False):
+@dataclass
+class Quota:
     """The quotas of the tool."""
 
     categories: list[QuotaCategory]
 
 
-class QuotaResponse(TypedDict, total=False):
+@dataclass
+class QuotaResponse:
     """GET /quotas."""
 
     quota: Quota
     messages: ResponseMessages
 
 
-class Health(TypedDict, total=False):
+@dataclass
+class Health:
     """Health of the API itself."""
 
     status: Literal["OK", "ERROR"]
     message: str
 
 
-class HealthResponse(TypedDict, total=False):
+@dataclass
+class HealthResponse:
     """GET /jobs/v1/healthz."""
 
     health: Health
