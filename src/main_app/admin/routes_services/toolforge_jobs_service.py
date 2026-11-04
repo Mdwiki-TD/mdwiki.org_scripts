@@ -142,7 +142,7 @@ class JobsPageService(JobsPageServiceHelpers):
         return JobsPage(
             jobs=jobs,
             status_summary=dict(summary),
-            messages=self._convert_messages(payload.get("messages")),
+            messages=self._convert_messages(self._extract_messages(payload)),
         )
 
     def build_job_page(self, job_id: str) -> JobDetailPage:
@@ -167,7 +167,7 @@ class JobsPageService(JobsPageServiceHelpers):
         return JobDetailPage(
             job_id=job_id,
             job=self._normalize_job(job),
-            messages=self._convert_messages(payload.get("messages")),
+            messages=self._convert_messages(self._extract_messages(payload)),
         )
 
     def build_logs_page(self, job_id: str, lines: int = DEFAULT_LOG_LINES) -> JobLogsPage:
@@ -257,7 +257,11 @@ class JobsPageService(JobsPageServiceHelpers):
         )
 
     def _extract_messages(self, payload):
+        if not isinstance(payload, dict):
+            return {}
+
         messages_data = payload.get("messages") or {}
+
         if not messages_data:
             if payload.get("info", []):
                 messages_data["info"] = payload.get("info", [])
@@ -267,6 +271,7 @@ class JobsPageService(JobsPageServiceHelpers):
 
             if payload.get("error", []):
                 messages_data["error"] = payload.get("error", [])
+
         return messages_data
 
 
