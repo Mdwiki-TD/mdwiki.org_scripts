@@ -9,7 +9,7 @@ from __future__ import annotations
 
 import os
 from pathlib import Path
-from typing import Any
+from typing import Any, Literal
 from urllib.parse import quote, quote_plus, urlencode
 
 import requests
@@ -24,9 +24,11 @@ TOKEN_ENV = "TOOLS_DEPLOY_TOKEN"
 
 REQUEST_TIMEOUT = 15  # seconds
 
+API_ROUTES = Literal["builds", "components", "envvars", "jobs", "logs"]
 
-class ToolforgeJobsService:
-    """Thin client for the Toolforge Jobs API.
+
+class ToolforgeApiService:
+    """Thin client for the Toolforge API.
 
     Two modes are supported:
     - internal: inside Toolforge, authenticated with the client certificate.
@@ -38,6 +40,7 @@ class ToolforgeJobsService:
 
     def __init__(
         self,
+        api_route: API_ROUTES,
         tool_name: str | None = None,
         home_dir: str | None = None,
         verify: bool | None = None,
@@ -56,6 +59,7 @@ class ToolforgeJobsService:
         # The internal cert is self-signed (internal to k8s); the external one is valid.
         self.verify = verify if verify is not None else not self.internal
         self.timeout = timeout
+        self.api_route: API_ROUTES = api_route
 
     # ------------------------------------------------------------------
     # URL / auth helpers
@@ -66,15 +70,6 @@ class ToolforgeJobsService:
         """Return the (cert, key) paths used for client authentication."""
         base = f"{self.home_dir}/.toolskube"
         return f"{base}/client.crt", f"{base}/client.key"
-
-    def _tool_path(self, path: str = "") -> str:
-        """Return the path of a tool-scoped endpoint (``path`` starts with '/')."""
-        return f"/jobs/v1/tool/{quote(self.tool_name, safe='')}{path}"
-
-    @staticmethod
-    def _job_path(job_id: str | int) -> str:
-        """Return the sub-path of a single job."""
-        return f"/jobs/{quote(str(job_id), safe='')}"
 
     def build_url(self, path: str, params: dict[str, Any] | None = None) -> str:
         """Build the full URL, appending the deploy token in external mode."""
@@ -141,6 +136,40 @@ class ToolforgeJobsService:
         except ValueError:
             return response.text
 
+    def _tool_path(self, path: str = "") -> str:
+        """Return the path of a tool-scoped endpoint (``path`` starts with '/')."""
+        return f"/{self.api_route}/v1/tool/{quote(self.tool_name, safe='')}{path}"
+
+
+class ToolforgeJobsService(ToolforgeApiService):
+    """Thin client for the Toolforge Jobs API."""
+
+    def __init__(
+        self,
+        tool_name: str | None = None,
+        home_dir: str | None = None,
+        verify: bool | None = None,
+        timeout: int = REQUEST_TIMEOUT,
+        http_client: HttpClient | None = None,
+        token: str | None = None,
+        internal: bool | None = None,
+    ) -> None:
+        super().__init__(
+            api_route="jobs",
+            tool_name=tool_name,
+            home_dir=home_dir,
+            verify=verify,
+            timeout=timeout,
+            http_client=http_client,
+            token=token,
+            internal=internal,
+        )
+
+    @staticmethod
+    def _job_path(job_id: str | int) -> str:
+        """Return the sub-path of a single job."""
+        return f"/jobs/{quote(str(job_id), safe='')}"
+
     # ------------------------------------------------------------------
     # Endpoints
     # ------------------------------------------------------------------
@@ -156,18 +185,6 @@ class ToolforgeJobsService:
     def list_jobs(self) -> Any:
         """GET /jobs/v1/tool/{tool}/jobs: list all jobs of the tool."""
         return self._payload(self.request("GET", self._tool_path("/jobs")))
-
-    def create_job(self, data: dict[str, Any]) -> Any:
-        """POST /jobs/v1/tool/{tool}/jobs: create a job."""
-        return self._payload(self.request("POST", self._tool_path("/jobs"), json=data))
-
-    def update_job(self, data: dict[str, Any]) -> Any:
-        """PATCH /jobs/v1/tool/{tool}/jobs: update a job."""
-        return self._payload(self.request("PATCH", self._tool_path("/jobs"), json=data))
-
-    def flush_jobs(self) -> Any:
-        """DELETE /jobs/v1/tool/{tool}/jobs: delete ALL jobs of the tool."""
-        return self._payload(self.request("DELETE", self._tool_path("/jobs")))
 
     def show_job(self, job_id: str | int) -> Any:
         """GET /jobs/v1/tool/{tool}/jobs/{id}: show one job."""
@@ -185,11 +202,6 @@ class ToolforgeJobsService:
         path = self._tool_path(f"{self._job_path(job_id)}/logs")
         return self._payload(self.request("GET", path, params=params))
 
-    def restart_job(self, job_id: str | int) -> Any:
-        """POST /jobs/v1/tool/{tool}/jobs/{id}/restart: restart one job."""
-        path = self._tool_path(f"{self._job_path(job_id)}/restart")
-        return self._payload(self.request("POST", path))
-
     def healthcheck(self) -> Any:
         """GET /jobs/v1/healthz: service health check (not tool-scoped)."""
         return self._payload(self.request("GET", "/jobs/v1/healthz"))
@@ -198,10 +210,25 @@ class ToolforgeJobsService:
         """GET /jobs/v1/metrics: Prometheus metrics as plain text (not tool-scoped)."""
         return self.request("GET", "/jobs/v1/metrics").text
 
+    def create_job(self, data: dict[str, Any]) -> Any:
+        """POST /jobs/v1/tool/{tool}/jobs: create a job."""
+        return self._payload(self.request("POST", self._tool_path("/jobs"), json=data))
+
+    def restart_job(self, job_id: str | int) -> Any:
+        """POST /jobs/v1/tool/{tool}/jobs/{id}/restart: restart one job."""
+        path = self._tool_path(f"{self._job_path(job_id)}/restart")
+        return self._payload(self.request("POST", path))
+
+    def update_job(self, data: dict[str, Any]) -> Any:
+        """PATCH /jobs/v1/tool/{tool}/jobs: update a job."""
+        return self._payload(self.request("PATCH", self._tool_path("/jobs"), json=data))
+
+    def flush_jobs(self) -> Any:
+        """DELETE /jobs/v1/tool/{tool}/jobs: delete ALL jobs of the tool."""
+        return self._payload(self.request("DELETE", self._tool_path("/jobs")))
+
 
 __all__ = [
-    "API_URL",
-    "EXTERNAL_API_URL",
-    "TOKEN_ENV",
+    "ToolforgeApiService",
     "ToolforgeJobsService",
 ]
