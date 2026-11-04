@@ -51,7 +51,8 @@ class TestReplaceTemplates:
             "}}"
         )
         expected = (
-            "{{OWID|chart= grapher/malnutrition-death-rates\n"
+            "{{OWID\n"
+            "|chart= grapher/malnutrition-death-rates\n"
             "| title = Malnutrition death rates\n"
             "}}"
         )

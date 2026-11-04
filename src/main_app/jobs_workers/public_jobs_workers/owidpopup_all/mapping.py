@@ -27,7 +27,8 @@ class TemplateRename:
 
     def rename_temp(self, temp: wtp.Template) -> None:
         """Rename the template and its arguments in place."""
-        temp.name = self.new_name
+        new_line = str(temp.name).endswith("\n")
+        temp.name = f"{self.new_name}\n" if new_line else self.new_name
 
         for arg in temp.arguments:
             new_arg_name = self._args_map.get(arg.name.strip().lower())
