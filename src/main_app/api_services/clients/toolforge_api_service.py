@@ -7,6 +7,7 @@ token redaction. Route-specific clients subclass ToolforgeApiService.
 
 from __future__ import annotations
 
+import logging
 import os
 from pathlib import Path
 from typing import Any, Literal
@@ -15,6 +16,8 @@ from urllib.parse import quote, quote_plus, urlencode
 import requests
 
 from .http_client import HttpClient
+
+logger = logging.getLogger(__name__)
 
 API_URL = "https://api.svc.tools.eqiad1.wikimedia.cloud:30003"  # inside toolforge environment
 
@@ -116,9 +119,11 @@ class ToolforgeApiService:
             raise ValueError(f"{TOKEN_ENV} is not set")
 
         kwargs: dict[str, Any] = {"verify": self.verify, "timeout": self.timeout}
+
         if self.internal:
             # The client certificate is only used by the internal endpoint.
             kwargs["cert"] = self.client_cert
+
         if json is not None:
             kwargs["json"] = json
 
@@ -130,6 +135,8 @@ class ToolforgeApiService:
         )
         if check:
             response.raise_for_status()
+
+        logger.debug("response status: %s", response.status_code)
         return response
 
     @staticmethod

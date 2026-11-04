@@ -64,10 +64,9 @@ def make_response() -> Callable[..., MagicMock]:
 
 @pytest.fixture
 def mock_http_client(make_response: Callable[..., MagicMock]) -> MagicMock:
-    """Return a fake HttpClient whose every verb answers with HTTP 200."""
+    """Return a fake HttpClient whose request() answers with HTTP 200."""
     client = MagicMock()
-    for method in HTTP_METHODS:
-        getattr(client, method).return_value = make_response()
+    client.request.return_value = make_response()
     return client
 
 
@@ -287,8 +286,9 @@ class TestRequest:
 
         service.request("GET", "/jobs/v1/healthz")
 
-        mock_http_client.get.assert_called_once_with(
-            f"{API_URL}/jobs/v1/healthz",
+        mock_http_client.request.assert_called_once_with(
+            method="GET",
+            url=f"{API_URL}/jobs/v1/healthz",
             verify=False,
             timeout=REQUEST_TIMEOUT,
             cert=("/home/tester/.toolskube/client.crt", "/home/tester/.toolskube/client.key"),
@@ -299,8 +299,9 @@ class TestRequest:
 
         service.request("GET", "/jobs/v1/healthz")
 
-        mock_http_client.get.assert_called_once_with(
-            f"{EXTERNAL_API_URL}/jobs/v1/healthz?token=secret",
+        mock_http_client.request.assert_called_once_with(
+            method="GET",
+            url=f"{EXTERNAL_API_URL}/jobs/v1/healthz?token=secret",
             verify=True,
             timeout=REQUEST_TIMEOUT,
         )
@@ -310,7 +311,7 @@ class TestRequest:
 
         service.request("GET", "/jobs")
 
-        assert mock_http_client.get.call_args.kwargs["timeout"] == 2
+        assert mock_http_client.request.call_args.kwargs["timeout"] == 2
 
     @pytest.mark.parametrize("method", HTTP_METHODS)
     def test_http_verb_is_dispatched_to_matching_client_method(
@@ -320,42 +321,40 @@ class TestRequest:
 
         service.request(method.upper(), "/jobs")
 
-        getattr(mock_http_client, method).assert_called_once()
-        for other in HTTP_METHODS:
-            if other != method:
-                getattr(mock_http_client, other).assert_not_called()
+        mock_http_client.request.assert_called_once()
+        assert mock_http_client.request.call_args.kwargs["method"] == method.upper()
 
     def test_json_body_is_sent(self, make_service, mock_http_client) -> None:
         service = make_service()
 
         service.request("POST", "/jobs", json={"name": "update"})
 
-        assert mock_http_client.post.call_args.kwargs["json"] == {"name": "update"}
+        assert mock_http_client.request.call_args.kwargs["json"] == {"name": "update"}
 
     def test_empty_json_body_is_still_sent(self, make_service, mock_http_client) -> None:
         service = make_service()
 
         service.request("POST", "/jobs", json={})
 
-        assert mock_http_client.post.call_args.kwargs["json"] == {}
+        assert mock_http_client.request.call_args.kwargs["json"] == {}
 
     def test_json_is_omitted_when_none(self, make_service, mock_http_client) -> None:
         service = make_service()
 
         service.request("POST", "/jobs")
 
-        assert "json" not in mock_http_client.post.call_args.kwargs
+        assert "json" not in mock_http_client.request.call_args.kwargs
 
     def test_params_are_added_to_the_url(self, make_service, mock_http_client) -> None:
         service = make_service()
 
         service.request("GET", "/logs", params={"lines": 7})
 
-        assert _query(mock_http_client.get.call_args.args[0]) == {"lines": ["7"]}
+        assert _query(mock_http_client.request.call_args.kwargs["url"]) == {"lines": ["7"]}
 
     def test_returns_the_raw_response(self, make_service, mock_http_client, make_response) -> None:
         expected = make_response(json_data={"ok": True})
-        mock_http_client.get.return_value = expected
+        mock_http_client.request.return_value = expected
         service = make_service()
 
         assert service.request("GET", "/jobs") is expected
@@ -366,10 +365,10 @@ class TestRequest:
         with pytest.raises(ValueError, match=TOKEN_ENV):
             service.request("GET", "/jobs")
 
-        mock_http_client.get.assert_not_called()
+        mock_http_client.request.assert_not_called()
 
     def test_http_error_raises_by_default(self, make_service, mock_http_client, make_response) -> None:
-        mock_http_client.get.return_value = make_response(status_code=500)
+        mock_http_client.request.return_value = make_response(status_code=500)
         service = make_service()
 
         with pytest.raises(requests.HTTPError):
@@ -377,7 +376,7 @@ class TestRequest:
 
     def test_check_false_returns_error_response(self, make_service, mock_http_client, make_response) -> None:
         error_response = make_response(status_code=404)
-        mock_http_client.get.return_value = error_response
+        mock_http_client.request.return_value = error_response
         service = make_service()
 
         result = service.request("GET", "/jobs", check=False)
@@ -438,16 +437,16 @@ class TestHealthcheck:
 
         service.healthcheck()
 
-        assert mock_http_client.get.call_args.args[0] == f"{API_URL}/{route}/v1/healthz"
+        assert mock_http_client.request.call_args.kwargs["url"] == f"{API_URL}/{route}/v1/healthz"
 
     def test_returns_decoded_payload(self, make_service, mock_http_client, make_response) -> None:
-        mock_http_client.get.return_value = make_response(json_data={"status": "ok"})
+        mock_http_client.request.return_value = make_response(json_data={"status": "ok"})
         service = make_service()
 
         assert service.healthcheck() == {"status": "ok"}
 
     def test_http_error_is_raised(self, make_service, mock_http_client, make_response) -> None:
-        mock_http_client.get.return_value = make_response(status_code=503)
+        mock_http_client.request.return_value = make_response(status_code=503)
         service = make_service()
 
         with pytest.raises(requests.HTTPError):
@@ -463,7 +462,7 @@ class TestMetrics:
 
         service.metrics()
 
-        assert mock_http_client.get.call_args.args[0] == f"{API_URL}/{route}/v1/metrics"
+        assert mock_http_client.request.call_args.kwargs["url"] == f"{API_URL}/{route}/v1/metrics"
 
     @pytest.mark.parametrize("route", ["components", "logs"])
     def test_unversioned_metrics_path(self, make_service, mock_http_client, route: str) -> None:
@@ -471,10 +470,10 @@ class TestMetrics:
 
         service.metrics()
 
-        assert mock_http_client.get.call_args.args[0] == f"{API_URL}/{route}/metrics"
+        assert mock_http_client.request.call_args.kwargs["url"] == f"{API_URL}/{route}/metrics"
 
     def test_returns_plain_text(self, make_service, mock_http_client, make_response) -> None:
-        mock_http_client.get.return_value = make_response(content=b"# HELP x", text="# HELP x")
+        mock_http_client.request.return_value = make_response(content=b"# HELP x", text="# HELP x")
         service = make_service()
 
         assert service.metrics() == "# HELP x"
@@ -484,4 +483,4 @@ class TestMetrics:
 
         service.metrics()
 
-        assert mock_http_client.get.call_args.args[0] == f"{EXTERNAL_API_URL}/jobs/v1/metrics?token=secret"
+        assert mock_http_client.request.call_args.kwargs["url"] == f"{EXTERNAL_API_URL}/jobs/v1/metrics?token=secret"
