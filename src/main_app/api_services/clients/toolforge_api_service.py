@@ -123,8 +123,11 @@ class ToolforgeApiService:
             kwargs["json"] = json
 
         # Relies on HttpClient exposing get/post/put/patch/delete.
-        send = getattr(self.http_client, method.lower())
-        response = send(self.build_url(path, params), **kwargs)
+        response = self.http_client.request(
+            method=method,
+            url=self.build_url(path, params),
+            **kwargs,
+        )
         if check:
             response.raise_for_status()
         return response
