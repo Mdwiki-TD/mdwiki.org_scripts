@@ -234,11 +234,11 @@ class JobsPageService(JobsPageServiceHelpers):
         messages_data = self._extract_messages(payload)
         messages_ready = self._convert_messages(messages_data)
 
-        if isinstance(payload, dict) and "error" in messages_data:
-            error_texts = messages_data.get("error", [])
-            # messages = [(str(err), "danger") for err in error_texts]
-            logger.warning("Failed to %s: %s", action, error_texts)
-            return JobActionResult(messages=messages_ready, ok=False)
+        # if isinstance(payload, dict) and "error" in messages_data:
+        #     error_texts = messages_data.get("error", [])
+        #     # messages = [(str(err), "danger") for err in error_texts]
+        #     logger.warning("Failed to %s: %s", action, error_texts)
+        #     return JobActionResult(messages=messages_ready, ok=False)
 
         messages: list[Message] = [(success_text, "success")]
         messages.extend(messages_ready)
