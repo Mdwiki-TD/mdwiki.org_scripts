@@ -90,7 +90,24 @@ class JobsPageService(JobsPageServiceHelpers):
     """Build the data of the jobs pages from the Toolforge Jobs API."""
 
     def __init__(self, toolforge: ToolforgeJobsService | None = None) -> None:
-        self.toolforge = toolforge or ToolforgeJobsService(check=False)
+        self.toolforge = toolforge or ToolforgeJobsService(check=True)
+
+    def _message_by_code(self, action: str, code: int) -> Message:
+        if code == 400:
+            logger.warning("Failed to %s: bad request", action)
+            return (f"Failed to {action}: bad request (400).", "danger")
+
+        if code == 404:
+            logger.warning("Failed to %s: not found", action)
+            return (f"Failed to {action}: not found (404).", "danger")
+
+        if code == 401:
+            logger.warning("Failed to %s: unauthorized", action)
+            return (
+                f"Failed to {action}: unauthorized (401), check the client certificate or deploy token.",
+                "danger",
+            )
+        return ()
 
     def _failure_messages(self, action: str, exc: Exception) -> list[Message]:
         """Log an API failure and return the flash message for it."""
@@ -102,25 +119,9 @@ class JobsPageService(JobsPageServiceHelpers):
 
             messages = self._convert_messages(self._extract_messages(payload))
             code = exc.response.status_code
-            if code == 400:
-                logger.warning("Failed to %s: bad request", action)
-                messages.insert(0, (f"Failed to {action}: bad request (400).", "danger"))
-                return messages
-
-            if code == 404:
-                logger.warning("Failed to %s: not found", action)
-                messages.insert(0, (f"Failed to {action}: not found (404).", "danger"))
-                return messages
-
-            if code == 401:
-                logger.warning("Failed to %s: unauthorized", action)
-                messages.insert(
-                    0,
-                    (
-                        f"Failed to {action}: unauthorized (401), check the client certificate or deploy token.",
-                        "danger",
-                    ),
-                )
+            msg = self._message_by_code(action, code)
+            if msg:
+                messages.insert(0, msg)
                 return messages
 
         if isinstance(exc, (requests.RequestException, ValueError)):
@@ -223,7 +224,6 @@ class JobsPageService(JobsPageServiceHelpers):
         """Run a mutating API call and turn the outcome into flash messages."""
         try:
             payload = call()
-
         except (requests.RequestException, ValueError, OSError, Exception) as exc:
             return JobActionResult(
                 messages=self._failure_messages(action, exc),
