@@ -7,59 +7,67 @@ import logging
 import requests
 
 from ..config import app_settings
+from .clients.http_client import HttpClient
 
 logger = logging.getLogger(__name__)
 
 _CITATION_BASE = "https://en.wikipedia.org/api/rest_v1/data/citation/mediawiki-basefields"
 
 
-def get_citation_title(url_encoded_fields: str, *, timeout: int = 10) -> str:
-    """Fetch a citation title from Wikipedia's citation REST API.
+class CitationApi:
+    def __init__(
+        self,
+        http_client: HttpClient | None = None,
+    ) -> None:
+        self.http_client = http_client or HttpClient()
 
-    Args:
-        url_encoded_fields: URL-encoded citation fields (already percent-encoded).
-        timeout: Request timeout in seconds.
+    def get_citation_title(self, url_encoded_fields: str, *, timeout: int = 10) -> str:
+        """Fetch a citation title from Wikipedia's citation REST API.
 
-    Returns:
-        The citation title string, or empty string on failure.
-    """
-    url = f"{_CITATION_BASE}/{url_encoded_fields}"
-    try:
-        req = requests.get(
-            url,
-            timeout=timeout,
-            headers={"User-Agent": app_settings.other.user_agent},
-        )
+        Args:
+            url_encoded_fields: URL-encoded citation fields (already percent-encoded).
+            timeout: Request timeout in seconds.
 
-        if 500 <= req.status_code < 600:
-            logger.info(f"received {req.status_code} status from {req.url}")
+        Returns:
+            The citation title string, or empty string on failure.
+        """
+        url = f"{_CITATION_BASE}/{url_encoded_fields}"
+        try:
+            req = self.http_client.get(
+                url,
+                timeout=timeout,
+                headers={"User-Agent": app_settings.other.user_agent},
+            )
 
-        req.raise_for_status()
-        json1 = req.json()
+            if 500 <= req.status_code < 600:
+                logger.info(f"received {req.status_code} status from {req.url}")
 
-    except requests.exceptions.Timeout as e:
-        logger.error(f"Timeout Error for URL [{url}]: {e}")
-        return ""
-    except requests.exceptions.HTTPError as e:
-        logger.error(f"HTTP Error for URL [{url}]: {e}")
-        return ""
-    except ValueError as e:
-        logger.error(f"JSON Decode Error for URL [{url}]: {e}")
-        return ""
-    except requests.exceptions.RequestException as e:
-        logger.error(f"Network Request Error for URL [{url}]: {e}")
-        return ""
-    except Exception:
-        logger.exception("Unexpected Exception occurred:")
-        return ""
+            req.raise_for_status()
+            json1 = req.json()
 
-    if not json1:
-        return ""
+        except requests.exceptions.Timeout as e:
+            logger.error(f"Timeout Error for URL [{url}]: {e}")
+            return ""
+        except requests.exceptions.HTTPError as e:
+            logger.error(f"HTTP Error for URL [{url}]: {e}")
+            return ""
+        except ValueError as e:
+            logger.error(f"JSON Decode Error for URL [{url}]: {e}")
+            return ""
+        except requests.exceptions.RequestException as e:
+            logger.error(f"Network Request Error for URL [{url}]: {e}")
+            return ""
+        except Exception:
+            logger.exception("Unexpected Exception occurred:")
+            return ""
 
-    results = json1[0] if isinstance(json1, list) else json1
-    return results.get("title", "")
+        if not json1:
+            return ""
+
+        results = json1[0] if isinstance(json1, list) else json1
+        return results.get("title", "")
 
 
 __all__ = [
-    "get_citation_title",
+    "CitationApi",
 ]

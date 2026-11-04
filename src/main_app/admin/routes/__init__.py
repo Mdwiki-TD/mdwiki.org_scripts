@@ -11,6 +11,7 @@ from .error_logs import CheckErrorLogsView
 from .errors_route import CheckErrorsView
 from .jobs import AdminJobsRoutes
 from .settings import SettingsRoutes
+from .toolforge_jobs_view import ToolforgeJobsView
 from .users import UsersRoutes
 
 ADMIN_ROUTE_MODULES: list[RouteModule] = [
@@ -28,6 +29,7 @@ ADMIN_ROUTE_MODULES: list[RouteModule] = [
     ),
     RouteModule(route_cls=CheckErrorsView, name="errors", url_prefix="/errors"),
     RouteModule(route_cls=CheckErrorLogsView, name="error_logs", url_prefix="/error-logs"),
+    RouteModule(route_cls=ToolforgeJobsView, name="tfj", url_prefix="/tfj"),
 ]
 
 

@@ -116,7 +116,7 @@ class BaseObjectsJobWorker(ABC):
 
         logger.info("Job %s: Finished with status %s", self.job_id, final_status)
 
-    def update_final_status(self, final_status: str) -> None:
+    def update_final_status(self, final_status: str) -> bool:
         try:
             self._jobs_service.update_job_status_with_retry(
                 self.job_id,

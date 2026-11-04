@@ -12,7 +12,7 @@ import logging
 from mwclient.client import Site
 
 from ....api_services import MwClientPage
-from ....api_services.enwiki_api import get_redirects_for
+from ....api_services.enwiki_api import EnwikiApi
 from ....api_services.query_api import is_pages_exists
 from ...base_worker import BaseObjectsJobWorker, JobsRunner
 from .objects import CreateRedirectsWorkerObject, OneTitleInfo
@@ -39,11 +39,16 @@ def _valid_title(title: str) -> bool:
 class CreateRedirectsWorker(BaseObjectsJobWorker):
     """Copy redirects from enwiki to mdwiki."""
 
-    def __init__(self, data: JobsRunner) -> None:
+    def __init__(
+        self,
+        data: JobsRunner,
+        enwiki_api: EnwikiApi | None = None,
+    ) -> None:
         self.args = data.args or {}
         self.site: Site | None = None
 
         super().__init__(data)
+        self.enwiki_api = enwiki_api or EnwikiApi()
 
         self.result: CreateRedirectsWorkerObject = CreateRedirectsWorkerObject()
 
@@ -108,7 +113,7 @@ class CreateRedirectsWorker(BaseObjectsJobWorker):
             info.counts.target_missing = 1
             return info
 
-        redirect_titles = get_redirects_for(title)
+        redirect_titles = self.enwiki_api.get_redirects_for(title)
         if not redirect_titles:
             info.msg = "no redirects on enwiki"
             logger.info(f"Job {self.job_id}: {title!r}: no redirects on enwiki")

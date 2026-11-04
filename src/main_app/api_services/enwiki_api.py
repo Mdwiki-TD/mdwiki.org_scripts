@@ -2,75 +2,71 @@
 
 from __future__ import annotations
 
-import functools
 import logging
-import os
 
-import requests
+from .clients.http_client import HttpClient
 
 logger = logging.getLogger(__name__)
 
-_USER_AGENT = os.getenv(
-    "REDIRECT_USER_AGENT",
-    "WikiProjectMed Translation Dashboard/1.0 (https://mdwiki.toolforge.org/; tools.mdwiki@toolforge.org)",
-)
 
+class EnwikiApi:
+    def __init__(
+        self,
+        http_client: HttpClient | None = None,
+    ) -> None:
+        self.http_client = http_client or HttpClient(use_session=True)
 
-@functools.lru_cache(maxsize=1)
-def _enwiki_session() -> requests.Session:
-    session = requests.Session()
-    session.headers.update({"User-Agent": _USER_AGENT})
-    return session
+    def get_redirects_for(self, title: str, *, timeout: int = 10) -> list[str]:
+        """Fetch mainspace redirect titles pointing to *title* on enwiki.
 
+        Args:
+            title: The page title to look up redirects for.
+            timeout: Request timeout in seconds.
 
-def get_redirects_for(title: str, *, timeout: int = 10) -> list[str]:
-    """Fetch mainspace redirect titles pointing to *title* on enwiki.
+        Returns:
+            List of redirect titles (namespace 0 only).
+        """
+        params = {
+            "action": "query",
+            "format": "json",
+            "prop": "redirects",
+            "titles": title,
+            "utf8": 1,
+            "rdprop": "title",
+            "rdlimit": "max",
+        }
+        try:
+            response = self.http_client.post(
+                "https://en.wikipedia.org/w/api.php",
+                data=params,
+                timeout=timeout,
+            )
+            response.raise_for_status()
+            payload = response.json() or {}
+        except Exception as e:
+            logger.error("Error fetching redirects for %s: %s", title, e)
+            return []
 
-    Args:
-        title: The page title to look up redirects for.
-        timeout: Request timeout in seconds.
+        pages = (payload.get("query") or {}).get("pages") or {}
 
-    Returns:
-        List of redirect titles (namespace 0 only).
-    """
-    params = {
-        "action": "query",
-        "format": "json",
-        "prop": "redirects",
-        "titles": title,
-        "utf8": 1,
-        "rdprop": "title",
-        "rdlimit": "max",
-    }
-    try:
-        session = _enwiki_session()
-        response = session.post("https://en.wikipedia.org/w/api.php", data=params, timeout=timeout)
-        response.raise_for_status()
-        payload = response.json() or {}
-    except Exception as e:
-        logger.error("Error fetching redirects for %s: %s", title, e)
-        return []
+        out: list[str] = []
 
-    pages = (payload.get("query") or {}).get("pages") or {}
+        for page in pages.values():
+            for r in page.get("redirects", []) or []:
+                # if page.get("title") != title: continue
+                if "ns" not in r:
+                    continue
 
-    out: list[str] = []
+                ns = r["ns"]
+                if ns != 0:
+                    continue
 
-    for page in pages.values():
-        for r in page.get("redirects", []) or []:
-            # if page.get("title") != title: continue
-            if "ns" not in r:
-                continue
-
-            ns = r["ns"]
-            if ns != 0:
-                continue
-
-            redirect_title = r.get("title", "")
-            if redirect_title and redirect_title not in out:
-                out.append(redirect_title)
-    return out
+                redirect_title = r.get("title", "")
+                if redirect_title and redirect_title not in out:
+                    out.append(redirect_title)
+        return out
 
 
 __all__ = [
-    "get_redirects_for",
+    "EnwikiApi",
 ]
