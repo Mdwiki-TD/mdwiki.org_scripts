@@ -128,8 +128,8 @@ class JobsPageService(JobsPageServiceHelpers):
         """Fetch the jobs and build the page data, never raising."""
         action = "load Toolforge jobs"
         try:
-            # payload = self.toolforge.list_jobs()
-            payload = self.toolforge.list_jobs_test()
+            payload = self.toolforge.list_jobs()
+            # payload = self.toolforge.list_jobs_test()
         except (requests.RequestException, ValueError, OSError) as exc:
             return JobsPage(
                 messages=[self._failure_message(action, exc)],
