@@ -8,6 +8,9 @@ from typing import Any
 
 logger = logging.getLogger(__name__)
 
+# (text, category) pair, ready to be passed to flask.flash by the view.
+Message = tuple[str, str]
+
 DEFAULT_LOG_LINES = 200
 MAX_LOG_LINES = 2000
 
@@ -21,7 +24,7 @@ class JobsPage:
 
     jobs: list[dict[str, Any]] = field(default_factory=list)
     status_summary: dict[str, int] = field(default_factory=dict)
-    messages: list[tuple[str, str]] = field(default_factory=list)
+    messages: list[Message] = field(default_factory=list)
     error: bool = False
 
     def to_context(self) -> dict[str, Any]:
@@ -40,7 +43,7 @@ class JobDetailPage:
 
     job_id: str
     job: dict[str, Any] | None = None
-    messages: list[tuple[str, str]] = field(default_factory=list)
+    messages: list[Message] = field(default_factory=list)
     error: bool = False
 
     def to_context(self) -> dict[str, Any]:
@@ -56,7 +59,7 @@ class JobLogsPage:
     logs: list[str] = field(default_factory=list)
     lines: int = DEFAULT_LOG_LINES
     total_lines: int = 0
-    messages: list[tuple[str, str]] = field(default_factory=list)
+    messages: list[Message] = field(default_factory=list)
     error: bool = False
 
     def to_context(self) -> dict[str, Any]:
@@ -75,7 +78,7 @@ class JobLogsPage:
 class JobActionResult:
     """Outcome of a job action (restart, delete)."""
 
-    messages: list[tuple[str, str]] = field(default_factory=list)
+    messages: list[Message] = field(default_factory=list)
     ok: bool = True
     redirect_endpoint: str = JOBS_ENDPOINT
 

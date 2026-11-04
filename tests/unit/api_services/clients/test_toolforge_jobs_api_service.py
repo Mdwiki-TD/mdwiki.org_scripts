@@ -173,7 +173,6 @@ class TestReadEndpoints:
             ("quotas", ()),
             ("list_jobs", ()),
             ("show_job", (1,)),
-            ("get_logs", (1,)),
         ],
     )
     def test_returns_decoded_payload(
@@ -198,42 +197,75 @@ class TestReadEndpoints:
 
         assert service.list_jobs() == payload
 
-    def test_list_jobs_with_empty_body_returns_empty_dict(self, make_service, mock_http_client, make_response) -> None:
-        mock_http_client.get.return_value = make_response(content=b"")
-        service = make_service()
-
-        assert service.list_jobs() == {}
-
-    def test_list_jobs_with_non_json_body_returns_text(self, make_service, mock_http_client, make_response) -> None:
+    @pytest.mark.parametrize(
+        ("method_name", "args"),
+        [("images", ()), ("quotas", ()), ("list_jobs", ()), ("show_job", ("update",))],
+    )
+    def test_non_json_body_raises_value_error(
+        self, make_service, mock_http_client, make_response, method_name: str, args: tuple
+    ) -> None:
         mock_http_client.get.return_value = make_response(content=b"oops", text="oops", json_error=True)
         service = make_service()
 
-        assert service.list_jobs() == "oops"
+        with pytest.raises(ValueError):
+            getattr(service, method_name)(*args)
+
+
+class TestListJobsIncludeUnset:
+    """The only query parameter of GET /jobs."""
+
+    def test_no_query_string_by_default(self, make_service, mock_http_client) -> None:
+        service = make_service()
+
+        service.list_jobs()
+
+        assert mock_http_client.get.call_args.args[0] == f"{BASE}/jobs"
+
+    @pytest.mark.parametrize(("value", "expected"), [(True, "true"), (False, "false")])
+    def test_include_unset_is_sent_lowercase(self, make_service, mock_http_client, value: bool, expected: str) -> None:
+        service = make_service()
+
+        service.list_jobs(include_unset=value)
+
+        assert _query(mock_http_client.get.call_args.args[0]) == {"include_unset": [expected]}
 
 
 class TestGetLogs:
-    """Query parameters of the logs endpoint."""
+    """The logs endpoint returns text/plain and takes no query parameters."""
 
-    def test_params_are_sent_as_query_string(self, make_service, mock_http_client) -> None:
+    def test_returns_the_plain_text(self, make_service, mock_http_client, make_response) -> None:
+        mock_http_client.get.return_value = make_response(content=b"line 1\nline 2", text="line 1\nline 2")
         service = make_service()
 
-        service.get_logs("update", params={"lines": 100})
+        assert service.get_logs("update") == "line 1\nline 2"
 
-        assert _query(mock_http_client.get.call_args.args[0]) == {"lines": ["100"]}
+    def test_text_that_looks_like_json_is_not_decoded(self, make_service, mock_http_client, make_response) -> None:
+        response = make_response(content=b"123", text="123", json_data=123)
+        mock_http_client.get.return_value = response
+        service = make_service()
 
-    def test_no_params_means_no_query_string(self, make_service, mock_http_client) -> None:
+        assert service.get_logs("update") == "123"
+        response.json.assert_not_called()
+
+    def test_empty_logs_return_empty_string(self, make_service, mock_http_client, make_response) -> None:
+        mock_http_client.get.return_value = make_response(content=b"", text="")
+        service = make_service()
+
+        assert service.get_logs("update") == ""
+
+    def test_no_query_string_is_sent(self, make_service, mock_http_client) -> None:
         service = make_service()
 
         service.get_logs("update")
 
         assert mock_http_client.get.call_args.args[0] == f"{BASE}/jobs/update/logs"
 
-    def test_bool_param_is_lowercase(self, make_service, mock_http_client) -> None:
+    def test_http_error_is_raised(self, make_service, mock_http_client, make_response) -> None:
+        mock_http_client.get.return_value = make_response(status_code=404)
         service = make_service()
 
-        service.get_logs("update", params={"follow": False})
-
-        assert _query(mock_http_client.get.call_args.args[0]) == {"follow": ["false"]}
+        with pytest.raises(requests.HTTPError):
+            service.get_logs("missing")
 
 
 class TestWriteEndpoints:
@@ -359,12 +391,12 @@ class TestAuthentication:
         assert "cert" not in kwargs
         assert kwargs["verify"] is True
 
-    def test_token_and_logs_params_are_combined(self, make_service, mock_http_client) -> None:
+    def test_token_and_include_unset_are_combined(self, make_service, mock_http_client) -> None:
         service = make_service(token="secret")
 
-        service.get_logs("update", params={"lines": 5})
+        service.list_jobs(include_unset=False)
 
-        assert _query(mock_http_client.get.call_args.args[0]) == {"lines": ["5"], "token": ["secret"]}
+        assert _query(mock_http_client.get.call_args.args[0]) == {"include_unset": ["false"], "token": ["secret"]}
 
     def test_write_requests_also_carry_the_token(self, make_service, mock_http_client) -> None:
         service = make_service(token="secret")

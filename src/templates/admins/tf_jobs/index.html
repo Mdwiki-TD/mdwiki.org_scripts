@@ -1,7 +1,7 @@
 {% extends "admins/base1.html" %}
 
 {% block admin_contents %}
-{% from "admins/tf_jobs/_job_actions.html" import job_actions %}
+{% from "admins/tf_jobs/_job_actions.html" import job_actions, status_badge %}
 <div class="container-fluid py-3">
     <h2 class="mb-3">Toolforge jobs</h2>
 
@@ -9,10 +9,7 @@
     <div class="mb-3">
         <span class="badge bg-secondary">Total: {{ total_jobs }}</span>
         {% for status, count in status_summary.items() %}
-        <span
-            class="badge {% if status in ('failed', 'error') %}bg-danger{% elif status == 'running' %}bg-success{% else %}bg-info{% endif %}">
-            {{ status }}: {{ count }}
-        </span>
+        {{ status_badge(status, count) }}
         {% endfor %}
     </div>
 
@@ -37,10 +34,7 @@
                     <td><a href="{{ url_for('.job_detail', job_id=job.name) }}"><code>{{ job.name }}</code></a></td>
                     <td>{{ job.job_type }}{% if job.schedule %}<br><small>{{ job.schedule }}</small>{% endif %}</td>
                     <td>
-                        <span
-                            class="badge {% if job.status_key in ('failed', 'error') %}bg-danger{% elif job.status_key == 'running' %}bg-success{% else %}bg-secondary{% endif %}">
-                            {{ job.status_key }}
-                        </span>
+                        {{ status_badge(job.status_key) }}
                         {% for msg in job.status_messages %}
                         <br><small class="text-muted">{{ msg }}</small>
                         {% endfor %}

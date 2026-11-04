@@ -1,6 +1,7 @@
 from dataclasses import asdict, dataclass
 from typing import Any
 
+
 @dataclass
 class SharedMapToJson:
     def to_json(self) -> dict[str, Any]:

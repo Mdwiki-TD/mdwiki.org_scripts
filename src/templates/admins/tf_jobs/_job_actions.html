@@ -1,7 +1,7 @@
 {#
   Shared macros for the job action icons.
-  Usage: {% from "admins/tf_jobs/_job_actions.html" import job_actions %}
-         {{ job_actions(job.name) }}
+  Usage: {% from "admins/tf_jobs/_job_actions.html" import job_actions, status_badge %}
+         {{ job_actions(job.name) }}  {{ status_badge(job.status_key) }}
   Endpoints are relative to the current blueprint (".job_detail", ".job_logs", ...).
 #}
 
@@ -27,6 +27,12 @@
     <path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2" />
     {%- endif -%}
 </svg>
+{%- endmacro %}
+
+{# Status badge. Statuses from the API: pending, running, succeeded, failed, unknown. #}
+{% macro status_badge(status, count=none) -%}
+{%- set css = {"failed": "bg-danger", "running": "bg-success", "succeeded": "bg-primary", "pending": "bg-warning text-dark"}.get(status, "bg-secondary") -%}
+<span class="badge {{ css }}">{{ status }}{% if count is not none %}: {{ count }}{% endif %}</span>
 {%- endmacro %}
 
 {# Hidden CSRF field, only rendered when CSRF protection is enabled in the app. #}
