@@ -87,10 +87,10 @@
 ### المرحلة 2: جعل المهمة قابلة للتشغيل خارج عملية الويب
 
 - هجرة قاعدة بيانات (Alembic) تضيف `backend` و`payload` إلى جدول `jobs` (القسم 6.1). `init_db` ينشئ الجداول الناقصة فقط ولا يضيف أعمدة لجدول موجود.
-- أضف الأمر `flask run-job-id` داخل `register_cli_jobs` في `cli_jobs.py` مع الدالة `run_job_by_id` (القسم 6.2)، و`DbCancelEvent` (القسم 6.3).
-- غيّر نوع `JobsRunner.cancel_event` في `objects.py` إلى Protocol، وأضف إلى `JobData` الحقول `image` و`memory` و`cpu`.
+- أضف الأمر `flask run-job-id` داخل `register_cli_jobs` مع `run_job_by_id` و`build_job_user` (القسم 6.2)، وسكربت الغلاف `flask_cmd.sh` (القسم 6.7).
+- أضف إلى `JobData` الحقول `image` و`memory` و`cpu`، وقرر الإلغاء: `DbCancelEvent` (القسم 6.3) أو `threading.Event` عادي يُضبط عند SIGTERM إن ثبت أن الفئة الأساسية تفحص قاعدة البيانات والملف.
 - سجلات الأمر الحالي `flask run-job` تُسجَّل بـ `backend = 'cli'` لتمييزها.
-- **معيار الإنجاز:** `flask --app src/app1.py run-job-id 123` يشغّل مهمة أنشأتها الواجهة ويحترم الإلغاء.
+- **معيار الإنجاز:** `bash ~/shs/flask_cmd.sh run-job-id 123` يشغّل مهمة أنشأتها الواجهة بهوية صاحبها ويحترم الإلغاء.
 
 ### المرحلة 3: ToolforgeBackend
 
@@ -112,7 +112,7 @@
 ### المرحلة 6: الإطلاق التدريجي
 
 - فعّل Toolforge لنوع واحد أولًا ثم لبقية الأنواع تدريجيًا عبر الإعداد، وأبقِ `thread` كخيار رجوع.
-- بعد أسبوعين من الاستقرار احذف `ThreadBackend` و`JOBS_CANCEL_EVENTS` وخيوط daemon.
+- بعد أسبوعين من الاستقرار أزل خيار الرجوع من الإنتاج. يبقى `ThreadBackend` (و`JOBS_CANCEL_EVENTS`) للتطوير المحلي والاختبارات فقط.
 
 ## 6. التعديلات المطلوبة على الكود
 
@@ -139,7 +139,7 @@ payload: Mapped[str | None] = mapped_column(Text, nullable=True)
 
 اسم مهمة Toolforge لا يحتاج عمودًا: يُشتق من النوع والرقم (القسم 6.4).
 
-**لا تخزّن في `payload` توكنات أو كوكيز.** `auth_payload` كاملًا قد يحوي أسرارًا (تحقق من محتواه)؛ خزّن ما تحتاجه المهمة فقط (اسم المستخدم وما شابه).
+**لا تخزّن في `payload` أي بيانات مستخدم أو توكنات.** التوكنات موجودة أصلًا مشفرة في `user_tokens`، وتبني الحاوية `auth_payload` من `JobRecord.username` وقت التنفيذ (القسم 6.6)، فيصلها أحدث توكن. نظّف `form_data` من `csrf_token` وأي حقل حساس قبل حفظه.
 
 دوال جديدة في `JobsService` بنفس أسلوب الصنف الحالي (لا توجد فيه الآن `save_payload` ولا `list_active` ولا `mark_failed`):
 
@@ -180,14 +180,14 @@ if current in FINAL_STATUSES and status_lower != current:
 
 ### 6.2 نقطة دخول تشغيل مهمة واحدة
 
-الأمر الحالي `flask run-job <job_type>` في `cli_jobs.py` ينشئ سجلًا جديدًا ثم يشغّله في خيط داخل عملية الأمر. نضيف أمرًا مكمّلًا بدل استبداله: `run-job-id <job_id>` يشغّل سجلًا أنشأته الواجهة بالفعل. أوامر `app.cli.command` تُنفَّذ داخل `app_context` تلقائيًا، والتطبيق مُنشأ قبل الأمر (`flask --app src/app1.py`)، فلا حاجة لاستدعاء `AppFactory.create()` مرة أخرى.
+الأمر الحالي `flask run-job <job_type>` في `cli_jobs.py` ينشئ سجلًا جديدًا ويشغّله في خيط داخل عملية الأمر، وهو ما يستدعيه سكربت `collect_templates_data` المجدول اليوم. يبقى كما هو (مستخدمه `Background job` لا يحتاج توكنات). نضيف أمرًا مكمّلًا `run-job-id <job_id>` يشغّل سجلًا أنشأته الواجهة بالفعل. أوامر `app.cli.command` تُنفَّذ داخل `app_context` تلقائيًا، فلا حاجة لاستدعاء `AppFactory.create()` مرة أخرى.
 
 ```python
 # cli_jobs.py: أضف داخل register_cli_jobs(app) بجانب run-job
 @app.cli.command('run-job-id')
 @click.argument('job_id', type=int)
 def _run_job_id(job_id: int) -> None:
-    '''flask --app src/app1.py run-job-id 123'''
+    '''flask --app $HOME/www/python/src/app.py run-job-id 123'''
     sys.exit(run_job_by_id(job_id))
 
 @app.cli.command('reconcile-jobs')
@@ -195,7 +195,16 @@ def _reconcile_jobs() -> None:
     reconcile()          # القسم 7.4
 
 
-# jobs_worker.py: الدالة الجديدة (تعمل داخل app_context الذي يهيئه أمر flask)
+# jobs_worker.py
+def build_job_user(username: str) -> dict | None:
+    '''نفس شكل auth_payload في وضع threading (انظر القسم 6.6).'''
+    token = UserTokenService().get_user_token_by_username(username)
+    if token is None:
+        return None
+    user = TokenManager().get_authenticated_user(token.user_id)   # تحقق من مسار الاستيراد
+    return user.to_auth_payload() if user else None
+
+
 def run_job_by_id(job_id: int) -> int:
     svc = JobsService()
     job = svc.get_by(id=job_id)
@@ -210,15 +219,20 @@ def run_job_by_id(job_id: int) -> int:
         svc.mark_failed(job, f'unknown job type {job.job_type}')
         return 2
 
+    user = build_job_user(job.username)
+    if user is None:
+        svc.mark_failed(job, f'no token for user {job.username}')
+        return 3
+
     payload = svc.load_payload(job)
     svc.update_job_status(job_id, 'running', job_type=job.job_type)
 
-    cancel_event = DbCancelEvent(job_id, job.job_type)
+    cancel_event = DbCancelEvent(job_id, job.job_type)   # أو threading.Event() انظر 6.3
     signal.signal(signal.SIGTERM, lambda *_: cancel_event.set())
 
     runner_data = JobsRunner(
         job_id=job_id,
-        user=payload.get('user') or {'username': job.username},
+        user=user,
         cancel_event=cancel_event,
         args=payload.get('args') or {},
         form_data=payload.get('form_data'),
@@ -226,7 +240,7 @@ def run_job_by_id(job_id: int) -> int:
     try:
         job_data.job_class(runner_data).run()
     except Exception:
-        logger.exception('Job %s crashed', job_id)
+        logger.exception('Job %s crashed', job_id)   # لا تسجّل runner_data: فيه التوكنات
         svc.mark_failed(svc.get_by(id=job_id), 'unhandled exception')
         return 1
 
@@ -237,7 +251,7 @@ def run_job_by_id(job_id: int) -> int:
     return 0
 ```
 
-ملاحظات: (1) أمر flask يهيّئ التطبيق كاملًا (`init_db` وتسجيل المسارات) فيزيد زمن بدء كل مهمة؛ أضف وضعًا خفيفًا إن لزم. (2) المعاملات تُحل في الواجهة (`_load_job_args` من `SettingsService`) وتُخزَّن في `payload`، فلا تُعاد قراءتها في الحاوية. (3) سجلات الأمر القديم `run-job` لا تُراقَب بالاسم في Toolforge (اسم المهمة المجدولة مختلف)، فاعتمد لها مهلة زمنية في `reconcile` بدل المطابقة بالاسم.
+ملاحظات: (1) أمر flask يهيّئ التطبيق كاملًا (`init_db` وتسجيل المسارات) فيزيد زمن بدء كل مهمة؛ أضف وضعًا خفيفًا إن لزم. (2) المعاملات تُحل في الواجهة (`_load_job_args`) وتُخزَّن في `payload`، فلا تُعاد قراءتها في الحاوية. (3) فحص `can_run_jobs` و`can_run_bg_jobs` يبقى في مسار البدء قبل الإرسال ولا يتكرر هنا، لكن غياب التوكن يُنهي المهمة failed. (4) سجلات الأمر القديم `run-job` لا تُراقَب بالاسم في Toolforge، فاعتمد لها مهلة زمنية في `reconcile`.
 
 ### 6.3 حدث إلغاء يعمل بين العمليات
 
@@ -274,7 +288,7 @@ class DbCancelEvent:
         return self._set
 ```
 
-`JobsService.is_job_cancelled` يعمل `session.refresh` فيرى تغييرات العمليات الأخرى، ويستجيب الحدث لـ SIGTERM الذي يرسله `delete_job`. في `objects.py` بدّل نوع `cancel_event` في `JobsRunner` من `threading.Event | None` إلى Protocol بالدوال `is_set` و`set` و`wait` حتى يقبل `DbCancelEvent` دون كسر فحص الأنواع. تحقق من أن فئات المهام تستخدم فقط `is_set` (وربما `wait`).
+`JobsService.is_job_cancelled` يعمل `session.refresh` فيرى تغييرات العمليات الأخرى، ويستجيب الحدث لـ SIGTERM الذي يرسله `delete_job`. في `objects.py` بدّل نوع `cancel_event` في `JobsRunner` من `threading.Event | None` إلى Protocol بالدوال `is_set` و`set` و`wait` حتى يقبل `DbCancelEvent`. **تبسيط محتمل:** إن ثبت أن الفئة الأساسية للمهام تفحص `cancel_event.is_set()` وملف `.cancelled` وقاعدة البيانات دوريًا (كما ورد في التقرير الآخر، ولم أتحقق منه)، فيكفي `threading.Event()` عادي يُضبط عند SIGTERM، ويمكن تخطي هذا القسم وإبقاء نوع `JobsRunner.cancel_event` كما هو.
 
 ### 6.4 ToolforgeBackend
 
@@ -285,7 +299,7 @@ from pathlib import Path
 from ...api_services.clients.toolforge_jobs_api_service import ToolforgeJobsService
 
 IMAGE = 'python3.13'   # مأخوذ من بيانات الاختبار في الملف، تحقق من الصور عبر svc.images()
-CMD = 'cd ~/www/python && venv/bin/flask --app src/app1.py run-job-id {job_id}'  # تحقق من المسارات
+CMD = 'bash ~/shs/flask_cmd.sh run-job-id {job_id}'  # تحقق من المسارات
 
 def tf_job_name(job_type: str, job_id: int) -> str:
     slug = re.sub(r'[^a-z0-9.-]+', '-', job_type.lower()).strip('-')[:40]
@@ -315,19 +329,19 @@ class ToolforgeBackend:
         return name
 ```
 
-`JobData` في `objects.py` لا يحوي صورة ولا موارد (حقوله: `job_type` و`job_name` و`job_list_template` و`job_class` و`job_args` وما يخص الواجهة). أضف في آخره حقولًا افتراضية `image: str | None = None` و`memory: str | None = None` و`cpu: str | None = None`؛ الإضافة بقيم افتراضية آمنة لأنه dataclass. `cmd` يظهر في استجابة `list_jobs`، فلا تضع فيه سوى `job_id`. مسارات الأمر (venv واسم الملف) تحقق منها على بيئتك.
+`JobData` في `objects.py` لا يحوي صورة ولا موارد (حقوله: `job_type` و`job_name` و`job_list_template` و`job_class` و`job_args` وما يخص الواجهة). أضف في آخره حقولًا افتراضية `image: str | None = None` و`memory: str | None = None` و`cpu: str | None = None`؛ الإضافة بقيم افتراضية آمنة لأنه dataclass. `cmd` يظهر في استجابة `list_jobs`، فلا تضع فيه سوى `job_id`. الأمر يمر عبر سكربت الغلاف في القسم 6.7.
 
 ### 6.5 الواجهة الموحدة في jobs\_worker.py
 
 ```python
-# داخل _start_job_impl: نفس التحقق وبناء resolved_args، ثم بدل إنشاء الخيط:
+# داخل _start_job_impl: نفس التحقق الحالي (بما فيه صلاحيات المستخدم) وبناء resolved_args،
+# ثم بدل إنشاء الخيط:
 job = JobsService().create_job(job_type, username)      # يضع is_running = 1
-backend_name = get_backend_name(job_type)               # من الإعدادات
+backend_name = get_backend_name(job_type)               # من الإعدادات، اختيار صريح
 JobsService().save_payload(job.id, backend_name, {
-    'user': {'username': username},                     # لا أسرار هنا
     'args': resolved_args,
-    'form_data': form_data,
-})
+    'form_data': sanitize_form_data(form_data),         # بلا csrf_token ولا حقول حساسة
+})                                                      # لا مستخدم ولا توكنات هنا
 try:
     get_backend(backend_name).start(job, job_data)
 except Exception as exc:
@@ -337,6 +351,37 @@ return job.id
 ```
 
 التوقيعات العامة (`start_job` و`start_job_form` و`start_job_cli`) تبقى كما هي، فلا يتغير كود الواجهة.
+
+### 6.6 هوية المستخدم داخل الحاوية
+
+في وضع threading قيمة `JobsRunner.user` هي `CurrentUser.to_auth_payload()`: الحقول `id` و`username` و`access_token` و`access_secret`، والتوكنان بالبايتات المشفرة كما في `UserTokenRecord` (تُفك عند الاستخدام عبر `CryptoService`). في الحاوية لا يوجد طلب HTTP فلا يعمل hook `set_logged_in_user`، و`g._current_user` فارغ، وهذا حاله في الخيوط اليوم لأن `_runner` يفتح `app_context` جديدًا.
+
+- تُبنى الهوية من `JobRecord.username` عبر `UserTokenService.get_user_token_by_username` ثم `TokenManager.get_authenticated_user` (الدالة `build_job_user` في 6.2)، فتحصل الفئات على نفس الشكل الذي تعرفه.
+- متغيرات البيئة (ومنها مفتاح التشفير) متاحة في مهام Toolforge، فلا إجراء إضافي.
+- ضبط `g._current_user` اختياري: نفّذ `grep -rn 'get_current_user\|_current_user' src/main_app/jobs_workers src/main_app/services`، فإن لم يستخدمه كود المهام فلا حاجة له، وإلا فاضبطه في `run_job_by_id` للتكافؤ.
+- لا تسجّل `runner_data` ولا `user` في أي لوج.
+
+### 6.7 سكربت الغلاف
+
+السكربت الحالي لمهمة `collect_templates_data` موجود على Toolforge فقط وليس في المستودع. أقترح سكربتًا عامًا يوضع في المستودع (`scripts/flask_cmd.sh`) ويُنسخ إلى `~/shs/` عند النشر، ويبقى القديم كما هو:
+
+```bash
+#!/bin/bash
+set -euo pipefail
+source "$HOME/www/python/venv/bin/activate"
+exec flask --app "$HOME/www/python/src/app.py" "$@"
+```
+
+- **`exec` ضروري:** بدونه يبقى bash هو العملية الأولى في الحاوية فقد لا يمرر SIGTERM إلى Python، فلا يستجيب `delete_job` استجابة لطيفة. السكربت الحالي لا يستخدم `exec`، فلا يصلح كما هو للمهام القابلة للإلغاء.
+- الاستعمال: `bash ~/shs/flask_cmd.sh run-job-id 123` و`bash ~/shs/flask_cmd.sh reconcile-jobs`.
+- ملف التطبيق هو `src/app.py` (و`app1.py` الوارد في تعليق `cli_jobs.py` للتشغيل المحلي).
+
+### 6.8 إضافات اختيارية
+
+- يبقى `ThreadBackend` دائمًا للتطوير المحلي والاختبارات (Toolforge API يحتاج شهادات العميل)، والاختيار في الإنتاج بإعداد صريح `JOBS_BACKEND` بلا اكتشاف تلقائي، حتى لا تعود المهام إلى الخيوط بصمت إن غابت الشهادات.
+- حفظ رسالة الحالة مثل `exitcode 137 (OOMKilled)` كسبب فشل واضح.
+- واجهة: تبويب سجلات حية (`get_logs`) وصفحة حصص للمشرف، وإعدادات مثل `TOOLFORGE_JOB_IMAGE` و`TOOLFORGE_JOB_DEFAULT_MEMORY`.
+- اختبارات وحدة لـ `ToolforgeBackend` بـ `http_client` وهمي.
 
 ## 7. الاستعلام عن المهام وحالتها
 
@@ -441,7 +486,7 @@ tf.update_job({
     'imagename': IMAGE,
     'job_type': 'scheduled',
     'schedule': '*/5 * * * *',      # تحقق من أدنى فاصل تسمح به Toolforge
-    'cmd': 'cd ~/www/python && venv/bin/flask --app src/app1.py reconcile-jobs',
+    'cmd': 'bash ~/shs/flask_cmd.sh reconcile-jobs',
     'mount': 'all',
     'memory': '512Mi',
     'cpu': '0.2',
@@ -464,7 +509,7 @@ tf.update_job({
 job_id = start_job(auth_payload, 'my_job_type', args={'wiki': 'ar'})
 ```
 
-ما يحدث داخليًا: `create_job` يُنشئ الصف ويضع `is_running = 1` (فإن كان النوع نشطًا يُرفع `DuplicateRecordError` كما اليوم)، ثم تُحفظ الحمولة، ثم يُنشأ في Toolforge مهمة one-off باسم مثل `my-job-type-123` تشغّل `flask run-job-id 123`. لاختبار الحاوية يدويًا قبل الربط شغّل هذا الأمر نفسه محليًا، ثم جرّبه بأمر `toolforge jobs run` مع نفس الصورة و`--mount all`.
+ما يحدث داخليًا: `create_job` يُنشئ الصف ويضع `is_running = 1` (فإن كان النوع نشطًا يُرفع `DuplicateRecordError` كما اليوم)، ثم تُحفظ الحمولة، ثم يُنشأ في Toolforge مهمة one-off باسم مثل `my-job-type-123` تشغّل `bash ~/shs/flask_cmd.sh run-job-id 123`. لاختبار الحاوية يدويًا قبل الربط شغّل `flask --app src/app.py run-job-id 123` محليًا، ثم جرّبه بأمر `toolforge jobs run` مع نفس الصورة و`--mount all`.
 
 ### إيقاف مهمة
 
@@ -524,7 +569,7 @@ def restart(old_job) -> int:
 
 ## 11. ما زلت أحتاجه للتدقيق النهائي
 
-- فئة مهمة واحدة على الأقل مع فئتها الأساسية: من يضبط الحالة النهائية، وكيف تستخدم `cancel_event`.
+- الفئة الأساسية للمهام (`BaseObjectsJobWorker`) وفئة مهمة واحدة: من يضبط الحالة النهائية، وهل تفحص `cancel_event` والملف وقاعدة البيانات، وهل تستخدم `runner.user` أو `g`.
 - `jobs_files_service.py` (ملف `.cancelled`) و`http_client.py` (المهلة وإعادة المحاولة).
-- ناتج `toolforge jobs list` الحالي: كيف تُشغَّل مهام `run-job` المجدولة اليوم (أمر وصورة ومسار venv وسكربتات `~/shs` إن وُجدت).
-- كيف تصل الحاوية إلى ToolsDB (متغيرات البيئة أو `replica.my.cnf`)، وأي مكان يعرّف `src/app1.py`.
+- ناتج `toolforge jobs list` الحالي، وتأكيد أن `~/shs/` هو مكان السكربتات وأن `~` تُحَل في `cmd`.
+- مسار استيراد `TokenManager` و`UserTokenService` داخل `jobs_workers` (قد يسبب استيرادًا دائريًا).
