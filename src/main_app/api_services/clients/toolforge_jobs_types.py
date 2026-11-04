@@ -9,7 +9,6 @@ dict. Endpoints that are not JSON return ``str`` instead:
 
 from __future__ import annotations
 
-from dataclasses import dataclass
 from typing import Any, Literal, TypedDict
 
 JobType = Literal["one-off", "scheduled", "continuous", "webservice"]
@@ -17,7 +16,7 @@ JobStatusShort = Literal["pending", "running", "succeeded", "failed", "unknown"]
 EmailOption = Literal["none", "all", "onfinish", "onfailure"]
 MountOption = Literal["all", "none"]
 
-@dataclass
+
 class ResponseMessages:
     """Messages by priority, present in almost every response."""
 
@@ -25,8 +24,8 @@ class ResponseMessages:
     warning: list[str]
     error: list[str]
 
-@dataclass
-class JobStatus:
+
+class JobStatus(TypedDict, total=False):
     """``job["status"]``: standardized status (``short`` and ``duration`` are always present)."""
 
     short: JobStatusShort
@@ -37,8 +36,7 @@ class JobStatus:
     next_schedule: str  # scheduled jobs only, ISO 8601
 
 
-@dataclass
-class HealthCheck:
+class HealthCheck(TypedDict, total=False):
     """``job["health_check"]``: ``script`` for type "script", ``path`` for type "http"."""
 
     type: Literal["script", "http"]
@@ -46,8 +44,7 @@ class HealthCheck:
     path: str
 
 
-@dataclass
-class Job:
+class Job(TypedDict, total=False):
     """A defined job. The fields present depend on ``job_type`` (the spec uses oneOf).
 
     - all types: name, imagename, image, image_state, memory, cpu, emails, mount,
@@ -92,8 +89,7 @@ class Job:
         return cls(**data)
 
 
-@dataclass
-class NewJob:
+class NewJob(TypedDict, total=False):
     """Request body of create_job / update_job (a Job without the status fields).
 
     Required: ``name`` and ``imagename`` (``name`` defaults to "webservice" for
@@ -127,55 +123,48 @@ class NewJob:
         return cls(**data)
 
 
-@dataclass
-class JobListResponse:
+class JobListResponse(TypedDict, total=False):
     """GET /jobs."""
 
     jobs: list[Job]
     messages: ResponseMessages
 
 
-@dataclass
-class JobResponse:
+class JobResponse(TypedDict, total=False):
     """GET /jobs/{id} and POST /jobs."""
 
     job: Job
     messages: ResponseMessages
 
 
-@dataclass
-class MessagesResponse:
+class MessagesResponse(TypedDict, total=False):
     """DELETE /jobs, DELETE /jobs/{id} and POST /jobs/{id}/restart."""
 
     messages: ResponseMessages
 
 
-@dataclass
-class UpdateResponse:
+class UpdateResponse(TypedDict, total=False):
     """PATCH /jobs."""
 
     messages: ResponseMessages
     job_changed: bool
 
 
-@dataclass
-class Image:
+class Image(TypedDict, total=False):
     """One entry of the images list."""
 
     shortname: str
     image: str
 
 
-@dataclass
-class ImagesResponse:
+class ImagesResponse(TypedDict, total=False):
     """GET /images."""
 
     images: list[Image]
     messages: ResponseMessages
 
 
-@dataclass
-class QuotaItem:
+class QuotaItem(TypedDict, total=False):
     """One quota line; ``limit`` and ``used`` are strings (e.g. "1G")."""
 
     name: str
@@ -183,39 +172,34 @@ class QuotaItem:
     used: str
 
 
-@dataclass
-class QuotaCategory:
+class QuotaCategory(TypedDict, total=False):
     """A group of quota lines."""
 
     name: str
     items: list[QuotaItem]
 
 
-@dataclass
-class Quota:
+class Quota(TypedDict, total=False):
     """The quotas of the tool."""
 
     categories: list[QuotaCategory]
 
 
-@dataclass
-class QuotaResponse:
+class QuotaResponse(TypedDict, total=False):
     """GET /quotas."""
 
     quota: Quota
     messages: ResponseMessages
 
 
-@dataclass
-class Health:
+class Health(TypedDict, total=False):
     """Health of the API itself."""
 
     status: Literal["OK", "ERROR"]
     message: str
 
 
-@dataclass
-class HealthResponse:
+class HealthResponse(TypedDict, total=False):
     """GET /jobs/v1/healthz."""
 
     health: Health

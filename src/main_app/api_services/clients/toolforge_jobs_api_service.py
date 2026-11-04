@@ -162,7 +162,7 @@ class ToolforgeJobsService(ToolforgeApiService):
         )
 
     def list_jobs_test(self, include_unset: bool | None = None) -> JobListResponse:
-        return {
+        data = {
             "jobs": [
                 {
                     "name": "update",
@@ -191,6 +191,7 @@ class ToolforgeJobsService(ToolforgeApiService):
             ],
             "messages": {"info": [], "warning": [], "error": []},
         }
+        return JobListResponse.load(data)
 
 
 __all__ = [
