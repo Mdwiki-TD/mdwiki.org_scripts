@@ -212,7 +212,8 @@ class JobsPageService(JobsPageServiceHelpers):
 
             # Check if the API returned a structured error body despite a 200/400 JSON response
             if isinstance(payload, dict) and "error" in payload:
-                error_texts = payload.get("error", [])
+                messages_data = self._extract_messages(payload)
+                error_texts = messages_data.get("error", [])
                 messages = [(str(err), "danger") for err in error_texts]
                 logger.warning("Failed to %s: %s", action, error_texts)
                 return JobActionResult(messages=messages, ok=False)
@@ -223,8 +224,10 @@ class JobsPageService(JobsPageServiceHelpers):
                 ok=False,
             )
 
+        messages_data = self._extract_messages(payload)
+
         messages: list[Message] = [(success_text, "success")]
-        messages.extend(self._convert_messages(payload.get("messages")))
+        messages.extend(self._convert_messages(messages_data))
         return JobActionResult(messages=messages)
 
     def restart_job(self, job_id: str) -> JobActionResult:
@@ -252,6 +255,19 @@ class JobsPageService(JobsPageServiceHelpers):
             call=lambda: self.toolforge.delete_job(job_id),
             success_text=f"Job '{job_id}' deleted.",
         )
+
+    def _extract_messages(self, payload):
+        messages_data = payload.get("messages") or {}
+        if not messages_data:
+            if payload.get("info", []):
+                messages_data["info"] = payload.get("info", [])
+
+            if payload.get("warning", []):
+                messages_data["warning"] = payload.get("warning", [])
+
+            if payload.get("error", []):
+                messages_data["error"] = payload.get("error", [])
+        return messages_data
 
 
 __all__ = [
