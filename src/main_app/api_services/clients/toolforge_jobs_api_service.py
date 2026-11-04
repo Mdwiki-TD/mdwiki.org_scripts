@@ -66,14 +66,18 @@ class ToolforgeJobsService:
         params: dict[str, Any] | None = None,
         json: Any = None,
     ) -> Any:
-        """Send a request to a JSON endpoint and return the decoded body (ValueError if not JSON)."""
+        """
+        Send a request to a JSON endpoint and return the decoded body
+        """
         json_response = self.api.request(
             method,
             path,
             params=params,
             json=json,
-            check=self.check,
+            # check=self.check,
         )
+
+        # Response (400) might return {'error': ['Unable to restart a one-off job']}
         try:
             return json_response.json()
         except Exception:
