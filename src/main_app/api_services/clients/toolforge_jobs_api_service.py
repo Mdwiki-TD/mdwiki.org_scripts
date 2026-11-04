@@ -217,6 +217,15 @@ class ToolforgeJobsService:
         }
         return JobListResponse.load(data)
 
+    def healthcheck(self) -> Any:
+        return self.api.healthcheck()
+
+    def metrics(self) -> Any:
+        return self.api.metrics()
+
+    def redact(self, text: str) -> Any:
+        return self.api.redact(text)
+
 
 __all__ = [
     "ToolforgeJobsService",

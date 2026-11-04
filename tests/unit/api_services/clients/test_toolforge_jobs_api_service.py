@@ -88,23 +88,20 @@ def make_service(mock_http_client: MagicMock) -> Callable[..., ToolforgeJobsServ
 class TestInit:
     """Constructor behavior of the jobs client."""
 
-    def test_is_a_toolforge_api_service(self, make_service) -> None:
-        assert isinstance(make_service(), ToolforgeApiService)
-
     def test_route_is_jobs(self, make_service) -> None:
-        assert make_service().api_route == "jobs"
+        assert make_service().api.api_route == "jobs"
 
     def test_default_mode_is_internal(self, make_service) -> None:
         service = make_service()
 
-        assert service.internal is True
-        assert service.api_url == API_URL
+        assert service.api.internal is True
+        assert service.api.api_url == API_URL
 
     def test_token_switches_to_external_mode(self, make_service) -> None:
         service = make_service(token="secret")
 
-        assert service.internal is False
-        assert service.api_url == EXTERNAL_API_URL
+        assert service.api.internal is False
+        assert service.api.api_url == EXTERNAL_API_URL
 
     def test_arguments_are_forwarded_to_the_base_class(self, mock_http_client) -> None:
         service = ToolforgeJobsService(
@@ -117,16 +114,16 @@ class TestInit:
             internal=True,
         )
 
-        assert service.tool_name == "custom"
-        assert service.home_dir == "/data"
-        assert service.verify is True
-        assert service.timeout == 4
-        assert service.http_client is mock_http_client
-        assert service.token == "secret"
-        assert service.internal is True
+        assert service.api.tool_name == "custom"
+        assert service.api.home_dir == "/data"
+        assert service.api.verify is True
+        assert service.api.timeout == 4
+        assert service.api.http_client is mock_http_client
+        assert service.api.token == "secret"
+        assert service.api.internal is True
 
     def test_timeout_default(self, make_service) -> None:
-        assert make_service().timeout == REQUEST_TIMEOUT
+        assert make_service().api.timeout == REQUEST_TIMEOUT
 
 
 class TestJobPath:
@@ -492,7 +489,7 @@ class TestRawRequest:
         mock_http_client.request.return_value = response
         service = make_service()
 
-        result = service.request("GET", "/jobs/v1/tool/mytool/jobs/missing", check=False)
+        result = service.api.request("GET", "/jobs/v1/tool/mytool/jobs/missing", check=False)
 
         assert result is response
         assert result.status_code == 404

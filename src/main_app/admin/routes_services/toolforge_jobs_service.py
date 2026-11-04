@@ -209,7 +209,15 @@ class JobsPageService(JobsPageServiceHelpers):
         """Run a mutating API call and turn the outcome into flash messages."""
         try:
             payload = call()
-        except (requests.RequestException, ValueError, OSError) as exc:
+
+            # Check if the API returned a structured error body despite a 200/400 JSON response
+            if isinstance(payload, dict) and "error" in payload:
+                error_texts = payload.get("error", [])
+                messages = [(str(err), "danger") for err in error_texts]
+                logger.warning("Failed to %s: %s", action, error_texts)
+                return JobActionResult(messages=messages, ok=False)
+
+        except (requests.RequestException, ValueError, OSError, Exception) as exc:
             return JobActionResult(
                 messages=[self._failure_message(action, exc)],
                 ok=False,
