@@ -111,6 +111,7 @@ class JobsPageService(JobsPageServiceHelpers):
 
     def _failure_messages(self, action: str, exc: Exception) -> list[Message]:
         """Log an API failure and return the flash message for it."""
+        messages: list[Message] = []
         if isinstance(exc, requests.HTTPError) and exc.response is not None:
             try:
                 payload = exc.response.json()
@@ -131,8 +132,9 @@ class JobsPageService(JobsPageServiceHelpers):
             messages.insert(0, (f"Failed to {action}: {reason}", "danger"))
             return messages
 
-        logger.exception("Failed to %s", action)
-        messages.insert(0, (f"Failed to {action}: Could not find the TLS certificate file", "danger"))
+        reason = self.toolforge.api.redact(str(exc))
+        logger.error("Failed to %s: %s", action, reason)
+        messages.insert(0, (f"Failed to {action}: {reason}", "danger"))
         return messages
 
     # ------------------------------------------------------------------
@@ -235,7 +237,7 @@ class JobsPageService(JobsPageServiceHelpers):
         messages_ready = self._convert_messages(messages_data)
 
         messages: list[Message] = []
-        success = "error" not in messages_data
+        success = not messages_data.get("error")
         if success:
             messages.append((success_text, "success"))
 

@@ -151,6 +151,7 @@ class HttpClient:
         **kwargs: Any,
     ) -> requests.Response:
         """Perform a generic HTTP request."""
+        json_payload = kwargs.pop("json", json_data)
         return self._send(
             method,
             url,
@@ -158,7 +159,7 @@ class HttpClient:
             timeout,
             params=params,
             data=data,
-            json=json_data,
+            json=json_payload,
             auth=auth,
             **kwargs,
         )
