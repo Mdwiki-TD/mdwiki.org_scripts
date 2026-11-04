@@ -95,7 +95,7 @@ jobs_data_for_all_pages: dict[str, JobData] = {
     ),
     "owidpopup_all": JobData(
         job_type="owidpopup_all",
-        job_name="Replace OWIDPopup with OWID",
+        job_name="Replace {{OWIDPopup by {{OWID",
         job_list_template="jobs_templates/public/owidpopup_all/list.html",
         job_class=OwidPopupAllWorker,
         job_args=[],
