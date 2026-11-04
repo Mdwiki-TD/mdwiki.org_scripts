@@ -37,6 +37,7 @@ class ToolforgeJobsService(ToolforgeApiService):
         http_client: HttpClient | None = None,
         token: str | None = None,
         internal: bool | None = None,
+        check: bool | None = None,
     ) -> None:
         super().__init__(
             api_route="jobs",
@@ -48,6 +49,7 @@ class ToolforgeJobsService(ToolforgeApiService):
             token=token,
             internal=internal,
         )
+        self.check = check if check is not None else True
 
     @staticmethod
     def _job_path(job_id: str | int) -> str:
@@ -60,7 +62,6 @@ class ToolforgeJobsService(ToolforgeApiService):
         path: str,
         params: dict[str, Any] | None = None,
         json: Any = None,
-        check: bool = True,
     ) -> Any:
         """Send a request to a JSON endpoint and return the decoded body (ValueError if not JSON)."""
         json_response = self.request(
@@ -68,7 +69,7 @@ class ToolforgeJobsService(ToolforgeApiService):
             path,
             params=params,
             json=json,
-            check=check,
+            check=self.check,
         )
         return json_response.json()
 
@@ -154,7 +155,10 @@ class ToolforgeJobsService(ToolforgeApiService):
         )
         return response_data.text
 
-    def restart_job(self, job_id: str | int) -> MessagesResponse:
+    def restart_job(
+        self,
+        job_id: str | int,
+    ) -> MessagesResponse:
         """POST /jobs/v1/tool/{tool}/jobs/{id}/restart: ``{"messages"}`` (a cronjob runs right now)."""
         return self._json(
             "POST",

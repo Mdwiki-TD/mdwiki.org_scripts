@@ -40,12 +40,7 @@ JOB_NAME_PATTERN = re.compile(r"^[a-z0-9]([-a-z0-9]*[a-z0-9])?([.][a-z0-9]([-a-z
 JOB_NAME_MAX_LENGTH = 52
 
 
-class JobsPageService:
-    """Build the data of the jobs pages from the Toolforge Jobs API."""
-
-    def __init__(self, toolforge: ToolforgeJobsService | None = None) -> None:
-        self.toolforge = toolforge or ToolforgeJobsService()
-
+class JobsPageServiceHelpers:
     # ------------------------------------------------------------------
     # Helpers
     # ------------------------------------------------------------------
@@ -90,13 +85,25 @@ class JobsPageService:
             return None
         return (f"Invalid job name: {job_id[:60]!r}", "danger")
 
+
+class JobsPageService(JobsPageServiceHelpers):
+    """Build the data of the jobs pages from the Toolforge Jobs API."""
+
+    def __init__(self, toolforge: ToolforgeJobsService | None = None) -> None:
+        self.toolforge = toolforge or ToolforgeJobsService(check=False)
+
     def _failure_message(self, action: str, exc: Exception) -> Message:
         """Log an API failure and return the flash message for it."""
         if isinstance(exc, requests.HTTPError) and exc.response is not None:
             code = exc.response.status_code
+            if code == 400:
+                logger.warning("Failed to %s: bad request", action)
+                return (f"Failed to {action}: bad request (400).", "danger")
+
             if code == 404:
                 logger.warning("Failed to %s: not found", action)
                 return (f"Failed to {action}: not found (404).", "danger")
+
             if code == 401:
                 logger.warning("Failed to %s: unauthorized", action)
                 return (
@@ -112,20 +119,6 @@ class JobsPageService:
 
         logger.exception("Failed to %s", action)
         return (f"Failed to {action}: Could not find the TLS certificate file", "danger")
-
-    def _run_action(self, action: str, call: Callable[[], Any], success_text: str) -> JobActionResult:
-        """Run a mutating API call and turn the outcome into flash messages."""
-        try:
-            payload = call()
-        except (requests.RequestException, ValueError, OSError) as exc:
-            return JobActionResult(
-                messages=[self._failure_message(action, exc)],
-                ok=False,
-            )
-
-        messages: list[Message] = [(success_text, "success")]
-        messages.extend(self._convert_messages(payload.get("messages")))
-        return JobActionResult(messages=messages)
 
     # ------------------------------------------------------------------
     # Pages
@@ -145,6 +138,7 @@ class JobsPageService:
 
         jobs = [self._normalize_job(job) for job in payload.get("jobs") or []]
         summary = Counter(job["status_key"] for job in jobs)
+
         return JobsPage(
             jobs=jobs,
             status_summary=dict(summary),
@@ -206,6 +200,25 @@ class JobsPageService:
     # Actions
     # ------------------------------------------------------------------
 
+    def _run_action(
+        self,
+        action: str,
+        call: Callable[[], Any],
+        success_text: str,
+    ) -> JobActionResult:
+        """Run a mutating API call and turn the outcome into flash messages."""
+        try:
+            payload = call()
+        except (requests.RequestException, ValueError, OSError) as exc:
+            return JobActionResult(
+                messages=[self._failure_message(action, exc)],
+                ok=False,
+            )
+
+        messages: list[Message] = [(success_text, "success")]
+        messages.extend(self._convert_messages(payload.get("messages")))
+        return JobActionResult(messages=messages)
+
     def restart_job(self, job_id: str) -> JobActionResult:
         """Restart one job (a cronjob runs right now)."""
         invalid = self._invalid_name_message(job_id)
@@ -213,9 +226,9 @@ class JobsPageService:
             return JobActionResult(messages=[invalid], ok=False)
 
         return self._run_action(
-            f"restart job '{job_id}'",
-            lambda: self.toolforge.restart_job(job_id),
-            f"Job '{job_id}' restarted.",
+            action=f"restart job '{job_id}'",
+            call=lambda: self.toolforge.restart_job(job_id),
+            success_text=f"Job '{job_id}' restarted.",
         )
 
     def delete_job(self, job_id: str) -> JobActionResult:
@@ -223,10 +236,11 @@ class JobsPageService:
         invalid = self._invalid_name_message(job_id)
         if invalid:
             return JobActionResult(messages=[invalid], ok=False)
+
         return self._run_action(
-            f"delete job '{job_id}'",
-            lambda: self.toolforge.delete_job(job_id),
-            f"Job '{job_id}' deleted.",
+            action=f"delete job '{job_id}'",
+            call=lambda: self.toolforge.delete_job(job_id),
+            success_text=f"Job '{job_id}' deleted.",
         )
 
 

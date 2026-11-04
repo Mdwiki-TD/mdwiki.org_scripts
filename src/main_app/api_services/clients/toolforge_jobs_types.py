@@ -17,7 +17,7 @@ EmailOption = Literal["none", "all", "onfinish", "onfailure"]
 MountOption = Literal["all", "none"]
 
 
-class ResponseMessages:
+class ResponseMessages(TypedDict, total=False):
     """Messages by priority, present in almost every response."""
 
     info: list[str]
@@ -84,10 +84,6 @@ class Job(TypedDict, total=False):
     status_long: str  # legacy extended text
     status: JobStatus
 
-    @classmethod
-    def load(cls, data: dict[str, Any]) -> Job:
-        return cls(**data)
-
 
 class NewJob(TypedDict, total=False):
     """Request body of create_job / update_job (a Job without the status fields).
@@ -118,16 +114,16 @@ class NewJob(TypedDict, total=False):
     filelog_stdout: str | None
     filelog_stderr: str | None
 
-    @classmethod
-    def load(cls, data: dict[str, Any]) -> NewJob:
-        return cls(**data)
-
 
 class JobListResponse(TypedDict, total=False):
     """GET /jobs."""
 
     jobs: list[Job]
     messages: ResponseMessages
+
+    @classmethod
+    def load(cls, data: dict[str, Any]) -> JobListResponse:
+        return cls(**data)
 
 
 class JobResponse(TypedDict, total=False):
