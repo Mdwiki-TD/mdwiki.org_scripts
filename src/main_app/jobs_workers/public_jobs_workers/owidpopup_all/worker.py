@@ -77,6 +77,11 @@ class OwidPopupAllWorker(BaseObjectsJobWorker):
         self.result.summary.total = total
         per_item = self.get_priority(total) if total else 1
 
+        if not titles:
+            self.result.status = "skipped"
+            self.result.note = "Category is empty"
+            return self.result
+
         logger.info(f"Job {self.job_id}: Processing {total} pages from category {category!r}")
 
         for i, title in enumerate(titles, start=1):
