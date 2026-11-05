@@ -102,3 +102,8 @@ class PMIDService:
                 break
         # ---
         return journal
+
+
+__all__ = [
+    "PMIDService",
+]

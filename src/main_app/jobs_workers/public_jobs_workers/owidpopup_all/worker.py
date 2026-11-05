@@ -8,8 +8,8 @@ from __future__ import annotations
 
 import logging
 
-from mwclient.client import Site
 import wikitextparser as wtp
+from mwclient.client import Site
 
 from ....api_services import MwClientPage, get_category_members
 from ...base_worker import BaseObjectsJobWorker, JobsRunner
