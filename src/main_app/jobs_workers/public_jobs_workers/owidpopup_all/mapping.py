@@ -5,6 +5,7 @@ Template renaming configurations for owidpopup_all worker.
 from __future__ import annotations
 
 from dataclasses import dataclass, field
+
 import wikitextparser as wtp
 
 

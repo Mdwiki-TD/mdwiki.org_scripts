@@ -44,18 +44,8 @@ class TestTemplateRenameConfig:
 
 class TestReplaceTemplates:
     def test_basic_transformation(self):
-        before = (
-            "{{OWIDPopup\n"
-            "| owid = grapher/malnutrition-death-rates\n"
-            "| title = Malnutrition death rates\n"
-            "}}"
-        )
-        expected = (
-            "{{OWID\n"
-            "|chart= grapher/malnutrition-death-rates\n"
-            "| title = Malnutrition death rates\n"
-            "}}"
-        )
+        before = "{{OWIDPopup\n| owid = grapher/malnutrition-death-rates\n| title = Malnutrition death rates\n}}"
+        expected = "{{OWID\n|chart= grapher/malnutrition-death-rates\n| title = Malnutrition death rates\n}}"
         assert replace_templates(before, [OWID_POPUP_RENAME]) == expected
 
     def test_underscore_template_name(self):
@@ -133,10 +123,13 @@ class TestOwidPopupAllWorker:
         worker = OwidPopupAllWorker(JobsRunner(job_id=1, args={}, user=None))
         worker.site = mock_site
 
-        with patch.object(worker, "_check_site", return_value=True), patch(
-            "src.main_app.jobs_workers.public_jobs_workers.owidpopup_all.worker.get_category_members",
-            return_value=[],
-        ) as mock_get_cat:
+        with (
+            patch.object(worker, "_check_site", return_value=True),
+            patch(
+                "src.main_app.jobs_workers.public_jobs_workers.owidpopup_all.worker.get_category_members",
+                return_value=[],
+            ) as mock_get_cat,
+        ):
             worker.process()
             mock_get_cat.assert_called_once_with(
                 site=mock_site,
@@ -145,15 +138,16 @@ class TestOwidPopupAllWorker:
             )
 
     def test_custom_category(self, mock_site):
-        worker = OwidPopupAllWorker(
-            JobsRunner(job_id=1, args={"category": "Gadget:OWIDPopup"}, user=None)
-        )
+        worker = OwidPopupAllWorker(JobsRunner(job_id=1, args={"category": "Gadget:OWIDPopup"}, user=None))
         worker.site = mock_site
 
-        with patch.object(worker, "_check_site", return_value=True), patch(
-            "src.main_app.jobs_workers.public_jobs_workers.owidpopup_all.worker.get_category_members",
-            return_value=[],
-        ) as mock_get_cat:
+        with (
+            patch.object(worker, "_check_site", return_value=True),
+            patch(
+                "src.main_app.jobs_workers.public_jobs_workers.owidpopup_all.worker.get_category_members",
+                return_value=[],
+            ) as mock_get_cat,
+        ):
             worker.process()
             mock_get_cat.assert_called_once_with(
                 site=mock_site,
@@ -220,9 +214,7 @@ class TestOwidPopupAllWorker:
 
         mock_page = MagicMock()
         mock_page.exists.return_value = True
-        mock_page.get_text.return_value = (
-            "{{OWIDPopup | owid = grapher/test | title = Test}}"
-        )
+        mock_page.get_text.return_value = "{{OWIDPopup | owid = grapher/test | title = Test}}"
         mock_page.edit.return_value = {"success": True, "newrevid": 12345}
 
         with patch(
@@ -245,9 +237,7 @@ class TestOwidPopupAllWorker:
 
         mock_page = MagicMock()
         mock_page.exists.return_value = True
-        mock_page.get_text.return_value = (
-            "{{OWIDPopup | owid = grapher/test | title = Test}}"
-        )
+        mock_page.get_text.return_value = "{{OWIDPopup | owid = grapher/test | title = Test}}"
         mock_page.edit.side_effect = Exception("API write error")
 
         with patch(
@@ -264,12 +254,15 @@ class TestOwidPopupAllWorker:
         worker = OwidPopupAllWorker(JobsRunner(job_id=1, args={}, user=None))
         worker.site = mock_site
 
-        with patch.object(worker, "_check_site", return_value=True), patch(
-            "src.main_app.jobs_workers.public_jobs_workers.owidpopup_all.worker.get_category_members",
-            return_value=["Page1", "Page2"],
-        ), patch.object(worker, "is_cancelled", side_effect=[False, True]), patch.object(
-            worker, "_process_one"
-        ) as mock_proc:
+        with (
+            patch.object(worker, "_check_site", return_value=True),
+            patch(
+                "src.main_app.jobs_workers.public_jobs_workers.owidpopup_all.worker.get_category_members",
+                return_value=["Page1", "Page2"],
+            ),
+            patch.object(worker, "is_cancelled", side_effect=[False, True]),
+            patch.object(worker, "_process_one") as mock_proc,
+        ):
             worker.process()
             assert mock_proc.call_count == 1
             assert worker.result.status == "completed"
