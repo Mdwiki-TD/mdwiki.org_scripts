@@ -1,6 +1,6 @@
 # تقرير الانتقال من threading إلى Toolforge Jobs
 
-> مبني على الملفات: `jobs_worker.py` و`toolforge_jobs_api_service.py` و`toolforge_api_service.py` و`toolforge_jobs_types.py` و`jobs.py` (JobRecord) و`jobs_service.py` و`__init__.py` (AppFactory) و`objects.py` و`cli_jobs.py`. لم أطّلع بعد على أي فئة مهمة فعلية ولا `jobs_files_service.py` ولا `http_client.py`؛ ما يعتمد عليها مُعلَّم بكلمة «تحقق».
+> مبني على الملفات: `jobs_worker.py` و`toolforge_jobs_api_service.py` و`toolforge_api_service.py` و`toolforge_jobs_types.py` و`jobs.py` (JobRecord) و`jobs_service.py` و`__init__.py` (AppFactory) و`objects.py` و`cli_jobs.py`، ومن جهة الهوية: نماذج المستخدمين (`UserRecord` و`UserTokenRecord`) و`TokenManager` و`CurrentUser` وخطافات المصادقة، إضافة إلى سكربت التشغيل الحالي لمهمة `collect_templates_data`. لم أطّلع بعد على الفئة الأساسية للمهام وأي مهمة فعلية ولا `jobs_files_service.py` ولا `http_client.py` ولا `get_authenticated_user_token`؛ ما يعتمد عليها مُعلَّم بكلمة «تحقق».
 
 ## 1. الملخص التنفيذي
 
@@ -9,13 +9,13 @@
 - **الفرق الجوهري:** لا يمكن تمرير كائنات Python إلى الحاوية. يجب تمرير `job_id` فقط، ثم إعادة بناء التطبيق والمعاملات داخل العملية الجديدة من قاعدة البيانات.
 - **المكاسب:** المهام تنجو من إعادة تشغيل الـ webservice، وتخرج من حدود ذاكرة التطبيق، ويمكن إيقافها فعلاً (قتل الحاوية)، ولها سجلات وحالة من النظام نفسه.
 - **أهم خمسة تعديلات:**
-    1. نقطة دخول CLI تشغّل مهمة واحدة بمعرّفها.
-    2. حفظ معاملات المهمة (args/form_data/user) في قاعدة البيانات بدل تمريرها في الذاكرة.
-    3. استبدال `threading.Event` بكائن يستعلم من قاعدة البيانات ويستجيب لـ SIGTERM.
-    4. طبقة تجريد `JobBackend` لها تنفيذان: threads وToolforge.
-    5. مزامنة دورية للحالة (reconcile) تكشف المهام التي ماتت دون تحديث قاعدة البيانات.
+  1. نقطة دخول CLI تشغّل مهمة واحدة بمعرّفها.
+  2. حفظ معاملات المهمة (`args` و`form_data` منظَّفًا) في قاعدة البيانات بدل تمريرها في الذاكرة، أما هوية المستخدم وتوكناته فتُبنى في الحاوية من `JobRecord.username` (القسم 6.6).
+  3. استبدال `threading.Event` بكائن يستعلم من قاعدة البيانات، أو بـ `Event` عادي يُضبط عند SIGTERM إن ثبت أن الفئة الأساسية تفحص القاعدة والملف (القسم 6.3).
+  4. طبقة تجريد `JobBackend` لها تنفيذان: threads وToolforge.
+  5. مزامنة دورية للحالة (reconcile) تكشف المهام التي ماتت دون تحديث قاعدة البيانات.
 
-## 2. مراجعة jobs_worker.py (نموذج threading)
+## 2. مراجعة jobs\_worker.py (نموذج threading)
 
 ### 2.1 كيف يعمل اليوم
 
@@ -37,7 +37,7 @@
 9. **تكرار وتحديد الأنواع (منخفضة):** ثلاث دوال start شبه متطابقة، و`Callable[[JobsRunner]]` غير صحيح (المطلوب `Callable[[JobsRunner], Any]`)، وحقل `JobsRunner.cancel_event` معرَّف في `objects.py` كـ `threading.Event | None` فلا يقبل بديلًا بين العمليات دون تعديل.
 10. **المسار الموجود في `cli_jobs.py` (ملاحظة):** الأمر `flask run-job <job_type>` يستدعي `start_job_cli` ويعمل في خيط غير daemon داخل عملية الأمر نفسها، أي أن المهام المجدولة تعمل على الأرجح بهذه الطريقة اليوم. لكنه ينشئ سجلًا جديدًا باسم مستخدم `Background job` ويمرر `update_all` فقط، فلا يشغّل سجلًا موجودًا بمعرّفه. وحدث الإلغاء فيه محلي أيضًا، فلا يصله إلا الإلغاء عبر قاعدة البيانات أو الملف.
 
-## 3. مراجعة toolforge_jobs_api_service.py
+## 3. مراجعة toolforge\_jobs\_api\_service.py
 
 ### 3.1 نقاط القوة
 
@@ -62,8 +62,8 @@
 
 **مبدأ:** قاعدة البيانات مصدر الحقيقة لحالة منطق المهمة، وToolforge مصدر الحقيقة لحالة الحاوية (لكشف الانهيار، OOM، أو فقدان المهمة).
 
-- **البدء:** واجهة الويب تستدعي `start_job` ثم تنشئ سجل DB (pending) وتحفظ المعاملات، ثم تستدعي `create_job` في Toolforge بأمر `... jobs_cli <job_id>` ثم تحفظ اسم المهمة وتضع الحالة queued.
-- **التنفيذ:** الحاوية تشغّل CLI فتبني التطبيق وتقرأ المعاملات من DB وتضع الحالة running ثم تشغّل `run()` ثم تكتب الحالة النهائية.
+- **البدء:** واجهة الويب تستدعي `start_job` فتنشئ سجل DB (pending) وتحفظ المعاملات (بلا مستخدم أو توكنات)، ثم تستدعي `create_job` في Toolforge بأمر `bash ~/shs/flask_cmd.sh run-job-id <job_id>`، وتبقى الحالة pending حتى تبدأ الحاوية.
+- **التنفيذ:** الحاوية تشغّل أمر CLI فتبني التطبيق وتقرأ المعاملات من DB وتبني هوية المستخدم من `JobRecord.username` ثم تضع الحالة running وتشغّل `run()` وتكتب الحالة النهائية.
 - **الإلغاء:** يُسجَّل الإلغاء في DB أولًا، ثم `delete_job`. الحاوية تتلقى SIGTERM فتضع حدث الإلغاء وتنهي بأمان.
 - **المراقبة:** مهمة reconcile دورية تقارن DB بـ `list_jobs`.
 
@@ -123,13 +123,12 @@
 ```python
 # migrations/versions/xxxx_jobs_backend_payload.py
 def upgrade():
-    op.add_column("jobs", sa.Column("backend", sa.String(20), nullable=False, server_default="thread"))
-    op.add_column("jobs", sa.Column("payload", sa.Text(), nullable=True))
-
+    op.add_column('jobs', sa.Column('backend', sa.String(20), nullable=False, server_default='thread'))
+    op.add_column('jobs', sa.Column('payload', sa.Text(), nullable=True))
 
 def downgrade():
-    op.drop_column("jobs", "payload")
-    op.drop_column("jobs", "backend")
+    op.drop_column('jobs', 'payload')
+    op.drop_column('jobs', 'backend')
 ```
 
 ```python
@@ -145,8 +144,7 @@ payload: Mapped[str | None] = mapped_column(Text, nullable=True)
 دوال جديدة في `JobsService` بنفس أسلوب الصنف الحالي (لا توجد فيه الآن `save_payload` ولا `list_active` ولا `mark_failed`):
 
 ```python
-FINAL_STATUSES = ("completed", "failed", "cancelled", "skipped")
-
+FINAL_STATUSES = ('completed', 'failed', 'cancelled', 'skipped')
 
 class JobsService(CRUDService[JobRecord]):
     def save_payload(self, job_id: int, backend: str, payload: dict) -> None:
@@ -160,23 +158,23 @@ class JobsService(CRUDService[JobRecord]):
         return json.loads(job.payload) if job.payload else {}
 
     def list_active(self, backend: str | None = None) -> list[JobRecord]:
-        query = self.session.query(JobRecord).filter(JobRecord.status.in_(["pending", "running"]))
+        query = self.session.query(JobRecord).filter(JobRecord.status.in_(['pending', 'running']))
         if backend:
             query = query.filter(JobRecord.backend == backend)
         return query.all()
 
-    def mark_failed(self, job: JobRecord, reason: str = "") -> JobRecord:
-        logger.warning("Job %s failed: %s", job.id, reason)
+    def mark_failed(self, job: JobRecord, reason: str = '') -> JobRecord:
+        logger.warning('Job %s failed: %s', job.id, reason)
         # update_job_status يضبط is_running = None فيتحرر قفل النوع
-        return self.update_job_status(job.id, "failed", job_type=job.job_type)
+        return self.update_job_status(job.id, 'failed', job_type=job.job_type)
 ```
 
 وإصلاح السباق بين الإلغاء والاكتمال داخل `_update_job_status` (أول سطور الدالة بعد حساب `status_lower`):
 
 ```python
-current = (job.status or "").lower()
+current = (job.status or '').lower()
 if current in FINAL_STATUSES and status_lower != current:
-    logger.info("Job %s is already %s; ignoring %s", job.id, current, status_lower)
+    logger.info('Job %s is already %s; ignoring %s', job.id, current, status_lower)
     return job
 ```
 
@@ -186,25 +184,24 @@ if current in FINAL_STATUSES and status_lower != current:
 
 ```python
 # cli_jobs.py: أضف داخل register_cli_jobs(app) بجانب run-job
-@app.cli.command("run-job-id")
-@click.argument("job_id", type=int)
+@app.cli.command('run-job-id')
+@click.argument('job_id', type=int)
 def _run_job_id(job_id: int) -> None:
-    """flask --app $HOME/www/python/src/app.py run-job-id 123"""
+    '''flask --app $HOME/www/python/src/app.py run-job-id 123'''
     sys.exit(run_job_by_id(job_id))
 
-
-@app.cli.command("reconcile-jobs")
+@app.cli.command('reconcile-jobs')
 def _reconcile_jobs() -> None:
-    reconcile()  # القسم 7.4
+    reconcile()          # القسم 7.4
 
 
 # jobs_worker.py
 def build_job_user(username: str) -> dict | None:
-    """نفس شكل auth_payload في وضع threading (انظر القسم 6.6)."""
+    '''نفس شكل auth_payload في وضع threading (انظر القسم 6.6).'''
     token = UserTokenService().get_user_token_by_username(username)
     if token is None:
         return None
-    user = TokenManager().get_authenticated_user(token.user_id)  # تحقق من مسار الاستيراد
+    user = TokenManager().get_authenticated_user(token.user_id)   # تحقق من مسار الاستيراد
     return user.to_auth_payload() if user else None
 
 
@@ -212,44 +209,44 @@ def run_job_by_id(job_id: int) -> int:
     svc = JobsService()
     job = svc.get_by(id=job_id)
     if job is None:
-        logger.error("Job %s not found", job_id)
+        logger.error('Job %s not found', job_id)
         return 2
-    if job.status == "cancelled":  # أُلغيت قبل أن تبدأ الحاوية
+    if job.status == 'cancelled':              # أُلغيت قبل أن تبدأ الحاوية
         return 0
 
     job_data = load_job_data(job.job_type)
     if not job_data or not job_data.job_class:
-        svc.mark_failed(job, f"unknown job type {job.job_type}")
+        svc.mark_failed(job, f'unknown job type {job.job_type}')
         return 2
 
     user = build_job_user(job.username)
     if user is None:
-        svc.mark_failed(job, f"no token for user {job.username}")
+        svc.mark_failed(job, f'no token for user {job.username}')
         return 3
 
     payload = svc.load_payload(job)
-    svc.update_job_status(job_id, "running", job_type=job.job_type)
+    svc.update_job_status(job_id, 'running', job_type=job.job_type)
 
-    cancel_event = DbCancelEvent(job_id, job.job_type)  # أو threading.Event() انظر 6.3
+    cancel_event = DbCancelEvent(job_id, job.job_type)   # أو threading.Event() انظر 6.3
     signal.signal(signal.SIGTERM, lambda *_: cancel_event.set())
 
     runner_data = JobsRunner(
         job_id=job_id,
         user=user,
         cancel_event=cancel_event,
-        args=payload.get("args") or {},
-        form_data=payload.get("form_data"),
+        args=payload.get('args') or {},
+        form_data=payload.get('form_data'),
     )
     try:
         job_data.job_class(runner_data).run()
     except Exception:
-        logger.exception("Job %s crashed", job_id)  # لا تسجّل runner_data: فيه التوكنات
-        svc.mark_failed(svc.get_by(id=job_id), "unhandled exception")
+        logger.exception('Job %s crashed', job_id)   # لا تسجّل runner_data: فيه التوكنات
+        svc.mark_failed(svc.get_by(id=job_id), 'unhandled exception')
         return 1
 
     # شبكة أمان إن لم تضبط الفئة حالة نهائية (تحقق من سلوك الفئات)
     job = svc.get_by(id=job_id)
-    if job.status in ("pending", "running"):
+    if job.status in ('pending', 'running'):
         svc.mark_as_completed(job)
     return 0
 ```
@@ -262,9 +259,8 @@ def run_job_by_id(job_id: int) -> int:
 # src/main_app/jobs_workers/cancel.py
 import time
 
-
 class DbCancelEvent:
-    """بديل threading.Event: يقرأ الحالة من قاعدة البيانات بفاصل زمني."""
+    '''بديل threading.Event: يقرأ الحالة من قاعدة البيانات بفاصل زمني.'''
 
     def __init__(self, job_id: int, job_type: str, interval: float = 2.0):
         self.job_id, self.job_type, self.interval = job_id, job_type, interval
@@ -280,7 +276,6 @@ class DbCancelEvent:
         if now - self._last >= self.interval:
             self._last = now
             from ..database.services import JobsService
-
             self._set = JobsService().is_job_cancelled(self.job_id, self.job_type)
         return self._set
 
@@ -303,14 +298,12 @@ import re
 from pathlib import Path
 from ...api_services.clients.toolforge_jobs_api_service import ToolforgeJobsService
 
-IMAGE = "python3.13"  # مأخوذ من بيانات الاختبار في الملف، تحقق من الصور عبر svc.images()
-CMD = "bash ~/shs/flask_cmd.sh run-job-id {job_id}"  # تحقق من المسارات
-
+IMAGE = 'python3.13'   # مأخوذ من بيانات الاختبار في الملف، تحقق من الصور عبر svc.images()
+CMD = 'bash ~/shs/flask_cmd.sh run-job-id {job_id}'  # تحقق من المسارات
 
 def tf_job_name(job_type: str, job_id: int) -> str:
-    slug = re.sub(r"[^a-z0-9.-]+", "-", job_type.lower()).strip("-")[:40]
-    return f"{slug}-{job_id}"  # حد Toolforge: 52 حرفًا
-
+    slug = re.sub(r'[^a-z0-9.-]+', '-', job_type.lower()).strip('-')[:40]
+    return f'{slug}-{job_id}'      # حد Toolforge: 52 حرفًا
 
 class ToolforgeBackend:
     def __init__(self, svc: ToolforgeJobsService | None = None):
@@ -319,18 +312,18 @@ class ToolforgeBackend:
     def start(self, job, job_data) -> str:
         name = tf_job_name(job.job_type, job.id)
         body = {
-            "name": name,
-            "imagename": getattr(job_data, "image", None) or IMAGE,
-            "cmd": CMD.format(job_id=job.id),
-            "job_type": "one-off",
-            "mount": "all",
-            "memory": getattr(job_data, "memory", None) or "1Gi",
-            "cpu": getattr(job_data, "cpu", None) or "0.5",
-            "retry": 0,
-            "emails": "none",
-            "filelog": True,
-            "filelog_stdout": f"{Path.home()}/logs/jobs/{name}.out",
-            "filelog_stderr": f"{Path.home()}/logs/jobs/{name}.err",
+            'name': name,
+            'imagename': getattr(job_data, 'image', None) or IMAGE,
+            'cmd': CMD.format(job_id=job.id),
+            'job_type': 'one-off',
+            'mount': 'all',
+            'memory': getattr(job_data, 'memory', None) or '1Gi',
+            'cpu': getattr(job_data, 'cpu', None) or '0.5',
+            'retry': 0,
+            'emails': 'none',
+            'filelog': True,
+            'filelog_stdout': f'{Path.home()}/logs/jobs/{name}.out',
+            'filelog_stderr': f'{Path.home()}/logs/jobs/{name}.err',
         }
         self.svc.create_job(body)
         return name
@@ -338,25 +331,21 @@ class ToolforgeBackend:
 
 `JobData` في `objects.py` لا يحوي صورة ولا موارد (حقوله: `job_type` و`job_name` و`job_list_template` و`job_class` و`job_args` وما يخص الواجهة). أضف في آخره حقولًا افتراضية `image: str | None = None` و`memory: str | None = None` و`cpu: str | None = None`؛ الإضافة بقيم افتراضية آمنة لأنه dataclass. `cmd` يظهر في استجابة `list_jobs`، فلا تضع فيه سوى `job_id`. الأمر يمر عبر سكربت الغلاف في القسم 6.7.
 
-### 6.5 الواجهة الموحدة في jobs_worker.py
+### 6.5 الواجهة الموحدة في jobs\_worker.py
 
 ```python
 # داخل _start_job_impl: نفس التحقق الحالي (بما فيه صلاحيات المستخدم) وبناء resolved_args،
 # ثم بدل إنشاء الخيط:
-job = JobsService().create_job(job_type, username)  # يضع is_running = 1
-backend_name = get_backend_name(job_type)  # من الإعدادات، اختيار صريح
-JobsService().save_payload(
-    job.id,
-    backend_name,
-    {
-        "args": resolved_args,
-        "form_data": sanitize_form_data(form_data),  # بلا csrf_token ولا حقول حساسة
-    },
-)  # لا مستخدم ولا توكنات هنا
+job = JobsService().create_job(job_type, username)      # يضع is_running = 1
+backend_name = get_backend_name(job_type)               # من الإعدادات، اختيار صريح
+JobsService().save_payload(job.id, backend_name, {
+    'args': resolved_args,
+    'form_data': sanitize_form_data(form_data),         # بلا csrf_token ولا حقول حساسة
+})                                                      # لا مستخدم ولا توكنات هنا
 try:
     get_backend(backend_name).start(job, job_data)
 except Exception as exc:
-    JobsService().mark_failed(job, f"start failed: {exc}")  # يحرر القفل
+    JobsService().mark_failed(job, f'start failed: {exc}')   # يحرر القفل
     raise
 return job.id
 ```
@@ -400,14 +389,14 @@ exec flask --app "$HOME/www/python/src/app.py" "$@"
 
 ### 7.1 جدول ربط الحالات
 
-| `status.short` في Toolforge | حالة `jobs` | ملاحظة                                                                     |
-| --------------------------- | ----------- | -------------------------------------------------------------------------- |
-| pending                     | pending     | الحاوية بانتظار الجدولة                                                    |
-| running                     | running     | ويضعها `run_job` نفسه أيضًا                                                |
-| succeeded                   | completed   | عادةً سبقت DB إلى ذلك؛ للأمان `mark_as_completed`                          |
-| failed                      | failed      | السبب في `status.messages` (مثل `exitcode 127`)، ونص أطول في `status_long` |
-| unknown                     | بلا تغيير   | سجّل تحذيرًا فقط                                                           |
-| 404 والصف نشط               | failed      | المهمة حُذفت أو ضاعت، بعد مهلة سماح قصيرة                                  |
+| `status.short` في Toolforge | حالة `jobs` | ملاحظة |
+| --- | --- | --- |
+| pending | pending | الحاوية بانتظار الجدولة |
+| running | running | ويضعها `run_job` نفسه أيضًا |
+| succeeded | completed | عادةً سبقت DB إلى ذلك؛ للأمان `mark_as_completed` |
+| failed | failed | السبب في `status.messages` (مثل `exitcode 127`)، ونص أطول في `status_long` |
+| unknown | بلا تغيير | سجّل تحذيرًا فقط |
+| 404 والصف نشط | failed | المهمة حُذفت أو ضاعت، بعد مهلة سماح قصيرة |
 
 حالات DB الفعلية في الكود: `pending` و`running` و`completed` و`failed` و`cancelled` و`skipped`. الأربع الأخيرة نهائية، وبوصول الصف إليها يُصفَّر `is_running` فيتحرر النوع.
 
@@ -418,27 +407,25 @@ from requests import HTTPError
 
 tf = ToolforgeJobsService()
 
-
 def get_live_status(job) -> dict | None:
     try:
-        tf_job = tf.show_job(tf_job_name(job.job_type, job.id))["job"]
+        tf_job = tf.show_job(tf_job_name(job.job_type, job.id))['job']
     except HTTPError as exc:
         if exc.response is not None and exc.response.status_code == 404:
-            return None  # غير موجودة في Toolforge
+            return None                       # غير موجودة في Toolforge
         raise
-    status = tf_job["status"]
+    status = tf_job['status']
     return {
-        "short": status["short"],  # pending/running/succeeded/failed/unknown
-        "duration": status.get("duration"),  # نص مثل 24d24h59m45s
-        "messages": status.get("messages", []),
-        "detail": tf_job.get("status_long"),
+        'short': status['short'],            # pending/running/succeeded/failed/unknown
+        'duration': status.get('duration'),  # نص مثل 24d24h59m45s
+        'messages': status.get('messages', []),
+        'detail': tf_job.get('status_long'),
     }
 
-
 def running_jobs():
-    """الصفوف النشطة في DB مقرونة بحالتها الحية (طلب API واحد)."""
-    live = {j["name"]: j for j in tf.list_jobs()["jobs"]}
-    rows = JobsService().list_active(backend="toolforge")
+    '''الصفوف النشطة في DB مقرونة بحالتها الحية (طلب API واحد).'''
+    live = {j['name']: j for j in tf.list_jobs()['jobs']}
+    rows = JobsService().list_active(backend='toolforge')
     return [(row, live.get(tf_job_name(row.job_type, row.id))) for row in rows]
 ```
 
@@ -449,22 +436,21 @@ def running_jobs():
 ```python
 from datetime import UTC, datetime, timedelta
 
-GRACE = timedelta(seconds=90)  # مهلة قبل اعتبار المهمة ضائعة
-
+GRACE = timedelta(seconds=90)   # مهلة قبل اعتبار المهمة ضائعة
 
 def sync_job(job) -> None:
     svc = JobsService()
     live = get_live_status(job)
     if live is None:
-        created = job.created_at.replace(tzinfo=UTC)  # تحقق من المنطقة الزمنية للعمود
+        created = job.created_at.replace(tzinfo=UTC)      # تحقق من المنطقة الزمنية للعمود
         if datetime.now(UTC) - created > GRACE:
-            svc.mark_failed(job, "job is missing in Toolforge")
-    elif live["short"] == "failed":
-        svc.mark_failed(job, "; ".join(live["messages"]))
-    elif live["short"] == "succeeded" and job.status in ("pending", "running"):
+            svc.mark_failed(job, 'job is missing in Toolforge')
+    elif live['short'] == 'failed':
+        svc.mark_failed(job, '; '.join(live['messages']))
+    elif live['short'] == 'succeeded' and job.status in ('pending', 'running'):
         svc.mark_as_completed(job)
-    elif live["short"] == "running" and job.status == "pending":
-        svc.update_job_status(job.id, "running", job_type=job.job_type)
+    elif live['short'] == 'running' and job.status == 'pending':
+        svc.update_job_status(job.id, 'running', job_type=job.job_type)
 ```
 
 استدعِها في مكانين: عند عرض قائمة المهام في الواجهة لكل صف نشط (طلب API واحد لكل صف، والقيد الفريد يجعل العدد صغيرًا)، وفي مهمة `reconcile` الدورية.
@@ -476,18 +462,18 @@ def sync_job(job) -> None:
 ```python
 def reconcile() -> None:
     svc = JobsService()
-    for job in svc.list_active(backend="toolforge"):
+    for job in svc.list_active(backend='toolforge'):
         sync_job(job)
 
-    for tf_job in tf.list_jobs()["jobs"]:
-        if tf_job["status"]["short"] in ("succeeded", "failed"):
-            job_id = int(tf_job["name"].rsplit("-", 1)[-1])  # الاسم النوع-الرقم
+    for tf_job in tf.list_jobs()['jobs']:
+        if tf_job['status']['short'] in ('succeeded', 'failed'):
+            job_id = int(tf_job['name'].rsplit('-', 1)[-1])      # الاسم النوع-الرقم
             row = svc.get_by(id=job_id)
             if row and row.status in FINAL_STATUSES:
                 try:
-                    tf.delete_job(tf_job["name"])
+                    tf.delete_job(tf_job['name'])
                 except HTTPError:
-                    logger.exception("cleanup failed for %s", tf_job["name"])
+                    logger.exception('cleanup failed for %s', tf_job['name'])
 ```
 
 تنبّه: هذا يحذف مهامًا بأسماء تنتهي برقم فقط إن وُجدت لدى الأداة مهام أخرى بنفس النمط، فالأفضل الاقتصار على أسماء تبدأ بنوع معروف من `jobs_data_admins` و`jobs_data_public`.
@@ -495,18 +481,16 @@ def reconcile() -> None:
 جدولة `reconcile` نفسها (إنشاء أو تحديث بلا تكرار عبر `update_job`):
 
 ```python
-tf.update_job(
-    {
-        "name": "reconcile-jobs",
-        "imagename": IMAGE,
-        "job_type": "scheduled",
-        "schedule": "*/5 * * * *",  # تحقق من أدنى فاصل تسمح به Toolforge
-        "cmd": "bash ~/shs/flask_cmd.sh reconcile-jobs",
-        "mount": "all",
-        "memory": "512Mi",
-        "cpu": "0.2",
-    }
-)
+tf.update_job({
+    'name': 'reconcile-jobs',
+    'imagename': IMAGE,
+    'job_type': 'scheduled',
+    'schedule': '*/5 * * * *',      # تحقق من أدنى فاصل تسمح به Toolforge
+    'cmd': 'bash ~/shs/flask_cmd.sh reconcile-jobs',
+    'mount': 'all',
+    'memory': '512Mi',
+    'cpu': '0.2',
+})
 ```
 
 ### 7.5 السجلات
@@ -522,7 +506,7 @@ tf.update_job(
 التوقيع العام لم يتغير:
 
 ```python
-job_id = start_job(auth_payload, "my_job_type", args={"wiki": "ar"})
+job_id = start_job(auth_payload, 'my_job_type', args={'wiki': 'ar'})
 ```
 
 ما يحدث داخليًا: `create_job` يُنشئ الصف ويضع `is_running = 1` (فإن كان النوع نشطًا يُرفع `DuplicateRecordError` كما اليوم)، ثم تُحفظ الحمولة، ثم يُنشأ في Toolforge مهمة one-off باسم مثل `my-job-type-123` تشغّل `bash ~/shs/flask_cmd.sh run-job-id 123`. لاختبار الحاوية يدويًا قبل الربط شغّل `flask --app src/app.py run-job-id 123` محليًا، ثم جرّبه بأمر `toolforge jobs run` مع نفس الصورة و`--mount all`.
@@ -533,12 +517,12 @@ job_id = start_job(auth_payload, "my_job_type", args={"wiki": "ar"})
 
 ```python
 job = job or JobsService().get_by(id=job_id)
-if job and job.backend == "toolforge":
+if job and job.backend == 'toolforge':
     try:
         ToolforgeJobsService().delete_job(tf_job_name(job.job_type, job.id))
     except HTTPError as exc:
         if exc.response is None or exc.response.status_code != 404:
-            logger.exception("Failed to delete Toolforge job for %s", job_id)
+            logger.exception('Failed to delete Toolforge job for %s', job_id)
 ```
 
 الترتيب مهم: تسجيل الإلغاء في DB أولًا (`cancel_job_db`) ثم `delete_job`. عندها تتلقى الحاوية SIGTERM فيصبح `DbCancelEvent` مضبوطًا وتنتهي كمهمة ملغاة بدل failed، ويمنع الإصلاح في 6.1 تحويلها إلى completed. نقطة انتباه: `cancel_job_db` يحرر `is_running` فورًا، فقد تبدأ مهمة جديدة من نفس النوع بينما القديمة تُنهي عملها لثوانٍ.
@@ -549,37 +533,44 @@ if job and job.backend == "toolforge":
 
 ```python
 def restart(old_job) -> int:
-    if old_job.status in ("pending", "running"):
-        raise ValueError("Cancel the running job first")
+    if old_job.status in ('pending', 'running'):
+        raise ValueError('Cancel the running job first')
     payload = JobsService.load_payload(old_job)
-    return start_job({"username": old_job.username}, old_job.job_type, args=payload.get("args"))
+    return start_job({'username': old_job.username}, old_job.job_type, args=payload.get('args'))
 ```
 
 - **مهمة مجدولة أو مستمرة (مثل `reconcile-jobs`):** `ToolforgeJobsService().restart_job('reconcile-jobs')`.
 
 ## 9. المخاطر والتخفيف
 
-| الخطر                                              | التخفيف                                                           |
-| -------------------------------------------------- | ----------------------------------------------------------------- |
-| قفل نوع المهمة بسبب سجل عالق                       | تنظيف عند الإقلاع، وreconcile، وضبط failed عند فشل البدء          |
-| تعارض اسم المهمة (409)                             | اسم مشتق من النوع والرقم، والرقم فريد                             |
-| تجاوز حصة Toolforge                                | فحص `quotas()` قبل البدء، والقيد الفريد يحد النشط بمهمة لكل نوع   |
-| مهام منتهية تشغل الحصة                             | حذفها في reconcile بعد استقرار الحالة في DB                       |
-| تشغيل الصنف في الوضع الخارجي بالخطأ                | لا يُعرَّف `TOOLS_DEPLOY_TOKEN` في بيئة الإنتاج                   |
-| زمن بدء الحاوية و`AppFactory.create()`             | إظهار pending في الواجهة، ووضع تطبيق خفيف عند الحاجة              |
-| اختلاف الاعتمادات والحزم بين الويب والمهام         | نفس venv أو صورة موحدة، واختبار `run_job` يدويًا                  |
-| أسرار داخل `payload` أو `cmd`                      | تخزين الحد الأدنى، وتمرير `job_id` فقط                            |
-| مهمتان من نفس النوع لحظة الإلغاء                   | قبول ذلك، أو انتظار اختفاء المهمة قبل تحرير القفل                 |
-| مهمة طويلة تفقد اتصال قاعدة البيانات               | استخدام `update_job_status_with_retry` (موجود) داخل فئات المهام   |
+| الخطر | التخفيف |
+| --- | --- |
+| قفل نوع المهمة بسبب سجل عالق | تنظيف عند الإقلاع، وreconcile، وضبط failed عند فشل البدء |
+| تعارض اسم المهمة (409) | اسم مشتق من النوع والرقم، والرقم فريد |
+| تجاوز حصة Toolforge | فحص `quotas()` قبل البدء، والقيد الفريد يحد النشط بمهمة لكل نوع |
+| مهام منتهية تشغل الحصة | حذفها في reconcile بعد استقرار الحالة في DB |
+| تشغيل الصنف في الوضع الخارجي بالخطأ | لا يُعرَّف `TOOLS_DEPLOY_TOKEN` في بيئة الإنتاج |
+| زمن بدء الحاوية و`AppFactory.create()` | إظهار pending في الواجهة، ووضع تطبيق خفيف عند الحاجة |
+| اختلاف الاعتمادات والحزم بين الويب والمهام | نفس venv أو صورة موحدة، واختبار `run-job-id` يدويًا |
+| أسرار داخل `payload` أو `cmd` | `payload` بلا مستخدم ولا توكنات، و`cmd` فيه `job_id` فقط، ولا يُسجَّل `runner_data` |
+| المستخدم بلا توكن أو حُذف بعد إرسال المهمة | `build_job_user` يعيد None فتُضبط المهمة failed برسالة واضحة |
+| SIGTERM لا يصل إلى Python فلا يعمل الإلغاء الرشيق | سكربت الغلاف بـ `exec` (6.7) واختبار الإلغاء |
+| عودة صامتة إلى threading في الإنتاج | `JOBS_BACKEND` صريح بلا اكتشاف تلقائي، وفشل عند الإقلاع إن اختير toolforge دون شهادات |
+| مهمتان من نفس النوع لحظة الإلغاء | قبول ذلك، أو انتظار اختفاء المهمة قبل تحرير القفل |
+| مهمة طويلة تفقد اتصال قاعدة البيانات | استخدام `update_job_status_with_retry` (موجود) داخل فئات المهام |
 | الإلغاء لا يعمل لأن الفئة لا تستطلع `cancel_event` | مراجعة فئات المهام والتأكد من استدعاء `is_set` في الحلقات الطويلة |
 
 ## 10. قائمة الاختبار قبل التحويل الكامل
 
-- تشغيل `run_job` يدويًا لكل `job_type` والتأكد من اكتماله وتحرر `is_running`.
+- تشغيل `bash ~/shs/flask_cmd.sh run-job-id <id>` يدويًا لكل `job_type` والتأكد من اكتماله وتحرر `is_running`.
+- مستخدم بلا توكن (أو محذوف): تنتهي المهمة failed برسالة واضحة ولا يبقى النوع مقفلًا.
 - إلغاء أثناء التنفيذ عبر الواجهة والتأكد أن الحالة النهائية cancelled وليست completed.
+- التأكد أن SIGTERM يصل إلى Python عبر سكربت الغلاف (`exec`): `delete_job` ينهي المهمة بإنهاء رشيق وليس بقتل مباشر.
 - قتل الحاوية يدويًا (`delete_job`) والتأكد أن reconcile يضبط failed ويتحرر النوع.
 - إعادة تشغيل الـ webservice أثناء مهمة والتأكد أنها تكمل.
 - فشل `create_job` في Toolforge (اسم مكرر، حصة، API متوقف): يظهر خطأ مفهوم ولا يبقى سجل نشط.
+- مهمة `Background job` المجدولة الحالية (`run-job`) تعمل كما كانت دون تغيير.
+- التطوير المحلي والاختبارات تعمل بـ `ThreadBackend` دون شهادات Toolforge.
 - اختبارات وحدة للـ backend مع `http_client` وهمي (الصنف يقبل حقنه).
 - اختبار تكامل على Toolforge لمهمة واحدة غير حرجة قبل التعميم.
 
