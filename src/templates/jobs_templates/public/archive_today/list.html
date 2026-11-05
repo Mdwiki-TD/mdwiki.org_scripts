@@ -1,0 +1,9 @@
+{% extends "jobs_templates/base_list_public.html" %}
+
+{% block list_info %}
+<p class="text-muted">
+    Walks every mdwiki page and removes all archive.today links (including archive.is, archive.li, archive.md,
+    archive.ph, archive.today, archive.vn, archive.fo)
+    from CS1/CS2 citation templates and webarchive templates.
+</p>
+{% endblock %}

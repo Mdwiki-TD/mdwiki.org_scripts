@@ -2,6 +2,7 @@ from ..objects import JobData
 from .add_r_column.worker import AddRColumnWorker
 from .add_rtt_template.worker import AddRttTemplateWorker
 from .add_unlinkedwikibase.worker import AddUnlinkedWikibaseWorker
+from .archive_today.worker import ArchiveTodayWorker
 from .create_redirects.worker import CreateRedirectsWorker
 from .duplicate_redirect.worker import DuplicateRedirectWorker
 from .find_and_replace.worker import FindAndReplaceWorker
@@ -14,6 +15,15 @@ from .newupdater_all.worker import NewUpdaterAllWorker
 from .owidpopup_all.worker import OwidPopupAllWorker
 
 jobs_data_for_all_pages: dict[str, JobData] = {
+    "archive_today": JobData(
+        job_type="archive_today",
+        job_name="Remove archive.today links",
+        job_list_template="jobs_templates/public/archive_today/list.html",
+        job_class=ArchiveTodayWorker,
+        job_args=[],
+        start_confirm_message="Start removing archive.today links from all pages?",
+        ready=True,
+    ),
     "newupdater_all": JobData(
         job_type="newupdater_all",
         job_name="Medical content updater (Category:RTT)",
