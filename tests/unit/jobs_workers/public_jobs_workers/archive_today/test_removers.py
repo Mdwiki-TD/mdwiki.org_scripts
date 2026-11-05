@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import wikitextparser as wtp
-import pytest
 
 from src.main_app.jobs_workers.public_jobs_workers.archive_today.shared_wtp import (
     ArchiveParamsUrlsData,
