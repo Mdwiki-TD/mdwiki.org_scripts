@@ -112,6 +112,7 @@ class JobsPageService(JobsPageServiceHelpers):
     def _failure_messages(self, action: str, exc: Exception) -> list[Message]:
         """Log an API failure and return the flash message for it."""
         messages: list[Message] = []
+
         if isinstance(exc, requests.HTTPError) and exc.response is not None:
             try:
                 payload = exc.response.json()
