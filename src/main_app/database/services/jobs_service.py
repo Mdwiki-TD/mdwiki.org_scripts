@@ -39,7 +39,12 @@ class UserJobsStats:
         return cls(stats=JobStats(), recent_jobs=[])
 
 
-def _normalize_limit(limit: int | None, *, default: int = 100, max_limit: int = 500) -> int:
+def _normalize_limit(
+    limit: int | None,
+    *,
+    default: int = 100,
+    max_limit: int = 500,
+) -> int:
     if limit is None or limit <= 0:
         return default
     return min(limit, max_limit)
@@ -207,7 +212,13 @@ class JobsService(CRUDService[JobRecord]):
                     f"A job of type '{job_type}' is already active (pending or running)."
                 ) from exc
             raise  # Re-raise unexpected IntegrityError
-        self.session.refresh(job)
+
+        try:
+            self.session.refresh(job)
+        except Exception:
+            self.session.rollback()
+            raise
+
         return job
 
     def update_job_status(
@@ -324,8 +335,12 @@ class JobsService(CRUDService[JobRecord]):
         if result_file:
             job.result_file = result_file
 
-        self.session.commit()
-        self.session.refresh(job)
+        try:
+            self.session.commit()
+            self.session.refresh(job)
+        except Exception:
+            self.session.rollback()
+            raise
 
         return job
 
