@@ -5,7 +5,8 @@ from dataclasses import dataclass
 from datetime import UTC, datetime
 
 from sqlalchemy import func
-from sqlalchemy.exc import IntegrityError, PendingRollbackError
+from sqlalchemy import select
+from sqlalchemy.exc import IntegrityError
 
 from ...extensions import db
 from ..exceptions import DuplicateRecordError
@@ -49,27 +50,41 @@ class JobsService(CRUDService[JobRecord]):
     def __init__(self) -> None:
         super().__init__(db.session, JobRecord)
 
-    def is_job_cancelled(self, job_id: int) -> bool:
+    def is_job_cancelled_old(self, job_id: int) -> bool:
         """
         Check if a job is marked as cancelled.
 
         Query to match:
-            SELECT status FROM jobs WHERE id = %s AND job_type = %s
+            SELECT status FROM jobs WHERE id = %s
         """
         try:
             record = self.session.get(self.model, job_id)
             if record:
-                # to ensure we don't use a stale cached status
+                # Refresh from database to ensure we don't use a stale cached status
                 self.session.refresh(record)
                 is_cancelled = (record.status or "").lower() == "cancelled"
                 return is_cancelled
             return False
-        except PendingRollbackError as e:
-            logger.error(f"Pending rollback error while checking if job {job_id} is cancelled: {e}")
-            self.session.rollback()
-            return False
         except Exception as e:
             logger.error(f"Error checking if job {job_id} is cancelled: {e}")
+            return False
+
+    def is_job_cancelled(self, job_id: int) -> bool:
+        """
+        Return True if the job's status is 'cancelled'.
+
+        Query to match:
+            SELECT status FROM jobs WHERE id = %s
+        """
+        stmt = select(self.model.status).where(self.model.id == job_id)
+        try:
+            # Dedicated autocommit connection: always reads the latest committed
+            # value and never touches the worker's session or its transaction.
+            with db.engine.connect().execution_options(isolation_level="AUTOCOMMIT") as conn:
+                status = conn.execute(stmt).scalar_one_or_none()
+            return (status or "").lower() == "cancelled"
+        except Exception:
+            logger.exception("Error checking if job %s is cancelled", job_id)
             return False
 
     def get_job(self, job_id: int, job_type: str) -> JobRecord:
