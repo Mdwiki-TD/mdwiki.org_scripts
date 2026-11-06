@@ -424,7 +424,7 @@ class TestJobsRouteIntegration(TestSetup):
 
         # Verify cancelled in DB
         with mock_app.app_context():
-            assert self.job_service.is_job_cancelled(job_id, VALID_JOB_TYPE) is True
+            assert self.job_service.is_job_cancelled(job_id) is True
 
     def test_multiple_jobs_listed_by_type(self, mock_app, mock_client):
         """Multiple jobs of the same type should all appear in the list."""

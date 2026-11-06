@@ -5,7 +5,7 @@ from dataclasses import dataclass
 from datetime import UTC, datetime
 
 from sqlalchemy import func
-from sqlalchemy.exc import IntegrityError
+from sqlalchemy.exc import IntegrityError, PendingRollbackError
 
 from ...extensions import db
 from ..exceptions import DuplicateRecordError
@@ -49,7 +49,7 @@ class JobsService(CRUDService[JobRecord]):
     def __init__(self) -> None:
         super().__init__(db.session, JobRecord)
 
-    def is_job_cancelled(self, job_id: int, job_type: str) -> bool:
+    def is_job_cancelled(self, job_id: int) -> bool:
         """
         Check if a job is marked as cancelled.
 
@@ -57,13 +57,16 @@ class JobsService(CRUDService[JobRecord]):
             SELECT status FROM jobs WHERE id = %s AND job_type = %s
         """
         try:
-            record = (
-                self.session.query(JobRecord).filter(JobRecord.id == job_id, JobRecord.job_type == job_type).first()
-            )
+            record = self.session.get(self.model, job_id)
             if record:
-                # Refresh from database to ensure we don't use a stale cached status
+                # to ensure we don't use a stale cached status
                 self.session.refresh(record)
-                return (record.status or "").lower() == "cancelled"
+                is_cancelled = (record.status or "").lower() == "cancelled"
+                return is_cancelled
+            return False
+        except PendingRollbackError as e:
+            logger.error(f"Pending rollback error while checking if job {job_id} is cancelled: {e}")
+            self.session.rollback()
             return False
         except Exception as e:
             logger.error(f"Error checking if job {job_id} is cancelled: {e}")

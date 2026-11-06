@@ -9,7 +9,7 @@ from collections.abc import Iterable, Sequence
 from typing import Any, TypeVar
 
 from sqlalchemy import Select, func, select
-from sqlalchemy.exc import IntegrityError
+from sqlalchemy.exc import IntegrityError, PendingRollbackError
 from sqlalchemy.orm import Session
 
 from ..exceptions import RecordNotFoundError

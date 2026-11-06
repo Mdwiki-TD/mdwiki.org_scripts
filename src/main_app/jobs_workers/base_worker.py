@@ -161,7 +161,7 @@ class BaseObjectsJobWorker(ABC):
 
         if check_db:
             # Optimize is_cancelled DB check frequency, by reducing the check frequency (to occur every N cycles).
-            if self._jobs_service.is_job_cancelled(self.job_id, job_type=self.job_type):
+            if self._jobs_service.is_job_cancelled(self.job_id):
                 logger.info("Job %s: Global cancellation detected, stopping.", self.job_id)
                 self._mark_as_cancelled_in_result()
                 return True

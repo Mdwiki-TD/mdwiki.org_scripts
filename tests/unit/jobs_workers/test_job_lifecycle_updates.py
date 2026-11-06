@@ -53,7 +53,7 @@ class TestJob(TestSetup):
             # Load the job record into the session's identity map
             _ = db.session.get(JobRecord, job.id)
 
-            assert self.job_service.is_job_cancelled(job.id, "mock_job_cancel_detect") is False
+            assert self.job_service.is_job_cancelled(job.id) is False
 
             # Update status externally via a raw connection (bypassing ORM)
             with db.engine.connect() as conn:
@@ -64,7 +64,7 @@ class TestJob(TestSetup):
             db.session.expire_all()
 
             # Now self.job_service.is_job_cancelled should return True.
-            assert self.job_service.is_job_cancelled(job.id, "mock_job_cancel_detect") is True
+            assert self.job_service.is_job_cancelled(job.id) is True
 
     def test_is_cancelled_sets_cancelled_at(self, mock_app: Flask) -> None:
         with mock_app.app_context():
