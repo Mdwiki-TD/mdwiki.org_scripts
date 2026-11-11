@@ -78,7 +78,7 @@ class AuthUsersNewService:
             token = self.user_token_service.get_user_token(user_id)
             if not token:
                 return None
-            is_active_admin = self.admin_service.is_active_coordinator(username)
+            is_active_admin = self.admin_service.is_active_admin(username)
         except Exception as e:
             logger.exception("Failed to upsert or fetch user credentials: %s", e)
             return None
@@ -105,7 +105,7 @@ class AuthUsersNewService:
                 username=username,
                 access_token=token.access_token,
                 access_secret=token.access_secret,
-                is_active_admin=self.admin_service.is_active_coordinator(username),
+                is_active_admin=self.admin_service.is_active_admin(username),
                 can_run_jobs=token.user.can_run_jobs,
                 can_run_bg_jobs=token.user.can_run_bg_jobs,
             )
