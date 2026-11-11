@@ -19,9 +19,9 @@ class MockUser:
 
 
 def test_admin_required_redirects_when_not_logged_in(monkeypatch: pytest.MonkeyPatch) -> None:
-    monkeypatch.setattr("src.main_app.admin.decorators.get_current_user", lambda: None)
-    monkeypatch.setattr("src.main_app.admin.decorators.redirect", lambda location: f"redirect:{location}")
-    monkeypatch.setattr("src.main_app.admin.decorators.url_for", lambda endpoint: f"/{endpoint}")
+    monkeypatch.setattr("src.main_app.decorators.admin_decorators.CurrentUserResolver.get_current_user", lambda: None)
+    monkeypatch.setattr("src.main_app.decorators.admin_decorators.redirect", lambda location: f"redirect:{location}")
+    monkeypatch.setattr("src.main_app.decorators.admin_decorators.url_for", lambda endpoint: f"/{endpoint}")
 
     @admin_required
     def view() -> str:
@@ -32,7 +32,7 @@ def test_admin_required_redirects_when_not_logged_in(monkeypatch: pytest.MonkeyP
 
 def test_admin_required_blocks_non_admin(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr(
-        "src.main_app.admin.decorators.get_current_user",
+        "src.main_app.decorators.admin_decorators.CurrentUserResolver.get_current_user",
         lambda: SimpleNamespace(username="user", is_active_admin=False),
     )
 
@@ -42,7 +42,7 @@ def test_admin_required_blocks_non_admin(monkeypatch: pytest.MonkeyPatch) -> Non
     def fake_abort(code: int) -> None:
         raise AbortCalled(code)
 
-    monkeypatch.setattr("src.main_app.admin.decorators.abort", fake_abort)
+    monkeypatch.setattr("src.main_app.decorators.admin_decorators.abort", fake_abort)
 
     @admin_required
     def view() -> str:
@@ -56,7 +56,7 @@ def test_admin_required_blocks_non_admin(monkeypatch: pytest.MonkeyPatch) -> Non
 
 def test_admin_required_allows_admin(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr(
-        "src.main_app.admin.decorators.get_current_user",
+        "src.main_app.decorators.admin_decorators.CurrentUserResolver.get_current_user",
         lambda: SimpleNamespace(username="boss", is_active_admin=True),
     )
 
@@ -78,9 +78,9 @@ def test_admin_required_not_logged_in():
         return "This should not be returned"
 
     with (
-        patch("src.main_app.admin.decorators.get_current_user", return_value=None),
-        patch("src.main_app.admin.decorators.redirect") as mock_redirect,
-        patch("src.main_app.admin.decorators.url_for", return_value="/login") as mock_url_for,
+        patch("src.main_app.decorators.admin_decorators.CurrentUserResolver.get_current_user", return_value=None),
+        patch("src.main_app.decorators.admin_decorators.redirect") as mock_redirect,
+        patch("src.main_app.decorators.admin_decorators.url_for", return_value="/login") as mock_url_for,
     ):
         response = dummy_view()
 
@@ -106,7 +106,7 @@ def test_admin_required_not_admin():
     mock_user = MockUser(username="testuser", is_active_admin=False)
 
     with (
-        patch("src.main_app.admin.decorators.get_current_user", return_value=mock_user),
+        patch("src.main_app.decorators.admin_decorators.CurrentUserResolver.get_current_user", return_value=mock_user),
     ):
         # Expect a Forbidden (403) exception to be raised
         with pytest.raises(Forbidden):
@@ -127,7 +127,7 @@ def test_admin_required_is_admin():
     mock_user = MockUser(username="adminuser", is_active_admin=True)
 
     with (
-        patch("src.main_app.admin.decorators.get_current_user", return_value=mock_user),
+        patch("src.main_app.decorators.admin_decorators.CurrentUserResolver.get_current_user", return_value=mock_user),
     ):
         # The view should be executed and return its value
         response = dummy_view()

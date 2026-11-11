@@ -7,7 +7,8 @@ from __future__ import annotations
 import logging
 
 from ..api_services import MwClientPage
-from ..api_services.clients.wikisite_client import get_user_site
+from ..api_services.clients.wikisite_client import WikiSiteClient
+from ..config import get_settings
 from .auth.current_user import CurrentUser
 from .fixref_shared.fixred_worker import work_on_text
 from .fixref_shared.objects import RunState
@@ -32,7 +33,8 @@ def work_on_title(
     if user is None:
         return UpdaterTextOutcome(status="skipped", msg="No user")
 
-    site = get_user_site(user.to_auth_payload())
+    app_settings = get_settings()
+    site = WikiSiteClient.get_user_site(app_settings.other.wiki_domain, user.to_auth_payload())
 
     page = MwClientPage(title, site)
     old_text = page.get_text()

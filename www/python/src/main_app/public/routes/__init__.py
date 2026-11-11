@@ -2,10 +2,10 @@
 
 from __future__ import annotations
 
-from .routes import FaviconView, MainIndexView, MainRoutes
+from .main_route import FaviconView, MainIndexView, MainView
 
 __all__ = [
     "FaviconView",
     "MainIndexView",
-    "MainRoutes",
+    "MainView",
 ]

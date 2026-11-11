@@ -64,7 +64,7 @@ class TestNewUpdaterAllWorker:
             mock_add_param.return_value = "new text"
 
             worker = NewUpdaterAllWorker(JobsRunner(job_id=1, args={}, user={"name": "test"}))
-            worker._save_progress = MagicMock()
+            worker.save_progress = MagicMock()
 
             result = worker.process()
             assert result.summary.total == 1

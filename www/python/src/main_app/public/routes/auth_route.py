@@ -2,7 +2,7 @@
 Auth routes — thin HTTP layer for OAuth login, callback, logout.
 
 Responsibilities of this module:
-  - Rate limiting at the edge
+  - Rate limiting at the edge (Flask-Limiter decorators)
   - Reading request data (args, cookies, session keys needed for HTTP)
   - Calling AuthFlowService
   - Translating results into flash messages + redirects
@@ -23,52 +23,34 @@ from flask import (
     url_for,
 )
 from flask.views import MethodView
+from flask_limiter.util import get_remote_address
 from werkzeug.wrappers import Response as WerkzeugResponse
 
-from ..config import app_settings
-from ..services.auth.current_user_resolver import set_logged_in_user
-from ..services.auth.flow import AuthFlowService
-from .auth.rate_limit import callback_rate_limiter, login_rate_limiter
+from ...config import get_settings
+from ...services.auth import AuthFlowService, CurrentUserResolver
+from ...services.core.rate_limit import callback_limit, login_limit
 
 logger = logging.getLogger(__name__)
-
-
-def _client_key() -> str:
-    forwarded_for = request.headers.get("X-Forwarded-For")
-    if forwarded_for:
-        return forwarded_for.split(",")[0].strip()
-    return request.remote_addr or "anonymous"
-
 
 # ---------------------------------------------------------
 # Views (HTTP only)
 # ---------------------------------------------------------
 
 
-class LoginView(MethodView):
+class AuthBase(MethodView):
+    def __init__(self) -> None:
+        self.flow = AuthFlowService()
+
+
+class LoginView(AuthBase):
     """Start the OAuth flow — redirect user to Meta-Wiki."""
 
+    decorators = [login_limit]
+
     def get(self) -> WerkzeugResponse:
-        # -----
-        # check rate limit
-        # -----
-        key = _client_key()
-        logger.info("OAuth login initiated, client: %s", key)
+        logger.info("OAuth login initiated, client: %s", get_remote_address())
 
-        if not login_rate_limiter.allow(key):
-            time_left = login_rate_limiter.get_login_rate_limit_seconds(key)
-            msg = f"Too many login attempts. Please try again after {time_left}s."
-            flash(msg, "warning")
-            logger.warning(
-                "OAuth login rate limited, client: %s, try_after: %ss",
-                key,
-                time_left,
-            )
-            return redirect(url_for("main.index", error=msg))
-
-        flow = AuthFlowService()
-
-        result = flow.start_login()
+        result = self.flow.start_login()
 
         if not result.success:
             flash(result.error_message or "Login failed", result.flash_category)
@@ -82,23 +64,17 @@ class LoginView(MethodView):
         return redirect(result.redirect_url)  # type: ignore[arg-type]
 
 
-class OAuthCallbackView(MethodView):
+class OAuthCallbackView(AuthBase):
     """Handle the OAuth callback from Meta-Wiki."""
 
-    def get(self) -> WerkzeugResponse:
-        key = _client_key()
-        logger.info("OAuth callback initiated, client: %s", key)
-        # ------------------
-        # callback rate limiter
-        if not callback_rate_limiter.allow(key):
-            flash("Too many login attempts", "warning")
-            logger.warning("OAuth callback rate limit exceeded, client: %s", key)
-            return redirect(url_for("main.index", error="Too many login attempts"))
+    decorators = [callback_limit]
 
-        flow = AuthFlowService()
+    def get(self) -> WerkzeugResponse:
+        logger.info("OAuth callback initiated, client: %s", get_remote_address())
+
         post_login = session.pop("post_login_redirect", url_for("main.index"))
 
-        result = flow.complete_callback(
+        result = self.flow.complete_callback(
             request_args=request.args.to_dict(),
             post_login_redirect=post_login,
         )
@@ -112,7 +88,7 @@ class OAuthCallbackView(MethodView):
         return result.response  # type: ignore[return-value]
 
 
-class LogoutView(MethodView):
+class LogoutView(AuthBase):
     """Log out and delete stored token."""
 
     def post(self) -> WerkzeugResponse:
@@ -122,7 +98,7 @@ class LogoutView(MethodView):
         return self._do_logout()
 
     def _do_logout(self) -> WerkzeugResponse:
-        flow = AuthFlowService()
+        app_settings = get_settings()
         cookie_value = request.cookies.get(app_settings.cookie.name)
         session_uid = session.get("uid")
 
@@ -131,7 +107,7 @@ class LogoutView(MethodView):
         except (TypeError, ValueError):
             uid = None
 
-        result = flow.logout(
+        result = self.flow.logout(
             session_uid=uid,
             cookie_value=cookie_value,
             index_url=url_for("main.index"),
@@ -144,7 +120,7 @@ class AuthView:
     @classmethod
     def register(cls, bp: Blueprint) -> None:
         # Automatically load the user before any route is processed.
-        bp.before_app_request(set_logged_in_user)
+        bp.before_app_request(CurrentUserResolver().set_logged_in_user)
         bp.add_url_rule("/login", view_func=LoginView.as_view("login"))
         bp.add_url_rule("/callback", view_func=OAuthCallbackView.as_view("callback"))
         bp.add_url_rule("/logout", view_func=LogoutView.as_view("logout"))

@@ -15,7 +15,8 @@ from __future__ import annotations
 import logging
 
 from ..api_services import MwClientPage
-from ..api_services.clients.wikisite_client import get_user_site
+from ..api_services.clients.wikisite_client import WikiSiteClient
+from ..config import get_settings
 from .auth.current_user import CurrentUser
 from .named_param import add_param_named
 from .new_updater import med_updater_one
@@ -40,7 +41,8 @@ def newupdater_one_title(
     if user is None:
         return UpdaterTextOutcome(status="skipped", msg="No user")
 
-    site = get_user_site(user.to_auth_payload())
+    app_settings = get_settings()
+    site = WikiSiteClient.get_user_site(app_settings.other.wiki_domain, user.to_auth_payload())
     if site is None:
         return UpdaterTextOutcome(status="skipped", msg="Failed to get site")
 

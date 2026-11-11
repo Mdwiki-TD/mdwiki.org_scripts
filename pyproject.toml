@@ -23,6 +23,7 @@ exclude = '''
       | \.venv
       | _build
       | buck-out
+      | docs
       | build
       | dist
       | typings
@@ -52,6 +53,7 @@ skip = [
     "env",
     ".venv",
     "venv",
+    "docs",
     "build",
     "dist",
     "__pycache__",
@@ -110,6 +112,7 @@ exclude = [
     "**/core8/**",
     "**/i18n/**",
     "**/MagicMock/**",
+    "docs",
 
     # Global System Paths
     "C:/**",

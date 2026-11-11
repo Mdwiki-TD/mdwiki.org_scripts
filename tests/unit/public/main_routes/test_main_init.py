@@ -8,6 +8,4 @@ TODO: write tests
 
 """
 
-from src.main_app.public.main_routes import (
-    MainRoutes,
-)
+from src.main_app.public.main_routes import MainView

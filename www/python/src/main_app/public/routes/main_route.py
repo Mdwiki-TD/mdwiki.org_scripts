@@ -36,7 +36,7 @@ class FaviconView(MethodView):
         return send_from_directory(current_app.static_folder, "favicon.ico", mimetype="image/x-icon")
 
 
-class MainRoutes:
+class MainView:
     """Route registrar binding the main MethodViews to a Blueprint."""
 
     @classmethod
@@ -57,5 +57,5 @@ class MainRoutes:
 __all__ = [
     "FaviconView",
     "MainIndexView",
-    "MainRoutes",
+    "MainView",
 ]
