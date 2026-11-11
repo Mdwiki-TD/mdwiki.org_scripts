@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import pytest
-
 from src.main_app.public.fixred import _normalize_title
 
 

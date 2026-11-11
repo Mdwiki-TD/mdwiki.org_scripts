@@ -5,7 +5,6 @@ from __future__ import annotations
 from unittest.mock import patch
 
 import pytest
-
 from src.main_app.services.fixref_shared.make_title_bot import make_title
 
 

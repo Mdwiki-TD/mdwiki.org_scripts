@@ -4,7 +4,6 @@ import time
 from datetime import timedelta
 
 import pytest
-
 from src.main_app.public.auth.rate_limit import RateLimiter
 
 

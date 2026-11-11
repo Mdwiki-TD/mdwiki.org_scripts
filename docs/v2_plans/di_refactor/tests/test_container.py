@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import pytest
-
 from main_app.di.container import Container, init_container, reset_container
 
 

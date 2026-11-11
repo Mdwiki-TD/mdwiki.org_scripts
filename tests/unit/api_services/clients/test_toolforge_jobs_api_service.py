@@ -9,7 +9,6 @@ from urllib.parse import parse_qs, urlsplit
 
 import pytest
 import requests
-
 from src.main_app.api_services.clients.toolforge_api_service import (
     API_URL,
     EXTERNAL_API_URL,
