@@ -448,7 +448,7 @@ def work_on_title(
 
 ## Execution Order
 
-1. Save migration SQL → `toolforge_tool/migrations/001_split_user_tokens.sql`
+1. Save migration SQL → `toolforge/migrations/001_split_user_tokens.sql`
 2. Run migration SQL on Toolforge MySQL
 3. Apply code changes (Tier 1 → Tier 6)
 4. Run `ruff check` + `ruff format`

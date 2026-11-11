@@ -118,4 +118,4 @@ Jinja2 templates with Bootstrap 5, jQuery, DataTables, and Ace editor. Base layo
 
 ## Deployment
 
-Wikimedia Toolforge Kubernetes — see `toolforge_tool/service.template` (python3.13, 2 replicas, 1Gi RAM, 2 CPU). Deployment scripts in `toolforge_tool/shs/`.
+Wikimedia Toolforge Kubernetes — see `toolforge/service.template` (python3.13, 2 replicas, 1Gi RAM, 2 CPU). Deployment scripts in `toolforge/shs/`.

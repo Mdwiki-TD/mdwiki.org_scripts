@@ -98,4 +98,4 @@ autotyping --aggressive src # aggressive
 
 ## Deployment
 
-The application is deployed on Wikimedia Toolforge using Kubernetes. Deployment details and templates are located in the `toolforge_tool/` directory.
+The application is deployed on Wikimedia Toolforge using Kubernetes. Deployment details and templates are located in the `toolforge/` directory.
