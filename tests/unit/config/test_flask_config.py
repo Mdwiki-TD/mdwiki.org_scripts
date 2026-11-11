@@ -13,6 +13,7 @@ from src.main_app.config.flask_config import (
     TestingConfig,
 )
 
+
 class TestTestingConfig:
     def test_testing_flag_true(self):
         assert TestingConfig.TESTING is True

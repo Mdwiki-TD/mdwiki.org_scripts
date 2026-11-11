@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import wikitextparser as wtp
-
 from src.main_app.jobs_workers.public_jobs_workers.add_r_column.add_rtt import (
     AddRColumn,
 )

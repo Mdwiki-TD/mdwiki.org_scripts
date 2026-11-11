@@ -4,7 +4,6 @@ Unit tests for src/main_app/services/replace_wikilink/__init__.py module.
 """
 
 import pytest
-
 from src.main_app.services.replace_wikilink import replace_wikilink_destinations
 
 _test_data = [
