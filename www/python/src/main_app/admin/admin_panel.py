@@ -13,7 +13,7 @@ from flask.views import MethodView
 
 from ..database.services import JobsService
 from ..jobs_workers.admin_jobs_workers.workers_list import jobs_data_admins
-from ..public.utils.routes_utils import get_job_detail_url
+from ..public.routes_utils import get_job_detail_url
 from ..templates_markups import create_admin_sidebar
 from .decorators import admin_required
 

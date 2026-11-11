@@ -16,7 +16,7 @@ def _fake_admin_user(monkeypatch):
     admin_user = SimpleNamespace(username="test_admin", is_active_admin=True)
     monkeypatch.setattr("src.main_app.admin.decorators.get_current_user", lambda: admin_user)
     monkeypatch.setattr("src.main_app.public.auth.decorators.get_current_user", lambda: admin_user)
-    monkeypatch.setattr("src.main_app.public.utils.routes_utils.get_current_user", lambda: admin_user)
+    monkeypatch.setattr("src.main_app.public.routes_utils.get_current_user", lambda: admin_user)
 
 
 @pytest.fixture
