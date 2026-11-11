@@ -14,7 +14,7 @@ from flask.views import MethodView
 from ..database.services import JobsService
 from ..jobs_workers.admin_jobs_workers.workers_list import jobs_data_admins
 from ..public.utils.routes_utils import get_job_detail_url
-from ..templates_markups import create_side
+from ..templates_markups import create_admin_sidebar
 from .decorators import admin_required
 
 logger = logging.getLogger(__name__)
@@ -78,7 +78,7 @@ class AdminPanel:
     @staticmethod
     def inject_sidebar() -> dict[str, Any]:
         """Provide the admin sidebar markup as a template global."""
-        return {"create_side": create_side}
+        return {"create_admin_sidebar": create_admin_sidebar}
 
 
 __all__ = [

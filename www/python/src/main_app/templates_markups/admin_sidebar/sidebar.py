@@ -1,7 +1,7 @@
 """
 <div class="div_menu navbar-collapse">
-    {% if create_side %}
-    {{ create_side(request.path, is_admin) | safe }}
+    {% if create_admin_sidebar %}
+    {{ create_admin_sidebar(request.path, is_admin) | safe }}
     {% endif %}
 </div>
 """
@@ -180,7 +180,7 @@ class Sidebar:
         return "\n".join(sidebar_parts)
 
 
-def create_side(path: str, is_admin: bool = False) -> str:
+def create_admin_sidebar(path: str, is_admin: bool = False) -> str:
     """
     Generate sidebar HTML structure based on menu definitions.
 
@@ -192,5 +192,5 @@ def create_side(path: str, is_admin: bool = False) -> str:
 
 
 __all__ = [
-    "create_side",
+    "create_admin_sidebar",
 ]

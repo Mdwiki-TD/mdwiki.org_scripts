@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from src.main_app.templates_markups.admin_sidebar import (
     SidebarItem,
-    create_side,
+    create_admin_sidebar,
     generate_list_item,
 )
 
@@ -58,16 +58,16 @@ class TestGenerateListItem:
 class TestCreateSide:
     def test_returns_html_string(self, mock_app):
         with mock_app.test_request_context():
-            html = create_side("admins", is_admin=True)
+            html = create_admin_sidebar("admins", is_admin=True)
             assert isinstance(html, str)
             assert "<ul" in html
 
     def test_contains_coordinators_link(self, mock_app):
         with mock_app.test_request_context():
-            html = create_side("admins", is_admin=True)
+            html = create_admin_sidebar("admins", is_admin=True)
             assert "Coordinators" in html
 
     def test_contains_users_link(self, mock_app):
         with mock_app.test_request_context():
-            html = create_side("admins", is_admin=True)
+            html = create_admin_sidebar("admins", is_admin=True)
             assert "Users" in html
