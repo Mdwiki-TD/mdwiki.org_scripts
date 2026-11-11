@@ -1,5 +1,5 @@
 """
-Coordinators Management Views.
+Admins Management Views.
 """
 
 from __future__ import annotations
@@ -25,8 +25,8 @@ from ...decorators import admin_required
 logger = logging.getLogger(__name__)
 
 
-class CoordinatorDashboardView(MethodView):
-    """View to handle listing and rendering the coordinator management dashboard."""
+class AdminDashboardView(MethodView):
+    """View to handle listing and rendering the admin management dashboard."""
 
     decorators = [admin_required]
 
@@ -34,28 +34,28 @@ class CoordinatorDashboardView(MethodView):
         self.admin_service = AdminService()
 
     def get(self) -> str:
-        """Render the coordinator management dashboard."""
+        """Render the admin management dashboard."""
         try:
-            coordinators = self.admin_service.list_coordinators()
+            admins = self.admin_service.list_admins()
         except Exception as e:  # pragma: no cover - defensive guard
-            logger.error("Unable to list coordinators: %s", e)
-            flash("Unable to list coordinators.", "danger")
-            coordinators: list[Any] = []
+            logger.error("Unable to list admins: %s", e)
+            flash("Unable to list admins.", "danger")
+            admins: list[Any] = []
 
-        total = len(coordinators)
-        total_active = sum(1 for coord in coordinators if coord.is_active)
+        total = len(admins)
+        total_active = sum(1 for coord in admins if coord.is_active)
 
         return render_template(
-            "admins/coordinators.html",
-            coordinators=coordinators,
-            total_coordinators=total,
-            total_active_coordinators=total_active,
-            inactive_coordinators=total - total_active,
+            "admins/admins.html",
+            admins=admins,
+            total_admins=total,
+            total_active_admins=total_active,
+            inactive_admins=total - total_active,
         )
 
 
-class AddCoordinatorView(MethodView):
-    """View to handle adding a new coordinator."""
+class AddAdminView(MethodView):
+    """View to handle adding a new admin."""
 
     decorators = [admin_required]
 
@@ -63,128 +63,128 @@ class AddCoordinatorView(MethodView):
         self.admin_service = AdminService()
 
     def post(self) -> ResponseReturnValue:
-        """Create a new coordinator from the submitted username."""
+        """Create a new admin from the submitted username."""
         username = request.form.get("username", "").strip()
         if not username:
-            flash("Username is required to add a coordinator.", "danger")
-            return redirect(url_for("admin_panel.coordinators.dashboard"))
+            flash("Username is required to add an admin.", "danger")
+            return redirect(url_for("admin_panel.admins.dashboard"))
 
         try:
-            record = self.admin_service.add_coordinator(username)
+            record = self.admin_service.add_admin(username)
         except UserNotFoundError as exc:
             logger.error("UserNotFoundError: %s", exc)
             flash(f"User '{username}' does not exist", "warning")
         except DuplicateRecordError:
-            logger.error("Coordinator '%s' already exists", username)
-            flash(f"Coordinator '{username}' already exists", "warning")
+            logger.error("Admin '%s' already exists", username)
+            flash(f"Admin '{username}' already exists", "warning")
         except (LookupError, ValueError):
-            logger.exception("Unable to Add coordinator.")
-            flash(f"Unable to add '{username}' as coordinator", "warning")
+            logger.exception("Unable to Add admin.")
+            flash(f"Unable to add '{username}' as admin", "warning")
         except Exception:  # pragma: no cover - defensive guard
-            logger.exception("Unable to add coordinator.")
-            flash("Unable to add coordinator.", "danger")
+            logger.exception("Unable to add admin.")
+            flash("Unable to add admin.", "danger")
         else:
-            flash(f"Coordinator '{record.username}' added.", "success")
+            flash(f"Admin '{record.username}' added.", "success")
 
-        return redirect(url_for("admin_panel.coordinators.dashboard"))
+        return redirect(url_for("admin_panel.admins.dashboard"))
 
 
-class CoordinatorStatusView(MethodView):
-    """Base class for managing coordinator status updates."""
+class AdminStatusView(MethodView):
+    """Base class for managing admin status updates."""
 
     decorators = [admin_required]
 
     def __init__(self) -> None:
         self.admin_service = AdminService()
 
-    def _set_record_active_status(self, coordinator_id: int, is_active: bool) -> ResponseReturnValue:
-        """Shared helper to update coordinator is_active status."""
+    def _set_record_active_status(self, admin_id: int, is_active: bool) -> ResponseReturnValue:
+        """Shared helper to update admin is_active status."""
         try:
-            record = self.admin_service.set_coordinator_active(coordinator_id, is_active)
+            record = self.admin_service.set_admin_active(admin_id, is_active)
             if record is None:
-                raise LookupError(f"Coordinator with id {coordinator_id} not found")
+                raise LookupError(f"Admin with id {admin_id} not found")
         except LookupError:
-            logger.exception("Unable to update coordinator.")
-            flash("Unable to update coordinator", "warning")
+            logger.exception("Unable to update admin.")
+            flash("Unable to update admin", "warning")
         except Exception:  # pragma: no cover - defensive guard
-            logger.exception("Unable to update coordinator.")
-            flash("Unable to update coordinator status. Please try again.", "danger")
+            logger.exception("Unable to update admin.")
+            flash("Unable to update admin status. Please try again.", "danger")
         else:
             state = "activated" if record.is_active else "deactivated"
-            flash(f"Coordinator '{record.username}' {state}.", "success")
+            flash(f"Admin '{record.username}' {state}.", "success")
 
-        return redirect(url_for("admin_panel.coordinators.dashboard"))
-
-
-class ActivateCoordinatorView(CoordinatorStatusView):
-    """View to activate a coordinator."""
-
-    def post(self, coordinator_id: int) -> ResponseReturnValue:
-        return self._set_record_active_status(coordinator_id, True)
+        return redirect(url_for("admin_panel.admins.dashboard"))
 
 
-class DeactivateCoordinatorView(CoordinatorStatusView):
-    """View to deactivate a coordinator."""
+class ActivateAdminView(AdminStatusView):
+    """View to activate an admin."""
 
-    def post(self, coordinator_id: int) -> ResponseReturnValue:
-        return self._set_record_active_status(coordinator_id, False)
+    def post(self, admin_id: int) -> ResponseReturnValue:
+        return self._set_record_active_status(admin_id, True)
 
 
-class DeleteCoordinatorView(MethodView):
-    """View to remove a coordinator entirely."""
+class DeactivateAdminView(AdminStatusView):
+    """View to deactivate an admin."""
+
+    def post(self, admin_id: int) -> ResponseReturnValue:
+        return self._set_record_active_status(admin_id, False)
+
+
+class DeleteAdminView(MethodView):
+    """View to remove an admin entirely."""
 
     decorators = [admin_required]
 
     def __init__(self) -> None:
         self.admin_service = AdminService()
 
-    def post(self, coordinator_id: int) -> ResponseReturnValue:
-        """Remove a coordinator entirely."""
+    def post(self, admin_id: int) -> ResponseReturnValue:
+        """Remove an admin entirely."""
         try:
-            record = self.admin_service.get_coordinator_by_id(coordinator_id)
+            record = self.admin_service.get_admin_by_id(admin_id)
             if record is None:
-                raise LookupError(f"Coordinator with id {coordinator_id} not found")
-            self.admin_service.delete(coordinator_id)
+                raise LookupError(f"Admin with id {admin_id} not found")
+            self.admin_service.delete(admin_id)
         except LookupError:
-            logger.exception("Unable to delete coordinator.")
-            flash(f"Coordinator id {coordinator_id} was not found", "warning")
+            logger.exception("Unable to delete admin.")
+            flash(f"Admin id {admin_id} was not found", "warning")
         except Exception:  # pragma: no cover - defensive guard
-            logger.exception("Unable to delete coordinator.")
-            flash("Unable to delete coordinator. Please try again.", "danger")
+            logger.exception("Unable to delete admin.")
+            flash("Unable to delete admin. Please try again.", "danger")
         else:
-            flash(f"Coordinator '{coordinator_id}' removed.", "success")
+            flash(f"Admin '{admin_id}' removed.", "success")
 
-        return redirect(url_for("admin_panel.coordinators.dashboard"))
+        return redirect(url_for("admin_panel.admins.dashboard"))
 
 
-class CoordinatorView:
-    """Coordinator management routes registrar using Class-Based Views."""
+class AdminView:
+    """Admin management routes registrar using Class-Based Views."""
 
     @classmethod
     def register(cls, bp: Blueprint) -> None:
         # Register views on the Blueprint using as_view
         bp.add_url_rule(
             "/",
-            view_func=CoordinatorDashboardView.as_view("dashboard"),
+            view_func=AdminDashboardView.as_view("dashboard"),
         )
         bp.add_url_rule(
             "/add",
-            view_func=AddCoordinatorView.as_view("add"),
+            view_func=AddAdminView.as_view("add"),
         )
         bp.add_url_rule(
-            "/<int:coordinator_id>/activate",
-            view_func=ActivateCoordinatorView.as_view("activate"),
+            "/<int:admin_id>/activate",
+            view_func=ActivateAdminView.as_view("activate"),
         )
         bp.add_url_rule(
-            "/<int:coordinator_id>/deactivate",
-            view_func=DeactivateCoordinatorView.as_view("deactivate"),
+            "/<int:admin_id>/deactivate",
+            view_func=DeactivateAdminView.as_view("deactivate"),
         )
         bp.add_url_rule(
-            "/<int:coordinator_id>/delete",
-            view_func=DeleteCoordinatorView.as_view("delete"),
+            "/<int:admin_id>/delete",
+            view_func=DeleteAdminView.as_view("delete"),
         )
 
 
 __all__ = [
-    "CoordinatorView",
+    "AdminView",
 ]

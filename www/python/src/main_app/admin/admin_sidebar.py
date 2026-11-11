@@ -73,10 +73,10 @@ def load_admin_tools() -> list[SidebarGroup]:
         items=[
             dashboard_item(
                 "admins",
-                "Coordinators",
+                "Admins",
                 "bi-person-gear",
-                "admin_panel.coordinators.dashboard",
-                "/admin_panel/coordinators/",
+                "admin_panel.admins.dashboard",
+                "/admin_panel/admins/",
             ),
             dashboard_item(
                 "users",

@@ -76,7 +76,7 @@ class TestAdminBlueprintGuard:
 
     Flask propagates a parent blueprint's ``before_request`` to its nested child
     blueprints, so registering the guard once on ``admin_panel`` protects the
-    sub-blueprints (users, settings, coordinators, jobs, errors) too.
+    sub-blueprints (users, settings, admins, jobs, errors) too.
     """
 
     def test_guard_lets_active_admin_through(self, mock_client, monkeypatch):
@@ -94,12 +94,12 @@ class TestAdminBlueprintGuard:
         regular_user = SimpleNamespace(username="regular", is_active_admin=False)
         monkeypatch.setattr("src.main_app.admin.decorators.get_current_user", lambda: regular_user)
 
-        for url in ("/admin_panel/", "/admin_panel/users/", "/admin_panel/settings/", "/admin_panel/coordinators/"):
+        for url in ("/admin_panel/", "/admin_panel/users/", "/admin_panel/settings/", "/admin_panel/admins/"):
             resp = mock_client.get(url)
             assert resp.status_code == 403, f"{url} should be 403 for a non-admin, got {resp.status_code}"
 
     def test_guard_redirects_anonymous_user(self, mock_client):
-        for url in ("/admin_panel/", "/admin_panel/users/", "/admin_panel/settings/", "/admin_panel/coordinators/"):
+        for url in ("/admin_panel/", "/admin_panel/users/", "/admin_panel/settings/", "/admin_panel/admins/"):
             resp = mock_client.get(url)
             assert resp.status_code == 302, f"{url} should redirect anonymous users, got {resp.status_code}"
             assert "login" in resp.headers["Location"]

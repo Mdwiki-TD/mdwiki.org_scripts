@@ -14,7 +14,6 @@ from ...database.services import (
     UsersService,
     UserTokenService,
 )
-from ..core.crypto import encrypt_value
 from .current_user import CurrentUser
 
 if TYPE_CHECKING:
@@ -63,8 +62,8 @@ class AuthUsersNewService:
             return None
 
         try:
-            encrypted_token = encrypt_value(access_key)
-            encrypted_secret = encrypt_value(access_secret)
+            encrypted_token = CryptoService().encrypt(access_key)
+            encrypted_secret = CryptoService().encrypt(access_secret)
             self.user_token_service.upsert_user_token(
                 user_id=user_id,
                 encrypted_token=encrypted_token,
@@ -78,7 +77,7 @@ class AuthUsersNewService:
             token = self.user_token_service.get_user_token(user_id)
             if not token:
                 return None
-            is_active_admin = self.admin_service.is_active_coordinator(username)
+            is_active_admin = self.admin_service.is_active_admin(username)
         except Exception as e:
             logger.exception("Failed to upsert or fetch user credentials: %s", e)
             return None
@@ -105,7 +104,7 @@ class AuthUsersNewService:
                 username=username,
                 access_token=token.access_token,
                 access_secret=token.access_secret,
-                is_active_admin=self.admin_service.is_active_coordinator(username),
+                is_active_admin=self.admin_service.is_active_admin(username),
                 can_run_jobs=token.user.can_run_jobs,
                 can_run_bg_jobs=token.user.can_run_bg_jobs,
             )

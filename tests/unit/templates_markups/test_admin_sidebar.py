@@ -62,10 +62,10 @@ class TestCreateSide:
             assert isinstance(html, str)
             assert "<ul" in html
 
-    def test_contains_coordinators_link(self, mock_app):
+    def test_contains_admins_link(self, mock_app):
         with mock_app.test_request_context():
             html = create_admin_sidebar("admins", is_admin=True)
-            assert "Coordinators" in html
+            assert "Admins" in html
 
     def test_contains_users_link(self, mock_app):
         with mock_app.test_request_context():

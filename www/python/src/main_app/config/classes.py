@@ -2,13 +2,14 @@
 
 from __future__ import annotations
 
+import logging
 import os
 from dataclasses import dataclass
 from functools import lru_cache
 from pathlib import Path
 from typing import Any
 
-# --- Helper Functions ---
+logger = logging.getLogger(__name__)
 
 
 def _env_bool(name: str, default: bool = False) -> bool:
@@ -53,6 +54,10 @@ class OtherConfig:
     static_server: str
     tool_title: str
 
+    @property
+    def full_wiki_domain(self) -> str:
+        return f"https://{self.wiki_domain}"
+
     @classmethod
     def load(cls) -> OtherConfig:
         # CSRF token lifetime (in seconds). Default 3600 (1 hour).
@@ -71,15 +76,13 @@ class OtherConfig:
 
         tool_title = os.getenv("TOOL_TITLE") or "Mdwiki.org Tools (UNDER TESTING)"
 
-        _config = OtherConfig(
+        return OtherConfig(
             csrf_time_limit=csrf_time_limit,
             user_agent=user_agent,
             wiki_domain=wiki_domain,
             static_server=static_server,
             tool_title=tool_title,
         )
-
-        return _config
 
 
 @dataclass(frozen=True)
@@ -334,8 +337,8 @@ class Settings:
             oauth=OAuthConfig.load(),
             sessions=SessionConfig.load(),
             other=OtherConfig.load(),
-            # cors=CorsConfig.load(),
             jobs=JobsConfig.load(),
+            # cors=CorsConfig.load(),
         )
 
     def ensure_directories(self) -> None:

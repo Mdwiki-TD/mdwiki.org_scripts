@@ -10,7 +10,6 @@ from src.main_app.api_services.clients.wikisite_client import (
     coerce_encrypted,
     get_user_site,
 )
-from src.main_app.services.core.crypto import encrypt_value
 
 
 class TestCoerceEncrypted:
@@ -76,8 +75,8 @@ class TestGetUserSite:
         monkeypatch.setattr("src.main_app.api_services.clients.wikisite_client.Site", DummySite)
 
         user = {
-            "access_token": encrypt_value("my-access-key"),
-            "access_secret": encrypt_value("my-access-secret"),
+            "access_token": CryptoService().encrypt("my-access-key"),
+            "access_secret": CryptoService().encrypt("my-access-secret"),
         }
         site = get_user_site(user)
 
@@ -95,8 +94,8 @@ class TestGetUserSite:
         )
 
         user = {
-            "access_token": encrypt_value("token"),
-            "access_secret": encrypt_value("secret"),
+            "access_token": CryptoService().encrypt("token"),
+            "access_secret": CryptoService().encrypt("secret"),
         }
         site = get_user_site(user)
 

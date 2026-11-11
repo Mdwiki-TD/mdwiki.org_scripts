@@ -13,7 +13,7 @@ logger = logging.getLogger(__name__)
 
 
 def _is_admin(user: Any) -> bool:
-    """Check if user is an active coordinator (admin)."""
+    """Check if user is an active admin (admin)."""
     return bool(user and getattr(user, "is_active_admin", False))
 
 
@@ -58,7 +58,7 @@ def load_auth_payload(user: Any | None) -> dict[str, Any]:
 def can_run_jobs(user: Any) -> bool:
     """Return True if user may run synchronous edit jobs.
 
-    Admins (active coordinators) always pass.
+    Admins (active admins) always pass.
     """
     if _is_admin(user):
         return True
@@ -68,7 +68,7 @@ def can_run_jobs(user: Any) -> bool:
 def can_run_bg_jobs(user: Any) -> bool:
     """Return True if user may run background (daemon) jobs.
 
-    Admins (active coordinators) always pass.
+    Admins (active admins) always pass.
     """
     if _is_admin(user):
         return True

@@ -149,7 +149,8 @@ class CRUDService[ModelT]:
             self.commit_or_rollback()
             self.session.refresh(instance)
             return instance
-        except Exception:
+
+        except (IntegrityError, Exception):
             logger.error("Error adding %s", self.model_name)
             raise
 
