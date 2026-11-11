@@ -2,7 +2,7 @@
 # toolforge-jobs run update-repo --image python3.11 --command "~/shs/update.sh" --wait
 
 export USER_NAME="MrIbrahem"
-export SUB_DIR_COPY="src"
+export SUB_DIR_COPY="www/python/src"
 export CLEAN_INSTALL=1
 
 # Optional clean of jsons files before copy to avoid issues with old jsons files
@@ -19,4 +19,4 @@ REPO_NAME="mdwiki.org_scripts"
 TARGET_DIR="$HOME/www/python/src"
 BRANCH="${1:-main}"
 
-$HOME/shs/deploy_repo.sh "$REPO_NAME" "$TARGET_DIR" "$BRANCH"
+$HOME/deploy_scripts/deploy_repo.sh "$REPO_NAME" "$TARGET_DIR" "$BRANCH"

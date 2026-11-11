@@ -1,58 +1,91 @@
 ```
 tests/
+│
 ├── integration/
+│   │
 │   ├── admin/
+│   │   │
 │   │   ├── routes/
 │   │   │   └── test_settings_integration.py
+│   │   │
 │   │   └── test_admin_routes.py
+│   │
 │   └── public/
+│       │
 │       ├── auth/
 │       │   └── test_auth_routes.py
+│       │
 │       └── test_jobs_routes.py
+│
 ├── unit/
+│   │
 │   ├── admin/
+│   │   │
 │   │   ├── routes/
+│   │   │   ├── test_admin_endpoints.py
 │   │   │   ├── test_coordinators.py
 │   │   │   └── test_settings.py
+│   │   │
 │   │   └── test_admins_required.py
+│   │
 │   ├── api_services/
+│   │   │
 │   │   ├── clients/
-│   │   │   ├── test_commons_client.py
+│   │   │   ├── test_toolforge_api_service.py
+│   │   │   ├── test_toolforge_jobs_api_service.py
+│   │   │   ├── test_toolforge_jobs_api_service2.py
 │   │   │   └── test_wiki_client.py
+│   │   │
 │   │   ├── mwclient_page/
+│   │   │
 │   │   ├── utils/
+│   │   │
 │   │   ├── test_category.py
 │   │   ├── test_mwclient_page.py
 │   │   └── test_query_api.py
+│   │
 │   ├── config/
 │   │   ├── test_classes.py
 │   │   ├── test_flask_config.py
 │   │   └── test_main_settings.py
+│   │
 │   ├── core/
+│   │   │
 │   │   ├── cookies/
 │   │   │   ├── test_cookie.py
 │   │   │   └── test_cookie_header_client.py
+│   │   │
 │   │   ├── test_crypto.py
 │   │   └── test_jinja_filters.py
+│   │
 │   ├── database/
+│   │   │
 │   │   ├── models/
 │   │   │   ├── test_jobs.py
 │   │   │   └── test_users.py
+│   │   │
 │   │   ├── services/
+│   │   │   │
 │   │   │   ├── utils/
 │   │   │   │   ├── test_detachedinstanceerror.py
 │   │   │   │   └── test_retry_on_disconnect.py
+│   │   │   │
 │   │   │   ├── test_admin_service.py
 │   │   │   ├── test_jobs_service.py
 │   │   │   ├── test_settings_service.py
 │   │   │   ├── test_user_token_service.py
 │   │   │   └── test_users_service.py
+│   │   │
 │   │   ├── test_db_init.py
 │   │   └── test_exceptions.py
+│   │
 │   ├── io/
 │   │   └── test_jobs_files_service.py
+│   │
 │   ├── jobs_workers/
+│   │   │
 │   │   ├── public_jobs_workers/
+│   │   │   │
 │   │   │   ├── add_r_column/
 │   │   │   │   ├── test_add_r_column_objects.py
 │   │   │   │   ├── test_add_r_column_worker.py
@@ -62,25 +95,41 @@ tests/
 │   │   │   │   ├── test_add_rtt_utils.py
 │   │   │   │   ├── test_wtp_table_manager.py
 │   │   │   │   └── test_wtp_tables.py
+│   │   │   │
 │   │   │   ├── add_unlinkedwikibase/
 │   │   │   │   └── test_add_unlinkedwikibase_worker.py
+│   │   │   │
+│   │   │   ├── archive_today/
+│   │   │   │   ├── test_archive_today_worker.py
+│   │   │   │   └── test_removers.py
+│   │   │   │
 │   │   │   ├── create_redirects/
 │   │   │   │   ├── test_create_redirects_objects.py
 │   │   │   │   └── test_create_redirects_worker.py
+│   │   │   │
 │   │   │   ├── duplicate_redirect/
 │   │   │   │   └── test_duplicate_redirect_worker.py
+│   │   │   │
 │   │   │   ├── find_and_replace/
 │   │   │   │   ├── test_find_and_replace_objects.py
 │   │   │   │   └── test_find_and_replace_worker.py
+│   │   │   │
 │   │   │   ├── fixred_all/
 │   │   │   │   └── test_fixred_all_worker.py
+│   │   │   │
 │   │   │   ├── fixref/
 │   │   │   │   └── test_fixref_worker.py
+│   │   │   │
 │   │   │   ├── import_history/
 │   │   │   │   ├── test_import_history_objects.py
 │   │   │   │   └── test_import_history_worker.py
-│   │   │   └── newupdater_all/
-│   │   │       └── test_newupdater_all_worker.py
+│   │   │   │
+│   │   │   ├── newupdater_all/
+│   │   │   │   └── test_newupdater_all_worker.py
+│   │   │   │
+│   │   │   └── owidpopup_all/
+│   │   │       └── test_owidpopup_all_worker.py
+│   │   │
 │   │   ├── test_base_worker.py
 │   │   ├── test_base_worker_object.py
 │   │   ├── test_job_lifecycle_updates.py
@@ -89,86 +138,114 @@ tests/
 │   │   ├── test_shared_objects.py
 │   │   ├── test_utils.py
 │   │   └── test_workers_list.py
+│   │
 │   ├── public/
+│   │   │
 │   │   ├── auth/
 │   │   │   ├── test_rate_limit.py
 │   │   │   └── test_routes.py
+│   │   │
 │   │   ├── main_routes/
 │   │   │   └── test_main_init.py
+│   │   │
 │   │   ├── newupdater/
 │   │   │   ├── test_newupdater_worker.py
 │   │   │   └── test_route.py
+│   │   │
 │   │   ├── utils/
 │   │   │   └── test_routes_utils.py
+│   │   │
 │   │   ├── test_fixred.py
+│   │   ├── test_legacy_endpoints.py
 │   │   ├── test_new_jobs.py
 │   │   ├── test_profile.py
 │   │   ├── test_public_init.py
 │   │   └── test_shared_jobs_routes.py
+│   │
 │   ├── services/
+│   │   │
 │   │   ├── auth/
 │   │   │   ├── test_auth_decorators.py
 │   │   │   ├── test_auth_service.py
 │   │   │   ├── test_auth_utils.py
 │   │   │   └── test_token_manager.py
+│   │   │
 │   │   ├── fixref_shared/
 │   │   │   ├── test_fixred_objects.py
 │   │   │   ├── test_fixred_worker.py
 │   │   │   ├── test_fixref_text_new.py
 │   │   │   └── test_make_title_bot.py
+│   │   │
 │   │   ├── new_updater/
+│   │   │   │
 │   │   │   ├── bots/
 │   │   │   │   ├── test_expend.py
 │   │   │   │   ├── test_expend_new.py
 │   │   │   │   ├── test_old_params.py
 │   │   │   │   └── test_remove_worker.py
+│   │   │   │
 │   │   │   ├── lists/
 │   │   │   │   ├── test_bot_params.py
 │   │   │   │   ├── test_chem_params.py
 │   │   │   │   ├── test_expend_lists.py
 │   │   │   │   └── test_identifier_params.py
+│   │   │   │
 │   │   │   ├── tests/
+│   │   │   │   │
 │   │   │   │   ├── texts/
+│   │   │   │   │   │
 │   │   │   │   │   ├── chembox/
 │   │   │   │   │   │   ├── work_on_text_expected.wiki
 │   │   │   │   │   │   ├── work_on_text_result.wiki
 │   │   │   │   │   │   └── work_on_text_source.wiki
+│   │   │   │   │   │
 │   │   │   │   │   ├── test1/
 │   │   │   │   │   │   ├── work_on_text_expected.wiki
 │   │   │   │   │   │   ├── work_on_text_result.wiki
 │   │   │   │   │   │   └── work_on_text_source.wiki
+│   │   │   │   │   │
 │   │   │   │   │   ├── test2/
 │   │   │   │   │   │   ├── work_on_text_expected.wiki
 │   │   │   │   │   │   ├── work_on_text_result.wiki
 │   │   │   │   │   │   └── work_on_text_source.wiki
+│   │   │   │   │   │
 │   │   │   │   │   └── test3/
 │   │   │   │   │       ├── work_on_text_expected.wiki
 │   │   │   │   │       ├── work_on_text_result.wiki
 │   │   │   │   │       └── work_on_text_source.wiki
+│   │   │   │   │
 │   │   │   │   ├── test_chembox1.py
 │   │   │   │   ├── test_mv_section1.py
 │   │   │   │   ├── test_portal_remove.py
 │   │   │   │   ├── test_rename_params.py
 │   │   │   │   └── test_work_on_text.py
+│   │   │   │
 │   │   │   ├── test_chembox.py
 │   │   │   ├── test_drugbox.py
 │   │   │   ├── test_med_work_new.py
 │   │   │   ├── test_mv_section.py
 │   │   │   └── test_resources_new.py
+│   │   │
 │   │   ├── replace_wikilink/
 │   │   │   ├── test_init.py
 │   │   │   └── test_replace_wikilink.py
+│   │   │
 │   │   ├── utils/
 │   │   │   └── test_decode_bytes.py
+│   │   │
 │   │   ├── test_fixred_one.py
 │   │   ├── test_newupdater_service.py
 │   │   └── test_shared_classes.py
+│   │
 │   ├── templates_markups/
 │   │   └── test_admin_sidebar.py
+│   │
 │   ├── utils/
 │   │   └── test_verify.py
+│   │
 │   ├── conftest.py
 │   └── test_extensions.py
+│
 ├── conftest.py
 └── README.md
 

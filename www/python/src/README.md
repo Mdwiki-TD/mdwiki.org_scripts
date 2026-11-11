@@ -10,7 +10,7 @@ A Flask web application deployed on **Wikimedia Toolforge** that provides admini
 | ------------------------ | ---------------------------------------------------------- |
 | `main_app/config/`       | Environment-based configuration (frozen dataclasses)       |
 | `main_app/core/`         | Fernet encryption, cookie signing                          |
-| `main_app/database/`           | SQLAlchemy models + CRUD services (users, tokens, jobs)    |
+| `main_app/database/`     | SQLAlchemy models + CRUD services (users, tokens, jobs)    |
 | `main_app/api_services/` | MediaWiki API wrappers (`mwclient`)                        |
 | `main_app/public/`       | Flask Blueprints (auth, jobs, updater, fixred)             |
 | `main_app/jobs/`         | Thread-based background job runner + 8 workers             |
@@ -20,14 +20,14 @@ A Flask web application deployed on **Wikimedia Toolforge** that provides admini
 
 ### Technologies & Dependencies
 
--   **Python 3.13+**, **Flask 3.x**, **Flask-SQLAlchemy**, **Flask-Migrate**, **Flask-WTF**
--   **SQLAlchemy** ORM with **PyMySQL** (MySQL) / SQLite (tests)
--   **mwclient** — MediaWiki API client
--   **wikitextparser** — Wikitext parsing and manipulation
--   **cryptography** (Fernet) — OAuth token encryption
--   **mwoauth** — MediaWiki OAuth 1.0a
--   **itsdangerous** — Signed cookies and state tokens
--   **uWSGI** — Production deployment
+- **Python 3.13+**, **Flask 3.x**, **Flask-SQLAlchemy**, **Flask-Migrate**, **Flask-WTF**
+- **SQLAlchemy** ORM with **PyMySQL** (MySQL) / SQLite (tests)
+- **mwclient** — MediaWiki API client
+- **wikitextparser** — Wikitext parsing and manipulation
+- **cryptography** (Fernet) — OAuth token encryption
+- **mwoauth** — MediaWiki OAuth 1.0a
+- **itsdangerous** — Signed cookies and state tokens
+- **uWSGI** — Production deployment
 
 ## Architecture & Code Quality Review
 
@@ -37,8 +37,8 @@ The project follows the **application factory pattern** with a clean layered arc
 
 ```
 src/
-├── app.py                 # Development entry point (dotenv, colorlog)
-├── app1.py                # Production entry point (no dotenv)
+├── app1.py                # Development entry point (local .env file, colorlog)
+├── app.py                 # Production entry point (no .env file (use toolforge-envvars), no colorlog)
 ├── logger_config.py       # Logging setup (console + file handlers)
 ├── uwsgi.ini              # uWSGI production config
 ├── static/                # CSS/JS assets
@@ -62,12 +62,12 @@ src/
 
 ### Design Patterns
 
--   **Application Factory** — `create_app(config_class)` in `main_app/__init__.py`
--   **Blueprint Pattern** — 5 blueprints: `bp_auth`, `bp_main`, `bp_public_jobs`, `bp_newupdater`, `bp_fixred`
--   **Repository Pattern** — Service modules in `db/services/` abstract database operations
--   **Template Method** — `BaseObjectsJobWorker` defines `before_run() → process() → after_run()` lifecycle
--   **Strategy Pattern** — Worker registry maps job types to entry functions
--   **Singleton** — `settings` via `@lru_cache(maxsize=1)`
+- **Application Factory** — `create_app(config_class)` in `main_app/__init__.py`
+- **Blueprint Pattern** — 5 blueprints: `bp_auth`, `bp_main`, `bp_public_jobs`, `bp_newupdater`, `bp_fixred`
+- **Repository Pattern** — Service modules in `db/services/` abstract database operations
+- **Template Method** — `BaseObjectsJobWorker` defines `before_run() → process() → after_run()` lifecycle
+- **Strategy Pattern** — Worker registry maps job types to entry functions
+- **Singleton** — `settings` via `@lru_cache(maxsize=1)`
 
 ### Maintainability
 
@@ -93,28 +93,28 @@ pytest tests/ --cov=src
 
 ## Strengths
 
--   **Clean application factory** with proper Flask conventions
--   **Immutable configuration** via frozen dataclasses prevents accidental mutation
--   **CSRF protection** enabled by default with Flask-WTF
--   **Fernet encryption** for stored OAuth credentials — strong symmetric encryption
--   **Rate limiting** on auth endpoints (thread-safe, in-memory)
--   **Background job system** with cancellation support (local `Event` + DB status)
--   **Comprehensive error handling** in `MwClientPage` with specific MediaWiki exception types
--   **Proper type hints** throughout most of the codebase
--   **Separate dev/prod entry points** with appropriate logging levels
--   **`WatchedFileHandler`** for log rotation compatibility
+- **Clean application factory** with proper Flask conventions
+- **Immutable configuration** via frozen dataclasses prevents accidental mutation
+- **CSRF protection** enabled by default with Flask-WTF
+- **Fernet encryption** for stored OAuth credentials — strong symmetric encryption
+- **Rate limiting** on auth endpoints (thread-safe, in-memory)
+- **Background job system** with cancellation support (local `Event` + DB status)
+- **Comprehensive error handling** in `MwClientPage` with specific MediaWiki exception types
+- **Proper type hints** throughout most of the codebase
+- **Separate dev/prod entry points** with appropriate logging levels
+- **`WatchedFileHandler`** for log rotation compatibility
 
 ## Weaknesses
 
--   **No `requirements.txt` or `pyproject.toml`** — dependencies are undocumented
--   **Zero test coverage** — no test files exist
--   **`__pycache__` directories** present in the repository
--   **Code duplication resolved** — `UpdaterOutcome` consolidated into `shared_objects.py`, `UpdaterTextOutcome` into `shared_classes.py`
--   **Complex business logic** in `shared/new_updater/` with poor documentation
--   **Mixed comments** — Arabic comments without English translations in some files
--   **Empty packages** — `api_services/utils/` is effectively dead code
--   **No CI/CD** configuration
--   **No linting or type-checking** configuration
+- **No `requirements.txt` or `pyproject.toml`** — dependencies are undocumented
+- **Zero test coverage** — no test files exist
+- **`__pycache__` directories** present in the repository
+- **Code duplication resolved** — `UpdaterOutcome` consolidated into `shared_objects.py`, `UpdaterTextOutcome` into `shared_classes.py`
+- **Complex business logic** in `shared/new_updater/` with poor documentation
+- **Mixed comments** — Arabic comments without English translations in some files
+- **Empty packages** — `api_services/utils/` is effectively dead code
+- **No CI/CD** configuration
+- **No linting or type-checking** configuration
 
 ## Critical Issues
 
@@ -175,16 +175,16 @@ Service functions call `db.session.commit()` without try/except rollback blocks.
 
 ## Areas That Need Attention
 
--   [ ] Add `requirements.txt` with pinned dependencies
--   [ ] Add `.gitignore` for `__pycache__`, `*.pyc`, `.env`
--   [ ] Add pytest test suite (at minimum for config, crypto, and auth flows)
--   [x] Remove the broken `get_template_pages_newapi()` function
--   [ ] Uncomment the thread-safety lock in `crypto.py`
--   [ ] Add path sanitization for job result file serving
--   [ ] Restore `@admin_required` on the delete job endpoint
--   [ ] Add proper error pages (not just `index.html` for all errors)
--   [ ] Add health check endpoint for monitoring
--   [ ] Document the environment variables (`.env.example`)
+- [ ] Add `requirements.txt` with pinned dependencies
+- [ ] Add `.gitignore` for `__pycache__`, `*.pyc`, `.env`
+- [ ] Add pytest test suite (at minimum for config, crypto, and auth flows)
+- [x] Remove the broken `get_template_pages_newapi()` function
+- [ ] Uncomment the thread-safety lock in `crypto.py`
+- [ ] Add path sanitization for job result file serving
+- [ ] Restore `@admin_required` on the delete job endpoint
+- [ ] Add proper error pages (not just `index.html` for all errors)
+- [ ] Add health check endpoint for monitoring
+- [ ] Document the environment variables (`.env.example`)
 
 ## Improvement Plan
 
