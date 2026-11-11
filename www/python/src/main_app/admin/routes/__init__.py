@@ -1,4 +1,4 @@
-"""Admin blueprint package."""
+"""Admin/Coordinator blueprint package."""
 
 from __future__ import annotations
 
@@ -9,7 +9,7 @@ from ...models import RouteModule
 from .coordinators import CoordinatorView
 from .error_logs import CheckErrorLogsView
 from .errors_route import CheckErrorsView
-from .jobs import AdminJobsRoutes
+from ...public.shared_jobs_registrar import SharedJobRoutesRegistrar
 from .settings import SettingsRoutes
 from .toolforge_jobs_view import ToolforgeJobsView
 from .users import UsersRoutes
@@ -19,7 +19,7 @@ ADMIN_ROUTE_MODULES: list[RouteModule] = [
     RouteModule(route_cls=UsersRoutes, name="users", url_prefix="/users"),
     RouteModule(route_cls=SettingsRoutes, name="settings", url_prefix="/settings"),
     RouteModule(
-        route_cls=AdminJobsRoutes,
+        route_cls=SharedJobRoutesRegistrar,
         name="jobs",
         url_prefix="/jobs",
         extra_kwargs={
@@ -38,8 +38,8 @@ class AdminSubRoutesRegister:
     def register(bp_admin: Blueprint) -> None:
         for module in ADMIN_ROUTE_MODULES:
             bp = Blueprint(module.name, __name__, url_prefix=module.url_prefix)
-            instance = module.route_cls(**module.extra_kwargs)
-            instance.register(bp)
+            instance = module.route_cls()
+            instance.register(bp, **module.extra_kwargs)
             bp_admin.register_blueprint(bp)
 
 

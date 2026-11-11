@@ -7,7 +7,7 @@ from .auth_service import OAuthService
 from .current_user import CurrentUser
 from .flow import AuthFlowService
 from .token_manager import TokenManager
-from .current_user_resolver import CurrentUserResolver.get_current_user, set_logged_in_user
+from .current_user_resolver import CurrentUserResolver
 
 __all__ = [
     "AuthFlowService",
@@ -16,6 +16,5 @@ __all__ = [
     "OAuthIdentityError",
     "OAuthService",
     "TokenManager",
-    "get_current_user",
-    "set_logged_in_user",
+    "CurrentUserResolver",
 ]

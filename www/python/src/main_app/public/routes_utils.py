@@ -6,7 +6,7 @@ from typing import Any
 from flask import url_for
 
 from ..jobs_workers.public_jobs_workers.workers_list_public import jobs_data_public
-from ..services.auth.current_user_resolver import CurrentUserResolver.get_current_user
+from ..services.auth.current_user_resolver import CurrentUserResolver
 from ..templates_markups import main_navbar
 
 logger = logging.getLogger(__name__)

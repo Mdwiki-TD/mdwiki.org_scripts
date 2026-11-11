@@ -21,13 +21,14 @@ from flask_wtf import FlaskForm
 
 from ..database.exceptions import DuplicateRecordError
 from ..database.services import JobsService, SettingsService
+from ..decorators import admin_required, oauth_required
 from ..io import load_job_result
 from ..jobs_workers.jobs_worker import (
     cancel_job_worker,
     start_job_form,
 )
 from ..jobs_workers.objects import JobData
-from ..services.auth.current_user_resolver import CurrentUserResolver.get_current_user
+from ..services.auth.current_user_resolver import CurrentUserResolver
 from .routes_utils import can_run_bg_jobs, load_auth_payload
 
 logger = logging.getLogger(__name__)
@@ -183,7 +184,10 @@ class SharedJobRoutes:
     def jobs_list_handler(self, template_data: JobData, form: Any | None = None) -> str:
         """Render the jobs list dashboard for any job type."""
         try:
-            jobs = self.job_service.list_jobs(limit=100, job_type=template_data.job_type)
+            jobs = self.job_service.list_jobs(
+                limit=100,
+                job_type=template_data.job_type,
+            )
         except Exception:  # pragma: no cover - defensive guard
             logger.exception("Unable to load jobs list.")
             flash("Unable to load jobs list.", "danger")
@@ -209,8 +213,10 @@ class SharedJobRoutes:
             job = self.job_service.get_job(job_id, job_type)
         except LookupError:
             logger.error("Job not found: id=%s, type=%s", job_id, job_type)
-            flash(f"Job id {job_id} was not found", "warning")
-            return redirect(url_for(f"{self.bp_name}.jobs_list", job_type=job_type))
+            flash(f"Job id {job_id} with {job_type=} was not found", "warning")
+            return redirect(
+                url_for(f"{self.bp_name}.jobs_list", job_type=job_type),
+            )  # pyright: ignore[reportReturnType]
 
         # Load job result if available
         result_data = None
@@ -241,10 +247,12 @@ class BaseJobView(MethodView):
         self.settings_service = self.shared_service.settings_service
 
     def _redirect_to_job_list(self, job_type: str) -> Response:
-        return redirect(url_for(f"{self.bp_name}.jobs_list", job_type=job_type))
+        url = f"{self.bp_name}.jobs_list"
+        return redirect(url_for(url, job_type=job_type))  # pyright: ignore[reportReturnType]
 
     def _redirect_to_job_detail(self, job_type: str, job_id: int) -> Response:
-        return redirect(url_for(f"{self.bp_name}.job_detail", job_type=job_type, job_id=job_id))
+        url = f"{self.bp_name}.job_detail"
+        return redirect(url_for(url, job_type=job_type, job_id=job_id))  # pyright: ignore[reportReturnType]
 
     def load_form(self, template_data: JobData) -> FlaskForm:
         all_settings = {}
@@ -252,7 +260,10 @@ class BaseJobView(MethodView):
         if template_data.load_settings:
             all_settings = self.settings_service.get_all_settings_ready()
 
-        return template_data.form_class(all_settings=all_settings, request_args=request.args)
+        return template_data.form_class(
+            all_settings=all_settings,
+            request_args=request.args,
+        )
 
 
 class JobsListView(BaseJobView):
@@ -286,6 +297,8 @@ class JobDetailView(BaseJobView):
 class StartJobView(BaseJobView):
     """View to trigger and start a new job."""
 
+    decorators = [oauth_required]
+
     def post(self, job_type: str) -> ResponseReturnValue:
         template_data: JobData | None = self.jobs_data_infos.get(job_type)
         if not template_data:
@@ -302,7 +315,11 @@ class StartJobView(BaseJobView):
             form_data = form.data
 
         args = request.form.to_dict()
-        job_id = self.shared_service.start_job_handler(job_type, args, form_data=form_data)
+        job_id = self.shared_service.start_job_handler(
+            job_type,
+            args,
+            form_data=form_data,
+        )
 
         if not job_id:
             return self._redirect_to_job_list(job_type)
@@ -312,6 +329,8 @@ class StartJobView(BaseJobView):
 
 class CancelJobView(BaseJobView):
     """View to cancel a running job."""
+
+    decorators = [oauth_required]
 
     def post(self, job_type: str, job_id: int) -> Response:
         if job_type not in self.jobs_data_infos:
@@ -329,6 +348,8 @@ class CancelJobView(BaseJobView):
 class DeleteJobView(BaseJobView):
     """View to delete a job."""
 
+    decorators = [admin_required]
+
     def post(self, job_type: str, job_id: int) -> Response:
         if job_type not in self.jobs_data_infos:
             abort(404)
@@ -344,6 +365,8 @@ class DeleteJobView(BaseJobView):
 class MarkJobCompletedView(BaseJobView):
     """View to mark a job as completed."""
 
+    decorators = [admin_required]
+
     def post(self, job_type: str, job_id: int) -> Response:
         if job_type not in self.jobs_data_infos:
             abort(404)
@@ -355,6 +378,8 @@ class MarkJobCompletedView(BaseJobView):
 
 class ReadJobResultFileView(BaseJobView):
     """View to retrieve raw job result JSON data."""
+
+    decorators = [oauth_required]
 
     def get(self, result_file: str, job_type: str) -> ResponseReturnValue:
         if job_type not in self.jobs_data_infos:
@@ -415,7 +440,10 @@ class DrawResultFileView(BaseJobView):
 
         if list_data and not isinstance(list_data, list):
             logger.warning(
-                "Expected list for '%s' in result file '%s', got %s", list_name, result_file, type(list_data)
+                "Expected list for '%s' in result file '%s', got %s",
+                list_name,
+                result_file,
+                type(list_data),
             )
             list_data = []
 
@@ -447,7 +475,7 @@ class DrawResultFileView(BaseJobView):
         }
 
     @staticmethod
-    def _row_matches_search(item: dict, search_value: str) -> bool:
+    def _row_matches_search(item: dict | Any, search_value: str) -> bool:
         """
         Basic substring search across the fields that matter for this table.
         Extend this list if you want status/step messages searchable too.
@@ -466,7 +494,10 @@ class DrawResultFileView(BaseJobView):
         )
 
     @staticmethod
-    def convert_str_list_to_dict(list_data: list[str], list_name: str) -> list[dict[str, Any] | str]:
+    def convert_str_list_to_dict(
+        list_data: list[str],
+        list_name: str,
+    ) -> list[dict[str, str]] | list[str]:
         """
         Convert a list of strings into a list of dictionaries with a single key
         """

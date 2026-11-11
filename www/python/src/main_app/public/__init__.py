@@ -13,7 +13,7 @@ from .fixred import FixRedView
 from .main_routes import MainRoutes
 from .newupdater.route import NewUpdaterRoutes
 from .profile import ProfileView
-from .public_jobs import PublicJobsRoutes
+from .shared_jobs_registrar import SharedJobRoutesRegistrar
 
 PUBLIC_ROUTE_MODULES: list[RouteModule] = [
     RouteModule(MainRoutes, "main", ""),
@@ -22,12 +22,13 @@ PUBLIC_ROUTE_MODULES: list[RouteModule] = [
     RouteModule(FixRedView, "fixred", "/fixred"),
     RouteModule(NewUpdaterRoutes, "newupdater", "/newupdater"),
     RouteModule(
-        PublicJobsRoutes,
+        SharedJobRoutesRegistrar,
         "public_jobs",
         "/jobs",
         extra_kwargs={
             "jobs_data_infos": jobs_data_public,
             "bp_name": "public_jobs",
+            "register_all_jobs_list": True,
         },
     ),
 ]
@@ -40,8 +41,8 @@ class PublicRouteRegister:
     def register(app: Flask) -> None:
         for module in PUBLIC_ROUTE_MODULES:
             bp = Blueprint(module.name, __name__, url_prefix=module.url_prefix)
-            instance = module.route_cls(**module.extra_kwargs)
-            instance.register(bp)
+            instance = module.route_cls()
+            instance.register(bp, **module.extra_kwargs)
             app.register_blueprint(bp)
 
 

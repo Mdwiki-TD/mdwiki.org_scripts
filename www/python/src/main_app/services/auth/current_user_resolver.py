@@ -102,7 +102,7 @@ class CurrentUserResolver:
         g._current_user = self.build_current_user(self.get_user_id())
 
     @staticmethod
-    def CurrentUserResolver.get_current_user() -> CurrentUser | None:
+    def get_current_user() -> CurrentUser | None:
         """Return the :class:`CurrentUser` populated by ``set_logged_in_user``.
 
         Returns ``None`` when no user is authenticated. The before_request hook
