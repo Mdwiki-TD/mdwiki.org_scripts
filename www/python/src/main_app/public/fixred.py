@@ -8,8 +8,8 @@ from flask import Blueprint, flash, g, render_template, request
 from flask.typing import ResponseReturnValue
 from flask.views import MethodView
 
-from ..services import fixred_one
 from ..decorators import oauth_required
+from ..services import fixred_one
 
 logger = logging.getLogger(__name__)
 

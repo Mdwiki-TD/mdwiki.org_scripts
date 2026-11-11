@@ -5,8 +5,6 @@ from __future__ import annotations
 import os
 from dataclasses import dataclass
 from functools import lru_cache
-
-
 from pathlib import Path
 from typing import Any
 
@@ -365,6 +363,7 @@ def get_settings() -> Settings:
         RuntimeError: If the OAuth configuration (OAUTH_MWURI, OAUTH_CONSUMER_KEY, OAUTH_CONSUMER_SECRET) is incomplete.
     """
     return Settings.load()
+
 
 __all__ = [
     "get_settings",

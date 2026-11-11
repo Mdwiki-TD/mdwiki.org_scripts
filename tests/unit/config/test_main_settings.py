@@ -3,6 +3,7 @@ from pathlib import Path
 from unittest.mock import patch
 
 import pytest
+from src.main_app.config import get_settings
 from src.main_app.config.classes import (
     OAuthConfig,
     Paths,
@@ -10,7 +11,6 @@ from src.main_app.config.classes import (
     _env_bool,
     _env_int,
 )
-from src.main_app.config import get_settings
 
 
 def test_get_paths(tmp_path):

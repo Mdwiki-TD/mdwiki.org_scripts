@@ -6,10 +6,10 @@ from flask import Blueprint
 
 from ...jobs_workers.admin_jobs_workers.workers_list import jobs_data_admins
 from ...models import RouteModule
+from ...public.shared_jobs_registrar import SharedJobRoutesRegistrar
 from .coordinators import CoordinatorView
 from .error_logs import CheckErrorLogsView
 from .errors_route import CheckErrorsView
-from ...public.shared_jobs_registrar import SharedJobRoutesRegistrar
 from .settings import SettingsRoutes
 from .toolforge_jobs_view import ToolforgeJobsView
 from .users import UsersRoutes

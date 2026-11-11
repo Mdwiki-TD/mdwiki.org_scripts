@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 from .classes import (
-    get_settings,
     CookieConfig,
     CorsConfig,
     JobsConfig,
@@ -12,6 +11,7 @@ from .classes import (
     SecurityConfig,
     SessionConfig,
     Settings,
+    get_settings,
 )
 from .flask_config import (
     Config,

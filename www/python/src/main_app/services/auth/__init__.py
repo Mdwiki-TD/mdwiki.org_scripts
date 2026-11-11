@@ -5,9 +5,9 @@ from __future__ import annotations
 from .auth_exceptions import OAuthCallbackError, OAuthIdentityError
 from .auth_service import OAuthService
 from .current_user import CurrentUser
+from .current_user_resolver import CurrentUserResolver
 from .flow import AuthFlowService
 from .token_manager import TokenManager
-from .current_user_resolver import CurrentUserResolver
 
 __all__ = [
     "AuthFlowService",

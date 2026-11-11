@@ -1,8 +1,8 @@
 """Utility modules for the main application."""
 
+from .mapping import NavDropdown, NavLink
 from .nav_bar import NavigationBar
 from .navbar_list import nav_list
-from .mapping import NavDropdown, NavLink
 
 main_navbar = NavigationBar(nav_list)
 
