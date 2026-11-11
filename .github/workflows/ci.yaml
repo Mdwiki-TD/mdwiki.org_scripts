@@ -30,15 +30,15 @@ jobs:
 
                   if [ -f requirements.txt ]; then
                     pip install -r requirements.txt
-                    
+
                   fi
 
                   pip install ruff pyright
 
             - name: Run Ruff
               run: |
-                  ruff check src/
+                  ruff check www/python/src/
 
             - name: Run Pyright
               run: |
-                  pyright src/
+                  pyright www/python/src/
