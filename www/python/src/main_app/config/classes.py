@@ -109,43 +109,6 @@ class JobsConfig:
 
 
 @dataclass(frozen=True)
-class DbConfig:
-    db_name: str
-    db_host: str
-    db_user: str | None
-    db_password: str | None
-
-    def to_json(self) -> dict[str, Any]:
-        return {
-            "db_name": self.db_name,
-            "db_host": self.db_host,
-            "db_user": self.db_user,
-            "db_password": self.db_password,
-        }
-
-    @classmethod
-    def load(cls) -> DbConfig:
-        """
-        Construct a DbConfig populated from environment variables.
-
-        Reads TOOL_TOOLSDB_DBNAME and TOOL_TOOLSDB_HOST (defaulting to empty string) and TOOL_TOOLSDB_USER and TOOL_TOOLSDB_PASSWORD (defaulting to None) and returns a DbConfig with those values.
-
-        Returns:
-            DbConfig: Configuration with fields:
-                - db_name: from TOOL_TOOLSDB_DBNAME (default "").
-                - db_host: from TOOL_TOOLSDB_HOST (default "").
-                - db_user: from TOOL_TOOLSDB_USER (or None).
-                - db_password: from TOOL_TOOLSDB_PASSWORD (or None).
-        """
-        return DbConfig(
-            db_name=os.getenv("TOOL_TOOLSDB_DBNAME", ""),
-            db_host=os.getenv("TOOL_TOOLSDB_HOST", ""),
-            db_user=os.getenv("TOOL_TOOLSDB_USER", None),
-            db_password=os.getenv("TOOL_TOOLSDB_PASSWORD", None),
-        )
-
-
-@dataclass(frozen=True)
 class Paths:
     log_dir: str
     jobs_path: str
@@ -340,7 +303,6 @@ class Settings:
     """Main settings container."""
 
     # Nested configurations
-    database_data: DbConfig
     paths: Paths
     cookie: CookieConfig
     sessions: SessionConfig
@@ -367,7 +329,6 @@ class Settings:
         return Settings(
             security=SecurityConfig.load(),
             paths=Paths.load(),
-            database_data=DbConfig.load(),
             cookie=CookieConfig.load(),
             oauth=OAuthConfig.load(),
             sessions=SessionConfig.load(),
@@ -378,7 +339,6 @@ class Settings:
 
 
 __all__ = [
-    "DbConfig",
     "Paths",
     "CookieConfig",
     "SessionConfig",
