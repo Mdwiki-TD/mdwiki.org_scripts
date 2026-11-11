@@ -18,6 +18,6 @@ pip install requests packaging lxml python-dateutil certifi --upgrade
 pip install flask flask_cors psutil tqdm humanize --upgrade
 pip install asgiref uvicorn python-dotenv --upgrade
 
-# toolforge-jobs run updatex --image python3.13 --command "$HOME/shs/venv.sh"
+# toolforge-jobs run updatex --image python3.13 --command "$HOME/deploy_scripts/venv.sh"
 
 
