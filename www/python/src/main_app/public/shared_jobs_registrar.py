@@ -14,6 +14,7 @@ from .shared_jobs_routes import (
     MarkJobCompletedView,
     ReadJobResultFileView,
     StartJobView,
+    AllJobsListView,
 )
 
 logger = logging.getLogger(__name__)
@@ -25,6 +26,7 @@ class SharedJobRoutesRegistrar:
         bp: Blueprint,
         jobs_data_infos: dict[str, JobData],
         bp_name: str,
+        register_all_jobs_list: bool = False,
     ) -> None:
         """Register job rules on the provided blueprint."""
         view_args = (jobs_data_infos, bp_name)
@@ -68,6 +70,11 @@ class SharedJobRoutesRegistrar:
             "/<string:job_type>/file/<int:file_number>/<string:list_name>",
             view_func=DrawResultFileView.as_view("draw_result_file", *view_args),
         )
+        if register_all_jobs_list:
+            bp.add_url_rule(
+                "/all-jobs",
+                view_func=AllJobsListView.as_view("all_jobs_list", *view_args),
+            )
 
 
 __all__ = [
