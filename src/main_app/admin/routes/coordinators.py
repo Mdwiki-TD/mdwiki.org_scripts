@@ -67,7 +67,7 @@ class AddCoordinatorView(MethodView):
         username = request.form.get("username", "").strip()
         if not username:
             flash("Username is required to add a coordinator.", "danger")
-            return redirect(url_for("adminpanel.coordinators.dashboard"))
+            return redirect(url_for("admin_panel.coordinators.dashboard"))
 
         try:
             record = self.admin_service.add_coordinator(username)
@@ -86,7 +86,7 @@ class AddCoordinatorView(MethodView):
         else:
             flash(f"Coordinator '{record.username}' added.", "success")
 
-        return redirect(url_for("adminpanel.coordinators.dashboard"))
+        return redirect(url_for("admin_panel.coordinators.dashboard"))
 
 
 class CoordinatorStatusView(MethodView):
@@ -113,7 +113,7 @@ class CoordinatorStatusView(MethodView):
             state = "activated" if record.is_active else "deactivated"
             flash(f"Coordinator '{record.username}' {state}.", "success")
 
-        return redirect(url_for("adminpanel.coordinators.dashboard"))
+        return redirect(url_for("admin_panel.coordinators.dashboard"))
 
 
 class ActivateCoordinatorView(CoordinatorStatusView):
@@ -154,7 +154,7 @@ class DeleteCoordinatorView(MethodView):
         else:
             flash(f"Coordinator '{coordinator_id}' removed.", "success")
 
-        return redirect(url_for("adminpanel.coordinators.dashboard"))
+        return redirect(url_for("admin_panel.coordinators.dashboard"))
 
 
 class CoordinatorView:

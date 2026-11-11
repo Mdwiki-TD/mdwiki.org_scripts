@@ -11,8 +11,8 @@ from .routes import AdminSubRoutesRegister
 
 
 def register_bp_admin_blueprints(app: Flask) -> None:
-    bp_admin = Blueprint("adminpanel", __name__, url_prefix="/adminpanel")
-    # Reject every request to /adminpanel unless it comes from an active admin.
+    bp_admin = Blueprint("admin_panel", __name__, url_prefix="/admin_panel")
+    # Reject every request to /admin_panel unless it comes from an active admin.
     # Flask propagates a parent blueprint's before_request to nested child
     # blueprints, so this single guard covers every admin sub-blueprint too.
     bp_admin.before_request(admin_guard)

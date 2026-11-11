@@ -1,4 +1,4 @@
-"""Integration tests for src/main_app/adminpanel/route.py module.
+"""Integration tests for src/main_app/admin_panel/route.py module.
 
 Tests the admin dashboard, users listing, and coordinator management through
 the Flask test client with a real SQLite database (via TestingConfig).
@@ -63,11 +63,11 @@ class TestSetup:
 
 @pytest.mark.usefixtures("mock_app")
 class TestAdminDashboard(TestSetup):
-    """GET /adminpanel/ — admin dashboard page."""
+    """GET /admin_panel/ — admin dashboard page."""
 
     def test_admin_requires_login(self, mock_client):
         """Unauthenticated user should be redirected to login."""
-        resp = mock_client.get("/adminpanel/")
+        resp = mock_client.get("/admin_panel/")
         assert resp.status_code == 302
         assert "login" in resp.headers["Location"]
 
@@ -84,13 +84,13 @@ class TestAdminDashboard(TestSetup):
             sess["uid"] = uid
             sess["username"] = "RegularUser"
 
-        resp = mock_client.get("/adminpanel/")
+        resp = mock_client.get("/admin_panel/")
         assert resp.status_code == 403
 
     def test_admin_dashboard_loads(self, mock_app, mock_client):
         """An admin user should see the dashboard."""
         self._login_admin(mock_app, mock_client)
-        resp = mock_client.get("/adminpanel/")
+        resp = mock_client.get("/admin_panel/")
         assert resp.status_code == 200
 
     def test_admin_inactive_coordinator_gets_403(self, mock_app, mock_client):
@@ -108,17 +108,17 @@ class TestAdminDashboard(TestSetup):
             sess["uid"] = uid
             sess["username"] = "InactiveAdmin"
 
-        resp = mock_client.get("/adminpanel/")
+        resp = mock_client.get("/admin_panel/")
         assert resp.status_code == 403
 
 
 @pytest.mark.usefixtures("mock_app")
 class TestDbAdminPanel(TestSetup):
-    """GET /adminpanel/db_admin/ — Flask-Admin DB admin panel."""
+    """GET /admin_panel/db_admin/ — Flask-Admin DB admin panel."""
 
     def test_db_admin_requires_login(self, mock_client):
         """Unauthenticated user should be redirected to login when trying to access DB admin."""
-        resp = mock_client.get("/adminpanel/db_admin/")
+        resp = mock_client.get("/admin_panel/db_admin/")
         assert resp.status_code == 302
         assert "login" in resp.headers["Location"]
 
@@ -135,18 +135,18 @@ class TestDbAdminPanel(TestSetup):
             sess["uid"] = uid
             sess["username"] = "RegularUser"
 
-        resp = mock_client.get("/adminpanel/db_admin/")
+        resp = mock_client.get("/admin_panel/db_admin/")
         assert resp.status_code == 403
 
     def test_db_admin_loads_for_admin(self, mock_app, mock_client):
         """An admin user should be able to load the DB admin dashboard."""
         self._login_admin(mock_app, mock_client)
-        resp = mock_client.get("/adminpanel/db_admin/")
+        resp = mock_client.get("/admin_panel/db_admin/")
         assert resp.status_code == 200
 
     def test_db_admin_model_view_requires_login(self, mock_client):
         """Unauthenticated user should be redirected to login when trying to access a model view."""
-        resp = mock_client.get("/adminpanel/db_admin/userrecord/")
+        resp = mock_client.get("/admin_panel/db_admin/userrecord/")
         assert resp.status_code == 302
         assert "login" in resp.headers["Location"]
 
@@ -163,19 +163,19 @@ class TestDbAdminPanel(TestSetup):
             sess["uid"] = uid
             sess["username"] = "RegularUser"
 
-        resp = mock_client.get("/adminpanel/db_admin/userrecord/")
+        resp = mock_client.get("/admin_panel/db_admin/userrecord/")
         assert resp.status_code == 403
 
     def test_db_admin_model_view_loads_for_admin(self, mock_app, mock_client):
         """An admin user should be able to load a model view."""
         self._login_admin(mock_app, mock_client)
-        resp = mock_client.get("/adminpanel/db_admin/userrecord/")
+        resp = mock_client.get("/admin_panel/db_admin/userrecord/")
         assert resp.status_code == 200
 
 
 @pytest.mark.usefixtures("mock_app")
 class TestAdminUsersPage(TestSetup):
-    """GET /adminpanel/users — list all registered users."""
+    """GET /admin_panel/users — list all registered users."""
 
     def test_users_page_requires_admin(self, mock_app, mock_client):
         """Non-admin user should get 403."""
@@ -190,7 +190,7 @@ class TestAdminUsersPage(TestSetup):
             sess["uid"] = uid
             sess["username"] = "NonAdmin"
 
-        resp = mock_client.get("/adminpanel/users")
+        resp = mock_client.get("/admin_panel/users")
         assert resp.status_code == 403
 
     def test_users_page_shows_registered_users(self, mock_app, mock_client):
@@ -204,20 +204,20 @@ class TestAdminUsersPage(TestSetup):
             )
 
         self._login_admin(mock_app, mock_client)
-        resp = mock_client.get("/adminpanel/users")
+        resp = mock_client.get("/admin_panel/users")
         assert resp.status_code == 200
 
     def test_users_page_empty_list(self, mock_app, mock_client):
         """Users page should load even with no regular users."""
 
         self._login_admin(mock_app, mock_client)
-        resp = mock_client.get("/adminpanel/users")
+        resp = mock_client.get("/admin_panel/users")
         assert resp.status_code == 200
 
 
 @pytest.mark.usefixtures("mock_app")
 class TestCoordinatorRoutes(TestSetup):
-    """Coordinator CRUD via /adminpanel/coordinators/ endpoints."""
+    """Coordinator CRUD via /admin_panel/coordinators/ endpoints."""
 
     def test_coordinators_dashboard_requires_admin(self, mock_app, mock_client):
         """Non-admin should get 403 on coordinators page."""
@@ -232,14 +232,14 @@ class TestCoordinatorRoutes(TestSetup):
             sess["uid"] = uid
             sess["username"] = "NonAdmin"
 
-        resp = mock_client.get("/adminpanel/coordinators/")
+        resp = mock_client.get("/admin_panel/coordinators/")
         assert resp.status_code == 403
 
     def test_coordinators_dashboard_loads(self, mock_app, mock_client):
         """Admin should see the coordinators dashboard."""
 
         self._login_admin(mock_app, mock_client)
-        resp = mock_client.get("/adminpanel/coordinators/")
+        resp = mock_client.get("/admin_panel/coordinators/")
         assert resp.status_code == 200
 
     def test_add_coordinator(self, mock_app, mock_client):
@@ -254,7 +254,7 @@ class TestCoordinatorRoutes(TestSetup):
 
         self._login_admin(mock_app, mock_client)
         resp = mock_client.post(
-            "/adminpanel/coordinators/add",
+            "/admin_panel/coordinators/add",
             data={"username": "NewCoord"},
             follow_redirects=True,
         )
@@ -271,7 +271,7 @@ class TestCoordinatorRoutes(TestSetup):
 
         self._login_admin(mock_app, mock_client)
         resp = mock_client.post(
-            "/adminpanel/coordinators/add",
+            "/admin_panel/coordinators/add",
             data={"username": ""},
             follow_redirects=True,
         )
@@ -285,13 +285,13 @@ class TestCoordinatorRoutes(TestSetup):
 
         self._login_admin(mock_app, mock_client)
         mock_client.post(
-            "/adminpanel/coordinators/add",
+            "/admin_panel/coordinators/add",
             data={"username": "AdminUser"},
             follow_redirects=True,
         )
         mock_flash.reset_mock()
         resp = mock_client.post(
-            "/adminpanel/coordinators/add",
+            "/admin_panel/coordinators/add",
             data={"username": "AdminUser"},
             follow_redirects=True,
         )
@@ -313,7 +313,7 @@ class TestCoordinatorRoutes(TestSetup):
 
         self._login_admin(mock_app, mock_client)
         resp = mock_client.post(
-            f"/adminpanel/coordinators/{coord.id}/deactivate",
+            f"/admin_panel/coordinators/{coord.id}/deactivate",
             follow_redirects=True,
         )
         assert resp.status_code == 200
@@ -336,7 +336,7 @@ class TestCoordinatorRoutes(TestSetup):
 
         self._login_admin(mock_app, mock_client)
         resp = mock_client.post(
-            f"/adminpanel/coordinators/{coord.id}/activate",
+            f"/admin_panel/coordinators/{coord.id}/activate",
             follow_redirects=True,
         )
         assert resp.status_code == 200
@@ -358,7 +358,7 @@ class TestCoordinatorRoutes(TestSetup):
 
         self._login_admin(mock_app, mock_client)
         resp = mock_client.post(
-            f"/adminpanel/coordinators/{coord.id}/delete",
+            f"/admin_panel/coordinators/{coord.id}/delete",
             follow_redirects=True,
         )
         assert resp.status_code == 200
@@ -375,7 +375,7 @@ class TestCoordinatorRoutes(TestSetup):
 
         self._login_admin(mock_app, mock_client)
         resp = mock_client.post(
-            "/adminpanel/coordinators/9999/delete",
+            "/admin_panel/coordinators/9999/delete",
             follow_redirects=True,
         )
         assert resp.status_code == 200
@@ -402,7 +402,7 @@ class TestAdminRouteIntegration(TestSetup):
 
         # Add
         mock_client.post(
-            "/adminpanel/coordinators/add",
+            "/admin_panel/coordinators/add",
             data={"username": "LifecycleCoord"},
             follow_redirects=True,
         )
@@ -417,7 +417,7 @@ class TestAdminRouteIntegration(TestSetup):
 
         # Deactivate
         mock_client.post(
-            f"/adminpanel/coordinators/{coord.id}/deactivate",
+            f"/admin_panel/coordinators/{coord.id}/deactivate",
             follow_redirects=True,
         )
         with mock_app.app_context():
@@ -426,7 +426,7 @@ class TestAdminRouteIntegration(TestSetup):
 
         # Reactivate
         mock_client.post(
-            f"/adminpanel/coordinators/{coord.id}/activate",
+            f"/admin_panel/coordinators/{coord.id}/activate",
             follow_redirects=True,
         )
         with mock_app.app_context():
@@ -435,7 +435,7 @@ class TestAdminRouteIntegration(TestSetup):
 
         # Delete
         mock_client.post(
-            f"/adminpanel/coordinators/{coord.id}/delete",
+            f"/admin_panel/coordinators/{coord.id}/delete",
             follow_redirects=True,
         )
         with mock_app.app_context():
@@ -457,10 +457,10 @@ class TestAdminRouteIntegration(TestSetup):
             sess["username"] = "BlockedUser"
 
         protected_routes = [
-            ("GET", "/adminpanel/"),
-            ("GET", "/adminpanel/users"),
-            ("GET", "/adminpanel/coordinators/"),
-            ("POST", "/adminpanel/coordinators/add"),
+            ("GET", "/admin_panel/"),
+            ("GET", "/admin_panel/users"),
+            ("GET", "/admin_panel/coordinators/"),
+            ("POST", "/admin_panel/coordinators/add"),
         ]
 
         for method, path in protected_routes:
@@ -474,5 +474,5 @@ class TestAdminRouteIntegration(TestSetup):
         """Admin pages should have the sidebar context variable injected."""
 
         self._login_admin(mock_app, mock_client)
-        resp = mock_client.get("/adminpanel/")
+        resp = mock_client.get("/admin_panel/")
         assert resp.status_code == 200

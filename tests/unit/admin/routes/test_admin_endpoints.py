@@ -19,25 +19,25 @@ class TestAdminEndpointNames:
 
         # Referenced by src/main_app/templates_markups/navbar/navbar_list.py
         with mock_app.test_request_context():
-            assert url_for("adminpanel.dashboard") == "/adminpanel/"
+            assert url_for("admin_panel.dashboard") == "/admin_panel/"
 
     def test_users_endpoints_resolve(self, mock_app):
         from flask import url_for
 
         with mock_app.test_request_context():
-            assert url_for("adminpanel.users.dashboard") == "/adminpanel/users/"
-            assert url_for("adminpanel.users.update_can_run_jobs", user_id=1) == "/adminpanel/users/1/can_run_jobs"
+            assert url_for("admin_panel.users.dashboard") == "/admin_panel/users/"
+            assert url_for("admin_panel.users.update_can_run_jobs", user_id=1) == "/admin_panel/users/1/can_run_jobs"
             assert (
-                url_for("adminpanel.users.update_can_run_bg_jobs", user_id=1) == "/adminpanel/users/1/can_run_bg_jobs"
+                url_for("admin_panel.users.update_can_run_bg_jobs", user_id=1) == "/admin_panel/users/1/can_run_bg_jobs"
             )
 
     def test_settings_endpoints_resolve(self, mock_app):
         from flask import url_for
 
         with mock_app.test_request_context():
-            assert url_for("adminpanel.settings.dashboard") == "/adminpanel/settings/"
-            assert url_for("adminpanel.settings.create") == "/adminpanel/settings/create"
-            assert url_for("adminpanel.settings.update") == "/adminpanel/settings/update"
+            assert url_for("admin_panel.settings.dashboard") == "/admin_panel/settings/"
+            assert url_for("admin_panel.settings.create") == "/admin_panel/settings/create"
+            assert url_for("admin_panel.settings.update") == "/admin_panel/settings/update"
 
 
 @pytest.mark.usefixtures("mock_app")
@@ -45,27 +45,27 @@ class TestAdminEndpointGuards:
     """The refactored views must still be behind ``admin_required``."""
 
     def test_admin_dashboard_requires_login(self, mock_client):
-        resp = mock_client.get("/adminpanel/")
+        resp = mock_client.get("/admin_panel/")
         assert resp.status_code == 302
         assert "login" in resp.headers["Location"]
 
     def test_users_dashboard_requires_login(self, mock_client):
-        resp = mock_client.get("/adminpanel/users/")
+        resp = mock_client.get("/admin_panel/users/")
         assert resp.status_code == 302
         assert "login" in resp.headers["Location"]
 
     def test_settings_dashboard_requires_login(self, mock_client):
-        resp = mock_client.get("/adminpanel/settings/")
+        resp = mock_client.get("/admin_panel/settings/")
         assert resp.status_code == 302
         assert "login" in resp.headers["Location"]
 
     def test_settings_create_requires_login(self, mock_client):
-        resp = mock_client.post("/adminpanel/settings/create", data={})
+        resp = mock_client.post("/admin_panel/settings/create", data={})
         assert resp.status_code == 302
         assert "login" in resp.headers["Location"]
 
     def test_user_permission_toggle_requires_login(self, mock_client):
-        resp = mock_client.post("/adminpanel/users/1/can_run_jobs", data={"can_run_jobs": "1"})
+        resp = mock_client.post("/admin_panel/users/1/can_run_jobs", data={"can_run_jobs": "1"})
         assert resp.status_code == 302
         assert "login" in resp.headers["Location"]
 
@@ -75,7 +75,7 @@ class TestAdminBlueprintGuard:
     """The single blueprint-level ``admin_guard`` must cover every admin endpoint.
 
     Flask propagates a parent blueprint's ``before_request`` to its nested child
-    blueprints, so registering the guard once on ``adminpanel`` protects the
+    blueprints, so registering the guard once on ``admin_panel`` protects the
     sub-blueprints (users, settings, coordinators, jobs, errors) too.
     """
 
@@ -85,7 +85,7 @@ class TestAdminBlueprintGuard:
         admin_user = SimpleNamespace(username="test_admin", is_active_admin=True)
         monkeypatch.setattr("src.main_app.admin.decorators.get_current_user", lambda: admin_user)
 
-        resp = mock_client.get("/adminpanel/")
+        resp = mock_client.get("/admin_panel/")
         assert resp.status_code == 200
 
     def test_guard_blocks_non_admin(self, mock_client, monkeypatch):
@@ -94,12 +94,12 @@ class TestAdminBlueprintGuard:
         regular_user = SimpleNamespace(username="regular", is_active_admin=False)
         monkeypatch.setattr("src.main_app.admin.decorators.get_current_user", lambda: regular_user)
 
-        for url in ("/adminpanel/", "/adminpanel/users/", "/adminpanel/settings/", "/adminpanel/coordinators/"):
+        for url in ("/admin_panel/", "/admin_panel/users/", "/admin_panel/settings/", "/admin_panel/coordinators/"):
             resp = mock_client.get(url)
             assert resp.status_code == 403, f"{url} should be 403 for a non-admin, got {resp.status_code}"
 
     def test_guard_redirects_anonymous_user(self, mock_client):
-        for url in ("/adminpanel/", "/adminpanel/users/", "/adminpanel/settings/", "/adminpanel/coordinators/"):
+        for url in ("/admin_panel/", "/admin_panel/users/", "/admin_panel/settings/", "/admin_panel/coordinators/"):
             resp = mock_client.get(url)
             assert resp.status_code == 302, f"{url} should redirect anonymous users, got {resp.status_code}"
             assert "login" in resp.headers["Location"]
