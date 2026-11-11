@@ -16,7 +16,7 @@ def _fake_admin_user(monkeypatch):
     admin_user = SimpleNamespace(username="test_admin", is_active_admin=True)
     monkeypatch.setattr("src.main_app.admin.decorators.get_current_user", lambda: admin_user)
     monkeypatch.setattr("src.main_app.public.auth.decorators.get_current_user", lambda: admin_user)
-    monkeypatch.setattr("src.main_app.public.routes_utils.get_current_user", lambda: admin_user)
+    monkeypatch.setattr("src.main_app.public.utils.routes_utils.get_current_user", lambda: admin_user)
 
 
 @pytest.fixture
@@ -29,7 +29,7 @@ class TestAdminDashboard:
     """Tests for the admin dashboard."""
 
     def _seed_admin(self, username: str = "coord1", is_active: bool = True):
-        """Seed an admin via real services."""
+        """Seed a admin via real services."""
         UsersService().create_user(username)
         admin_service = AdminService()
         admin_service.add_admin(username)
@@ -67,7 +67,7 @@ class TestAdminDashboard:
 
 
 class TestAddAdmin:
-    """Tests for adding an admin."""
+    """Tests for adding a admin."""
 
     def _seed_user(self, username: str = "new_user"):
         """Seed a user record for foreign key."""
@@ -123,7 +123,7 @@ class TestSetRecordActiveStatus:
     """Tests for activating/deactivating admins."""
 
     def _seed_admin(self, username: str = "toggle_coord"):
-        """Seed an admin via real services."""
+        """Seed a admin via real services."""
         UsersService().create_user(username)
         return AdminService().add_admin(username)
 
@@ -156,10 +156,10 @@ class TestSetRecordActiveStatus:
 
 
 class TestDeleteAdmin:
-    """Tests for deleting an admin."""
+    """Tests for deleting a admin."""
 
     def _seed_admin(self, username: str = "del_coord"):
-        """Seed an admin via real services."""
+        """Seed a admin via real services."""
         UsersService().create_user(username)
         return AdminService().add_admin(username)
 

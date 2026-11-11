@@ -20,7 +20,7 @@ from flask.views import MethodView
 
 from ...database.exceptions import DuplicateRecordError, UserNotFoundError
 from ...database.services import AdminService
-from ...decorators import admin_required
+from ..decorators import admin_required
 
 logger = logging.getLogger(__name__)
 
@@ -66,7 +66,7 @@ class AddAdminView(MethodView):
         """Create a new admin from the submitted username."""
         username = request.form.get("username", "").strip()
         if not username:
-            flash("Username is required to add an admin.", "danger")
+            flash("Username is required to add a admin.", "danger")
             return redirect(url_for("admin_panel.admins.dashboard"))
 
         try:
@@ -117,21 +117,21 @@ class AdminStatusView(MethodView):
 
 
 class ActivateAdminView(AdminStatusView):
-    """View to activate an admin."""
+    """View to activate a admin."""
 
     def post(self, admin_id: int) -> ResponseReturnValue:
         return self._set_record_active_status(admin_id, True)
 
 
 class DeactivateAdminView(AdminStatusView):
-    """View to deactivate an admin."""
+    """View to deactivate a admin."""
 
     def post(self, admin_id: int) -> ResponseReturnValue:
         return self._set_record_active_status(admin_id, False)
 
 
 class DeleteAdminView(MethodView):
-    """View to remove an admin entirely."""
+    """View to remove a admin entirely."""
 
     decorators = [admin_required]
 
@@ -139,7 +139,7 @@ class DeleteAdminView(MethodView):
         self.admin_service = AdminService()
 
     def post(self, admin_id: int) -> ResponseReturnValue:
-        """Remove an admin entirely."""
+        """Remove a admin entirely."""
         try:
             record = self.admin_service.get_admin_by_id(admin_id)
             if record is None:
