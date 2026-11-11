@@ -7,7 +7,7 @@ from __future__ import annotations
 import os
 from typing import Any
 
-from .main_settings import app_settings
+from .classes import get_settings
 
 
 class Config:
@@ -18,6 +18,7 @@ class Config:
     module import time.
     """
 
+    app_settings = get_settings()
     # Flask core settings
     DEBUG: bool = False
     TESTING: bool = False
@@ -62,6 +63,7 @@ class Config:
     SQLALCHEMY_ECHO: bool = False
 
     def __init__(self) -> None:
+        app_settings = get_settings()
         """Initialize configuration with values from environment-based settings."""
         # Sync with the dataclass-based settings for backward compatibility
         self.SECRET_KEY = app_settings.security.secret_key

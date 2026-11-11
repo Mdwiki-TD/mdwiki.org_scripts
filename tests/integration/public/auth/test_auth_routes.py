@@ -14,7 +14,7 @@ from flask import Flask
 from flask.testing import FlaskClient
 from src.main_app.config import app_settings
 from src.main_app.database.services import UsersService, UserTokenService
-from src.main_app.public.auth.routes import OAuthCallbackView  # noqa: F401
+from src.main_app.public.auth_route import OAuthCallbackView  # noqa: F401
 from src.main_app.services.core.cookies import sign_state_token
 
 # ---------------------------------------------------------------------------
@@ -69,7 +69,7 @@ class TestLogin:
             def get_login_rate_limit_seconds(self, _key) -> str:
                 return "0"
 
-        monkeypatch.setattr("src.main_app.public.auth.routes.login_rate_limiter", DummyLimiter())
+        monkeypatch.setattr("src.main_app.public.auth_route.login_rate_limiter", DummyLimiter())
 
         response = mock_client.get("/login")
         assert response.status_code == 302
@@ -145,7 +145,7 @@ class TestCallback:
             def get_login_rate_limit_seconds(self, _key) -> str:
                 return "0"
 
-        monkeypatch.setattr("src.main_app.public.auth.routes.callback_rate_limiter", DummyLimiter())
+        monkeypatch.setattr("src.main_app.public.auth_route.callback_rate_limiter", DummyLimiter())
 
         response = mock_client.get("/callback?state=token&oauth_verifier=code")
         assert response.status_code == 302

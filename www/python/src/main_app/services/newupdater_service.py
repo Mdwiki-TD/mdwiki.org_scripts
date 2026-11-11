@@ -15,7 +15,7 @@ from __future__ import annotations
 import logging
 
 from ..api_services import MwClientPage
-from ..api_services.clients.wiki_client import get_user_site
+from ..api_services.clients.wikisite_client import get_user_site
 from .auth.current_user import CurrentUser
 from .named_param import add_param_named
 from .new_updater import med_updater_one

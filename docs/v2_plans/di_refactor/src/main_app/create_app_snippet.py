@@ -11,7 +11,6 @@ from typing import Any
 from flask import Flask
 
 # --- existing imports remain ---
-# from .config import ensure_directories, settings
 # from .db import init_db
 # from .extensions import csrf_init_app, db as _db, migrate
 # ...
@@ -50,7 +49,7 @@ def create_app(config_class: type) -> Flask:
     # from .application.content.fix_redirects import FixRedirectsService
     # from .application.content.medical_updater import MedicalUpdaterService
     # from .api_services import MwClientPage
-    # from .api_services.clients.wiki_client import get_user_site
+    # from .api_services.clients.wikisite_client import get_user_site
     # from .domain.wikitext.redirects import work_on_text, RunState
     # from .domain.wikitext.medical import med_updater_one
     # from .domain.wikitext.named_param import add_param_named
@@ -75,7 +74,6 @@ def create_app(config_class: type) -> Flask:
     # )
 
     # ----- rest of existing create_app (blueprints, error pages, …) -----
-    # ensure_directories()
     # register_error_pages(app)
     # ...
 

@@ -1,6 +1,6 @@
 """Utility modules for the main application."""
 
-from .admin_sidebar import create_admin_sidebar
+from .sidebar import create_admin_sidebar
 from .navbar import main_navbar
 
 __all__ = [

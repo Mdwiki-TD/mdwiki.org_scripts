@@ -9,7 +9,7 @@ from flask.typing import ResponseReturnValue
 from flask.views import MethodView
 
 from ..services import fixred_one
-from .auth.decorators import oauth_required
+from ..decorators import oauth_required
 
 logger = logging.getLogger(__name__)
 

@@ -16,7 +16,7 @@ def mock_settings(monkeypatch: pytest.MonkeyPatch) -> None:
     fake_settings = SimpleNamespace(
         cookie=SimpleNamespace(name="auth_cookie"),
     )
-    monkeypatch.setattr("src.main_app.services.auth.utils.app_settings", fake_settings)
+    monkeypatch.setattr("src.main_app.services.auth.current_user_resolver.app_settings", fake_settings)
 
 
 class TestLoadUser:
@@ -54,7 +54,7 @@ class TestLoadLoggedInUser:
     def test_from_session_uid(self, mock_app: Flask, monkeypatch: pytest.MonkeyPatch) -> None:
         mock_user = MagicMock(username="alice")
         monkeypatch.setattr(
-            "src.main_app.services.auth.utils.TokenManager.get_authenticated_user",
+            "src.main_app.services.auth.current_user_resolver.TokenManager.get_authenticated_user",
             lambda _, uid: mock_user,
         )
         with mock_app.test_request_context():
@@ -64,7 +64,7 @@ class TestLoadLoggedInUser:
 
     def test_session_resolve_fails_pops_keys(self, mock_app: Flask, monkeypatch: pytest.MonkeyPatch) -> None:
         monkeypatch.setattr(
-            "src.main_app.services.auth.utils._resolve_user_id",
+            "src.main_app.services.auth.current_user_resolver._resolve_user_id",
             lambda uid: None,
         )
         with mock_app.test_request_context():
@@ -77,12 +77,12 @@ class TestLoadLoggedInUser:
 
     def test_fallback_to_cookie_sets_session(self, mock_app: Flask, monkeypatch: pytest.MonkeyPatch) -> None:
         monkeypatch.setattr(
-            "src.main_app.services.auth.utils.extract_user_id",
+            "src.main_app.services.auth.current_user_resolver.extract_user_id",
             lambda token: 99,
         )
         mock_user = MagicMock(username="bob")
         monkeypatch.setattr(
-            "src.main_app.services.auth.utils.TokenManager.get_authenticated_user",
+            "src.main_app.services.auth.current_user_resolver.TokenManager.get_authenticated_user",
             lambda _, uid: mock_user,
         )
         with mock_app.test_request_context(environ_overrides={"HTTP_COOKIE": "auth_cookie=signed-token"}):
@@ -92,7 +92,7 @@ class TestLoadLoggedInUser:
 
     def test_cookie_extraction_returns_none(self, mock_app: Flask, monkeypatch: pytest.MonkeyPatch) -> None:
         monkeypatch.setattr(
-            "src.main_app.services.auth.utils.extract_user_id",
+            "src.main_app.services.auth.current_user_resolver.extract_user_id",
             lambda token: None,
         )
         with mock_app.test_request_context(environ_overrides={"HTTP_COOKIE": "auth_cookie=bad-token"}):
@@ -108,7 +108,7 @@ class TestLoadLoggedInUser:
     def test_updates_session_username_when_different(self, mock_app: Flask, monkeypatch: pytest.MonkeyPatch) -> None:
         mock_user = MagicMock(username="new-name")
         monkeypatch.setattr(
-            "src.main_app.services.auth.utils.TokenManager.get_authenticated_user",
+            "src.main_app.services.auth.current_user_resolver.TokenManager.get_authenticated_user",
             lambda _, uid: mock_user,
         )
         with mock_app.test_request_context():
@@ -120,7 +120,7 @@ class TestLoadLoggedInUser:
     def test_does_not_update_session_username_when_same(self, mock_app: Flask, monkeypatch: pytest.MonkeyPatch) -> None:
         mock_user = MagicMock(username="alice")
         monkeypatch.setattr(
-            "src.main_app.services.auth.utils.TokenManager.get_authenticated_user",
+            "src.main_app.services.auth.current_user_resolver.TokenManager.get_authenticated_user",
             lambda _, uid: mock_user,
         )
         with mock_app.test_request_context():
@@ -131,7 +131,7 @@ class TestLoadLoggedInUser:
 
     def test_user_service_returns_none_sets_g_none(self, mock_app: Flask, monkeypatch: pytest.MonkeyPatch) -> None:
         monkeypatch.setattr(
-            "src.main_app.services.auth.utils.TokenManager.get_authenticated_user",
+            "src.main_app.services.auth.current_user_resolver.TokenManager.get_authenticated_user",
             lambda _, uid: None,
         )
         with mock_app.test_request_context():

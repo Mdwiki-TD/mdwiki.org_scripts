@@ -10,8 +10,8 @@ class TestClientKey:
         mock_req = Mock()
         mock_req.headers.get.return_value = "1.2.3.4, 5.6.7.8"
         mock_req.remote_addr = "9.10.11.12"
-        monkeypatch.setattr("src.main_app.public.auth.routes.request", mock_req)
-        from src.main_app.public.auth.routes import _client_key
+        monkeypatch.setattr("src.main_app.public.auth_route.request", mock_req)
+        from src.main_app.public.auth_route import _client_key
 
         assert _client_key() == "1.2.3.4"
 
@@ -19,8 +19,8 @@ class TestClientKey:
         mock_req = Mock()
         mock_req.headers.get.return_value = None
         mock_req.remote_addr = "1.2.3.4"
-        monkeypatch.setattr("src.main_app.public.auth.routes.request", mock_req)
-        from src.main_app.public.auth.routes import _client_key
+        monkeypatch.setattr("src.main_app.public.auth_route.request", mock_req)
+        from src.main_app.public.auth_route import _client_key
 
         assert _client_key() == "1.2.3.4"
 
@@ -28,7 +28,7 @@ class TestClientKey:
         mock_req = Mock()
         mock_req.headers.get.return_value = None
         mock_req.remote_addr = None
-        monkeypatch.setattr("src.main_app.public.auth.routes.request", mock_req)
-        from src.main_app.public.auth.routes import _client_key
+        monkeypatch.setattr("src.main_app.public.auth_route.request", mock_req)
+        from src.main_app.public.auth_route import _client_key
 
         assert _client_key() == "anonymous"

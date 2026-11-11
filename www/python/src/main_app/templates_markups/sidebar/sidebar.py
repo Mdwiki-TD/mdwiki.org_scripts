@@ -13,7 +13,6 @@ import logging
 from markupsafe import Markup, escape
 
 from .mapping import SidebarGroup, SidebarItem
-from .sidebar_list import load_groups_menu
 
 logger = logging.getLogger(__name__)
 
@@ -180,17 +179,6 @@ class Sidebar:
         return "\n".join(sidebar_parts)
 
 
-def create_admin_sidebar(path: str, is_admin: bool = False) -> str:
-    """
-    Generate sidebar HTML structure based on menu definitions.
-
-    This is the public entry point used by the Jinja template.
-    """
-    main_menu = load_groups_menu()
-    sidebar = Sidebar(main_menu)
-    return sidebar.render(path, is_admin=is_admin)
-
-
 __all__ = [
-    "create_admin_sidebar",
+    "Sidebar",
 ]

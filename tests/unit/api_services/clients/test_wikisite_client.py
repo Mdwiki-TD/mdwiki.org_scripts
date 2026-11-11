@@ -6,7 +6,7 @@ from typing import Any
 from unittest.mock import MagicMock, patch
 
 import pytest
-from src.main_app.api_services.clients.wiki_client import (
+from src.main_app.api_services.clients.wikisite_client import (
     coerce_encrypted,
     get_user_site,
 )
@@ -73,7 +73,7 @@ class TestGetUserSite:
                 self.username = "username"
                 self.rights = ["edit"]
 
-        monkeypatch.setattr("src.main_app.api_services.clients.wiki_client.Site", DummySite)
+        monkeypatch.setattr("src.main_app.api_services.clients.wikisite_client.Site", DummySite)
 
         user = {
             "access_token": encrypt_value("my-access-key"),
@@ -90,7 +90,7 @@ class TestGetUserSite:
             raise RuntimeError("Build failed")
 
         monkeypatch.setattr(
-            "src.main_app.api_services.clients.wiki_client.Site",
+            "src.main_app.api_services.clients.wikisite_client.Site",
             raise_error,
         )
 
@@ -103,9 +103,9 @@ class TestGetUserSite:
         assert site is None
 
 
-@patch("src.main_app.api_services.clients.wiki_client.app_settings")
-@patch("src.main_app.api_services.clients.wiki_client.Site")
-@patch("src.main_app.api_services.clients.wiki_client.decrypt_value")
+@patch("src.main_app.api_services.clients.wikisite_client.app_settings")
+@patch("src.main_app.api_services.clients.wikisite_client.Site")
+@patch("src.main_app.api_services.clients.wikisite_client.decrypt_value")
 def test_get_user_site(mock_decrypt, mock_site, mock_settings, mock_app):
     mock_settings.oauth = MagicMock()
     mock_settings.other = MagicMock()

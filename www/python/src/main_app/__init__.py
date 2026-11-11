@@ -10,7 +10,7 @@ from typing import Any
 from flask import Flask, render_template, request
 
 from .admin import add_admin_dashboard, register_bp_admin_blueprints
-from .config import Config, ConfigLoader, app_settings, ensure_directories
+from .config import Config, ConfigLoader, app_settings
 from .database import init_db
 from .database.exceptions import DatabaseInitError
 from .error_pages import register_cache_headers, register_error_pages
@@ -78,7 +78,7 @@ class AppFactory:
 
         app.jinja_env.filters.update(filters)
 
-        ensure_directories()
+        app_settings.ensure_directories()
         register_error_pages(app)
         register_cache_headers(app)
 

@@ -1,10 +1,14 @@
-""" """
+"""Public Blueprints"""
+
+from __future__ import annotations
+
+from typing import Any
 
 from flask import Blueprint, Flask
 
 from ..jobs_workers.public_jobs_workers.workers_list_public import jobs_data_public
 from ..models import RouteModule
-from .auth.routes import AuthView
+from .auth_route import AuthView
 from .fixred import FixRedView
 from .main_routes import MainRoutes
 from .newupdater.route import NewUpdaterRoutes

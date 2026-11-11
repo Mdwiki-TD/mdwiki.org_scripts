@@ -4,7 +4,7 @@ cookies for the web interface.
 
 from __future__ import annotations
 
-from .cookie import (
+from .signing import (
     extract_user_id,
     sign_state_token,
     sign_user_id,

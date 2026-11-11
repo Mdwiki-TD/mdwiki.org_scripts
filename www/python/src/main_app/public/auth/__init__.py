@@ -2,8 +2,8 @@
 
 from __future__ import annotations
 
-from .decorators import oauth_required
-from .routes import AuthView
+from ...decorators import oauth_required
+from ..auth_route import AuthView
 
 __all__ = [
     "oauth_required",

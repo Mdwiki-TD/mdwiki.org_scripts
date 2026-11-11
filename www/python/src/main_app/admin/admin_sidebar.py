@@ -1,13 +1,13 @@
-""" """
+"""Admin sidebar ."""
 
 from __future__ import annotations
 
 import functools
+import logging
 
-from .mapping import (
-    SidebarGroup,
-    SidebarItem,
-)
+from ..templates_markups.sidebar import Sidebar, SidebarGroup, SidebarItem
+
+logger = logging.getLogger(__name__)
 
 # ---------------------------------------------------------------------------
 # Menu item builders — small factories to avoid repeating the same
@@ -15,12 +15,30 @@ from .mapping import (
 # ---------------------------------------------------------------------------
 
 
-def dashboard_item(id_: str, title: str, icon: str, endpoint: str, fallback_href: str) -> SidebarItem:
+def dashboard_item(
+    id_: str,
+    title: str,
+    icon: str,
+    endpoint: str,
+    fallback_href: str,
+) -> SidebarItem:
     """Build a SidebarItem pointing at a regular admin-panel dashboard endpoint."""
-    return SidebarItem(id=id_, title=title, icon=icon, endpoint=endpoint, fallback_href=fallback_href)
+    return SidebarItem(
+        id=id_,
+        title=title,
+        icon=icon,
+        endpoint=endpoint,
+        fallback_href=fallback_href,
+    )
 
 
-def job_item(job_type: str, title: str, icon: str, *, disabled: bool = False) -> SidebarItem:
+def job_item(
+    job_type: str,
+    title: str,
+    icon: str,
+    *,
+    disabled: bool = False,
+) -> SidebarItem:
     """Build a SidebarItem pointing at the job-list page for the given job type."""
     return SidebarItem(
         id=job_type,
@@ -34,7 +52,7 @@ def job_item(job_type: str, title: str, icon: str, *, disabled: bool = False) ->
 
 
 @functools.lru_cache(maxsize=1)
-def load_groups_menu() -> list[SidebarGroup]:
+def load_admin_tools() -> list[SidebarGroup]:
     """Build the static sidebar menu structure.
 
     No Flask request/app context is touched here — URLs are resolved lazily
@@ -137,6 +155,21 @@ def load_groups_menu() -> list[SidebarGroup]:
     ]
 
 
+def create_admin_sidebar(
+    path: str,
+    is_admin: bool = False,
+    list_items: list[SidebarGroup] | None = None,
+) -> str:
+    """
+    Generate sidebar HTML structure based on menu definitions.
+
+    This is the public entry point used by the Jinja template.
+    """
+    main_menu = list_items or load_admin_tools()
+    sidebar = Sidebar(main_menu)
+    return sidebar.render(path, is_admin=is_admin)
+
+
 __all__ = [
-    "load_groups_menu",
+    "create_admin_sidebar",
 ]

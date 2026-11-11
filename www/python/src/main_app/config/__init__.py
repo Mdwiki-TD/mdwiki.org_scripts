@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from .classes import (
+    get_settings,
     CookieConfig,
     CorsConfig,
     JobsConfig,
@@ -19,7 +20,9 @@ from .flask_config import (
     ProductionConfig,
     TestingConfig,
 )
-from .main_settings import app_settings, ensure_directories
+
+# Singleton settings instance
+app_settings = get_settings()
 
 __all__ = [
     "ConfigLoader",
@@ -35,6 +38,5 @@ __all__ = [
     "Paths",
     "SecurityConfig",
     "SessionConfig",
-    "ensure_directories",
-    "app_settings",
+    "get_settings",
 ]
