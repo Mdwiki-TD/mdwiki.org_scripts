@@ -13,7 +13,7 @@ from flask import Blueprint, flash, redirect, render_template, request, url_for
 from flask.views import MethodView
 from werkzeug.wrappers import Response
 
-from ..decorators import admin_required
+from ...decorators import admin_required
 from ..routes_services.toolforge_jobs_service import DEFAULT_LOG_LINES, JobsPageService
 
 logger = logging.getLogger(__name__)

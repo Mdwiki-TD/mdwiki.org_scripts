@@ -2,9 +2,9 @@
 
 from __future__ import annotations
 
-from .objects import NavLink
+from .mapping import NavLink
 
-nav_list = [
+main_nav_list = [
     NavLink(
         text="New Jobs",
         icon="bi-sliders",
@@ -17,7 +17,7 @@ nav_list = [
         icon="bi-people-fill",
         url_endpoint="admin_panel.dashboard",
         path="/admin_panel",
-        for_admin=True,
+        for_admins=True,
     ),
     NavLink(
         text="GitHub",
@@ -30,5 +30,5 @@ nav_list = [
 
 
 __all__ = [
-    "nav_list",
+    "main_nav_list",
 ]

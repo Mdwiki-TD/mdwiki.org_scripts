@@ -39,7 +39,7 @@ class TestNewUpdaterAllWorker:
 
     def test_process_success(self):
         with (
-            patch("src.main_app.jobs_workers.base_worker.get_user_site") as mock_get_site,
+            patch("src.main_app.jobs_workers.base_worker.WikiSiteClient.get_user_site") as mock_get_site,
             patch(
                 "src.main_app.jobs_workers.public_jobs_workers.newupdater_all.worker.get_category_members"
             ) as mock_get_members,
@@ -64,7 +64,7 @@ class TestNewUpdaterAllWorker:
             mock_add_param.return_value = "new text"
 
             worker = NewUpdaterAllWorker(JobsRunner(job_id=1, args={}, user={"name": "test"}))
-            worker._save_progress = MagicMock()
+            worker.save_progress = MagicMock()
 
             result = worker.process()
             assert result.summary.total == 1

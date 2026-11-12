@@ -98,7 +98,7 @@ class OwidPopupAllWorker(BaseObjectsJobWorker):
                 break
 
             if i == 1 or i % per_item == 0:
-                self._save_progress()
+                self.save_progress()
 
         if self.result.status in ("pending", "running"):
             self.result.status = "completed"

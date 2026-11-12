@@ -5,13 +5,13 @@ from __future__ import annotations
 from .classes import (
     CookieConfig,
     CorsConfig,
-    DbConfig,
     JobsConfig,
     OAuthConfig,
     Paths,
     SecurityConfig,
     SessionConfig,
     Settings,
+    get_settings,
 )
 from .flask_config import (
     Config,
@@ -19,9 +19,10 @@ from .flask_config import (
     DevelopmentConfig,
     ProductionConfig,
     TestingConfig,
-    build_sqlalchemy_uri,
 )
-from .main_settings import app_settings, ensure_directories
+
+# Singleton settings instance
+app_settings = get_settings()
 
 __all__ = [
     "ConfigLoader",
@@ -30,15 +31,12 @@ __all__ = [
     "DevelopmentConfig",
     "ProductionConfig",
     "TestingConfig",
-    "build_sqlalchemy_uri",
     "CookieConfig",
     "CorsConfig",
-    "DbConfig",
     "JobsConfig",
     "OAuthConfig",
     "Paths",
     "SecurityConfig",
     "SessionConfig",
-    "ensure_directories",
-    "app_settings",
+    "get_settings",
 ]
