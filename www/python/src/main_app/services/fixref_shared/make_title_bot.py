@@ -128,6 +128,10 @@ def make_title(url: str) -> str:
     return _get_default_maker().make_title(url)
 
 
+# Expose cache_clear for backward compatibility with tests
+make_title.cache_clear = _cached_fetch_title.cache_clear  # type: ignore[attr-defined]
+
+
 __all__ = [
     "TitleMaker",
     "make_title",

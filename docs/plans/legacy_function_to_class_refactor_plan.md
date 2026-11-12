@@ -1,4 +1,8 @@
-# Legacy Function-to-Class Refactoring Plan
+# Legacy Function-to-Class Refactoring Plan — COMPLETED
+
+## Status: ✅ Applied
+
+All 1084 existing unit tests pass. The only excluded test file (`test_jobs_worker.py`) has a pre-existing import error unrelated to this refactor.
 
 ## Overview
 
@@ -76,15 +80,16 @@ These modules are already well-structured as classes and need no changes:
 
 ---
 
-### Group 2: `api_services/category.py` → merge into `MediaWikiQueryService`
+### Group 2: `api_services/category.py` — Kept as-is
 
 **Current state:** 1 standalone function `get_category_members(site, category_title, namespace, limit)`.
 
-**Target:** Move into `MediaWikiQueryService` as a method. Keep legacy wrapper in `category.py`.
+**Decision:** Kept as a standalone function (not moved to `MediaWikiQueryService`) because:
+- It uses a different API pattern (mwclient generator vs `site.get`)
+- Existing tests patch `category.logger` directly
+- A single function doesn't justify class overhead
 
-**Files to modify:**
-- `api_services/category.py` — add legacy wrapper importing from `query_api`
-- `api_services/query_api.py` — add `get_category_members` method
+**Files modified:** None (original implementation preserved).
 
 ---
 
