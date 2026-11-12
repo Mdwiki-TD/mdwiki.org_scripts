@@ -201,6 +201,13 @@ disable = [
     "R0913", # too-many-arguments
 ]
 
+[tool.pylint.format]
+max-line-length = 120
+disable = [
+    "C0111", # missing-docstring
+    "C0103", # invalid-name
+    "R0913", # too-many-arguments
+]
 
 [tool.pyright]
 reportIncompatibleMethodOverride = "none"
