@@ -51,6 +51,8 @@ def _normalize_limit(
 
 
 class JobsService(CRUDService[JobRecord]):
+    FINAL_STATUSES = ("completed", "failed", "cancelled", "skipped")
+
     def __init__(self) -> None:
         super().__init__(db.session, JobRecord)
 
@@ -328,7 +330,7 @@ class JobsService(CRUDService[JobRecord]):
         if status_lower == "running" and not job.started_at:
             job.started_at = datetime.now(UTC)
 
-        if status_lower in ("completed", "failed", "cancelled", "skipped"):
+        if status_lower in self.FINAL_STATUSES:
             job.completed_at = datetime.now(UTC)
             job.is_running = None
 

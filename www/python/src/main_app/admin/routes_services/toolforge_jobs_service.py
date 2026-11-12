@@ -54,8 +54,9 @@ class JobsPageServiceHelpers:
         return str(short).lower().rstrip(".")
 
     @classmethod
-    def _normalize_job(cls, job: dict[str, Any]) -> dict[str, Any]:
+    def _normalize_job(cls, job: dict | dict[str, Any]) -> dict[str, Any]:
         """Add the keys the templates use (status_key, status_messages, health_check_text)."""
+        job = job or {}
         job["status_key"] = cls._job_status(job)
         job["status_messages"] = (job.get("status") or {}).get("messages", [])
 
@@ -65,6 +66,7 @@ class JobsPageServiceHelpers:
             job["health_check_text"] = f"{health_check.get('type', '')}: {target}".strip(": ")
         else:
             job["health_check_text"] = None
+
         return job
 
     @staticmethod
@@ -107,7 +109,7 @@ class JobsPageService(JobsPageServiceHelpers):
                 f"Failed to {action}: unauthorized (401), check the client certificate or deploy token.",
                 "danger",
             )
-        return ()
+        return ("", "")
 
     def _failure_messages(self, action: str, exc: Exception) -> list[Message]:
         """Log an API failure and return the flash message for it."""
@@ -173,8 +175,10 @@ class JobsPageService(JobsPageServiceHelpers):
         try:
             payload = self.toolforge.show_job(job_id)
             job = payload.get("job")
+
             if not isinstance(job, dict):
                 raise ValueError("Unexpected response from the Toolforge API")
+
         except (requests.RequestException, ValueError, OSError) as exc:
             return JobDetailPage(
                 job_id=job_id,
