@@ -50,6 +50,39 @@ function renderWikiLink(wiki_domain, title, label = null) {
 }
 
 /**
+ * @param {string} title
+ * @param {any} _type
+ * @param {any} _row
+ * @return {string}
+ */
+function renderCommonsFileLinkShort(title, _type, _row) {
+    if (!title) return '-';
+    const striped = title.replace('File:', '');
+    return renderWikiLink("commons.wikimedia.org", `File:${striped}`, "File");
+}
+/**
+ * @param {string} title
+ * @param {string} label
+ * @return {string}
+ */
+function renderCommonsFileLink(title, label = '') {
+    if (!title) return '-';
+    const striped = title.replace('File:', '');
+    const displayLabel = label || `File:${striped}`;
+
+    return renderWikiLink("commons.wikimedia.org", `File:${striped}`, displayLabel);
+}
+/**
+ * @param {string} title
+ * @param {any} _type
+ * @param {any} _row
+ * @return {string}
+ */
+function renderCommonsLink(title, _type, _row) {
+    return renderWikiLink("commons.wikimedia.org", title);
+}
+
+/**
  * @param {{
  * msg: string | null;
  * message: string | null;
@@ -95,4 +128,15 @@ function diffLink(wiki_domain, newrevid, title = null) {
         `;
     }
     return `<span class="text-muted">-</span>`;
+}
+
+/**
+ * Render template title, stripping "Template:OWID/" prefix.
+ * @param {string} wiki_domain
+ * @param {string} title
+ */
+function renderOwidTemplate(wiki_domain, title) {
+    if (!title) return '-';
+    const display = title.replace(/^Template:OWID\//, '');
+    return renderWikiLink(wiki_domain, title, display);
 }

@@ -4,9 +4,14 @@ from __future__ import annotations
 
 import logging
 
-from flask import Blueprint, current_app, render_template, send_from_directory
-from flask.typing import ResponseReturnValue
+from flask import (
+    Blueprint,
+    current_app,
+    render_template,
+    send_from_directory,
+)
 from flask.views import MethodView
+from flask.wrappers import Response
 
 from ...jobs_workers.public_jobs_workers.workers_list_public import (
     jobs_data_for_all_pages,
@@ -16,11 +21,11 @@ from ...jobs_workers.public_jobs_workers.workers_list_public import (
 logger = logging.getLogger(__name__)
 
 
-class MainIndexView(MethodView):
-    """Render the application homepage."""
+class IndexView(MethodView):
+    """View to handle requests for the main application landing page."""
 
-    def get(self) -> ResponseReturnValue:
-        """Render the index page with the job catalogs for all and single page tools."""
+    def get(self) -> str:
+        """Serve the landing page."""
         return render_template(
             "index.html",
             jobs_data_for_all_pages=jobs_data_for_all_pages,
@@ -29,33 +34,63 @@ class MainIndexView(MethodView):
 
 
 class FaviconView(MethodView):
-    """Serve the site favicon from the static folder."""
+    """View to serve the application favicon."""
 
-    def get(self) -> ResponseReturnValue:
-        """Stream ``favicon.ico`` from the configured static directory."""
-        return send_from_directory(current_app.static_folder, "favicon.ico", mimetype="image/x-icon")
+    def get(self) -> Response:
+        """Stream ``favicon.ico`` from the static folder."""
+        return send_from_directory(
+            current_app.static_folder,  # pyright: ignore[reportArgumentType]
+            "favicon.ico",
+            mimetype="image/x-icon",
+        )
+
+
+class MainHealthView(MethodView):
+    """Health check endpoint for load balancers and monitoring."""
+
+    def get(self) -> tuple[dict[str, str], int]:
+        """Return health status."""
+        return {"status": "ok"}, 200
+
+
+class MainToolinfoView(MethodView):
+    """Serve the Toolhub metadata file (toolinfo.json)."""
+
+    def get(self) -> Response:
+        """Stream ``toolinfo.json`` from the static folder."""
+        return send_from_directory(
+            current_app.static_folder,  # pyright: ignore[reportArgumentType]
+            "toolinfo.json",
+            mimetype="application/json",
+        )
 
 
 class MainView:
-    """Route registrar binding the main MethodViews to a Blueprint."""
+    """Registrar for the main application views."""
 
-    @classmethod
-    def register(cls, bp: Blueprint) -> None:
-        """Register the homepage and favicon views on the blueprint."""
+    @staticmethod
+    def register(bp: Blueprint) -> None:
+        """Register main URL rules on the provided blueprint."""
         bp.add_url_rule(
             "/",
-            view_func=MainIndexView.as_view("index"),
-            methods=["GET"],
+            view_func=IndexView.as_view("index"),
         )
         bp.add_url_rule(
             "/favicon.ico",
             view_func=FaviconView.as_view("favicon"),
-            methods=["GET"],
+        )
+        bp.add_url_rule(
+            "/healthz",
+            view_func=MainHealthView.as_view("healthz"),
+        )
+        bp.add_url_rule(
+            "/toolinfo.json",
+            view_func=MainToolinfoView.as_view("toolinfo"),
         )
 
 
 __all__ = [
+    "IndexView",
     "FaviconView",
-    "MainIndexView",
     "MainView",
 ]

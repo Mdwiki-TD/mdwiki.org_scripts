@@ -342,6 +342,12 @@ class CRUDService[ModelT]:
     def expire_all(self) -> None:
         self.session.expire_all()
 
+    @staticmethod
+    def validate_or_raise(**kwargs) -> None:
+        for x, v in kwargs.items():
+            if not v:
+                raise ValueError(f"{x.capitalize()} is required")
+
 
 __all__ = [
     "CRUDService",

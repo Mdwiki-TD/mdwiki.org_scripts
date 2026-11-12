@@ -6,13 +6,13 @@ from __future__ import annotations
 
 import logging
 
-from ..api_services import MwClientPage
-from ..api_services.clients.wikisite_client import WikiSiteClient
-from ..config import get_settings
-from .auth.current_user import CurrentUser
-from .fixref_shared.fixred_worker import work_on_text
-from .fixref_shared.objects import RunState
-from .shared_classes import UpdaterTextOutcome
+from ...api_services import MwClientPage
+from ...api_services.clients.wikisite_client import WikiSiteClient
+from ...config import get_settings
+from ...services.auth.current_user import CurrentUser
+from ...services.fixref_shared.fixred_worker import work_on_text
+from ...services.fixref_shared.objects import RunState
+from ...services.shared_classes import UpdaterTextOutcome
 
 logger = logging.getLogger(__name__)
 
