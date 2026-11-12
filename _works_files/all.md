@@ -11,7 +11,7 @@ repo/
 │   │   └── venv.sh
 │   │
 │   ├── shs/
-│   │   ├── pip.sh
+│   │   ├── pip-install.sh
 │   │   ├── update.sh
 │   │   └── update_local.sh
 │   │

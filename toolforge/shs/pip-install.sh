@@ -10,4 +10,4 @@ pip install --upgrade pip
 pip install -r "$HOME/www/python/src/requirements.txt"
 
 # toolforge-jobs run
-# toolforge-jobs run pipup --image python3.13 --command "~/shs/pip.sh" --wait
+# toolforge-jobs run pipup --image python3.13 --command "~/shs/pip-install.sh" --wait

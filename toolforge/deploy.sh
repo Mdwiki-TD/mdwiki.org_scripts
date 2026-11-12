@@ -38,8 +38,8 @@ chmod +x $TOOL_PATH/shs/*.sh $TOOL_PATH/deploy_scripts/*.sh
 echo ">>> executing file: $TOOL_PATH/shs/update_local.sh"
 exec $TOOL_PATH/shs/update_local.sh "$FULL_PATH"
 
-echo ">>> executing file: $TOOL_PATH/shs/pip.sh"
-exec $TOOL_PATH/shs/pip.sh
+echo ">>> executing file: $TOOL_PATH/shs/pip-install.sh"
+exec $TOOL_PATH/shs/pip-install.sh
 "
 
 # Run toolforge-webservice commands
