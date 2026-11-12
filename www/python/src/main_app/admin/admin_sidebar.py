@@ -9,47 +9,6 @@ from ..templates_markups.sidebar import Sidebar, SidebarGroup, SidebarItem
 
 logger = logging.getLogger(__name__)
 
-# ---------------------------------------------------------------------------
-# Menu item builders — small factories to avoid repeating the same
-# endpoint/fallback wiring for every dashboard or job-list link.
-# ---------------------------------------------------------------------------
-
-
-def dashboard_item(
-    id_: str,
-    title: str,
-    icon: str,
-    endpoint: str,
-    fallback_href: str,
-) -> SidebarItem:
-    """Build a SidebarItem pointing at a regular admin-panel dashboard endpoint."""
-    return SidebarItem(
-        id=id_,
-        title=title,
-        icon=icon,
-        endpoint=endpoint,
-        fallback_href=fallback_href,
-    )
-
-
-def job_item(
-    job_type: str,
-    title: str,
-    icon: str,
-    *,
-    disabled: bool = False,
-) -> SidebarItem:
-    """Build a SidebarItem pointing at the job-list page for the given job type."""
-    return SidebarItem(
-        id=job_type,
-        title=title,
-        icon=icon,
-        endpoint="admin_panel.jobs.jobs_list",
-        endpoint_kwargs={"job_type": job_type},
-        fallback_href=f"/admin_panel/jobs/{job_type}",
-        disabled=disabled,
-    )
-
 
 @functools.lru_cache(maxsize=1)
 def load_admin_tools() -> list[SidebarGroup]:
@@ -71,14 +30,14 @@ def load_admin_tools() -> list[SidebarGroup]:
         title="Users",
         icon="bi-person",
         items=[
-            dashboard_item(
+            SidebarItem.dashboard_item(
                 "admins",
                 "Admins",
                 "bi-person-gear",
                 "admin_panel.admins.dashboard",
                 "/admin_panel/admins/",
             ),
-            dashboard_item(
+            SidebarItem.dashboard_item(
                 "users",
                 "Users",
                 "bi-person",
@@ -92,7 +51,7 @@ def load_admin_tools() -> list[SidebarGroup]:
         title="Settings",
         icon="bi-sliders",
         items=[
-            dashboard_item(
+            SidebarItem.dashboard_item(
                 "settings",
                 "Settings",
                 "bi-gear",
@@ -114,7 +73,7 @@ def load_admin_tools() -> list[SidebarGroup]:
         title="Errors",
         icon="bi-exclamation-triangle",
         items=[
-            dashboard_item(
+            SidebarItem.dashboard_item(
                 "errors",
                 "App Errors",
                 "bi-exclamation-triangle",
