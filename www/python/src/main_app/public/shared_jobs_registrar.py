@@ -6,6 +6,7 @@ from flask import Blueprint
 
 from ..jobs_workers.objects import JobData
 from .shared_jobs_routes import (
+    AllJobsListView,
     CancelJobView,
     DeleteJobView,
     DrawResultFileView,
@@ -14,7 +15,6 @@ from .shared_jobs_routes import (
     MarkJobCompletedView,
     ReadJobResultFileView,
     StartJobView,
-    AllJobsListView,
 )
 
 logger = logging.getLogger(__name__)

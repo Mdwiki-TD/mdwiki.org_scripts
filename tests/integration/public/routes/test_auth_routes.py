@@ -2,20 +2,53 @@
 
 Uses the full app factory (TestingConfig) with a real SQLite database.
 Only external OAuth calls and non-deterministic utilities are mocked.
+Rate limiting is exercised through the real Flask-Limiter instance.
 """
 
 from __future__ import annotations
 
+from collections.abc import Iterator
 from types import SimpleNamespace
 from urllib.parse import quote
 
 import pytest
 from flask import Flask
 from flask.testing import FlaskClient
-from src.main_app.config import app_settings
+from src.main_app.config import get_settings
 from src.main_app.database.services import UsersService, UserTokenService
-from src.main_app.public.auth_route import OAuthCallbackView  # noqa: F401
-from src.main_app.services.core.cookies import sign_state_token
+from src.main_app.public.routes.auth_route import OAuthCallbackView  # noqa: F401
+from src.main_app.services.auth import AuthFlowService
+from src.main_app.services.core.cookies import SignedTokenService
+from src.main_app.services.core.rate_limit import (
+    CALLBACK_LIMIT_STRATEGY,
+    LOGIN_LIMIT_STRATEGY,
+    limiter,
+)
+
+app_settings = get_settings()
+
+
+def _hits_allowed(limit: str) -> int:
+    """Extract the numeric part of a limit string such as '5 per minute'."""
+    return int(limit.split()[0])
+
+
+@pytest.fixture(autouse=True)
+def _reset_rate_limiter(mock_app: Flask) -> Iterator[None]:
+    """Start and finish every test with empty rate-limit counters.
+
+    Depends on mock_app so the limiter storage exists before it is reset.
+    """
+    limiter.reset()
+    yield
+    limiter.reset()
+
+
+@pytest.fixture
+def enable_rate_limit(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Force the limiter on, in case TestingConfig disables it."""
+    monkeypatch.setattr(limiter, "enabled", True)
+
 
 # ---------------------------------------------------------------------------
 # Login
@@ -54,25 +87,42 @@ class TestLogin:
             # Real session key from app_settings (state = request_token_key)
             assert sess[app_settings.sessions.request_token_key] == "a"
 
+    @pytest.mark.usefixtures("enable_rate_limit")
     def test_login_rate_limited(
         self, mock_app: Flask, mock_client: FlaskClient, monkeypatch: pytest.MonkeyPatch
     ) -> None:
-        """Login should redirect when rate limited."""
+        """Requests over the login limit should redirect home without reaching the view."""
+        calls: list[int] = []
 
-        class DummyLimiter:
-            def allow(self, key: str) -> bool:
-                return False
+        def fake_start_login(self) -> SimpleNamespace:
+            calls.append(1)
+            return SimpleNamespace(
+                success=False,
+                error_message="boom",
+                flash_category="danger",
+                redirect_url=None,
+            )
 
-            def try_after(self, key: str):
-                return type("obj", (object,), {"total_seconds": lambda self: 60})()
+        monkeypatch.setattr(AuthFlowService, "start_login", fake_start_login)
 
-            def get_login_rate_limit_seconds(self, _key) -> str:
-                return "0"
+        allowed = _hits_allowed(LOGIN_LIMIT_STRATEGY)
+        for _ in range(allowed):
+            response = mock_client.get("/login")
+            assert response.status_code == 302
+            assert "boom" in response.headers["Location"]
 
-        monkeypatch.setattr("src.main_app.public.auth_route.login_rate_limiter", DummyLimiter())
-
+        # One request over the limit: throttled before the view runs
         response = mock_client.get("/login")
-        assert response.status_code == 302
+
+        assert response.status_code == 429
+        headers = dict(response.headers)
+
+        assert int(headers["Retry-After"]) > 0
+        assert headers["X-RateLimit-Limit"] == "5"
+        assert "X-RateLimit-Remaining" in headers
+        assert "X-RateLimit-Reset" in headers
+
+        assert len(calls) == allowed
 
 
 # ---------------------------------------------------------------------------
@@ -106,7 +156,7 @@ class TestCallback:
 
         # Sign a state nonce using the real signing utility
         state_nonce = "test-nonce"
-        signed_state = sign_state_token(state_nonce)
+        signed_state = SignedTokenService().sign_state_token(state_nonce)
 
         # Seed session with state nonce + request token (real session keys)
         with mock_client.session_transaction() as sess:
@@ -133,22 +183,37 @@ class TestCallback:
             assert sess["uid"] == user.user_id
             assert sess["username"] == "Tester"
 
+    @pytest.mark.usefixtures("enable_rate_limit")
     def test_callback_rate_limited(
         self, mock_app: Flask, mock_client: FlaskClient, monkeypatch: pytest.MonkeyPatch
     ) -> None:
-        """Callback should redirect when rate limited."""
+        """Requests over the callback limit should redirect with an error without reaching the view."""
+        calls: list[int] = []
 
-        class DummyLimiter:
-            def allow(self, key: str) -> bool:
-                return False
+        def fake_complete_callback(self, *args, **kwargs) -> SimpleNamespace:
+            calls.append(1)
+            # No error message: the view redirects to the index without an error param
+            return SimpleNamespace(success=False, error_message=None, flash_category="danger")
 
-            def get_login_rate_limit_seconds(self, _key) -> str:
-                return "0"
+        monkeypatch.setattr(AuthFlowService, "complete_callback", fake_complete_callback)
 
-        monkeypatch.setattr("src.main_app.public.auth_route.callback_rate_limiter", DummyLimiter())
+        allowed = _hits_allowed(CALLBACK_LIMIT_STRATEGY)
+        for _ in range(allowed):
+            response = mock_client.get("/callback?state=token&oauth_verifier=code")
+            assert response.status_code == 302
+            assert "error=" not in response.headers["Location"]
 
+        # One request over the limit: throttled before the view runs
         response = mock_client.get("/callback?state=token&oauth_verifier=code")
-        assert response.status_code == 302
+
+        assert response.status_code == 429
+        assert len(calls) == allowed
+
+        headers = dict(response.headers)
+        assert int(headers["Retry-After"]) > 0
+        assert headers["X-RateLimit-Limit"] == "10"
+        assert "X-RateLimit-Remaining" in headers
+        assert "X-RateLimit-Reset" in headers
 
     def test_callback_missing_state(
         self, mock_app: Flask, mock_client: FlaskClient, monkeypatch: pytest.MonkeyPatch
