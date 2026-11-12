@@ -1,5 +1,7 @@
-"""
-Logging configuration with colored output.
+"""Logging configuration with colored output.
+
+Provides :class:`LoggingConfigurator` for setting up console and file handlers,
+plus backward-compatible legacy functions.
 
 Handlers and their levels:
     - console   -> `level` (default DEBUG: everything)

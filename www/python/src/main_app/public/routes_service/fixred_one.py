@@ -1,5 +1,8 @@
-"""
-Service: fix redirects in page text on mdwiki.
+"""Service: fix redirects in a single page on mdwiki.
+
+Provides :class:`FixRedOneService` for fetching a page, fixing redirect
+links, and optionally saving the result, plus a backward-compatible
+legacy function.
 """
 
 from __future__ import annotations
@@ -23,9 +26,7 @@ def work_on_title(
     summary: str = "Fix redirects.",
     user: CurrentUser | None = None,
 ) -> UpdaterTextOutcome:
-    """
-    s
-    """
+    """Fetch the page, fix redirect links, and report the diff."""
     title = (title or "").strip()
     if not title:
         return UpdaterTextOutcome(status="skipped", msg="Invalid title")
@@ -34,7 +35,10 @@ def work_on_title(
         return UpdaterTextOutcome(status="skipped", msg="No user")
 
     app_settings = get_settings()
-    site = WikiSiteClient.get_user_site(app_settings.other.wiki_domain, user.to_auth_payload())
+    site = WikiSiteClient.get_user_site(
+        app_settings.other.wiki_domain,
+        user.to_auth_payload(),
+    )
 
     page = MwClientPage(title, site)
     old_text = page.get_text()
@@ -58,11 +62,19 @@ def work_on_title(
     if save:
         result = page.edit(new_text, summary)
         if result.get("success"):
-            return UpdaterTextOutcome(status="saved", newrevid=result.get("newrevid", 0))
+            return UpdaterTextOutcome(
+                status="saved",
+                newrevid=result.get("newrevid", 0),
+            )
 
-    return UpdaterTextOutcome(status="changes", old_text=old_text, new_text=new_text)
+    return UpdaterTextOutcome(
+        status="changes",
+        old_text=old_text,
+        new_text=new_text,
+    )
 
 
 __all__ = [
+    "FixRedOneService",
     "work_on_title",
 ]

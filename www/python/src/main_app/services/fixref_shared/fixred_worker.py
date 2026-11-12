@@ -1,5 +1,7 @@
-"""
-Service: fix redirects in page text on mdwiki.
+"""Fix redirect links in wikitext.
+
+Provides :class:`FixRedirectWorker` for resolving and replacing redirect
+wikilinks in page text, plus backward-compatible legacy functions.
 """
 
 from __future__ import annotations
