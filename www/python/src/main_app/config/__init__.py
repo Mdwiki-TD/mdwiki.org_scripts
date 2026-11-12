@@ -21,9 +21,6 @@ from .flask_config import (
     TestingConfig,
 )
 
-# Singleton settings instance
-app_settings = get_settings()
-
 __all__ = [
     "ConfigLoader",
     "Config",
