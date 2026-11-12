@@ -17,13 +17,14 @@ from ..database.services import (
 )
 from ..io.jobs_files_service import create_job_cancelled_file
 from .admin_jobs_workers.workers_list import jobs_data_admins
-from .cancel_registry import (
-    get_cancel_event,
-    pop_cancel_event,
-    register_cancel_event,
-)
 from .objects import JobData, JobsRunner
 from .public_jobs_workers.workers_list_public import jobs_data_public
+
+from .cancel_registry import (
+    register_cancel_event,
+    pop_cancel_event,
+    get_cancel_event,
+)
 
 logger = logging.getLogger(__name__)
 
