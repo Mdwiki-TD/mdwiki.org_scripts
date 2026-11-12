@@ -34,11 +34,11 @@ class JobFilesService:
         if self._base_dir is not None:
             return self._base_dir
         app_settings = get_settings()
-        # Use public_jobs_path from settings paths
-        jobs_dir = app_settings.paths.public_jobs_path
+        # Use jobs_path from settings paths
+        jobs_dir = app_settings.paths.jobs_path
 
         if not jobs_dir:
-            raise RuntimeError("public_jobs_path configuration is required for job result storage")
+            raise RuntimeError("jobs_path configuration is required for job result storage")
 
         path = Path(jobs_dir)
         path.mkdir(parents=True, exist_ok=True)
@@ -98,30 +98,12 @@ def get_jobs_data_dir() -> Path:
     return JobFilesService().jobs_dir
 
 
-def save_data(result_data: dict[str, Any], filepath: Path) -> None:
-    """Legacy entry point. Use :meth:`JobFilesService._save_data` instead."""
-    JobFilesService._save_data(result_data, filepath)
-
-
-def save_job_result_by_name(filename: str, result_data: dict[str, Any]) -> Path:
-    """Legacy entry point. Use :meth:`JobFilesService.save_result` instead."""
-    return JobFilesService().save_result(filename, result_data)
-
-
-def load_job_result(filename: str) -> dict[str, Any] | None:
-    """Legacy entry point. Use :meth:`JobFilesService.load_result` instead."""
-    return JobFilesService().load_result(filename)
-
-
-def create_cancel_file(filename: str) -> Path | None:
-    """Legacy entry point. Use :meth:`JobFilesService.create_cancel_file` instead."""
-    return JobFilesService().create_cancel_file(filename)
-
-
-def is_cancel_file_exist(filename: str) -> bool:
-    """Legacy entry point. Use :meth:`JobFilesService.is_cancel_file_exist` instead."""
-    return JobFilesService().is_cancel_file_exist(filename)
-
+svc = JobFilesService()
+save_data = svc._save_data
+save_job_result_by_name = svc.save_result
+load_job_result = svc.load_result
+create_cancel_file = svc.create_cancel_file
+is_cancel_file_exist = svc.is_cancel_file_exist
 
 __all__ = [
     "JobFilesService",

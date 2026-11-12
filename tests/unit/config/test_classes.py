@@ -90,8 +90,8 @@ class TestPaths:
         _tmp_path = str(tmp_path)
         p = Paths(
             log_dir=f"/{_tmp_path}/logs",
-            jobs_path=f"/{_tmp_path}/jobs",
-            public_jobs_path=f"/{_tmp_path}/public_jobs",
+            admin_jobs_path=f"/{_tmp_path}/jobs",
+            jobs_path=f"/{_tmp_path}/public_jobs",
         )
         assert str(p.log_dir) == f"/{_tmp_path}/logs"
 
@@ -100,8 +100,8 @@ class TestSettings:
     def test_fields(self):
         paths = Paths(
             log_dir="/l",
-            jobs_path="/j",
-            public_jobs_path="/n",
+            admin_jobs_path="/j",
+            jobs_path="/n",
         )
         cookie = CookieConfig(
             name="c",
