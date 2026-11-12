@@ -30,12 +30,12 @@ def context_data(
     username = user.username if user else None
 
     return {
+        "tool_title": tool_title,
         "is_authenticated": user is not None,
         "current_username": username,
         "is_admin": _is_admin(user),
-        "wiki_domain": wiki_domain,
         "static_server": static_server,
-        "tool_title": tool_title,
+        "wiki_domain": wiki_domain,
     }
 
 

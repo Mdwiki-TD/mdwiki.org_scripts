@@ -6,7 +6,6 @@ import logging
 
 import requests
 
-from ..config import app_settings
 from .clients.http_client import HttpClient
 
 logger = logging.getLogger(__name__)
@@ -36,7 +35,6 @@ class CitationApi:
             req = self.http_client.get(
                 url,
                 timeout=timeout,
-                headers={"User-Agent": app_settings.other.user_agent},
             )
 
             if 500 <= req.status_code < 600:

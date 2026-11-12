@@ -9,7 +9,7 @@ dict. Endpoints that are not JSON return ``str`` instead:
 
 from __future__ import annotations
 
-from typing import Any, Literal, TypedDict
+from typing import Literal, TypedDict
 
 JobType = Literal["one-off", "scheduled", "continuous", "webservice"]
 JobStatusShort = Literal["pending", "running", "succeeded", "failed", "unknown"]
@@ -120,10 +120,6 @@ class JobListResponse(TypedDict, total=False):
 
     jobs: list[Job]
     messages: ResponseMessages
-
-    @classmethod
-    def load(cls, data: dict[str, Any]) -> JobListResponse:
-        return cls(**data)
 
 
 class JobResponse(TypedDict, total=False):

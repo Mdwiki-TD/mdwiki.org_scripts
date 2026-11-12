@@ -215,7 +215,10 @@ class ToolforgeJobsService:
             ],
             "messages": {"info": [], "warning": [], "error": []},
         }
-        return JobListResponse.load(data)
+        return JobListResponse(
+            jobs=data["jobs"],
+            messages=data["messages"],
+        )
 
     def healthcheck(self) -> Any:
         return self.api.healthcheck()
