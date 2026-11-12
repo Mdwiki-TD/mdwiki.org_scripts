@@ -2,12 +2,14 @@
 
 from __future__ import annotations
 
+import logging
 import os
 from dataclasses import dataclass
+from functools import lru_cache
 from pathlib import Path
 from typing import Any
 
-# --- Helper Functions ---
+logger = logging.getLogger(__name__)
 
 
 def _env_bool(name: str, default: bool = False) -> bool:
@@ -52,6 +54,10 @@ class OtherConfig:
     static_server: str
     tool_title: str
 
+    @property
+    def full_wiki_domain(self) -> str:
+        return f"https://{self.wiki_domain}"
+
     @classmethod
     def load(cls) -> OtherConfig:
         # CSRF token lifetime (in seconds). Default 3600 (1 hour).
@@ -70,15 +76,13 @@ class OtherConfig:
 
         tool_title = os.getenv("TOOL_TITLE") or "Mdwiki.org Tools (UNDER TESTING)"
 
-        _config = OtherConfig(
+        return OtherConfig(
             csrf_time_limit=csrf_time_limit,
             user_agent=user_agent,
             wiki_domain=wiki_domain,
             static_server=static_server,
             tool_title=tool_title,
         )
-
-        return _config
 
 
 @dataclass(frozen=True)
@@ -106,43 +110,6 @@ class JobsConfig:
         )
 
         return _config
-
-
-@dataclass(frozen=True)
-class DbConfig:
-    db_name: str
-    db_host: str
-    db_user: str | None
-    db_password: str | None
-
-    def to_json(self) -> dict[str, Any]:
-        return {
-            "db_name": self.db_name,
-            "db_host": self.db_host,
-            "db_user": self.db_user,
-            "db_password": self.db_password,
-        }
-
-    @classmethod
-    def load(cls) -> DbConfig:
-        """
-        Construct a DbConfig populated from environment variables.
-
-        Reads TOOL_TOOLSDB_DBNAME and TOOL_TOOLSDB_HOST (defaulting to empty string) and TOOL_TOOLSDB_USER and TOOL_TOOLSDB_PASSWORD (defaulting to None) and returns a DbConfig with those values.
-
-        Returns:
-            DbConfig: Configuration with fields:
-                - db_name: from TOOL_TOOLSDB_DBNAME (default "").
-                - db_host: from TOOL_TOOLSDB_HOST (default "").
-                - db_user: from TOOL_TOOLSDB_USER (or None).
-                - db_password: from TOOL_TOOLSDB_PASSWORD (or None).
-        """
-        return DbConfig(
-            db_name=os.getenv("TOOL_TOOLSDB_DBNAME", ""),
-            db_host=os.getenv("TOOL_TOOLSDB_HOST", ""),
-            db_user=os.getenv("TOOL_TOOLSDB_USER", None),
-            db_password=os.getenv("TOOL_TOOLSDB_PASSWORD", None),
-        )
 
 
 @dataclass(frozen=True)
@@ -340,7 +307,6 @@ class Settings:
     """Main settings container."""
 
     # Nested configurations
-    database_data: DbConfig
     paths: Paths
     cookie: CookieConfig
     sessions: SessionConfig
@@ -367,18 +333,43 @@ class Settings:
         return Settings(
             security=SecurityConfig.load(),
             paths=Paths.load(),
-            database_data=DbConfig.load(),
             cookie=CookieConfig.load(),
             oauth=OAuthConfig.load(),
             sessions=SessionConfig.load(),
             other=OtherConfig.load(),
-            # cors=CorsConfig.load(),
             jobs=JobsConfig.load(),
+            # cors=CorsConfig.load(),
         )
+
+    def ensure_directories(self) -> None:
+        """Create application directories if they don't exist.
+
+        Call this once at app startup (in the factory), not at import time.
+        """
+        for dir_name in self.paths.all_paths():
+            Path(dir_name).mkdir(parents=True, exist_ok=True)
+
+
+@lru_cache(maxsize=1)
+def get_settings() -> Settings:
+    """
+    Assemble and return the application's Settings populated from environment variables.
+
+    Reads and validates required environment variables, builds cookie, OAuth, path, and database configurations, and returns a consolidated Settings instance.
+
+    Returns:
+        Settings: The populated application settings.
+
+    Raises:
+        RuntimeError: If FLASK_SECRET_KEY is not set.
+        RuntimeError: If OAUTH_ENCRYPTION_KEY is missing.
+        RuntimeError: If the OAuth configuration (OAUTH_MWURI, OAUTH_CONSUMER_KEY, OAUTH_CONSUMER_SECRET) is incomplete.
+    """
+    return Settings.load()
 
 
 __all__ = [
-    "DbConfig",
+    "get_settings",
     "Paths",
     "CookieConfig",
     "SessionConfig",

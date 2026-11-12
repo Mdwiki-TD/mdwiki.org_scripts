@@ -17,7 +17,6 @@ Configuration subsystem using **frozen dataclasses** loaded from environment var
 
 ```
 Settings (root)
-├── database_data: DbConfig        # MySQL connection details
 ├── paths: Paths                    # Log, jobs, public_jobs directories
 ├── cookie: CookieConfig            # Session cookie settings
 ├── sessions: SessionConfig         # Flask session keys
@@ -40,29 +39,26 @@ Config (base)
 
 ### Design
 
--   All config objects are `@dataclass(frozen=True)` — **immutable after creation**
--   `Settings` is the root container with nested config objects
--   `get_settings()` is `@lru_cache(maxsize=1)` — singleton pattern
--   Environment variables are read at module import time
--   Validation: `FLASK_SECRET_KEY` and OAuth config are required (raise `RuntimeError`)
--   `TestingConfig` uses SQLite in-memory and disables CSRF
+- All config objects are `@dataclass(frozen=True)` — **immutable after creation**
+- `Settings` is the root container with nested config objects
+- `get_settings()` is `@lru_cache(maxsize=1)` — singleton pattern
+- Environment variables are read at module import time
+- Validation: `FLASK_SECRET_KEY` and OAuth config are required (raise `RuntimeError`)
+- `TestingConfig` uses SQLite in-memory and disables CSRF
 
 ### Environment Variables
 
-| Variable                | Required | Default                 | Description                     |
-| ----------------------- | -------- | ----------------------- | ------------------------------- |
-| `FLASK_SECRET_KEY`      | Yes      | —                       | Flask secret key                |
-| `OAUTH_MWURI`           | Yes      | —                       | MediaWiki OAuth URI             |
-| `OAUTH_CONSUMER_KEY`    | Yes      | —                       | OAuth consumer key              |
-| `OAUTH_CONSUMER_SECRET` | Yes      | —                       | OAuth consumer secret           |
-| `OAUTH_ENCRYPTION_KEY`  | Yes      | —                       | Fernet key for token encryption |
-| `TOOL_TOOLSDB_DBNAME`   | No       | `""`                    | MySQL database name             |
-| `TOOL_TOOLSDB_HOST`     | No       | `""`                    | MySQL host                      |
-| `TOOL_TOOLSDB_USER`     | No       | `None`                  | MySQL user                      |
-| `TOOL_TOOLSDB_PASSWORD` | No       | `None`                  | MySQL password                  |
-| `MAIN_DIR`              | No       | `~/data`                | Base directory for logs/jobs    |
-| `WIKI_DOMAIN`           | No       | `mdwiki.org`            | Target wiki domain              |
-| `WTF_CSRF_TIME_LIMIT`   | No       | `3600`                  | CSRF token lifetime (seconds)   |
+| Variable                | Required | Default      | Description                     |
+| ----------------------- | -------- | ------------ | ------------------------------- |
+| `FLASK_SECRET_KEY`      | Yes      | —            | Flask secret key                |
+| `OAUTH_MWURI`           | Yes      | —            | MediaWiki OAuth URI             |
+| `OAUTH_CONSUMER_KEY`    | Yes      | —            | OAuth consumer key              |
+| `OAUTH_CONSUMER_SECRET` | Yes      | —            | OAuth consumer secret           |
+| `OAUTH_ENCRYPTION_KEY`  | Yes      | —            | Fernet key for token encryption |
+| `DATABASE_URI`          | Yes      | ``           | SQLAlchemy database URI         |
+| `MAIN_DIR`              | No       | `~/data`     | Base directory for logs/jobs    |
+| `WIKI_DOMAIN`           | No       | `mdwiki.org` | Target wiki domain              |
+| `WTF_CSRF_TIME_LIMIT`   | No       | `3600`       | CSRF token lifetime (seconds)   |
 
 ## Testing
 
@@ -72,21 +68,21 @@ pytest tests/unit/config --cov=src/main_app/config
 
 ## Strengths
 
--   **Frozen dataclasses** prevent accidental config mutation
--   **Clean separation** of Flask config vs application config
--   **SQLAlchemy URI builder** with proper URL encoding (`quote_plus`)
--   **Connection pool settings** with `pool_pre_ping`, `pool_recycle`, `pool_size`
--   **Secret key rotation** support via `SECRET_KEY_FALLBACKS`
--   **Form security limits** — `MAX_CONTENT_LENGTH`, `MAX_FORM_MEMORY_SIZE`, `MAX_FORM_PARTS`
+- **Frozen dataclasses** prevent accidental config mutation
+- **Clean separation** of Flask config vs application config
+- **SQLAlchemy URI builder** with proper URL encoding (`quote_plus`)
+- **Connection pool settings** with `pool_pre_ping`, `pool_recycle`, `pool_size`
+- **Secret key rotation** support via `SECRET_KEY_FALLBACKS`
+- **Form security limits** — `MAX_CONTENT_LENGTH`, `MAX_FORM_MEMORY_SIZE`, `MAX_FORM_PARTS`
 
 ## Weaknesses
 
--   **Config loaded at import time** — hard to test with different env vars
--   **`@lru_cache`** makes it impossible to reload config without restart
--   **`DbConfig.to_dict()`** exposes password in plain dict form
--   **No config validation** beyond required fields (e.g., no port range checks)
--   **`DevelopmentConfig`** has `SESSION_COOKIE_SECURE=True` — requires HTTPS even locally
--   **No `.env.example`** documenting all variables
+- **Config loaded at import time** — hard to test with different env vars
+- **`@lru_cache`** makes it impossible to reload config without restart
+- **`DbConfig.to_dict()`** exposes password in plain dict form
+- **No config validation** beyond required fields (e.g., no port range checks)
+- **`DevelopmentConfig`** has `SESSION_COOKIE_SECURE=True` — requires HTTPS even locally
+- **No `.env.example`** documenting all variables
 
 ## Critical Issues
 
@@ -94,10 +90,10 @@ pytest tests/unit/config --cov=src/main_app/config
 
 ## Areas That Need Attention
 
--   [ ] Add `.env.example` with all variables documented
--   [ ] Set `SESSION_COOKIE_SECURE=False` in `DevelopmentConfig`
--   [ ] Add validation for numeric ranges (e.g., pool_size > 0)
--   [ ] Remove or encrypt `DbConfig.to_dict()` password field
+- [ ] Add `.env.example` with all variables documented
+- [ ] Set `SESSION_COOKIE_SECURE=False` in `DevelopmentConfig`
+- [ ] Add validation for numeric ranges (e.g., pool_size > 0)
+- [ ] Remove or encrypt `DbConfig.to_dict()` password field
 
 ## Improvement Plan
 

@@ -49,7 +49,7 @@ class TestArchiveTodayWorker:
         with (
             patch.object(worker, "_check_site", return_value=True),
             patch.object(worker, "_process_one") as mock_process_one,
-            patch.object(worker, "_save_progress") as mock_save,
+            patch.object(worker, "save_progress") as mock_save,
         ):
 
             def side_effect(info):

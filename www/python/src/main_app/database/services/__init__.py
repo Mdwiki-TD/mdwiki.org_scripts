@@ -1,3 +1,9 @@
+"""
+Shared db services, used in both admin and public blueprints
+"""
+
+from __future__ import annotations
+
 from .admin_service import AdminService
 from .jobs_service import JobsService, JobStats, UserJobsStats
 from .settings_service import SettingsService

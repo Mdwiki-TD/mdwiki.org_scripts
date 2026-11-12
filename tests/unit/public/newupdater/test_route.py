@@ -22,7 +22,7 @@ class TestNewupdaterRoute:
         from src.main_app.services.auth.current_user import CurrentUser
 
         monkeypatch.setattr(
-            "src.main_app.public.auth.decorators.get_current_user",
+            "src.main_app.decorators.auth_decorators.CurrentUserResolver.get_current_user",
             lambda: CurrentUser(user_id=1, username="TestUser", access_token=b"t", access_secret=b"s"),
         )
         resp = mock_client.get("/newupdater/save/test")

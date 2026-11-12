@@ -95,11 +95,11 @@ class JobsService(CRUDService[JobRecord]):
         # return _get_job(job_id, job_type)
         filters = {"id": job_id}
         if job_type:
-            filters["job_type"] = job_type
+            filters["job_type"] = job_type  # pyright: ignore[reportArgumentType]
 
         job = self.get_by(**filters)
         if not job:
-            raise LookupError(f"Job id {job_id} was not found")
+            raise LookupError(f"Job id {job_id} with {job_type=} was not found")
         return job
 
     def list_jobs(self, limit: int = 100, job_type: str | None = None) -> list[JobRecord]:

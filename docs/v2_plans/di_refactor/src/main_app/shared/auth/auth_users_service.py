@@ -14,7 +14,6 @@ from ...database.services import (
     UsersService,
     UserTokenService,
 )
-from ..core.crypto import encrypt_value
 from .current_user import CurrentUser
 
 if TYPE_CHECKING:
@@ -63,8 +62,8 @@ class AuthUsersNewService:
             return None
 
         try:
-            encrypted_token = encrypt_value(access_key)
-            encrypted_secret = encrypt_value(access_secret)
+            encrypted_token = CryptoService().encrypt(access_key)
+            encrypted_secret = CryptoService().encrypt(access_secret)
             self.user_token_service.upsert_user_token(
                 user_id=user_id,
                 encrypted_token=encrypted_token,

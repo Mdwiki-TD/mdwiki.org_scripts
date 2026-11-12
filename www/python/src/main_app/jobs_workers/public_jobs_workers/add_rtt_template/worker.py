@@ -112,7 +112,7 @@ class AddRttTemplateWorker(BaseObjectsJobWorker):
             return self.result
 
         self.result.summary.total = total
-        self._save_progress()
+        self.save_progress()
 
         per_item = self.get_priority(total) if total else 1
 
@@ -130,7 +130,7 @@ class AddRttTemplateWorker(BaseObjectsJobWorker):
                 break
 
             if i == 1 or i % per_item == 0:
-                self._save_progress()
+                self.save_progress()
 
         if self.result.status in ("pending", "running"):
             self.result.status = "completed"
