@@ -13,7 +13,7 @@ from datetime import datetime
 from mwclient.client import Site
 
 from ....api_services import MwClientPage, get_category_members
-from ....services.fixref_shared.fixref_text_new import fix_ref_template
+from ....services.fixref_shared.fixref_text_new import FixRefTextService
 from ...base_worker import BaseObjectsJobWorker, JobsRunner
 from ...shared_objects import SharedworkerObject, UpdaterOutcome
 
@@ -193,7 +193,7 @@ class FixRefWorker(BaseObjectsJobWorker):
 
     def _make_new_text(self, text: str) -> tuple[str, str]:
         try:
-            new_text, summary = fix_ref_template(text, returnsummary=True)
+            new_text, summary = FixRefTextService().fix_ref_template(text, returnsummary=True)
         except Exception as e:
             logger.error("Error while fixing references: %s", str(e))
             return text, f"Error: {e}"

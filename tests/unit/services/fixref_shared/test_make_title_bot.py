@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock
 
 import pytest
 from src.main_app.services.fixref_shared.make_title_bot import TitleMaker, _cached_fetch_title

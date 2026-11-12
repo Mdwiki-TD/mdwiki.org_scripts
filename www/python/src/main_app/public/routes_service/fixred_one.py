@@ -53,19 +53,19 @@ class FixRedOneService:
             return UpdaterTextOutcome(status="skipped", msg="No user")
 
         app_settings = get_settings()
-        site = WikiSiteClient.get_user_site(
+        site = self.wiki_site_client_cls.get_user_site(
             app_settings.other.wiki_domain,
             user.to_auth_payload(),
         )
 
-        page = MwClientPage(title, site)
+        page = self.mw_client_page_cls(title, site)
         old_text = page.get_text()
 
         if not old_text or not old_text.strip():
             return UpdaterTextOutcome(status="notext", old_text=old_text)
 
         state = RunState()
-        worker = FixRedirectWorker(site=site)
+        worker = self.fix_redirect_worker_cls(site=site)
         try:
             new_text = worker.work_on_text(title, old_text, state)
         except Exception:

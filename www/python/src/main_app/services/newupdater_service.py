@@ -17,7 +17,7 @@ from ..api_services import MwClientPage
 from ..api_services.clients.wikisite_client import WikiSiteClient
 from ..config import get_settings
 from .auth.current_user import CurrentUser
-from .named_param import add_param_named
+from .named_param import NamedParamEditor
 from .new_updater import med_updater_one
 from .shared_classes import UpdaterTextOutcome
 
@@ -54,7 +54,7 @@ def newupdater_one_title(
 
     try:
         new_text = med_updater_one(title, old_text)
-        new_text = add_param_named(new_text)
+        new_text = NamedParamEditor.add_param_named(new_text)
     except Exception:
         logger.exception("work_on_text failed for %s", title)
         raise

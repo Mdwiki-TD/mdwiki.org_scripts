@@ -325,9 +325,7 @@ class MediaWikiQueryService:
                 all_files.extend([x.get("title", "") for x in members])
                 page_count += 1
 
-                logger.debug(
-                    f"Fetched category members {page_count}: {len(members)} page, (total: {len(all_files)})"
-                )
+                logger.debug(f"Fetched category members {page_count}: {len(members)} page, (total: {len(all_files)})")
 
                 if "continue" in data:
                     cmcontinue = data["continue"].get("cmcontinue")
@@ -350,6 +348,38 @@ class MediaWikiQueryService:
         logger.info(f"Finished fetching {len(all_files)} files in {page_count} pages")
         return all_files
 
+    def get_category_members(
+        self,
+        category_title: str,
+        namespace: int = 0,
+        limit: int | str | None = None,
+    ) -> list[str]:
+        """Retrieve all members of a specified category from a MediaWiki site."""
+        logger.debug(f"load category members for {category_title}")
+        try:
+            category = self.site.pages[category_title]
+            # Use list comprehension for efficiency - consumes the generator
+            members = category.members(
+                prop="ids|title",
+                namespace=namespace,
+                sort="sortkey",
+                dir="asc",
+                start=None,
+                end=None,
+                generator=True,
+            )
+            list_members = list(members)
+            return [p if isinstance(p, str) else p.name for p in list_members]
+        except APIError as e:
+            logger.warning(f"API error getting category members for {category_title}: {e}")
+            return []
+        except KeyError as e:
+            logger.warning(f"Key error in API response for {category_title}: {e}")
+            return []
+
+    # ------------------------------------------------------------------
+    # Import
+    # ------------------------------------------------------------------
 
     def import_page_from_wiki(
         self,
@@ -435,9 +465,7 @@ def get_category_members_titles(
     namespace: int | None = None,
 ) -> list[str]:
     """Legacy entry point. Use :meth:`MediaWikiQueryService.get_category_members_titles` instead."""
-    return MediaWikiQueryService(site=site).get_category_members_titles(
-        category_name, namespace
-    )
+    return MediaWikiQueryService(site=site).get_category_members_titles(category_name, namespace)
 
 
 def import_page_from_wiki(
