@@ -24,59 +24,75 @@ from .shared_classes import UpdaterTextOutcome
 logger = logging.getLogger(__name__)
 
 
-def newupdater_one_title(
-    title: str,
-    save: bool = False,
-    summary: str = "Med updater.",
-    user: CurrentUser | None = None,
-) -> UpdaterTextOutcome:
-    """Fetch the page, run the updater, and report what the diff would be."""
-    title = (title or "").strip()
-    if not title:
-        return UpdaterTextOutcome(status="skipped", msg="Invalid title")
+class NewUpdaterService:
+    """Fetch a wiki page, run the medical content updater, and optionally save.
 
-    if user is None:
-        return UpdaterTextOutcome(status="skipped", msg="No user")
+    Collaborators are injected via ``__init__`` for testability.
+    """
 
-    app_settings = get_settings()
-    site = WikiSiteClient.get_user_site(
-        app_settings.other.wiki_domain,
-        user.to_auth_payload(),
-    )
-    if site is None:
-        return UpdaterTextOutcome(status="skipped", msg="Failed to get site")
+    def __init__(
+        self,
+        named_param_editor: NamedParamEditor | None = None,
+        wiki_site_client_cls: type[WikiSiteClient] | None = None,
+        mw_client_page_cls: type[MwClientPage] | None = None,
+    ) -> None:
+        self.named_param_editor = named_param_editor or NamedParamEditor()
+        self.wiki_site_client_cls = wiki_site_client_cls or WikiSiteClient
+        self.mw_client_page_cls = mw_client_page_cls or MwClientPage
 
-    page = MwClientPage(title, site)
-    old_text = page.get_text()
+    def update_one(
+        self,
+        title: str,
+        save: bool = False,
+        summary: str = "Med updater.",
+        user: CurrentUser | None = None,
+    ) -> UpdaterTextOutcome:
+        """Fetch the page, run the updater, and report what the diff would be."""
+        title = (title or "").strip()
+        if not title:
+            return UpdaterTextOutcome(status="skipped", msg="Invalid title")
 
-    if not old_text or not old_text.strip():
-        return UpdaterTextOutcome(status="notext", old_text=old_text)
+        if user is None:
+            return UpdaterTextOutcome(status="skipped", msg="No user")
 
-    try:
-        new_text = med_updater_one(title, old_text)
-        new_text = NamedParamEditor.add_param_named(new_text)
-    except Exception:
-        logger.exception("work_on_text failed for %s", title)
-        raise
+        app_settings = get_settings()
+        site = self.wiki_site_client_cls.get_user_site(
+            app_settings.other.wiki_domain,
+            user.to_auth_payload(),
+        )
+        if site is None:
+            return UpdaterTextOutcome(status="skipped", msg="Failed to get site")
 
-    if not new_text or not new_text.strip():
-        return UpdaterTextOutcome(status="notext", old_text=old_text)
+        page = self.mw_client_page_cls(title, site)
+        old_text = page.get_text()
 
-    if new_text == old_text:
-        return UpdaterTextOutcome(status="skipped", msg="No changes")
+        if not old_text or not old_text.strip():
+            return UpdaterTextOutcome(status="notext", old_text=old_text)
 
-    if save:
-        result = page.edit(new_text, summary)
-        if result.get("success"):
-            return UpdaterTextOutcome(status="saved", newrevid=result.get("newrevid", 0))
+        try:
+            new_text = med_updater_one(title, old_text)
+            new_text = self.named_param_editor.add_param_named(new_text)
+        except Exception:
+            logger.exception("work_on_text failed for %s", title)
+            raise
 
-    return UpdaterTextOutcome(
-        status="changes",
-        old_text=old_text,
-        new_text=new_text,
-    )
+        if not new_text or not new_text.strip():
+            return UpdaterTextOutcome(status="notext", old_text=old_text)
 
+        if new_text == old_text:
+            return UpdaterTextOutcome(status="skipped", msg="No changes")
+
+        if save:
+            result = page.edit(new_text, summary)
+            if result.get("success"):
+                return UpdaterTextOutcome(status="saved", newrevid=result.get("newrevid", 0))
+
+        return UpdaterTextOutcome(
+            status="changes",
+            old_text=old_text,
+            new_text=new_text,
+        )
 
 __all__ = [
-    "newupdater_one_title",
+    "NewUpdaterService",
 ]
