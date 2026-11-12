@@ -1,10 +1,11 @@
 #!/usr/bin/python3
+"""Title extraction from URLs via the Wikipedia citation API.
+
+Provides :class:`TitleMaker` for fetching and filtering citation titles,
+plus a backward-compatible legacy :func:`make_title` function.
 """
-# ---
-from md_core.mdpy.bots import make_title_bot
-# _title1_ = make_title_bot.make_title(url)
-# ---
-"""
+
+from __future__ import annotations
 
 import functools
 import logging
@@ -15,8 +16,9 @@ from ...api_services.citation_api import CitationApi
 
 logger = logging.getLogger(__name__)
 
-# ---
-globalbadtitles = r"""
+
+# Module-level blacklist regex (compiled once, shared by all instances)
+_GLOBAL_BAD_TITLES = r"""
 # is
 (test|
 # starts with
@@ -75,7 +77,7 @@ def make_title(url: str) -> str:
     if not title or title.strip().lower() == "not found.":
         return ""
 
-    titleBlackList = re.compile(globalbadtitles, re.I | re.S | re.X)
+    titleBlackList = re.compile(_GLOBAL_BAD_TITLES, re.I | re.S | re.X)
     if titleBlackList.match(title):
         logger.error(f"{url} : Blacklisted title ({title})")
 

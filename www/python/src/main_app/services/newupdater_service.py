@@ -4,10 +4,9 @@ In-process replacement for ``python/newupdater.py``. Unlike the other tools
 this one is fast — a single page transform — so we run it inline on the
 request thread instead of through the job runner.
 
-The actual content-rewriting algorithm lives in ``python/new_updater``
-(``work_on_text``). We import it via the legacy-shim path because that
-module encodes years of medical-content domain rules; reimplementing it is
-out of scope for the merge.
+The actual content-rewriting algorithm lives in ``new_updater``
+(``med_updater_one``). We import it as-is because that module encodes years
+of medical-content domain rules; reimplementing it is out of scope.
 """
 
 from __future__ import annotations
@@ -31,9 +30,7 @@ def newupdater_one_title(
     summary: str = "Med updater.",
     user: CurrentUser | None = None,
 ) -> UpdaterTextOutcome:
-    """
-    Fetch the page, run the updater, and report what the diff would be.
-    """
+    """Fetch the page, run the updater, and report what the diff would be."""
     title = (title or "").strip()
     if not title:
         return UpdaterTextOutcome(status="skipped", msg="Invalid title")
@@ -42,7 +39,10 @@ def newupdater_one_title(
         return UpdaterTextOutcome(status="skipped", msg="No user")
 
     app_settings = get_settings()
-    site = WikiSiteClient.get_user_site(app_settings.other.wiki_domain, user.to_auth_payload())
+    site = WikiSiteClient.get_user_site(
+        app_settings.other.wiki_domain,
+        user.to_auth_payload(),
+    )
     if site is None:
         return UpdaterTextOutcome(status="skipped", msg="Failed to get site")
 
@@ -70,7 +70,11 @@ def newupdater_one_title(
         if result.get("success"):
             return UpdaterTextOutcome(status="saved", newrevid=result.get("newrevid", 0))
 
-    return UpdaterTextOutcome(status="changes", old_text=old_text, new_text=new_text)
+    return UpdaterTextOutcome(
+        status="changes",
+        old_text=old_text,
+        new_text=new_text,
+    )
 
 
 __all__ = [

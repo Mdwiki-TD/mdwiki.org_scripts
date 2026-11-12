@@ -1,4 +1,8 @@
-""" """
+"""Wikilink redirect replacement utilities.
+
+Provides :class:`WikilinkReplacer` for updating wikilinks in wikitext
+to follow redirects, plus backward-compatible legacy functions.
+"""
 
 from __future__ import annotations
 
@@ -27,18 +31,20 @@ def _normalize_mediawiki_title(title: str) -> str:
     return title
 
 
-def _replace_wikilink_destinations(text: str, redirect_to: str, final_target: str, set_text: bool = False) -> str:
-    """
-    Parses wikitext to find links pointing to a specific redirect
-    and updates their title to point to the final target.
-    Relies on wikitextparser native properties to preserve fragments and display text.
+def _replace_wikilink_destinations(
+    text: str,
+    redirect_to: str,
+    final_target: str,
+    set_text: bool = False,
+) -> str:
+    """Parse wikitext and update links pointing to *redirect_to* → *final_target*.
 
-    Default:
+    Default (set_text=False):
         - ``[[old]]`` becomes ``[[new]]``.
         - ``[[old|...]]`` becomes ``[[new|...]]``.
 
-    With `set_text=True`:
-        - ``[[old]]`` becomes ``[[new|old]]`` (preserve the original display text)
+    With set_text=True:
+        - ``[[old]]`` becomes ``[[new|old]]`` (preserve original display text).
     """
     parsed_text = wtp.parse(text)
 

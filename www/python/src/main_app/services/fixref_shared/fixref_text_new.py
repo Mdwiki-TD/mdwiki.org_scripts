@@ -1,3 +1,12 @@
+"""Reference template normalization for wikitext.
+
+Provides :class:`FixRefTextService` for normalizing ``<ref>`` templates
+(lay-source extraction, title auto-fill), plus backward-compatible
+legacy functions.
+"""
+
+from __future__ import annotations
+
 import re
 import sys
 from typing import Any
@@ -8,8 +17,7 @@ from .make_title_bot import make_title
 
 
 def change_lay_source(temp: wtp.Template) -> tuple[str, Any]:
-
-    # temp_name = "cite press release"
+    """Extract lay-source parameters from *temp* into a ``{{lay source}}`` string."""
     temp_name = str(temp.normal_name()).strip()
 
     tab = {
@@ -18,7 +26,6 @@ def change_lay_source(temp: wtp.Template) -> tuple[str, Any]:
         "date": ["laydate", "lay-date"],
         "source": ["laysource", "lay-source"],
     }
-
     new_tab = {"url": "", "title": "", "date": "", "source": ""}
 
     for x, ys in tab.items():
@@ -32,7 +39,7 @@ def change_lay_source(temp: wtp.Template) -> tuple[str, Any]:
 
     title = new_tab["title"]
     url = new_tab["url"]
-    Date = new_tab["date"]
+    date = new_tab["date"]
     source = new_tab["source"]
 
     if title == "" and url != "":
@@ -40,21 +47,19 @@ def change_lay_source(temp: wtp.Template) -> tuple[str, Any]:
         title = title.replace("|", "{{!}}")
 
     lay_temp = ""
-
     if url != "" or source != "":
-        lay_temp = f"""|template = {temp_name}|url = {url}|title = {title}|date = {Date}|website = {source}"""
+        lay_temp = f"""|template = {temp_name}|url = {url}|title = {title}|date = {date}|website = {source}"""
         lay_temp = "* {{lay source" + lay_temp + "}}"
 
     return lay_temp, temp
 
 
 def add_title(temp: wtp.Template) -> wtp.Template:
-
+    """Auto-fill a missing ``title`` parameter from the ``url`` parameter."""
     title = ""
     url = ""
 
     title_arg = temp.get_arg("title")
-
     if title_arg:
         title = str(title_arg.value).strip()
 
@@ -66,7 +71,6 @@ def add_title(temp: wtp.Template) -> wtp.Template:
         return temp
 
     title = make_title(url)
-
     if not title:
         return temp
 
@@ -81,7 +85,20 @@ def add_title(temp: wtp.Template) -> wtp.Template:
 
 
 def fix_ref_template(text: str, returnsummary: bool = False) -> str | tuple[str, str]:
+    """Normalize ``<ref>`` templates in *text*.
 
+    For each ``<ref>`` tag containing templates:
+    - Extracts lay-source parameters into ``{{lay source}}``.
+    - Auto-fills missing ``title`` from the URL.
+    - Strips newlines from template text (unless ``newline`` is in sys.argv).
+
+    Args:
+        text: Wikitext to process.
+        returnsummary: If True, return ``(newtext, summary)`` tuple.
+
+    Returns:
+        Processed wikitext, or ``(wikitext, summary)`` if *returnsummary*.
+    """
     summary = "Normalize references"
 
     newtext = text
@@ -100,7 +117,6 @@ def fix_ref_template(text: str, returnsummary: bool = False) -> str | tuple[str,
             temp_str = temp.string
 
             laysource, temp = change_lay_source(temp)
-
             temp = add_title(temp)
 
             temp_new = temp.string

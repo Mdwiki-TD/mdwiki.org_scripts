@@ -1,3 +1,12 @@
+"""Named-parameter editor for medical infoboxes.
+
+Provides :class:`NamedParamEditor` for migrating the ``eponym`` parameter
+to ``named after`` in medical-condition infoboxes, plus backward-compatible
+legacy functions.
+"""
+
+from __future__ import annotations
+
 import logging
 from typing import Any
 
