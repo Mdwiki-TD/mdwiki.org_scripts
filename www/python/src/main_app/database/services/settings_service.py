@@ -149,23 +149,6 @@ class SettingsService(CRUDService[SettingRecord]):
         return self.delete_record(record)
 
 
-# ---------------------------------------------------------------------------
-# Legacy compatibility layer — no business logic, delegates to SettingsService
-# ---------------------------------------------------------------------------
-
-
-def _serialize_value(value: Any, value_type: str) -> str | None:
-    """Legacy entry point. Use :meth:`SettingsService.serialize_value` instead."""
-    return SettingsService.serialize_value(value, value_type)
-
-
-def format_values(records: list[SettingRecord]) -> dict[str, Any]:
-    """Legacy entry point. Use :meth:`SettingsService.format_values` instead."""
-    return SettingsService.format_values(records)
-
-
 __all__ = [
     "SettingsService",
-    "_serialize_value",
-    "format_values",
 ]

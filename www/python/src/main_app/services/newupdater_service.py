@@ -12,7 +12,6 @@ of medical-content domain rules; reimplementing it is out of scope.
 from __future__ import annotations
 
 import logging
-from typing import Any
 
 from ..api_services import MwClientPage
 from ..api_services.clients.wikisite_client import WikiSiteClient
@@ -88,21 +87,11 @@ class NewUpdaterService:
             if result.get("success"):
                 return UpdaterTextOutcome(status="saved", newrevid=result.get("newrevid", 0))
 
-        return UpdaterTextOutcome(status="changes", old_text=old_text, new_text=new_text)
-
-
-# ---------------------------------------------------------------------------
-# Legacy compatibility layer — no business logic, delegates to NewUpdaterService
-# ---------------------------------------------------------------------------
-
-_default_service: NewUpdaterService | None = None
-
-
-def _get_default_service() -> NewUpdaterService:
-    global _default_service
-    if _default_service is None:
-        _default_service = NewUpdaterService()
-    return _default_service
+        return UpdaterTextOutcome(
+            status="changes",
+            old_text=old_text,
+            new_text=new_text,
+        )
 
 
 def newupdater_one_title(
@@ -112,7 +101,7 @@ def newupdater_one_title(
     user: CurrentUser | None = None,
 ) -> UpdaterTextOutcome:
     """Legacy entry point. Use :meth:`NewUpdaterService.update_one` instead."""
-    return _get_default_service().update_one(title, save, summary, user)
+    return NewUpdaterService().update_one(title, save, summary, user)
 
 
 __all__ = [

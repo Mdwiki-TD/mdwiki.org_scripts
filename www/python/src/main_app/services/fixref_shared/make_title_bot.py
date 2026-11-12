@@ -109,23 +109,9 @@ class TitleMaker:
         return title
 
 
-# ---------------------------------------------------------------------------
-# Legacy compatibility layer — no business logic, delegates to TitleMaker
-# ---------------------------------------------------------------------------
-
-_default_maker: TitleMaker | None = None
-
-
-def _get_default_maker() -> TitleMaker:
-    global _default_maker
-    if _default_maker is None:
-        _default_maker = TitleMaker()
-    return _default_maker
-
-
 def make_title(url: str) -> str:
     """Legacy entry point. Use :meth:`TitleMaker.make_title` instead."""
-    return _get_default_maker().make_title(url)
+    return TitleMaker().make_title(url)
 
 
 # Expose cache_clear for backward compatibility with tests

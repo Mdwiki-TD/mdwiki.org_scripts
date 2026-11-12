@@ -81,23 +81,16 @@ class FixRedOneService:
         if save:
             result = page.edit(new_text, summary)
             if result.get("success"):
-                return UpdaterTextOutcome(status="saved", newrevid=result.get("newrevid", 0))
+                return UpdaterTextOutcome(
+                    status="saved",
+                    newrevid=result.get("newrevid", 0),
+                )
 
-        return UpdaterTextOutcome(status="changes", old_text=old_text, new_text=new_text)
-
-
-# ---------------------------------------------------------------------------
-# Legacy compatibility layer — no business logic, delegates to FixRedOneService
-# ---------------------------------------------------------------------------
-
-_default_service: FixRedOneService | None = None
-
-
-def _get_default_service() -> FixRedOneService:
-    global _default_service
-    if _default_service is None:
-        _default_service = FixRedOneService()
-    return _default_service
+        return UpdaterTextOutcome(
+            status="changes",
+            old_text=old_text,
+            new_text=new_text,
+        )
 
 
 def work_on_title(
@@ -107,7 +100,7 @@ def work_on_title(
     user: CurrentUser | None = None,
 ) -> UpdaterTextOutcome:
     """Legacy entry point. Use :meth:`FixRedOneService.work_on_title` instead."""
-    return _get_default_service().work_on_title(title, save, summary, user)
+    return FixRedOneService().work_on_title(title, save, summary, user)
 
 
 __all__ = [

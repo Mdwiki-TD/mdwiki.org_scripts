@@ -15,7 +15,6 @@ from flask_wtf.csrf import CSRFError
 
 from .database.services.error_log_service import ErrorLogService
 
-# logger = logging.getLogger(__name__)
 _logger = logging.getLogger("request_debug")
 _logger.propagate = False  # not linked to root handlers
 _logger.addHandler(logging.StreamHandler())  # console only
@@ -158,63 +157,6 @@ class ErrorHandler:
         return render_template("error.html", title=title), status
 
 
-# ---------------------------------------------------------------------------
-# Legacy compatibility layer — no business logic, delegates to ErrorHandler
-# ---------------------------------------------------------------------------
-
-
-def safe_headers(headers) -> dict[str, str]:
-    """Legacy entry point. Use :meth:`ErrorHandler.safe_headers` instead."""
-    return ErrorHandler.safe_headers(headers)
-
-
-def safe_query() -> str:
-    """Legacy entry point. Use :meth:`ErrorHandler.safe_query` instead."""
-    return ErrorHandler.safe_query()
-
-
-def client_ip() -> str:
-    """Legacy entry point. Use :meth:`ErrorHandler.client_ip` instead."""
-    return ErrorHandler.client_ip()
-
-
-def log_error(label: str, e: Exception, level: int = logging.ERROR) -> None:
-    """Legacy entry point. Use :meth:`ErrorHandler.log_error` instead."""
-    ErrorHandler.log_error(label, e, level)
-
-
-def wants_json() -> bool:
-    """Legacy entry point. Use :meth:`ErrorHandler.wants_json` instead."""
-    return ErrorHandler.wants_json()
-
-
-def respond(
-    *,
-    status: int,
-    title: str,
-    error_str: str,
-    flash_message: str,
-    json_message: str | None = None,
-    category: str = "warning",
-    error: Exception | None = None,
-) -> tuple[str | Response, int]:
-    """Legacy entry point. Use :meth:`ErrorHandler.respond` instead."""
-    return ErrorHandler.respond(
-        status=status,
-        title=title,
-        error_str=error_str,
-        flash_message=flash_message,
-        json_message=json_message,
-        category=category,
-        error=error,
-    )
-
-
-# ---------------------------------------------------------------------------
-# Flask registration functions (these are appropriate as module-level functions)
-# ---------------------------------------------------------------------------
-
-
 def register_cache_headers(app: Flask) -> None:
     """Prevent CSRF token caching on form-related routes."""
 
@@ -339,10 +281,4 @@ __all__ = [
     "ErrorHandler",
     "register_error_pages",
     "register_cache_headers",
-    "safe_headers",
-    "safe_query",
-    "client_ip",
-    "log_error",
-    "wants_json",
-    "respond",
 ]

@@ -23,7 +23,6 @@ class WikilinkReplacer:
     @staticmethod
     def _normalize_mediawiki_title(title: str) -> str:
         """Normalize a MediaWiki page title for accurate comparison.
-
         Handles spaces, underscores, and first-letter capitalization.
         """
         if not title:

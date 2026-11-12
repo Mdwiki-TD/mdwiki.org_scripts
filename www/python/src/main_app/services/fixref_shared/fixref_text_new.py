@@ -108,12 +108,14 @@ class FixRefTextService:
             Processed wikitext, or ``(wikitext, summary)`` if *returnsummary*.
         """
         summary = "Normalize references"
+
         newtext = text
 
         parsed = wtp.parse(text)
 
         for tag in parsed.get_tags(name="ref"):
             content = tag.contents or ""
+
             if not content.strip():
                 continue
 
@@ -139,33 +141,19 @@ class FixRefTextService:
         return (newtext, summary) if returnsummary else newtext
 
 
-# ---------------------------------------------------------------------------
-# Legacy compatibility layer — no business logic, delegates to FixRefTextService
-# ---------------------------------------------------------------------------
-
-_default_service: FixRefTextService | None = None
-
-
-def _get_default_service() -> FixRefTextService:
-    global _default_service
-    if _default_service is None:
-        _default_service = FixRefTextService()
-    return _default_service
-
-
 def change_lay_source(temp: wtp.Template) -> tuple[str, Any]:
     """Legacy entry point. Use :meth:`FixRefTextService._change_lay_source` instead."""
-    return _get_default_service()._change_lay_source(temp)
+    return FixRefTextService()._change_lay_source(temp)
 
 
 def add_title(temp: wtp.Template) -> wtp.Template:
     """Legacy entry point. Use :meth:`FixRefTextService._add_title` instead."""
-    return _get_default_service()._add_title(temp)
+    return FixRefTextService()._add_title(temp)
 
 
 def fix_ref_template(text: str, returnsummary: bool = False) -> str | tuple[str, str]:
     """Legacy entry point. Use :meth:`FixRefTextService.fix_ref_template` instead."""
-    return _get_default_service().fix_ref_template(text, returnsummary)
+    return FixRefTextService().fix_ref_template(text, returnsummary)
 
 
 __all__ = [
