@@ -1,8 +1,17 @@
+"""Category member queries via MediaWiki API.
+
+Legacy compatibility module — delegates to :class:`MediaWikiQueryService`.
+"""
+
+from __future__ import annotations
+
 import logging
 
 import mwclient
 import mwclient.errors
 from mwclient.client import Site
+
+from .query_api import MediaWikiQueryService
 
 logger = logging.getLogger(__name__)
 
@@ -13,30 +22,8 @@ def get_category_members(
     namespace: int = 0,
     limit: int | str | None = None,
 ) -> list[str]:
-    """
-    Retrieve all members of a specified category from a MediaWiki site.
-    """
-    logger.debug(f"load category members for {category_title}")
-    try:
-        category = site.pages[category_title]
-        # Use list comprehension for efficiency - consumes the generator
-        members = category.members(
-            prop="ids|title",
-            namespace=namespace,
-            sort="sortkey",
-            dir="asc",
-            start=None,
-            end=None,
-            generator=True,
-        )
-        list_members = list(members)
-        return [p if isinstance(p, str) else p.name for p in list_members]
-    except mwclient.errors.APIError as e:
-        logger.warning(f"API error getting category members for {category_title}: {e}")
-        return []
-    except KeyError as e:
-        logger.warning(f"Key error in API response for {category_title}: {e}")
-        return []
+    """Legacy entry point. Use :meth:`MediaWikiQueryService.get_category_members` instead."""
+    return MediaWikiQueryService(site=site).get_category_members(category_title, namespace, limit)
 
 
 __all__ = [
