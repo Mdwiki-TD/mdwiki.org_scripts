@@ -12,7 +12,7 @@ logger = logging.getLogger(__name__)
 
 
 def _is_admin(user: Any) -> bool:
-    """Check if user is an active admin (admin)."""
+    """Check if user is an active admin."""
     return bool(user and getattr(user, "is_active_admin", False))
 
 

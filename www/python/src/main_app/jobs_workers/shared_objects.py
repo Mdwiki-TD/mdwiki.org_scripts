@@ -9,9 +9,25 @@ from typing import Any, Literal
 
 logger = logging.getLogger(__name__)
 
-STATUS_LITERAL = Literal["cancelled", "completed", "failed", "pending", "running", "skipped", "success"]
+STATUS_LITERAL = Literal[
+    "cancelled",
+    "completed",
+    "failed",
+    "pending",
+    "running",
+    "skipped",
+    "success",
+]
 
-OUTCOME_STATUS = Literal["missing", "changed", "failed", "skipped", "completed", "pending", "running"]
+OUTCOME_STATUS = Literal[
+    "missing",
+    "changed",
+    "failed",
+    "skipped",
+    "completed",
+    "pending",
+    "running",
+]
 
 
 @dataclass
@@ -24,21 +40,21 @@ class OneStep:
 @dataclass
 class SharedMapToJson:
     def to_json(self) -> dict[str, Any]:
+        """
+        Converts the dataclass instance back to its original dictionary format.
+        """
         return asdict(self)
 
 
 @dataclass
-class UpdaterOutcome:
+class UpdaterOutcome(SharedMapToJson):
     """Result of running the updater on one page."""
 
     status: OUTCOME_STATUS = "pending"
-
     title: str = ""
-    msg: str = ""
     newrevid: int = 0
+    msg: str = ""
 
-    def to_json(self) -> dict[str, Any]:
-        return asdict(self)
 
 
 @dataclass

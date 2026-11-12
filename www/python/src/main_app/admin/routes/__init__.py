@@ -1,4 +1,4 @@
-"""Admin/Admin blueprint package."""
+"""Admin/Coordinator blueprint package."""
 
 from __future__ import annotations
 

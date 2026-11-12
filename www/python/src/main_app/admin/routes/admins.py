@@ -25,18 +25,20 @@ from ...decorators import admin_required
 logger = logging.getLogger(__name__)
 
 
-class AdminDashboardView(MethodView):
+class BaseView(MethodView):
+    def __init__(self) -> None:
+        self.service = AdminService()
+
+
+class AdminDashboardView(BaseView):
     """View to handle listing and rendering the admin management dashboard."""
 
     decorators = [admin_required]
 
-    def __init__(self) -> None:
-        self.admin_service = AdminService()
-
     def get(self) -> str:
         """Render the admin management dashboard."""
         try:
-            admins = self.admin_service.list_admins()
+            admins = self.service.list_admins()
         except Exception as e:  # pragma: no cover - defensive guard
             logger.error("Unable to list admins: %s", e)
             flash("Unable to list admins.", "danger")
@@ -54,13 +56,10 @@ class AdminDashboardView(MethodView):
         )
 
 
-class AddAdminView(MethodView):
+class AddAdminView(BaseView):
     """View to handle adding a new admin."""
 
     decorators = [admin_required]
-
-    def __init__(self) -> None:
-        self.admin_service = AdminService()
 
     def post(self) -> ResponseReturnValue:
         """Create a new admin from the submitted username."""
@@ -70,7 +69,7 @@ class AddAdminView(MethodView):
             return redirect(url_for("admin_panel.admins.dashboard"))
 
         try:
-            record = self.admin_service.add_admin(username)
+            record = self.service.add_admin(username)
         except UserNotFoundError as exc:
             logger.error("UserNotFoundError: %s", exc)
             flash(f"User '{username}' does not exist", "warning")
@@ -89,18 +88,19 @@ class AddAdminView(MethodView):
         return redirect(url_for("admin_panel.admins.dashboard"))
 
 
-class AdminStatusView(MethodView):
+class AdminStatusView(BaseView):
     """Base class for managing admin status updates."""
 
     decorators = [admin_required]
 
-    def __init__(self) -> None:
-        self.admin_service = AdminService()
-
-    def _set_record_active_status(self, admin_id: int, is_active: bool) -> ResponseReturnValue:
+    def _set_record_active_status(
+        self,
+        admin_id: int,
+        is_active: bool,
+    ) -> ResponseReturnValue:
         """Shared helper to update admin is_active status."""
         try:
-            record = self.admin_service.set_admin_active(admin_id, is_active)
+            record = self.service.set_admin_active(admin_id, is_active)
             if record is None:
                 raise LookupError(f"Admin with id {admin_id} not found")
         except LookupError:
@@ -130,21 +130,18 @@ class DeactivateAdminView(AdminStatusView):
         return self._set_record_active_status(admin_id, False)
 
 
-class DeleteAdminView(MethodView):
+class DeleteAdminView(BaseView):
     """View to remove an admin entirely."""
 
     decorators = [admin_required]
 
-    def __init__(self) -> None:
-        self.admin_service = AdminService()
-
     def post(self, admin_id: int) -> ResponseReturnValue:
         """Remove an admin entirely."""
         try:
-            record = self.admin_service.get_admin_by_id(admin_id)
+            record = self.service.get_admin_by_id(admin_id)
             if record is None:
                 raise LookupError(f"Admin with id {admin_id} not found")
-            self.admin_service.delete(admin_id)
+            self.service.delete(admin_id)
         except LookupError:
             logger.exception("Unable to delete admin.")
             flash(f"Admin id {admin_id} was not found", "warning")
