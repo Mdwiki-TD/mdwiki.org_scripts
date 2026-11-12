@@ -72,7 +72,7 @@ class SharedJobRoutesRegistrar:
         )
         if register_all_jobs_list:
             bp.add_url_rule(
-                "/all-jobs",
+                "/list",
                 view_func=AllJobsListView.as_view("all_jobs_list", *view_args),
             )
 
