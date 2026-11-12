@@ -14,8 +14,7 @@ logger = logging.getLogger(__name__)
 
 
 def _normalize_mediawiki_title(title: str) -> str:
-    """
-    Normalizes a MediaWiki page title for accurate comparison.
+    """Normalize a MediaWiki page title for accurate comparison.
     Handles spaces, underscores, and first-letter capitalization.
     """
     if not title:
@@ -80,15 +79,25 @@ def replace_wikilink_destinations(text: str, redirect_to: str, final_target: str
     and updates their title to point to the final target.
     Relies on wikitextparser native properties to preserve fragments and display text.
     """
-    return _replace_wikilink_destinations(text, redirect_to, final_target)
+    return _replace_wikilink_destinations(
+        text,
+        redirect_to,
+        final_target,
+    )
 
 
 def replace_wikilink_redirects(text: str, redirect_to: str, final_target: str) -> str:
     """ """
-    return _replace_wikilink_destinations(text, redirect_to, final_target, set_text=True)
+    return _replace_wikilink_destinations(
+        text,
+        redirect_to,
+        final_target,
+        set_text=True,
+    )
 
 
 __all__ = [
+    "WikilinkReplacer",
     "replace_wikilink_destinations",
     "replace_wikilink_redirects",
 ]

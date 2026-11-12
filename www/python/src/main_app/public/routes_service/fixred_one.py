@@ -20,6 +20,23 @@ from ...services.shared_classes import UpdaterTextOutcome
 logger = logging.getLogger(__name__)
 
 
+class FixRedOneService:
+    """Fix redirect links in a single wiki page.
+
+    Orchestrates site creation, page fetching, redirect resolution,
+    and optional saving.
+    """
+
+    def __init__(
+        self,
+        fix_redirect_worker_cls: type[FixRedirectWorker] | None = None,
+        wiki_site_client_cls: type[WikiSiteClient] | None = None,
+        mw_client_page_cls: type[MwClientPage] | None = None,
+    ) -> None:
+        self.fix_redirect_worker_cls = fix_redirect_worker_cls or FixRedirectWorker
+        self.wiki_site_client_cls = wiki_site_client_cls or WikiSiteClient
+        self.mw_client_page_cls = mw_client_page_cls or MwClientPage
+
 def work_on_title(
     title: str,
     save: bool = False,

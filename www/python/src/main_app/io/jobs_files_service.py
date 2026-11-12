@@ -6,6 +6,7 @@ and cancellation markers, plus backward-compatible legacy functions.
 
 from __future__ import annotations
 
+import functools
 import json
 import logging
 import os
@@ -89,6 +90,37 @@ class JobFilesService:
         except OSError:
             logger.exception(f"Error checking job cancelled file {filename}")
             return False
+
+
+@functools.lru_cache(maxsize=1)
+def get_jobs_data_dir() -> Path:
+    """Legacy entry point. Returns the jobs data directory path."""
+    return JobFilesService().jobs_dir
+
+
+def save_data(result_data: dict[str, Any], filepath: Path) -> None:
+    """Legacy entry point. Use :meth:`JobFilesService._save_data` instead."""
+    JobFilesService._save_data(result_data, filepath)
+
+
+def save_job_result_by_name(filename: str, result_data: dict[str, Any]) -> Path:
+    """Legacy entry point. Use :meth:`JobFilesService.save_result` instead."""
+    return JobFilesService().save_result(filename, result_data)
+
+
+def load_job_result(filename: str) -> dict[str, Any] | None:
+    """Legacy entry point. Use :meth:`JobFilesService.load_result` instead."""
+    return JobFilesService().load_result(filename)
+
+
+def create_cancel_file(filename: str) -> Path | None:
+    """Legacy entry point. Use :meth:`JobFilesService.create_cancel_file` instead."""
+    return JobFilesService().create_cancel_file(filename)
+
+
+def is_cancel_file_exist(filename: str) -> bool:
+    """Legacy entry point. Use :meth:`JobFilesService.is_cancel_file_exist` instead."""
+    return JobFilesService().is_cancel_file_exist(filename)
 
 
 __all__ = [
