@@ -13,7 +13,7 @@ from typing import Any
 
 import wikitextparser as wtp
 
-from .make_title_bot import make_title
+from .make_title_bot import TitleMaker
 
 
 def change_lay_source(temp: wtp.Template) -> tuple[str, Any]:
@@ -43,7 +43,7 @@ def change_lay_source(temp: wtp.Template) -> tuple[str, Any]:
     source = new_tab["source"]
 
     if title == "" and url != "":
-        title = make_title(url)
+        title = TitleMaker().make_title(url)
         title = title.replace("|", "{{!}}")
 
     lay_temp = ""
@@ -70,7 +70,7 @@ def add_title(temp: wtp.Template) -> wtp.Template:
     if title != "" or url == "":
         return temp
 
-    title = make_title(url)
+    title = TitleMaker().make_title(url)
     if not title:
         return temp
 

@@ -13,7 +13,6 @@ from mwclient.client import Site
 
 from ...api_services.query_api import MediaWikiQueryService
 from ..replace_wikilink import WikilinkReplacer
-from ...api_services.query_api import get_page_links, resolve_redirects
 from .objects import RunState
 
 logger = logging.getLogger(__name__)
@@ -32,12 +31,11 @@ class FixRedirectWorker:
         site: Site | None = None,
     ) -> None:
         # Accept either a pre-built query_service or a raw site
-        if query_service is not None:
-            self.query_service = query_service
-        elif site is not None:
-            self.query_service = MediaWikiQueryService(site=site)
-        else:
+        if query_service is not None and site is None:
             raise ValueError("Either query_service or site must be provided")
+
+        self.query_service = query_service or MediaWikiQueryService(site=site)
+        self.site = site or self.query_service.site
 
     @staticmethod
     def _replace_links(text: str, oldlink: str, newlink: str) -> str:
@@ -55,13 +53,15 @@ class FixRedirectWorker:
         newtext = text
         for oldlink, target in new_targets.items():
             newtext = WikilinkReplacer.replace_wikilink_redirects(newtext, oldlink, target)
-
         return newtext
 
-    def work_on_text(self, title: str, text: str, site: Site, state: RunState) -> str:
-        """Fix redirect links in *text* for the given *title*."""
+    def work_on_text(self, title: str, text: str, state: RunState) -> str:
+        """Fix redirect links in *text* for the given *title*.
 
-        links = get_page_links(title, site)
+        Queries the API for page links and their redirect resolutions,
+        then replaces outdated links with their final targets.
+        """
+        links = self.query_service.get_page_links(title)
 
         for nor in links.get("normalized", []) or []:
             state.normalized[nor["to"]] = nor["from"]
@@ -70,7 +70,7 @@ class FixRedirectWorker:
         if not link_titles:
             return text
 
-        data = resolve_redirects(titles=link_titles, site=site)
+        data = self.query_service.resolve_redirects(titles=link_titles)
 
         new_targets: dict[str, str] = {}
 
@@ -82,7 +82,7 @@ class FixRedirectWorker:
                 new_targets[oldlink2] = target
                 new_targets[oldlink] = target
 
-        newtext = replace_in_text(text, new_targets)
+        newtext = self.replace_in_text(text, new_targets)
         return newtext
 
 

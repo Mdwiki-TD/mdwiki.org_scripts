@@ -18,7 +18,7 @@ logger = logging.getLogger(__name__)
 
 
 # Module-level blacklist regex (compiled once, shared by all instances)
-_GLOBAL_BAD_TITLES = r"""
+_GLOBAL_BAD_TITLES_STR = r"""
 # is
 (test|
 # starts with
@@ -58,35 +58,56 @@ _GLOBAL_BAD_TITLES = r"""
 )
 """
 
+_GLOBAL_BAD_TITLES = re.compile(_GLOBAL_BAD_TITLES_STR, re.I | re.S | re.X)
+
 
 @functools.lru_cache(maxsize=10000)
-def make_title(url: str) -> str:
-    url = url.strip()
-    if not url:
-        logger.info("url = '' return False")
-        return ""
+def _cached_fetch_title(url_encoded: str, citation_api: CitationApi) -> str:
+    """Module-level cached fetch — shared across TitleMaker instances using the default API."""
+    return citation_api.get_citation_title(url_encoded)
 
-    url2 = quote(url)
-    url2 = url2.replace("/", "%2F")
-    url2 = url2.replace(":", "%3A")
-    url2 = url2.replace("&", "%26")
-    url2 = url2.replace("#", "%23")
 
-    title = CitationApi().get_citation_title(url2)
+class TitleMaker:
+    """Fetch and filter citation titles from URLs.
 
-    if not title or title.strip().lower() == "not found.":
-        return ""
+    Uses the Wikipedia citation REST API to extract titles, then filters
+    out common boilerplate (login pages, 404s, etc.).
+    """
 
-    titleBlackList = re.compile(_GLOBAL_BAD_TITLES, re.I | re.S | re.X)
-    if titleBlackList.match(title):
-        logger.error(f"{url} : Blacklisted title ({title})")
+    def __init__(self, citation_api: CitationApi | None = None) -> None:
+        self.citation_api = citation_api or CitationApi()
 
-    if title:
-        logger.info(f"newtitle: ({title})")
+    def make_title(self, url: str) -> str:
+        """Extract a clean title from *url* via the citation API.
 
-    return title
+        Returns the title string, or empty string if the URL is invalid,
+        the API fails, or the title matches the blacklist.
+        """
+        url = url.strip()
+        if not url:
+            logger.info("url = '' return False")
+            return ""
+
+        url2 = quote(url)
+        url2 = url2.replace("/", "%2F")
+        url2 = url2.replace(":", "%3A")
+        url2 = url2.replace("&", "%26")
+        url2 = url2.replace("#", "%23")
+
+        title = _cached_fetch_title(url2, self.citation_api)
+
+        if not title or title.strip().lower() == "not found.":
+            return ""
+
+        if _GLOBAL_BAD_TITLES.match(title):
+            logger.error(f"{url} : Blacklisted title ({title})")
+
+        if title:
+            logger.info(f"newtitle: ({title})")
+
+        return title
 
 
 __all__ = [
-    "make_title",
+    "TitleMaker",
 ]
