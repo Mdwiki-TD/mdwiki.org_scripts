@@ -56,7 +56,6 @@ class UpdaterOutcome(SharedMapToJson):
     msg: str = ""
 
 
-
 @dataclass
 class Summary(SharedMapToJson):
     total: int = 0
