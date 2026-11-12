@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from .mapping import NavLink
 
-nav_list = [
+main_nav_list = [
     NavLink(
         text="New Jobs",
         icon="bi-sliders",
@@ -30,5 +30,5 @@ nav_list = [
 
 
 __all__ = [
-    "nav_list",
+    "main_nav_list",
 ]

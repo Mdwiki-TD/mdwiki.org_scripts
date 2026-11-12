@@ -65,7 +65,7 @@ class FindAndReplaceWorker(BaseObjectsJobWorker):
         self.result.cap = cap
 
         # save json file before start search
-        self._save_progress()
+        self.save_progress()
 
         titles = self._resolve_titles(str_find, listtype)
         total = len(titles)
@@ -96,7 +96,7 @@ class FindAndReplaceWorker(BaseObjectsJobWorker):
                 break
 
             if i == 1 or i % per_item == 0:
-                self._save_progress()
+                self.save_progress()
 
         if self.result.status in ("pending", "running"):
             self.result.status = "completed"

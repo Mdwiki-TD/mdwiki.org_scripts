@@ -112,9 +112,14 @@ class SharedJobRoutes:
             return job_id
         except DuplicateRecordError:
             logger.warning(
-                "User '%s' attempted to start duplicate job type '%s'", getattr(user, "username", "N/A"), job_type
+                "User '%s' attempted to start duplicate job type '%s'",
+                getattr(user, "username", "N/A"),
+                job_type,
             )
-            flash("A job of this type is already running. Please wait for it to complete.", "warning")
+            flash(
+                "A job of this type is already running. Please wait for it to complete.",
+                "warning",
+            )
         except Exception:
             logger.exception("Failed to start job")
             flash("Failed to start job. Please try again.", "danger")

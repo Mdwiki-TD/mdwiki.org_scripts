@@ -1,9 +1,14 @@
 """Utility modules for the main application."""
 
-from .navbar import main_navbar
-from .sidebar import create_admin_sidebar
+from __future__ import annotations
+
+from .navbar import NavigationBar, main_nav_list
+from .sidebar import Sidebar, SidebarGroup, SidebarItem
 
 __all__ = [
-    "main_navbar",
-    "create_admin_sidebar",
+    "NavigationBar",
+    "Sidebar",
+    "SidebarItem",
+    "SidebarGroup",
+    "main_nav_list",
 ]

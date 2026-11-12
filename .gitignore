@@ -1,3 +1,6 @@
+mutants/
+.venv
+server.log
 php/replace/find
 *.7z
 .pylintrc

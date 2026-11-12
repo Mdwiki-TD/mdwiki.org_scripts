@@ -1,0 +1,68 @@
+"""
+Service: fix redirects in page text on mdwiki.
+"""
+
+from __future__ import annotations
+
+import logging
+
+from ...api_services import MwClientPage
+from ...api_services.clients.wikisite_client import WikiSiteClient
+from ...config import get_settings
+from ...services.auth.current_user import CurrentUser
+from ...services.fixref_shared.fixred_worker import work_on_text
+from ...services.fixref_shared.objects import RunState
+from ...services.shared_classes import UpdaterTextOutcome
+
+logger = logging.getLogger(__name__)
+
+
+def work_on_title(
+    title: str,
+    save: bool = False,
+    summary: str = "Fix redirects.",
+    user: CurrentUser | None = None,
+) -> UpdaterTextOutcome:
+    """
+    s
+    """
+    title = (title or "").strip()
+    if not title:
+        return UpdaterTextOutcome(status="skipped", msg="Invalid title")
+
+    if user is None:
+        return UpdaterTextOutcome(status="skipped", msg="No user")
+
+    app_settings = get_settings()
+    site = WikiSiteClient.get_user_site(app_settings.other.wiki_domain, user.to_auth_payload())
+
+    page = MwClientPage(title, site)
+    old_text = page.get_text()
+
+    if not old_text or not old_text.strip():
+        return UpdaterTextOutcome(status="notext", old_text=old_text)
+
+    state = RunState()
+    try:
+        new_text = work_on_text(title, old_text, site, state)
+    except Exception:
+        logger.exception("work_on_text failed for %s", title)
+        raise
+
+    if not new_text or not new_text.strip():
+        return UpdaterTextOutcome(status="notext", old_text=old_text)
+
+    if new_text == old_text:
+        return UpdaterTextOutcome(status="skipped", msg="No changes")
+
+    if save:
+        result = page.edit(new_text, summary)
+        if result.get("success"):
+            return UpdaterTextOutcome(status="saved", newrevid=result.get("newrevid", 0))
+
+    return UpdaterTextOutcome(status="changes", old_text=old_text, new_text=new_text)
+
+
+__all__ = [
+    "work_on_title",
+]
