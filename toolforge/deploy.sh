@@ -33,10 +33,10 @@ cp -rf \"$FULL_PATH/toolforge/shs\" $TOOL_PATH -v;
 echo \">>> Making scripts executable...\";
 chmod +x $TOOL_PATH/shs/*.sh $TOOL_PATH/deploy_scripts/*.sh;
 
-echo \">>> Executing file: $TOOL_PATH/shs/update_local.sh\";
+echo \">>> Executing file: update_local.sh\";
 $TOOL_PATH/shs/update_local.sh \"$FULL_PATH\";
 
-echo \">>> Executing file: $TOOL_PATH/shs/pip-install.sh\";
+echo \">>> Executing file: pip-install.sh\";
 $TOOL_PATH/shs/pip-install.sh;
 "
 
