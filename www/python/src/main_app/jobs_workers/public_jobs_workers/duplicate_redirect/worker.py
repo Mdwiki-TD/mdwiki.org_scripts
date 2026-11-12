@@ -16,7 +16,7 @@ from mwclient.client import Site
 
 from ....api_services import MwClientPage
 from ....api_services.query_api import get_double_redirects
-from ....services.replace_wikilink import replace_wikilink_destinations
+from ....services.replace_wikilink import WikilinkReplacer
 from ...base_worker import BaseObjectsJobWorker, JobsRunner
 from ...shared_objects import SharedworkerObject
 from .objects import RedirectUpdaterOutcome
@@ -173,7 +173,7 @@ class DuplicateRedirectWorker(BaseObjectsJobWorker):
         return info
 
     def _make_new_text(self, text: str, redirect_to: str, final_target: str) -> tuple[str, str]:
-        new_text = replace_wikilink_destinations(text, redirect_to, final_target)
+        new_text = WikilinkReplacer.replace_wikilink_destinations(text, redirect_to, final_target)
         summary = f"fix duplicate redirect to [[{final_target}]]"
 
         return new_text, summary

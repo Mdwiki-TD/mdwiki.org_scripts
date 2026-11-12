@@ -13,91 +13,111 @@ import wikitextparser as wtp
 logger = logging.getLogger(__name__)
 
 
-def _normalize_mediawiki_title(title: str) -> str:
-    """Normalize a MediaWiki page title for accurate comparison.
-    Handles spaces, underscores, and first-letter capitalization.
+class WikilinkReplacer:
+    """Replaces wikilink destinations in wikitext to follow redirects.
+
+    All methods are static — this is a namespace class for pure text
+    transformations with no external dependencies.
     """
-    if not title:
+
+    @staticmethod
+    def _normalize_mediawiki_title(title: str) -> str:
+        """Normalize a MediaWiki page title for accurate comparison.
+        Handles spaces, underscores, and first-letter capitalization.
+        """
+        if not title:
+            return title
+
+        # Strip whitespaces and treat underscores as spaces
+        title = title.strip().replace("_", " ")
+
+        # Capitalize only the first character (MediaWiki standard)
+        if title:
+            title = title[0].upper() + title[1:]
+
         return title
 
-    # Strip whitespaces and treat underscores as spaces
-    title = title.strip().replace("_", " ")
+    @classmethod
+    def _replace_wikilinks(
+        cls,
+        text: str,
+        redirect_to: str,
+        final_target: str,
+        set_text: bool = False,
+    ) -> str:
+        """Parse wikitext and update links pointing to *redirect_to* → *final_target*.
 
-    # Capitalize only the first character (MediaWiki standard)
-    if title:
-        title = title[0].upper() + title[1:]
+        Default (set_text=False):
+            - ``[[old]]`` becomes ``[[new]]``.
+            - ``[[old|...]]`` becomes ``[[new|...]]``.
 
-    return title
+        With set_text=True:
+            - ``[[old]]`` becomes ``[[new|old]]`` (preserve original display text).
+        """
+        parsed_text = wtp.parse(text)
 
+        # Normalize the target we are searching for
+        normalized_redirect = cls._normalize_mediawiki_title(redirect_to)
 
-def _replace_wikilink_destinations(
-    text: str,
-    redirect_to: str,
-    final_target: str,
-    set_text: bool = False,
-) -> str:
-    """Parse wikitext and update links pointing to *redirect_to* → *final_target*.
+        for link in parsed_text.wikilinks:
+            # Use native 'title' property instead of manually splitting the target
+            if link.title is None:
+                continue
 
-    Default (set_text=False):
-        - ``[[old]]`` becomes ``[[new]]``.
-        - ``[[old|...]]`` becomes ``[[new|...]]``.
+            normalized_title = cls._normalize_mediawiki_title(link.title)
 
-    With set_text=True:
-        - ``[[old]]`` becomes ``[[new|old]]`` (preserve original display text).
-    """
-    parsed_text = wtp.parse(text)
+            # Compare the normalized titles
+            if normalized_title == normalized_redirect:
+                # Updating link.title automatically preserves link.fragment and link.text
+                old_target = link.target
+                old_title = link.title
+                link.title = final_target
 
-    # Normalize the target we are searching for
-    normalized_redirect = _normalize_mediawiki_title(redirect_to)
+                if set_text and not link.text:
+                    # preserve the original display text
+                    link.text = old_target
 
-    for link in parsed_text.wikilinks:
-        # Use native 'title' property instead of manually splitting the target
-        if link.title is None:
-            continue
+                logger.debug(f"Replaced link title '{old_title}' with '{final_target}'")
+        # Return the updated wikitext as a string
+        return parsed_text.string
 
-        normalized_title = _normalize_mediawiki_title(link.title)
+    @classmethod
+    def replace_wikilink_destinations(
+        cls,
+        text: str,
+        redirect_to: str,
+        final_target: str,
+    ) -> str:
+        """Replace wikilinks pointing to *redirect_to* so they point to *final_target*.
 
-        # Compare the normalized titles
-        if normalized_title == normalized_redirect:
-            # Updating link.title automatically preserves link.fragment and link.text
-            old_target = link.target
-            old_title = link.title
-            link.title = final_target
+        Preserves fragments and display text. ``[[old]]`` → ``[[new]]``,
+        ``[[old|...]]`` → ``[[new|...]]``.
+        """
+        return cls._replace_wikilinks(
+            text,
+            redirect_to,
+            final_target,
+        )
 
-            if set_text and not link.text:
-                # preserve the original display text
-                link.text = old_target
+    @classmethod
+    def replace_wikilink_redirects(
+        cls,
+        text: str,
+        redirect_to: str,
+        final_target: str,
+    ) -> str:
+        """Replace wikilinks following redirects, preserving original display text.
 
-            logger.debug(f"Replaced link title '{old_title}' with '{final_target}'")
-    # Return the updated wikitext as a string
-    return parsed_text.string
-
-
-def replace_wikilink_destinations(text: str, redirect_to: str, final_target: str) -> str:
-    """
-    Parses wikitext to find links pointing to a specific redirect
-    and updates their title to point to the final target.
-    Relies on wikitextparser native properties to preserve fragments and display text.
-    """
-    return _replace_wikilink_destinations(
-        text,
-        redirect_to,
-        final_target,
-    )
-
-
-def replace_wikilink_redirects(text: str, redirect_to: str, final_target: str) -> str:
-    """ """
-    return _replace_wikilink_destinations(
-        text,
-        redirect_to,
-        final_target,
-        set_text=True,
-    )
+        ``[[old]]`` → ``[[new|old]]``, ``[[old|...]]`` → ``[[new|...]]``.
+        """
+        return cls._replace_wikilinks(
+            text,
+            redirect_to,
+            final_target,
+            set_text=True,
+        )
 
 
 __all__ = [
     "WikilinkReplacer",
-    "replace_wikilink_destinations",
-    "replace_wikilink_redirects",
 ]

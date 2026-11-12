@@ -14,7 +14,6 @@ from mwclient.client import Site
 from ...api_services.query_api import MediaWikiQueryService
 from ..replace_wikilink import WikilinkReplacer
 from ...api_services.query_api import get_page_links, resolve_redirects
-from ..replace_wikilink import replace_wikilink_redirects
 from .objects import RunState
 
 logger = logging.getLogger(__name__)
@@ -55,10 +54,9 @@ class FixRedirectWorker:
         """Replace all redirect links in *text* using *new_targets* mapping."""
         newtext = text
         for oldlink, target in new_targets.items():
-            newtext = replace_wikilink_redirects(newtext, oldlink, target)
+            newtext = WikilinkReplacer.replace_wikilink_redirects(newtext, oldlink, target)
 
         return newtext
-
 
     def work_on_text(self, title: str, text: str, site: Site, state: RunState) -> str:
         """Fix redirect links in *text* for the given *title*."""
