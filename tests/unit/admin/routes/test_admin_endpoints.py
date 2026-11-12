@@ -76,14 +76,16 @@ class TestAdminBlueprintGuard:
 
     Flask propagates a parent blueprint's ``before_request`` to its nested child
     blueprints, so registering the guard once on ``admin_panel`` protects the
-    sub-blueprints (users, settings, coordinators, jobs, errors) too.
+    sub-blueprints (users, settings, admins, jobs, errors) too.
     """
 
     def test_guard_lets_active_admin_through(self, mock_client, monkeypatch):
         from types import SimpleNamespace
 
         admin_user = SimpleNamespace(username="test_admin", is_active_admin=True)
-        monkeypatch.setattr("src.main_app.admin.decorators.get_current_user", lambda: admin_user)
+        monkeypatch.setattr(
+            "src.main_app.decorators.admin_decorators.CurrentUserResolver.get_current_user", lambda: admin_user
+        )
 
         resp = mock_client.get("/admin_panel/")
         assert resp.status_code == 200
@@ -92,14 +94,16 @@ class TestAdminBlueprintGuard:
         from types import SimpleNamespace
 
         regular_user = SimpleNamespace(username="regular", is_active_admin=False)
-        monkeypatch.setattr("src.main_app.admin.decorators.get_current_user", lambda: regular_user)
+        monkeypatch.setattr(
+            "src.main_app.decorators.admin_decorators.CurrentUserResolver.get_current_user", lambda: regular_user
+        )
 
-        for url in ("/admin_panel/", "/admin_panel/users/", "/admin_panel/settings/", "/admin_panel/coordinators/"):
+        for url in ("/admin_panel/", "/admin_panel/users/", "/admin_panel/settings/", "/admin_panel/admins/"):
             resp = mock_client.get(url)
             assert resp.status_code == 403, f"{url} should be 403 for a non-admin, got {resp.status_code}"
 
     def test_guard_redirects_anonymous_user(self, mock_client):
-        for url in ("/admin_panel/", "/admin_panel/users/", "/admin_panel/settings/", "/admin_panel/coordinators/"):
+        for url in ("/admin_panel/", "/admin_panel/users/", "/admin_panel/settings/", "/admin_panel/admins/"):
             resp = mock_client.get(url)
             assert resp.status_code == 302, f"{url} should redirect anonymous users, got {resp.status_code}"
             assert "login" in resp.headers["Location"]

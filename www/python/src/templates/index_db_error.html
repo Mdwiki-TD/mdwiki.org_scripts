@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+
+{% block _navbar %}{% endblock %}
+
+{% block content_fluid %}
+<header class="mb-3 border-bottom">
+    <nav class="navbar navbar-expand-lg bg-body-tertiary">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="/">
+                {{ tool_title }}
+            </a>
+            <div class="d-flex align-items-center order-lg-last">
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
+                    data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false"
+                    aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <button class="btn btn-outline-secondary btn-sm ms-2" id="darkModeToggle" type="button"
+                    aria-label="Toggle dark mode">
+                    <i class="bi bi-moon-stars-fill"></i>
+                </button>
+            </div>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto flex-row flex-wrap bd-navbar-nav">
+                </ul>
+                <hr class="d-lg-none text-dark-subtle text-50">
+                <ul class="d-flex align-items-center navbar-nav flex-row flex-wrap bd-navbar-nav">
+                </ul>
+            </div>
+        </div>
+    </nav>
+</header>
+
+<div class="container">
+    <div class="card">
+        <div class="card-body">
+            <div class="flash-messages mt-2 mb-2">
+                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                    <strong>Database Error!</strong>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

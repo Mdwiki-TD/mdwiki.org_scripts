@@ -3,10 +3,8 @@
 from __future__ import annotations
 
 import pytest
-
 from src.main_app.config.classes import (
     CookieConfig,
-    DbConfig,
     JobsConfig,
     OAuthConfig,
     OtherConfig,
@@ -15,23 +13,6 @@ from src.main_app.config.classes import (
     SessionConfig,
     Settings,
 )
-
-
-class TestDbConfig:
-    def test_frozen(self):
-        cfg = DbConfig(db_name="x", db_host="h", db_user="u", db_password="p")
-        with pytest.raises(AttributeError):
-            cfg.db_name = "y"  # type: ignore
-
-    def test_to_dict(self):
-        cfg = DbConfig(db_name="mydb", db_host="localhost", db_user="user", db_password="pass")
-        d = cfg.to_json()
-        assert d == {"db_name": "mydb", "db_host": "localhost", "db_user": "user", "db_password": "pass"}
-
-    def test_none_user_password(self):
-        cfg = DbConfig(db_name="x", db_host="h", db_user=None, db_password=None)
-        assert cfg.db_user is None
-        assert cfg.db_password is None
 
 
 class TestCookieConfig:
@@ -117,12 +98,6 @@ class TestPaths:
 
 class TestSettings:
     def test_fields(self):
-        db = DbConfig(
-            db_name="x",
-            db_host="h",
-            db_user=None,
-            db_password=None,
-        )
         paths = Paths(
             log_dir="/l",
             jobs_path="/j",
@@ -160,7 +135,6 @@ class TestSettings:
             jobs_log_lines=1,
         )
         s = Settings(
-            database_data=db,
             paths=paths,
             cookie=cookie,
             sessions=sessions,
@@ -169,5 +143,4 @@ class TestSettings:
             other=other,
             jobs=jobs,
         )
-        assert s.database_data == db
         assert s.oauth is None

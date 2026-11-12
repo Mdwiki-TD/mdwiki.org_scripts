@@ -5,7 +5,6 @@ from __future__ import annotations
 from unittest.mock import MagicMock, patch
 
 import pytest
-
 from src.main_app.jobs_workers.objects import JobsRunner
 from src.main_app.jobs_workers.public_jobs_workers.create_redirects.worker import (
     CreateRedirectsWorker,
@@ -27,7 +26,7 @@ class TestCreateRedirectsWorker:
     def worker(self):
         return CreateRedirectsWorker(JobsRunner(job_id=1, args={"titles": ["Aspirin"]}, user={"username": "test_user"}))
 
-    @patch("src.main_app.jobs_workers.base_worker.get_user_site")
+    @patch("src.main_app.jobs_workers.base_worker.WikiSiteClient.get_user_site")
     @patch("src.main_app.jobs_workers.public_jobs_workers.create_redirects.worker.MwClientPage")
     @patch("src.main_app.jobs_workers.public_jobs_workers.create_redirects.worker.EnwikiApi.get_redirects_for")
     @patch("src.main_app.jobs_workers.public_jobs_workers.create_redirects.worker.is_pages_exists")
@@ -56,7 +55,7 @@ class TestCreateRedirectsWorker:
         assert result.summary.created == 1
         assert result.summary.processed == 1
 
-    @patch("src.main_app.jobs_workers.base_worker.get_user_site")
+    @patch("src.main_app.jobs_workers.base_worker.WikiSiteClient.get_user_site")
     def test_process_no_site(self, mock_get_user_site, worker):
         mock_get_user_site.return_value = None
         result = worker.process()

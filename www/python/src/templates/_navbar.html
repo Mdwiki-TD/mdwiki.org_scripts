@@ -1,0 +1,14 @@
+<header>
+    <nav class="navbar navbar-expand-lg mb-3 border-bottom bg-body-tertiary shadow">
+        <div class="container-fluid">
+            <a class="navbar-brand mb-0 h1" href="{{ url_for('main.index') }}">
+                {{ tool_title }}
+            </a>
+            {{ main_navbar.create_collapsible_nav() }}
+            {{ main_navbar.render(
+                is_admin,
+                current_username
+            ) }}
+        </div>
+    </nav>
+</header>

@@ -11,7 +11,6 @@ from unittest.mock import Mock, patch
 
 import pytest
 from flask.app import Flask
-
 from src.main_app.database.exceptions import DuplicateRecordError
 from src.main_app.database.services import (
     AdminService,
@@ -326,11 +325,11 @@ class TestCancelJob(TestSetup):
         mock_flash.assert_called_once_with("You don't have permission to cancel this job.", "danger")
 
     def test_admin_can_cancel_any_job(self, mock_app, mock_client):
-        """An admin (coordinator) should be able to cancel any job."""
+        """An admin (admin) should be able to cancel any job."""
         _seed_user(mock_app, username="Owner")
         admin_uid = _seed_user(mock_app, username="AdminCancel")
         with mock_app.app_context():
-            AdminService().add_coordinator("AdminCancel")
+            AdminService().add_admin("AdminCancel")
 
         job_id = self._seed_job(mock_app, VALID_JOB_TYPE, username="Owner")
         _login_user(mock_client, admin_uid, username="AdminCancel")

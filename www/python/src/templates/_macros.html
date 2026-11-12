@@ -1,0 +1,271 @@
+{# Shared Jinja macros. #}
+{%- macro commons_file_link(filename, label="") -%}
+{% if filename %}
+{% set striped_name = filename | replace('File:', '') %}
+<a href="https://commons.wikimedia.org/wiki/File:{{ striped_name | replace(' ', '_') | urlencode }}" target="_blank"
+    rel="noopener noreferrer">
+    {% if label %}
+    {{ label }}
+    {% else %}
+    File:{{ striped_name }}
+    {% endif %}
+</a>
+{% endif %}
+{%- endmacro -%}
+
+{%- macro commons_link(title, label="") -%}
+{% if title %}
+<a href="https://commons.wikimedia.org/wiki/{{ title | replace(' ', '_') | urlencode }}" target="_blank"
+    rel="noopener noreferrer">
+    {{ label or title }}
+</a>
+{% endif %}
+{%- endmacro -%}
+
+{%- macro render_step(step) -%}
+{% if step %}
+{% if step.result == true or step.result == "updated" %}
+{% if step.newrevid and step.newrevid != 0 %}
+<a href="https://commons.wikimedia.org/w/index.php?diff={{ step.newrevid }}" target="_blank">
+    <span class="badge bg-success" title="{{ step.msg or step.message or step.new_value }}">
+        <i class="bi bi-check-lg"></i> Diff
+    </span>
+</a>
+{% else %}
+<span class="badge bg-success" title="{{ step.msg or step.message or step.new_value }}">
+    <i class="bi bi-check-lg"></i>
+</span>
+{% endif %}
+{% elif step.result == false or step.result == "failed" %}
+<span class="badge bg-danger" title="{{ step.msg or step.message }}">
+    <i class="bi bi-x-lg"></i>
+</span>
+{% elif step.result is none or step.result == "skipped" %}
+<span class="badge bg-secondary" title="{{ step.msg or step.message or step.value }}">
+    <i class="bi bi-dash"></i>
+</span>
+{% else %}
+<span class="text-muted" title="{{ step.msg or step.message or step.value }}">-</span>
+{% endif %}
+{% else %}
+<span class="text-muted">-</span>
+{% endif %}
+{%- endmacro -%}
+
+{%- macro csrf() -%}
+<input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+{%- endmacro -%}
+
+{%- macro flash_messages() -%}
+{% set bs_classes = {
+    'message':'info',
+    'warning':'warning',
+    'danger':'danger',
+    'error':'danger',
+    'success':'success',
+    'info':'info'
+} %}
+{% with messages = get_flashed_messages(with_categories=True) %}
+{% if messages %}
+<div class="container">
+    <div class="alert-stack mb-4">
+        {% for category, message in messages %}
+        {% set bs_class = bs_classes.get(category.lower(), 'info') %}
+        <div class="alert alert-{{ bs_class }} alert-dismissible fade show" role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endif %}
+{% endwith %}
+{%- endmacro -%}
+
+{# Card header macro for collapsible cards #}
+{% macro card_header(title) %}
+<div class="d-flex flex-column flex-md-row flex-sm-row justify-content-between align-items-md-center">
+    <h5 class="mb-0">{{ title|safe }}</h5>
+    <div class="card-tools">
+        <button type="button" class="btn-tool" data-card-widget="collapse" aria-label="Toggle card">
+
+            <i class="fas fa-minus"></i>
+        </button>
+    </div>
+</div>
+{% endmacro %}
+
+{%- macro edit_form(domain, title, newtext) -%}
+<div class="card mt-3">
+    <div class="card-header aligncenter" style="font-weight:bold;">
+        <h3>
+            <i class="bi bi-file-earmark-text"></i>
+            <a target="_blank" href="https://{{ domain }}/w/index.php?title={{ title | urlencode }}">
+                {{ title }}
+            </a>
+        </h3>
+    </div>
+    <div class="card-body">
+        <form id="editform" name="editform" method="POST"
+            action="https://{{ domain }}/w/index.php?title={{ title | urlencode }}&action=submit" target="_blank">
+            <input type="hidden" value="" name="wpEdittime">
+            <input type="hidden" value="" name="wpStarttime">
+            <input type="hidden" value="" name="wpScrolltop" id="wpScrolltop">
+            <input type="hidden" value="12" name="parentRevId">
+            <input type="hidden" value="wikitext" name="model">
+            <input type="hidden" value="text/x-wiki" name="format">
+            <input type="hidden" value="1" name="wpUltimateParam">
+            <input type="hidden" name="wpSummary" value="Fix references">
+            <input type="hidden" id="wikitext-old" value="">
+            <div class="mb-3">
+                <label for="wikitext-new" class="form-label fw-semibold">
+                    New Wikitext
+                </label>
+                <textarea id="wikitext-new" class="form-control" name="wpTextbox1" rows="5">{{ newtext }}</textarea>
+            </div>
+            <div class="editOptions aligncenter">
+                <input id="wpPreview" type="submit" class="btn btn-outline-primary" tabindex="5" title="[p]"
+                    accesskey="p" name="wpPreview" value="Preview changes" fdprocessedid="nudjzu">
+                <input id="wpDiff" type="submit" class="btn btn-outline-primary" tabindex="7" name="wpDiff"
+                    value="show changes" accesskey="v" title="show changes." fdprocessedid="81zdl">
+                <div class="editButtons">
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+{%- endmacro -%}
+
+{%- macro saved_alert(domain, form_title, newrevid) -%}
+<div class="container-fluid">
+    <div class="row justify-content-center">
+        <div class="col-md-9 col-12">
+            <div class="alert alert-success d-flex align-items-center" role="alert">
+                <i class="bi bi-check-circle-fill me-2"></i> Changes have been published.
+                <div class="ms-auto d-flex gap-2">
+                    <a href="https://{{ domain }}/w/index.php?title=Special:Diff/{{ newrevid }}" target="_blank"
+                        class="btn btn-outline-primary btn-sm">
+                        <i class="bi bi-file-earmark-text me-1"></i> Diff
+                    </a>
+                    <a href="https://{{ domain }}/w/index.php?title={{ form_title | urlencode }}&action=history"
+                        target="_blank" class="btn btn-outline-primary btn-sm">
+                        <i class="bi bi-clock-history me-1"></i> History
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{%- endmacro -%}
+
+
+{# status icon #}
+{% macro status_icon(status) %}
+<small
+    class="d-inline-flex px-2 py-1 fw-semibold text-{{ status | get_status_class }}-emphasis bg-{{ status | get_status_class }}-subtle border border-{{ status | get_status_class }}-subtle rounded-2">
+    {{ status | title }}
+</small>
+{%- endmacro -%}
+
+
+{# status card #}
+{% macro stats_card(title, value, border_type, icon="") %}
+
+<div class="card border-{{ border_type or 'secondary' | trim }} h-100">
+    <div class="card-body">
+        <div class="d-flex justify-content-between align-items-center">
+            <div>
+                <h6 class="card-title mb-0">{{ title | title }}</h6>
+                <h2 class="mb-0">{{ value or 0 }}</h2>
+            </div>
+            {% if icon %}
+            <i class="{{ icon }}"></i>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{%- endmacro -%}
+
+{# Diff link #}
+{% macro diff_link(domain, newrevid) %}
+<a href="https://{{ domain }}/w/index.php?diff={{ newrevid }}" target="_blank">
+    Diff
+</a>
+{%- endmacro -%}
+
+{# wiki domain link #}
+{%- macro wiki_domain_link(domain, title) -%}
+<a href="https://{{ domain }}/wiki/{{ title | replace(' ', '_') | urlencode }}" target="_blank">
+    {{- title -}}
+</a>
+{%- endmacro -%}
+
+{# Errors alerts #}
+{% macro autopatrol_err_macro(username) %}
+<div class="card shadow-sm border-danger mb-3">
+    <div class="card-header card-danger">
+        <h4 class="alert-heading">Autopatrol permission error!</h4>
+    </div>
+    <div class="card-body p-4">
+        <p class="mb-3">
+
+            {% if username %}
+            <a href="https://commons.wikimedia.org/wiki/Special:UserRights/{{ username }}" target="_blank"
+                rel="noopener noreferrer">
+                User:{{ username }}
+            </a>
+            {% else %}
+            User
+            {% endif %}
+            needs <strong>Autopatrol</strong> permission to run this task.
+            <a href="https://commons.wikimedia.org/wiki/Commons:Requests_for_rights#Autopatrol" target="_blank"
+                rel="noopener noreferrer">
+                Request Autopatrol permission
+            </a>
+        </p>
+    </div>
+</div>
+{%- endmacro -%}
+
+{% macro job_errors_div(errors, username="") %}
+{# Filter out errors where 'error' is empty, null, or whitespace #}
+{% set valid_errors = errors | selectattr("error") | list %}
+
+{# Only render the alert if there is at least one valid error message #}
+{% if valid_errors | length > 0 %}
+{% for err in valid_errors %}
+{% if err.error_type == "AutopatrolPermissionError" %}
+{{ autopatrol_err_macro(username) }}
+{% else %}
+<div class="alert alert-danger" role="alert">
+    <h5 class="alert-heading">Error!</h5>
+    <div>
+        <strong>{{ err.error_type if err.error_type else 'Error' }}:</strong>
+        {{ err.error }}
+    </div>
+</div>
+{% endif %}
+{% endfor %}
+{% endif %}
+{%- endmacro -%}
+
+{# Auto-refresh toggle for running jobs #}
+{% macro auto_refresh_status() -%}
+<div class="form-check form-switch mt-2">
+    <input class="form-check-input" type="checkbox" id="auto-refresh-toggle" onchange="toggleAutoRefresh()">
+    <label class="form-check-label" for="auto-refresh-toggle">
+        <i class="bi bi-arrow-repeat" id="auto-refresh-indicator"></i>
+        Auto Refresh
+    </label>
+</div>
+{%- endmacro -%}
+
+{% macro summary_card_2(title, value, id="") %}
+<div class="card h-100 shadow-sm">
+    <div class="card-body">
+        <h2 class="h6 text-uppercase text-muted">{{ title }}</h2>
+        <p class="display-6 mb-0" {%if id%}id="{{ id }}" {%endif%}>{{ value }}</p>
+    </div>
+</div>
+{% endmacro %}

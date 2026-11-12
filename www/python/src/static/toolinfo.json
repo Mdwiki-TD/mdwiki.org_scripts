@@ -1,0 +1,26 @@
+{
+    "_schema": "/toolinfo/1.2.2",
+    "_language": "en",
+    "name": "toolforge-mdw",
+    "title": "MDWiki Scripts",
+    "description": "Flask web application providing batch maintenance tools for mdwiki.org, a medical wiki on Wikimedia infrastructure. Offers a redirect fixer, medical content updater, and admin job management. Users authenticate via MediaWiki OAuth and run background jobs that modify wiki pages through the MediaWiki API.",
+    "url": "https://mdw.toolforge.org/",
+    "author": [
+        {
+            "name": "Ibrahem Qasim",
+            "wiki_username": "Mr. Ibrahem",
+            "developer_username": "MrIbrahem"
+        }
+    ],
+    "repository": "https://github.com/Mdwiki-TD/mdwiki.org_scripts",
+    "tool_type": "web app",
+    "available_ui_languages": [
+        "en"
+    ],
+    "technology_used": [
+        "Python",
+        "Flask",
+        "mwclient",
+        "mwoauth"
+    ]
+}

@@ -3,7 +3,7 @@
 **Commit**: `ae22352`
 **Date**: 2026-06-14
 **Scope**: Full repo, standard effort
-**Not audited**: `_works_files/` (archived code), `toolforge_tool/shs/` (deployment scripts, lightly reviewed), frontend templates beyond security-relevant aspects.
+**Not audited**: `_works_files/` (archived code), `toolforge/shs/` (deployment scripts, lightly reviewed), frontend templates beyond security-relevant aspects.
 
 ---
 
