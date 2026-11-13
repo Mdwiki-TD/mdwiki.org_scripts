@@ -355,7 +355,7 @@ class TestWebarchiveRemoverStats:
 class TestWebarchiveRemoverWorker:
     def test_get_job_type(self):
         worker = WebarchiveRemoverWorker(JobsRunner(job_id=1, args={}, user=None))
-        assert worker.get_job_type() == "webarchive_remover"
+        assert worker.JOB_TYPE == "webarchive_remover"
 
     def test_result_type(self):
         worker = WebarchiveRemoverWorker(JobsRunner(job_id=1, args={}, user=None))

@@ -24,9 +24,6 @@ class WebarchiveRemoverWorker(BaseObjectsJobWorker):
 
     JOB_TYPE = "webarchive_remover"
 
-    def get_job_type(self) -> str:
-        return "webarchive_remover"
-
     def __init__(self, data: JobsRunner) -> None:
         self.args = data.args or {}
         self.site: Site | None = None
