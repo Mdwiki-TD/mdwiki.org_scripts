@@ -45,7 +45,7 @@ class WebarchiveRemoverWorker(BaseObjectsJobWorker):
         assert self.site is not None
 
         mode = self.args.get("mode", "template")
-        limit = int(self.args.get("limit", 0)) or None
+        limit = int(self.args.get("limit") or 0) or None
 
         if mode == "all":
             titles = self._get_all_pages()

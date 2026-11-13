@@ -5,9 +5,9 @@
 
 {% block list_info %}
 <p class="text-muted">
-    Removes redundant <code>{{"{{"}}Webarchive{{"}}"}}</code> templates from pages where a CS1/CS2
+    Removes redundant <code>{{ 'Webarchive' | template_markup }}</code> templates from pages where a CS1/CS2
     citation template already carries the same <code>archive-url</code> / <code>archive-date</code>.
-    When the citation has no archive parameters but a <code>{{"{{"}}Webarchive{{"}}"}}</code> follows it,
+    When the citation has no archive parameters but a <code>{{ 'Webarchive' | template_markup }}</code> follows it,
     the data is merged into the citation template instead.
 </p>
 <form method="post" action="{{ url_for('public_jobs.start_job', job_type=template_data.job_type) }}"

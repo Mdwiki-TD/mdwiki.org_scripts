@@ -127,7 +127,9 @@ class TestSkipCases:
 
     def test_bare_webarchive_outside_citation(self):
         """Webarchive not attached to a citation -> skip."""
-        text = "Some text {{Webarchive|url=https://web.archive.org/web/20200101/https://example.com|date=1 January 2020}}"
+        text = (
+            "Some text {{Webarchive|url=https://web.archive.org/web/20200101/https://example.com|date=1 January 2020}}"
+        )
         result = remove_webarchive(text)
         assert result == text
 
@@ -238,7 +240,9 @@ class TestIdempotence:
 
     def test_idempotent_skip(self):
         """Text that should be skipped stays the same after multiple runs."""
-        text = "Some text {{Webarchive|url=https://web.archive.org/web/20200101/https://example.com|date=1 January 2020}}"
+        text = (
+            "Some text {{Webarchive|url=https://web.archive.org/web/20200101/https://example.com|date=1 January 2020}}"
+        )
         result1 = remove_webarchive(text)
         result2 = remove_webarchive(result1)
         assert result1 == result2 == text
