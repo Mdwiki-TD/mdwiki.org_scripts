@@ -97,7 +97,12 @@ class ErrorHandler:
         return request.remote_addr or "-"
 
     @classmethod
-    def log_error(cls, label: str, e: Exception, level: int = logging.ERROR) -> None:
+    def log_error(
+        cls,
+        label: str,
+        e: Exception,
+        level: int = logging.ERROR,
+    ) -> None:
         """Write a single-line, credential-free log entry for an HTTP error."""
         headers = cls.safe_headers(request.headers)
         picked = {name: headers[name] for name in USEFUL_HEADERS if name in headers}

@@ -91,7 +91,7 @@ class FindAndReplaceWorker(BaseObjectsJobWorker):
             self.update_status(info)
 
             # Check DB if the job cancelled every N successful edits
-            if info.status == "changed" and self.check_cancel_db_periodic():
+            if info.status == "updated" and self.check_cancel_db_periodic():
                 self.result.stopped = True
                 break
 
@@ -172,7 +172,7 @@ class FindAndReplaceWorker(BaseObjectsJobWorker):
             return info
 
         if result.get("success"):
-            info.status = "changed"
+            info.status = "updated"
             info.newrevid = result.get("newrevid", 0)
             return info
 

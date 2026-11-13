@@ -53,7 +53,7 @@ class TestArchiveTodayWorker:
         ):
 
             def side_effect(info):
-                info.status = "changed"
+                info.status = "updated"
 
             mock_process_one.side_effect = side_effect
 

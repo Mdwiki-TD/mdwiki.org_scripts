@@ -223,7 +223,7 @@ class TestOwidPopupAllWorker:
             info = UpdaterOutcome(title="Page 1")
             worker._process_one(info)
 
-            assert info.status == "changed"
+            assert info.status == "updated"
             assert info.newrevid == 12345
             mock_page.edit.assert_called_once_with(
                 "{{OWID|chart= grapher/test | title = Test}}",

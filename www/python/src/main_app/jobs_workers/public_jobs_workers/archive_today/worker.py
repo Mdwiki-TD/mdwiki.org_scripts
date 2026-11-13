@@ -71,7 +71,7 @@ class ArchiveTodayWorker(BaseObjectsJobWorker):
 
             self.update_status(info)
 
-            if info.status == "changed" and self.check_cancel_db_periodic():
+            if info.status == "updated" and self.check_cancel_db_periodic():
                 break
 
             if i == 1 or i % per_item == 0:
@@ -117,7 +117,7 @@ class ArchiveTodayWorker(BaseObjectsJobWorker):
             return info
 
         if result.get("success"):
-            info.status = "changed"
+            info.status = "updated"
             info.newrevid = result.get("newrevid", 0)
             return info
 
