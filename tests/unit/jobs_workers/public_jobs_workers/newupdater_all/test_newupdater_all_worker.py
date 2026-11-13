@@ -9,7 +9,7 @@ from src.main_app.jobs_workers.public_jobs_workers.newupdater_all.worker import 
 
 
 class TestNewUpdaterAllWorker:
-    def test_get_job_type(self):
+    def test_job_type(self):
         worker = NewUpdaterAllWorker(JobsRunner(job_id=1, args={}, user=None))
         assert worker.JOB_TYPE == "newupdater_all"
 
