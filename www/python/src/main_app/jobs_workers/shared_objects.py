@@ -89,11 +89,9 @@ class SharedworkerObject(WorkerMapping):
     summary: Summary = field(default_factory=Summary)
 
     pages_processed: list[UpdaterOutcome] = field(default_factory=list)
-
     pages_changed: list[UpdaterOutcome] = field(default_factory=list)
     pages_errors: list[UpdaterOutcome] = field(default_factory=list)
     pages_skipped: list[UpdaterOutcome] = field(default_factory=list)
-
     pages_missing: list[UpdaterOutcome] = field(default_factory=list)
     note: str = ""
 
