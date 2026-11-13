@@ -1,0 +1,36 @@
+{% extends "jobs_templates/base_list_public.html" %}
+{% from "_macros.html" import csrf %}
+
+{% set hide_start_button = '1' %}
+
+{% block list_info %}
+<p class="text-muted">
+    Removes redundant <code>{{ 'Webarchive' | template_markup }}</code> templates from pages where a CS1/CS2
+    citation template already carries the same <code>archive-url</code> / <code>archive-date</code>.
+    When the citation has no archive parameters but a <code>{{ 'Webarchive' | template_markup }}</code> follows it,
+    the data is merged into the citation template instead.
+</p>
+<form method="post" action="{{ url_for('public_jobs.start_job', job_type=template_data.job_type) }}"
+    class="row gy-2 gx-3 align-items-center mb-4">
+    {{ csrf() }}
+    <div class="row g-3 mb-3">
+        <div class="col-md-4">
+            <label for="mode" class="form-label">Page selection mode</label>
+            <select id="mode" name="mode" class="form-select">
+                <option value="template" selected>Template mode (pages transcluding Template:Webarchive)</option>
+                <option value="all">All pages (walk every mainspace page)</option>
+            </select>
+        </div>
+        <div class="col-md-4">
+            <label for="limit" class="form-label">Limit (optional, for testing)</label>
+            <input id="limit" name="limit" type="number" min="1" class="form-control" placeholder="e.g. 50">
+        </div>
+        <div class="col-md-4 d-flex align-items-end">
+            <button type="submit" class="btn btn-outline-primary w-100"
+                onclick="return confirm('Start removing duplicate {{Webarchive}} templates?');">
+                <i class="bi bi-play-circle"></i> Start
+            </button>
+        </div>
+    </div>
+</form>
+{% endblock %}
