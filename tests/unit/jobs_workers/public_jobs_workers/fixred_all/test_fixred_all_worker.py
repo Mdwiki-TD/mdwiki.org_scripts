@@ -9,7 +9,7 @@ from src.main_app.jobs_workers.public_jobs_workers.fixred_all.worker import FixR
 class TestFixRedAllWorker:
     def test_get_job_type(self):
         worker = FixRedAllWorker(JobsRunner(job_id=1, args={}, user=None))
-        assert worker.get_job_type() == "fixred_all"
+        assert worker.JOB_TYPE == "fixred_all"
 
     def test_result_type(self):
         from src.main_app.jobs_workers.shared_objects import SharedworkerObject

@@ -53,6 +53,8 @@ def get_titles_redirects(
 class AddRColumnWorker(BaseObjectsJobWorker):
     """Add R column to tables."""
 
+    JOB_TYPE = "add_r_column"
+
     def __init__(self, data: JobsRunner) -> None:
         self.args = data.args or {}
         self.page: MwClientPage | None = None
@@ -60,9 +62,6 @@ class AddRColumnWorker(BaseObjectsJobWorker):
         super().__init__(data)
 
         self.result: AddRColumnWorkerObject = AddRColumnWorkerObject()
-
-    def get_job_type(self) -> str:
-        return "add_r_column"
 
     def _set_step_status(self, step: str, status: str, message: str) -> None:
         self.result.set_step_status(step, status, message)

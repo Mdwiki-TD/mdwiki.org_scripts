@@ -24,6 +24,8 @@ logger = logging.getLogger(__name__)
 class FindAndReplaceWorker(BaseObjectsJobWorker):
     """Find-and-replace bot for mdwiki pages."""
 
+    JOB_TYPE = "find_and_replace"
+
     def __init__(self, data: JobsRunner) -> None:
         self.args = data.args or {}
         self.site: Site | None = None
@@ -35,9 +37,6 @@ class FindAndReplaceWorker(BaseObjectsJobWorker):
     # ------------------------------------------------------------------
     # BaseObjectsJobWorker hooks
     # ------------------------------------------------------------------
-
-    def get_job_type(self) -> str:
-        return "find_and_replace"
 
     def process(self) -> FindAndReplaceWorkerObject:
         if not self._check_site():

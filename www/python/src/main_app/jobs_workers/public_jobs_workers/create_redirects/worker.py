@@ -39,6 +39,8 @@ def _valid_title(title: str) -> bool:
 class CreateRedirectsWorker(BaseObjectsJobWorker):
     """Copy redirects from enwiki to mdwiki."""
 
+    JOB_TYPE = "create_redirects"
+
     def __init__(
         self,
         data: JobsRunner,
@@ -55,9 +57,6 @@ class CreateRedirectsWorker(BaseObjectsJobWorker):
     # ------------------------------------------------------------------
     # BaseObjectsJobWorker hooks
     # ------------------------------------------------------------------
-
-    def get_job_type(self) -> str:
-        return "create_redirects"
 
     def process(self) -> CreateRedirectsWorkerObject:
         if not self._check_site():

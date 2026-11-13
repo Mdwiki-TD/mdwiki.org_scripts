@@ -22,6 +22,8 @@ logger = logging.getLogger(__name__)
 class ImportHistoryWorker(BaseObjectsJobWorker):
     """Import revision history from enwiki to mdwiki."""
 
+    JOB_TYPE = "import_history"
+
     def __init__(self, data: JobsRunner) -> None:
         self.args = data.args or {}
         self.site: Site | None = None
@@ -33,9 +35,6 @@ class ImportHistoryWorker(BaseObjectsJobWorker):
     # ------------------------------------------------------------------
     # BaseObjectsJobWorker hooks
     # ------------------------------------------------------------------
-
-    def get_job_type(self) -> str:
-        return "import_history"
 
     def process(self) -> ImportHistoryWorkerObject:
         if not self._check_site():

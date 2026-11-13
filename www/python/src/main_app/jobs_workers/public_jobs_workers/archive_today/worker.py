@@ -21,6 +21,8 @@ logger = logging.getLogger(__name__)
 class ArchiveTodayWorker(BaseObjectsJobWorker):
     """Remove archive.today links from all mdwiki pages."""
 
+    JOB_TYPE = "archive_today"
+
     def __init__(self, data: JobsRunner) -> None:
         self.args = data.args or {}
         self.site: Site | None = None
@@ -34,9 +36,6 @@ class ArchiveTodayWorker(BaseObjectsJobWorker):
     # ------------------------------------------------------------------
     # BaseObjectsJobWorker hooks
     # ------------------------------------------------------------------
-
-    def get_job_type(self) -> str:
-        return "archive_today"
 
     def process(self) -> SharedworkerObject:
         if not self._check_site():

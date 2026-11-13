@@ -23,6 +23,8 @@ logger = logging.getLogger(__name__)
 class NewUpdaterAllWorker(BaseObjectsJobWorker):
     """Run Medical content updater on all Category:RTT pages."""
 
+    JOB_TYPE = "newupdater_all"
+
     def __init__(self, data: JobsRunner) -> None:
         self.args = data.args or {}
         self.site: Site | None = None
@@ -34,9 +36,6 @@ class NewUpdaterAllWorker(BaseObjectsJobWorker):
     # ------------------------------------------------------------------
     # BaseObjectsJobWorker hooks
     # ------------------------------------------------------------------
-
-    def get_job_type(self) -> str:
-        return "newupdater_all"
 
     def process(self) -> SharedworkerObject:
         if not self._check_site():

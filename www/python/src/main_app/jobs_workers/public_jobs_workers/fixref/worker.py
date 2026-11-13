@@ -25,6 +25,8 @@ MAX_PAGES_FIXREF = 20000
 class FixRefWorker(BaseObjectsJobWorker):
     """Normalize references on mdwiki pages."""
 
+    JOB_TYPE = "fixref"
+
     def __init__(self, data: JobsRunner) -> None:
         self.args = data.args or {}
         self.site: Site | None = None
@@ -36,9 +38,6 @@ class FixRefWorker(BaseObjectsJobWorker):
     # ------------------------------------------------------------------
     # BaseObjectsJobWorker hooks
     # ------------------------------------------------------------------
-
-    def get_job_type(self) -> str:
-        return "fixref"
 
     def process(self) -> SharedworkerObject:
         if not self._check_site():

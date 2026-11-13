@@ -23,6 +23,8 @@ logger = logging.getLogger(__name__)
 class FixCs1Worker(BaseObjectsJobWorker):
     """Fix redirect links in all mdwiki pages."""
 
+    JOB_TYPE = "fix_cs1"
+
     def __init__(self, data: JobsRunner) -> None:
         self.args = data.args or {}
         self.site: Site | None = None
@@ -34,9 +36,6 @@ class FixCs1Worker(BaseObjectsJobWorker):
     # ------------------------------------------------------------------
     # BaseObjectsJobWorker hooks
     # ------------------------------------------------------------------
-
-    def get_job_type(self) -> str:
-        return "fix_cs1"
 
     def process(self) -> SharedworkerObject:
         if not self._check_site():

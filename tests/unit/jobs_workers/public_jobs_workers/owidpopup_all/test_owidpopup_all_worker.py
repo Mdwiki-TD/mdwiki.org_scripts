@@ -107,7 +107,7 @@ class TestReplaceTemplates:
 class TestOwidPopupAllWorker:
     def test_get_job_type(self):
         worker = OwidPopupAllWorker(JobsRunner(job_id=1, args={}, user=None))
-        assert worker.get_job_type() == "owidpopup_all"
+        assert worker.JOB_TYPE == "owidpopup_all"
 
     def test_result_type(self):
         worker = OwidPopupAllWorker(JobsRunner(job_id=1, args={}, user=None))

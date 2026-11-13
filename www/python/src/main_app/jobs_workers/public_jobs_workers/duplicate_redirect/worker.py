@@ -65,6 +65,8 @@ def resolve_redirect_chains(redirects: list[dict[str, str]]) -> list[dict[str, s
 class DuplicateRedirectWorker(BaseObjectsJobWorker):
     """Fix double redirects on mdwiki."""
 
+    JOB_TYPE = "duplicate_redirect"
+
     def __init__(self, data: JobsRunner) -> None:
         self.args = data.args or {}
         self.site: Site | None = None
@@ -76,9 +78,6 @@ class DuplicateRedirectWorker(BaseObjectsJobWorker):
     # ------------------------------------------------------------------
     # BaseObjectsJobWorker hooks
     # ------------------------------------------------------------------
-
-    def get_job_type(self) -> str:
-        return "duplicate_redirect"
 
     def process(self) -> SharedworkerObject:
         if not self._check_site():

@@ -11,7 +11,7 @@ from src.main_app.jobs_workers.public_jobs_workers.import_history.worker import 
 class TestImportHistoryWorker:
     def test_get_job_type(self):
         worker = ImportHistoryWorker(JobsRunner(job_id=1, args={"titles": ["Test"]}, user=None))
-        assert worker.get_job_type() == "import_history"
+        assert worker.JOB_TYPE == "import_history"
 
     def test_result_type(self):
         from src.main_app.jobs_workers.public_jobs_workers.import_history.objects import ImportHistoryWorkerObject
