@@ -68,6 +68,6 @@ class TestNewUpdaterAllWorker:
 
             result = worker.process()
             assert result.summary.total == 1
-            assert len(result.pages_changed) == 1
-            assert result.pages_changed[0].title == "Page1"
-            assert result.pages_changed[0].newrevid == 123
+            assert len(result.pages_updated) == 1
+            assert result.pages_updated[0].title == "Page1"
+            assert result.pages_updated[0].newrevid == 123

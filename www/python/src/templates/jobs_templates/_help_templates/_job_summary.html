@@ -7,7 +7,7 @@
     <div class="col-md-9">
         <div class="row g-3">
             <div class="col">
-                {{ stats_card('Changed', result_data.pages_changed|length, "success", "") }}
+                {{ stats_card('Changed', result_data.pages_updated|length, "success", "") }}
             </div>
             <div class="col">
                 {{ stats_card('Skipped', result_data.pages_skipped|length, "secondary", "") }}

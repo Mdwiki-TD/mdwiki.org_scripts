@@ -184,7 +184,7 @@ class DuplicateRedirectWorker(BaseObjectsJobWorker):
             info.status = "completed"
 
         if info.status == "changed":
-            self.result.pages_changed.append(info)
+            self.result.pages_updated.append(info)
 
         elif info.status == "missing":
             self.result.pages_missing.append(info)

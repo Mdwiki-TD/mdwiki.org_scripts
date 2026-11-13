@@ -61,5 +61,5 @@ class TestArchiveTodayWorker:
             assert res.status == "completed"
             assert res.summary.total == 2
             assert res.summary.processed == 2
-            assert len(res.pages_changed) == 2
+            assert len(res.pages_updated) == 2
             assert mock_process_one.call_count == 2

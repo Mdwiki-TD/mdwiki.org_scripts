@@ -29,7 +29,7 @@ class TestFindAndReplaceWorkerObject:
     def test_default_lists_are_empty(self):
         obj = FindAndReplaceWorkerObject()
         assert obj.pages_processed == []
-        assert obj.pages_changed == []
+        assert obj.pages_updated == []
         assert obj.pages_failed == []
         assert obj.pages_skipped == []
         assert obj.pages_missing == []
@@ -37,8 +37,8 @@ class TestFindAndReplaceWorkerObject:
     def test_lists_are_independent(self):
         a = FindAndReplaceWorkerObject()
         b = FindAndReplaceWorkerObject()
-        a.pages_changed.append({"title": "X"})
-        assert b.pages_changed == []
+        a.pages_updated.append({"title": "X"})
+        assert b.pages_updated == []
 
     def test_to_json(self):
         obj = FindAndReplaceWorkerObject(text_find="old", text_replace="new", cap=10)

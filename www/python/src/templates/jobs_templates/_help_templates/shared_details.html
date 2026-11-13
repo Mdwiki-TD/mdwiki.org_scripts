@@ -13,13 +13,13 @@
 {% set title_columns = {
     "title": "Title"
 } %}
-{% if result_data and result_data.pages_changed %}
+{% if result_data and result_data.pages_updated %}
 
 {{ new_pages_table(
     table_title="Changed Pages",
     job_id=job.id,
     job_type=template_data.job_type,
-    list_name="pages_changed",
+    list_name="pages_updated",
 ) }}
 
 {% endif %}
@@ -139,7 +139,7 @@
 
     $(document).ready(function () {
         initServerTable(
-            'table-pages_changed',
+            'table-pages_updated',
             createSharedTableColumns(
                 show_status = false,
                 show_message = true,

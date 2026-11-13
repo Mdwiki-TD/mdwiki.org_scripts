@@ -64,9 +64,9 @@ class TestDuplicateRedirectWorker:
         result = worker.process()
 
         assert result.status == "completed"
-        assert len(result.pages_changed) == 1
-        assert result.pages_changed[0].title == "A"
-        assert result.pages_changed[0].newrevid == 456
+        assert len(result.pages_updated) == 1
+        assert result.pages_updated[0].title == "A"
+        assert result.pages_updated[0].newrevid == 456
 
     @patch("src.main_app.jobs_workers.base_worker.WikiSiteClient.get_user_site")
     def test_process_no_site(self, mock_get_user_site, worker: DuplicateRedirectWorker):
