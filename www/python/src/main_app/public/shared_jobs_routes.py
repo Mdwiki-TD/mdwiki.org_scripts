@@ -27,7 +27,7 @@ from ..jobs_workers.jobs_lifetime.jobs_canceller import JobCanceller
 from ..jobs_workers.jobs_lifetime.jobs_starter import JobStarter
 from ..jobs_workers.objects import JobData
 from ..services.auth.current_user_resolver import CurrentUserResolver
-from .routes_utils import can_run_bg_jobs, load_auth_payload
+from .routes_utils import RequestContextHelper
 
 logger = logging.getLogger(__name__)
 
@@ -94,12 +94,12 @@ class SharedJobRoutes:
             flash("You must be logged in to start this job.", "danger")
             return None
 
-        if check_can_run_bg_jobs and not can_run_bg_jobs(user):
+        if check_can_run_bg_jobs and not RequestContextHelper.can_run_bg_jobs(user):
             flash("You do not have permission to run background jobs.", "danger")
             return None
 
         try:
-            auth_payload = load_auth_payload(user)
+            auth_payload = RequestContextHelper.load_auth_payload(user)
         except Exception:
             logger.exception("Failed to load auth payload")
             flash("Failed to load auth payload. Please try again.", "danger")
@@ -258,9 +258,11 @@ class BaseJobView(MethodView):
         url = f"{self.bp_name}.job_detail"
         return redirect(url_for(url, job_type=job_type, job_id=job_id))  # pyright: ignore[reportReturnType]
 
-    def load_form(self, template_data: JobData) -> FlaskForm:
-        all_settings = {}
+    def load_form(self, template_data: JobData) -> FlaskForm | None:
+        if template_data.form_class is None:
+            return None
 
+        all_settings = {}
         if template_data.load_settings:
             all_settings = self.settings_service.get_all_settings_ready()
 
@@ -278,10 +280,7 @@ class JobsListView(BaseJobView):
         if not template_data:
             abort(404)
 
-        form = None
-        if template_data.form_class is not None:
-            form = self.load_form(template_data)
-
+        form = self.load_form(template_data)
         return self.shared_service.jobs_list_handler(template_data, form)
 
 
@@ -309,8 +308,8 @@ class StartJobView(BaseJobView):
             abort(404)
 
         form_data = {}
-        if template_data.form_class is not None:
-            form = self.load_form(template_data)
+        form = self.load_form(template_data)
+        if form and template_data.form_class is not None:
             if not form.validate_on_submit():
                 # return jsonify(form.errors)
                 # target = request.referrer or url_for(f"{self.bp_name}.jobs_list", job_type=job_type)
