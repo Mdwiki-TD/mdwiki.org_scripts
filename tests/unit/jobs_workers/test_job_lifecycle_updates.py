@@ -12,6 +12,8 @@ from src.main_app.jobs_workers.shared_objects import WorkerMapping
 
 
 class MockWorker(BaseObjectsJobWorker):
+    JOB_TYPE = "mock_job"
+
     def __init__(self, job_id: int, job_type_name: str = "mock_job") -> None:
         self.args = {}
         self.site = None

@@ -144,17 +144,19 @@ class JobsPageService(JobsPageServiceHelpers):
     # Pages
     # ------------------------------------------------------------------
 
-    def build_jobs_page(self) -> JobsPage:
+    def build_jobs_page(self, test_page: bool = False) -> JobsPage:
         """Fetch the jobs and build the page data, never raising."""
         action = "load Toolforge jobs"
-        try:
-            payload = self.toolforge.list_jobs()
-            # payload = self.toolforge.list_jobs_test()
-        except (requests.RequestException, ValueError, OSError) as exc:
-            return JobsPage(
-                messages=self._failure_messages(action, exc),
-                error=True,
-            )
+        if test_page:
+            payload = self.toolforge.list_jobs_test()
+        else:
+            try:
+                payload = self.toolforge.list_jobs()
+            except (requests.RequestException, ValueError, OSError) as exc:
+                return JobsPage(
+                    messages=self._failure_messages(action, exc),
+                    error=True,
+                )
 
         jobs = [self._normalize_job(dict(job)) for job in payload.get("jobs") or []]
         summary = Counter(j["status_key"] for j in jobs)
