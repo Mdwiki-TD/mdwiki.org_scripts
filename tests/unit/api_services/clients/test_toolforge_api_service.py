@@ -149,8 +149,8 @@ class TestInit:
 
         assert make_service(tool_name=None).tool_name == "envtool"
 
-    def test_tool_name_falls_back_to_mdw(self, make_service) -> None:
-        assert make_service(tool_name=None).tool_name == "mdw"
+    def test_tool_name_falls_back_to_tool_name(self, make_service) -> None:
+        assert make_service(tool_name=None).tool_name == "tool_name"
 
     def test_home_dir_defaults_to_user_home(self, make_service) -> None:
         assert make_service(home_dir=None).home_dir == str(Path.home())
