@@ -22,6 +22,11 @@ logger = logging.getLogger(__name__)
 class WebarchiveRemoverWorker(BaseObjectsJobWorker):
     """Remove duplicate {{Webarchive}} templates from mdwiki pages."""
 
+    JOB_TYPE = "webarchive_remover"
+
+    def get_job_type(self) -> str:
+        return "webarchive_remover"
+
     def __init__(self, data: JobsRunner) -> None:
         self.args = data.args or {}
         self.site: Site | None = None
@@ -34,9 +39,6 @@ class WebarchiveRemoverWorker(BaseObjectsJobWorker):
     # ------------------------------------------------------------------
     # BaseObjectsJobWorker hooks
     # ------------------------------------------------------------------
-
-    def get_job_type(self) -> str:
-        return "webarchive_remover"
 
     def process(self) -> SharedworkerObject:
         if not self._check_site():
