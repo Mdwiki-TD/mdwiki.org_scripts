@@ -115,8 +115,8 @@ class JobsConfig:
 @dataclass(frozen=True)
 class Paths:
     log_dir: str
+    admin_jobs_path: str
     jobs_path: str
-    public_jobs_path: str
 
     # ------------------------------------------------------------------
     # Factory helpers
@@ -128,8 +128,8 @@ class Paths:
 
         return cls(
             log_dir=data.get("log_dir", ""),
+            admin_jobs_path=data.get("admin_jobs_path", ""),
             jobs_path=data.get("jobs_path", ""),
-            public_jobs_path=data.get("public_jobs_path", ""),
         )
 
     @classmethod
@@ -147,15 +147,15 @@ class Paths:
 
         return Paths(
             log_dir=str(main_dir / "logs"),
-            jobs_path=str(main_dir / "jobs"),
-            public_jobs_path=str(main_dir / "public_jobs"),
+            admin_jobs_path=str(main_dir / "jobs"),
+            jobs_path=str(main_dir / "public_jobs"),
         )
 
     def all_paths(self) -> list[str]:
         return [
             self.log_dir,
+            self.admin_jobs_path,
             self.jobs_path,
-            self.public_jobs_path,
         ]
 
 

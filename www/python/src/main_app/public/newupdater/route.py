@@ -10,7 +10,7 @@ from flask.typing import ResponseReturnValue
 from flask.views import MethodView
 
 from ...decorators import oauth_required
-from ...services import newupdater_service as svc
+from ...services.newupdater_service import NewUpdaterService
 
 logger = logging.getLogger(__name__)
 
@@ -37,9 +37,9 @@ class NewUpdaterBaseView(MethodView):
             )
 
         user = getattr(g, "_current_user", None)
-
+        svc = NewUpdaterService()
         try:
-            outcome = svc.newupdater_one_title(
+            outcome = svc.update_one(
                 title=title,
                 save=save,
                 summary="Med updater.",

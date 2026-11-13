@@ -42,7 +42,7 @@ class TestImportHistoryWorkerObject:
         assert obj.pages_processed == []
         assert obj.pages_imported == []
         assert obj.pages_imported_fallback == []
-        assert obj.pages_errors == []
+        assert obj.pages_failed == []
         assert obj.pages_skipped == []
         assert obj.pages_missing == []
 

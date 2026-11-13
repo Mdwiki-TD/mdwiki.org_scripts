@@ -36,7 +36,7 @@ class TestCreateRedirectsWorkerObject:
     def test_default_lists_are_empty(self):
         obj = CreateRedirectsWorkerObject()
         assert obj.pages_processed == []
-        assert obj.pages_errors == []
+        assert obj.pages_failed == []
 
     def test_default_summary(self):
         obj = CreateRedirectsWorkerObject()

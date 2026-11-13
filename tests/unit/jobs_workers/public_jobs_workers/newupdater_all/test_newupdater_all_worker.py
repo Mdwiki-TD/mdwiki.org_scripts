@@ -27,7 +27,7 @@ class TestNewUpdaterAllWorker:
                 return_value="updated_text",
             ) as mock_med,
             patch(
-                "src.main_app.jobs_workers.public_jobs_workers.newupdater_all.worker.add_param_named",
+                "src.main_app.jobs_workers.public_jobs_workers.newupdater_all.worker.NamedParamEditor.add_param_named",
                 return_value="final_text",
             ) as mock_add,
         ):
@@ -48,7 +48,7 @@ class TestNewUpdaterAllWorker:
                 "src.main_app.jobs_workers.public_jobs_workers.newupdater_all.worker.med_updater_one"
             ) as mock_med_updater,
             patch(
-                "src.main_app.jobs_workers.public_jobs_workers.newupdater_all.worker.add_param_named"
+                "src.main_app.jobs_workers.public_jobs_workers.newupdater_all.worker.NamedParamEditor.add_param_named"
             ) as mock_add_param,
         ):
             mock_get_site.return_value = MagicMock()
@@ -68,6 +68,6 @@ class TestNewUpdaterAllWorker:
 
             result = worker.process()
             assert result.summary.total == 1
-            assert len(result.pages_changed) == 1
-            assert result.pages_changed[0].title == "Page1"
-            assert result.pages_changed[0].newrevid == 123
+            assert len(result.pages_updated) == 1
+            assert result.pages_updated[0].title == "Page1"
+            assert result.pages_updated[0].newrevid == 123

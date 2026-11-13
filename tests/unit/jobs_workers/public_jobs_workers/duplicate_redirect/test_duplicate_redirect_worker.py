@@ -39,7 +39,9 @@ class TestDuplicateRedirectWorker:
     @patch("src.main_app.jobs_workers.base_worker.WikiSiteClient.get_user_site")
     @patch("src.main_app.jobs_workers.public_jobs_workers.duplicate_redirect.worker.get_double_redirects")
     @patch("src.main_app.jobs_workers.public_jobs_workers.duplicate_redirect.worker.MwClientPage")
-    @patch("src.main_app.jobs_workers.public_jobs_workers.duplicate_redirect.worker.replace_wikilink_destinations")
+    @patch(
+        "src.main_app.jobs_workers.public_jobs_workers.duplicate_redirect.worker.WikilinkReplacer.replace_wikilink_destinations"
+    )
     def test_process_success(
         self, mock_replace, mock_mw_client_page, mock_get_double, mock_get_user_site, worker: DuplicateRedirectWorker
     ):
@@ -62,9 +64,9 @@ class TestDuplicateRedirectWorker:
         result = worker.process()
 
         assert result.status == "completed"
-        assert len(result.pages_changed) == 1
-        assert result.pages_changed[0].title == "A"
-        assert result.pages_changed[0].newrevid == 456
+        assert len(result.pages_updated) == 1
+        assert result.pages_updated[0].title == "A"
+        assert result.pages_updated[0].newrevid == 456
 
     @patch("src.main_app.jobs_workers.base_worker.WikiSiteClient.get_user_site")
     def test_process_no_site(self, mock_get_user_site, worker: DuplicateRedirectWorker):

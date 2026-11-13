@@ -35,7 +35,7 @@ class ImportHistoryWorkerObject(WorkerMapping):
 
     pages_imported: list[ImportUpdaterOutcome] = field(default_factory=list)
     pages_imported_fallback: list[ImportUpdaterOutcome] = field(default_factory=list)
-    pages_errors: list[ImportUpdaterOutcome] = field(default_factory=list)
+    pages_failed: list[ImportUpdaterOutcome] = field(default_factory=list)
     pages_skipped: list[ImportUpdaterOutcome] = field(default_factory=list)
 
     pages_missing: list[ImportUpdaterOutcome] = field(default_factory=list)

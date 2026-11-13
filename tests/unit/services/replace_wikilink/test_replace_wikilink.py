@@ -4,7 +4,7 @@ Unit tests for src/main_app/services/replace_wikilink/__init__.py module.
 """
 
 import pytest
-from src.main_app.services.replace_wikilink import replace_wikilink_destinations
+from src.main_app.services.replace_wikilink import WikilinkReplacer
 
 _test_data = [
     (
@@ -50,7 +50,7 @@ _test_data = [
 )
 def test_replace_wikilink_destinations(description, input_text, redirect_to, final_target, expected_correct_text):
     # 2. Test the new function
-    new_result = replace_wikilink_destinations(input_text, redirect_to, final_target)
+    new_result = WikilinkReplacer.replace_wikilink_destinations(input_text, redirect_to, final_target)
 
     # Assert the new function SUCCEEDS and matches the expected behavior
     assert new_result == expected_correct_text, f"New function failed: {description}"
@@ -64,7 +64,7 @@ class TestReplaceWikilinkDestinations:
         final_target = "الواجهة"
         expected_text = "هذا رابط إلى [[الواجهة]] هنا."
 
-        result = replace_wikilink_destinations(input_text, redirect_to, final_target)
+        result = WikilinkReplacer.replace_wikilink_destinations(input_text, redirect_to, final_target)
 
         assert result == expected_text
 
@@ -75,7 +75,7 @@ class TestReplaceWikilinkDestinations:
         final_target = "NYC"
         expected_text = "نص يحتوي على [[NYC]]."
 
-        result = replace_wikilink_destinations(input_text, redirect_to, final_target)
+        result = WikilinkReplacer.replace_wikilink_destinations(input_text, redirect_to, final_target)
 
         assert result == expected_text
 
@@ -86,7 +86,7 @@ class TestReplaceWikilinkDestinations:
         final_target = "Wikimedia"
         expected_text = "انظر إلى [[Wikimedia]]."
 
-        result = replace_wikilink_destinations(input_text, redirect_to, final_target)
+        result = WikilinkReplacer.replace_wikilink_destinations(input_text, redirect_to, final_target)
 
         assert result == expected_text
 
@@ -97,7 +97,7 @@ class TestReplaceWikilinkDestinations:
         final_target = "تاريخ العالم"
         expected_text = "اقرأ في [[تاريخ العالم#العصر الحديث|التاريخ المعاصر]]."
 
-        result = replace_wikilink_destinations(input_text, redirect_to, final_target)
+        result = WikilinkReplacer.replace_wikilink_destinations(input_text, redirect_to, final_target)
 
         assert result == expected_text
 
@@ -108,7 +108,7 @@ class TestReplaceWikilinkDestinations:
         final_target = "جمهورية مصر العربية"
         expected_text = "نص [[جمهورية مصر العربية]] قديم."
 
-        result = replace_wikilink_destinations(input_text, redirect_to, final_target)
+        result = WikilinkReplacer.replace_wikilink_destinations(input_text, redirect_to, final_target)
 
         assert result == expected_text
 
@@ -119,7 +119,7 @@ class TestReplaceWikilinkDestinations:
         final_target = "ويكيبيديا"
         expected_text = "مرحبا بك في [[ويكيبيديا|الموسوعة الحرة]]."
 
-        result = replace_wikilink_destinations(input_text, redirect_to, final_target)
+        result = WikilinkReplacer.replace_wikilink_destinations(input_text, redirect_to, final_target)
 
         assert result == expected_text
 
@@ -130,7 +130,7 @@ class TestReplaceWikilinkDestinations:
         final_target = "Российская Федерация"
         expected_text = "Текст с [[Российская Федерация]]."
 
-        result = replace_wikilink_destinations(input_text, redirect_to, final_target)
+        result = WikilinkReplacer.replace_wikilink_destinations(input_text, redirect_to, final_target)
 
         assert result == expected_text
 
@@ -141,6 +141,6 @@ class TestReplaceWikilinkDestinations:
         final_target = "تصنيف:مصريون"
         expected_text = "أضف إلى [[تصنيف:مصريون]]."
 
-        result = replace_wikilink_destinations(input_text, redirect_to, final_target)
+        result = WikilinkReplacer.replace_wikilink_destinations(input_text, redirect_to, final_target)
 
         assert result == expected_text

@@ -177,7 +177,7 @@ class ImportHistoryWorker(BaseObjectsJobWorker):
             self.result.pages_missing.append(info)
 
         elif info.status == "failed":
-            self.result.pages_errors.append(info)
+            self.result.pages_failed.append(info)
         else:
             self.result.pages_processed.append(info)
 

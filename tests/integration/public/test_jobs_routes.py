@@ -190,11 +190,11 @@ class TestStartJob(TestSetup):
 
         with (
             patch(
-                "src.main_app.public.shared_jobs_routes.load_auth_payload",
+                "src.main_app.public.shared_jobs_routes.RequestContextHelper.load_auth_payload",
                 return_value={"id": uid, "username": "JobUser"},
             ),
             patch(
-                "src.main_app.public.shared_jobs_routes.start_job_form",
+                "src.main_app.public.shared_jobs_routes.JobStarter.start_form",
                 return_value=1,
             ),
         ):
@@ -212,11 +212,11 @@ class TestStartJob(TestSetup):
 
         with (
             patch(
-                "src.main_app.public.shared_jobs_routes.load_auth_payload",
+                "src.main_app.public.shared_jobs_routes.RequestContextHelper.load_auth_payload",
                 return_value={"id": uid, "username": "JobUser"},
             ),
             patch(
-                "src.main_app.public.shared_jobs_routes.start_job_form",
+                "src.main_app.public.shared_jobs_routes.JobStarter.start_form",
                 return_value=1,
             ),
         ):
@@ -243,11 +243,11 @@ class TestStartJob(TestSetup):
                 mock_flash,
             ),
             patch(
-                "src.main_app.public.shared_jobs_routes.load_auth_payload",
+                "src.main_app.public.shared_jobs_routes.RequestContextHelper.load_auth_payload",
                 return_value={"id": uid, "username": "JobUser"},
             ),
             patch(
-                "src.main_app.public.shared_jobs_routes.start_job_form",
+                "src.main_app.public.shared_jobs_routes.JobStarter.start_form",
                 side_effect=DuplicateRecordError("A job of type 'fixref' is already active"),
             ),
         ):
@@ -297,7 +297,7 @@ class TestCancelJob(TestSetup):
         job_id = self._seed_job(mock_app, VALID_JOB_TYPE, username="Owner")
 
         with patch(
-            "src.main_app.public.shared_jobs_routes.cancel_job_worker",
+            "src.main_app.public.shared_jobs_routes.JobCanceller.cancel",
             return_value=True,
         ):
             resp = mock_client.post(
@@ -335,7 +335,7 @@ class TestCancelJob(TestSetup):
         _login_user(mock_client, admin_uid, username="AdminCancel")
 
         with patch(
-            "src.main_app.public.shared_jobs_routes.cancel_job_worker",
+            "src.main_app.public.shared_jobs_routes.JobCanceller.cancel",
             return_value=True,
         ):
             resp = mock_client.post(
@@ -364,7 +364,7 @@ class TestDeleteJob(TestSetup):
         job_id = self._seed_job(mock_app, VALID_JOB_TYPE, username="Owner")
 
         with patch(
-            "src.main_app.public.shared_jobs_routes.cancel_job_worker",
+            "src.main_app.public.shared_jobs_routes.JobCanceller.cancel",
             return_value=False,
         ):
             resp = mock_client.post(
@@ -384,7 +384,7 @@ class TestDeleteJob(TestSetup):
         _login_user(mock_client, uid)
 
         with patch(
-            "src.main_app.public.shared_jobs_routes.cancel_job_worker",
+            "src.main_app.public.shared_jobs_routes.JobCanceller.cancel",
             return_value=False,
         ):
             resp = mock_client.post(
@@ -461,7 +461,7 @@ class TestJobsRouteIntegration(TestSetup):
             job2_id = job2.id
 
         with patch(
-            "src.main_app.public.shared_jobs_routes.cancel_job_worker",
+            "src.main_app.public.shared_jobs_routes.JobCanceller.cancel",
             return_value=False,
         ):
             mock_client.post(

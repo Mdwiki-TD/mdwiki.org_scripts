@@ -12,7 +12,7 @@ from mwclient.client import Site
 
 from ....api_services import MwClientPage
 from ....api_services.category import get_category_members
-from ....services.named_param import add_param_named
+from ....services.named_param import NamedParamEditor
 from ....services.new_updater import med_updater_one
 from ...base_worker import BaseObjectsJobWorker, JobsRunner
 from ...shared_objects import SharedworkerObject, UpdaterOutcome
@@ -120,7 +120,7 @@ class NewUpdaterAllWorker(BaseObjectsJobWorker):
 
     def _make_new_text(self, title: str, text: str) -> tuple[str, str]:
         new_text = med_updater_one(title, text)
-        new_text = add_param_named(new_text)
+        new_text = NamedParamEditor.add_param_named(new_text)
         summary = "Med updater."
         return new_text, summary
 

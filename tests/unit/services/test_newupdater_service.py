@@ -4,21 +4,21 @@ from __future__ import annotations
 
 from unittest.mock import MagicMock
 
-from src.main_app.services.newupdater_service import newupdater_one_title
+from src.main_app.services.newupdater_service import NewUpdaterService
 
 
 class TestWorkOnTitle:
     def test_no_user_returns_notext(self):
-        result = newupdater_one_title("Test", False, user=None)
+        result = NewUpdaterService().update_one("Test", False, user=None)
         assert result.status == "skipped"
         assert result.msg == "No user"
 
     def test_empty_title_returns_notitle(self):
-        result = newupdater_one_title("", False, user=MagicMock())
+        result = NewUpdaterService().update_one("", False, user=MagicMock())
         assert result.status == "skipped"
         assert result.msg == "Invalid title"
 
     def test_empty_title_with_spaces_returns_notext(self):
-        result = newupdater_one_title("   ", False, user=MagicMock())
+        result = NewUpdaterService().update_one("   ", False, user=MagicMock())
         assert result.status == "skipped"
         assert result.msg == "Invalid title"
