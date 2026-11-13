@@ -156,8 +156,8 @@ class JobsPageService(JobsPageServiceHelpers):
                 error=True,
             )
 
-        jobs = [self._normalize_job(job) for job in payload.get("jobs") or []]
-        summary = Counter(job["status_key"] for job in jobs)
+        jobs = [self._normalize_job(dict(job)) for job in payload.get("jobs") or []]
+        summary = Counter(j["status_key"] for j in jobs)
 
         return JobsPage(
             jobs=jobs,
@@ -188,7 +188,7 @@ class JobsPageService(JobsPageServiceHelpers):
 
         return JobDetailPage(
             job_id=job_id,
-            job=self._normalize_job(job),
+            job=self._normalize_job(dict(job)),
             messages=self._convert_messages(self._extract_messages(payload)),
         )
 

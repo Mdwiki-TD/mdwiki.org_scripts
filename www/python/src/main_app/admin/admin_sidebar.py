@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import functools
 import logging
 
 from ..templates_markups.sidebar import Sidebar, SidebarGroup, SidebarItem
@@ -10,7 +9,6 @@ from ..templates_markups.sidebar import Sidebar, SidebarGroup, SidebarItem
 logger = logging.getLogger(__name__)
 
 
-@functools.lru_cache(maxsize=1)
 def load_admin_tools() -> list[SidebarGroup]:
     """Build the static sidebar menu structure.
 
