@@ -190,7 +190,7 @@ class TestStartJob(TestSetup):
 
         with (
             patch(
-                "src.main_app.public.shared_jobs_routes.load_auth_payload",
+                "src.main_app.public.shared_jobs_routes.RequestContextHelper.load_auth_payload",
                 return_value={"id": uid, "username": "JobUser"},
             ),
             patch(
@@ -212,7 +212,7 @@ class TestStartJob(TestSetup):
 
         with (
             patch(
-                "src.main_app.public.shared_jobs_routes.load_auth_payload",
+                "src.main_app.public.shared_jobs_routes.RequestContextHelper.load_auth_payload",
                 return_value={"id": uid, "username": "JobUser"},
             ),
             patch(
@@ -243,7 +243,7 @@ class TestStartJob(TestSetup):
                 mock_flash,
             ),
             patch(
-                "src.main_app.public.shared_jobs_routes.load_auth_payload",
+                "src.main_app.public.shared_jobs_routes.RequestContextHelper.load_auth_payload",
                 return_value={"id": uid, "username": "JobUser"},
             ),
             patch(
