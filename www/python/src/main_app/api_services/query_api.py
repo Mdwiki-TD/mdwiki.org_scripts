@@ -84,9 +84,7 @@ class MediaWikiQueryService:
                 continue
 
             query_data = json1.get("query", {})
-            normalized = {
-                red["to"]: red["from"] for red in query_data.get("normalized", [])
-            }
+            normalized = {red["to"]: red["from"] for red in query_data.get("normalized", [])}
 
             query_pages = query_data.get("pages", {})
             for _, kk in query_pages.items():
@@ -327,9 +325,7 @@ class MediaWikiQueryService:
                 all_files.extend([x.get("title", "") for x in members])
                 page_count += 1
 
-                logger.debug(
-                    f"Fetched category members {page_count}: {len(members)} page, (total: {len(all_files)})"
-                )
+                logger.debug(f"Fetched category members {page_count}: {len(members)} page, (total: {len(all_files)})")
 
                 if "continue" in data:
                     cmcontinue = data["continue"].get("cmcontinue")
@@ -375,9 +371,7 @@ class MediaWikiQueryService:
             list_members = list(members)
             return [p if isinstance(p, str) else p.name for p in list_members]
         except APIError as e:
-            logger.warning(
-                f"API error getting category members for {category_title}: {e}"
-            )
+            logger.warning(f"API error getting category members for {category_title}: {e}")
             return []
         except KeyError as e:
             logger.warning(f"Key error in API response for {category_title}: {e}")
@@ -471,9 +465,7 @@ def get_category_members_titles(
     namespace: int | None = None,
 ) -> list[str]:
     """Legacy entry point. Use :meth:`MediaWikiQueryService.get_category_members_titles` instead."""
-    return MediaWikiQueryService(site=site).get_category_members_titles(
-        category_name, namespace
-    )
+    return MediaWikiQueryService(site=site).get_category_members_titles(category_name, namespace)
 
 
 def import_page_from_wiki(

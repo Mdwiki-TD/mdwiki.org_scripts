@@ -93,6 +93,7 @@ class NewUpdaterService:
             new_text=new_text,
         )
 
+
 __all__ = [
     "NewUpdaterService",
 ]
