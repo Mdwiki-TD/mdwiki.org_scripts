@@ -3,6 +3,7 @@ from .add_r_column.worker import AddRColumnWorker
 from .add_rtt_template.worker import AddRttTemplateWorker
 from .add_unlinkedwikibase.worker import AddUnlinkedWikibaseWorker
 from .archive_today.worker import ArchiveTodayWorker
+from .webarchive_remover.worker import WebarchiveRemoverWorker
 from .create_redirects.worker import CreateRedirectsWorker
 from .duplicate_redirect.worker import DuplicateRedirectWorker
 from .find_and_replace.worker import FindAndReplaceWorker
@@ -110,6 +111,15 @@ jobs_data_for_all_pages: dict[str, JobData] = {
         job_class=OwidPopupAllWorker,
         job_args=[],
         start_confirm_message="Start task for `Category:Gadget:OWIDPopup` pages?",
+        ready=True,
+    ),
+    "webarchive_remover": JobData(
+        job_type="webarchive_remover",
+        job_name="Remove duplicate {{Webarchive}}",
+        job_list_template="jobs_templates/public/webarchive_remover/list.html",
+        job_class=WebarchiveRemoverWorker,
+        job_args=[],
+        start_confirm_message="Start removing duplicate {{Webarchive}} templates?",
         ready=True,
     ),
 }
