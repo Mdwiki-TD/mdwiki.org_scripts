@@ -20,13 +20,14 @@ STATUS_LITERAL = Literal[
 ]
 
 OUTCOME_STATUS = Literal[
-    "missing",
-    "changed",
-    "failed",
-    "skipped",
-    "completed",
     "pending",
+    "changed",
+    "completed",
+    "missing",
+    "skipped",
+    "failed",
     "running",
+    "updated",
 ]
 
 
@@ -52,8 +53,18 @@ class UpdaterOutcome(SharedMapToJson):
 
     status: OUTCOME_STATUS = "pending"
     title: str = ""
-    newrevid: int = 0
     msg: str = ""
+    newrevid: int = 0
+    error_data: dict[str, Any] = field(default_factory=dict)
+
+
+@dataclass
+class StandardAdminSummary(SharedMapToJson):
+    total: int = 0
+    processed: int = 0
+    success: int = 0
+    failed: int = 0
+    skipped: int = 0
 
 
 @dataclass
@@ -89,16 +100,22 @@ class SharedworkerObject(WorkerMapping):
     summary: Summary = field(default_factory=Summary)
 
     pages_processed: list[UpdaterOutcome] = field(default_factory=list)
-    pages_changed: list[UpdaterOutcome] = field(default_factory=list)
-    pages_errors: list[UpdaterOutcome] = field(default_factory=list)
-    pages_skipped: list[UpdaterOutcome] = field(default_factory=list)
     pages_missing: list[UpdaterOutcome] = field(default_factory=list)
-    note: str = ""
+    pages_skipped: list[UpdaterOutcome] = field(default_factory=list)
+    pages_changed: list[UpdaterOutcome] = field(default_factory=list)
+    pages_failed: list[UpdaterOutcome] = field(default_factory=list)
+
+
+@dataclass
+class StandardAdminWorkerObject(WorkerMapping):
+    summary: StandardAdminSummary = field(default_factory=StandardAdminSummary)
 
 
 __all__ = [
     "OneStep",
     "Summary",
-    "SharedworkerObject",
     "UpdaterOutcome",
+    "SharedworkerObject",
+    "StandardAdminSummary",
+    "StandardAdminWorkerObject",
 ]

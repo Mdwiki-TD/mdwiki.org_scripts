@@ -30,7 +30,7 @@ class TestFindAndReplaceWorkerObject:
         obj = FindAndReplaceWorkerObject()
         assert obj.pages_processed == []
         assert obj.pages_changed == []
-        assert obj.pages_errors == []
+        assert obj.pages_failed == []
         assert obj.pages_skipped == []
         assert obj.pages_missing == []
 

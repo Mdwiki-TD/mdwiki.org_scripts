@@ -30,13 +30,13 @@
 
 {% endif %}
 
-{% if result_data and result_data.pages_errors %}
+{% if result_data and result_data.pages_failed %}
 
 {{ new_pages_table(
     table_title="Pages Errors",
     job_id=job.id,
     job_type=template_data.job_type,
-    list_name="pages_errors",
+    list_name="pages_failed",
 ) }}
 
 {% endif %}
@@ -183,7 +183,7 @@
         );
 
         initServerTable(
-            'table-pages_errors',
+            'table-pages_failed',
             createRedirectColumns(
                 show_status = false,
                 show_message = true,

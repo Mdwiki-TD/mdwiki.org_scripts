@@ -59,7 +59,7 @@ class CreateRedirectsWorkerObject(WorkerMapping):
     pages_processed: list[OneTitleInfo] = field(default_factory=list)
 
     pages_created: list[OneTitleInfo] = field(default_factory=list)
-    pages_errors: list[OneTitleInfo] = field(default_factory=list)
+    pages_failed: list[OneTitleInfo] = field(default_factory=list)
     pages_skipped: list[OneTitleInfo] = field(default_factory=list)
 
 
