@@ -157,10 +157,14 @@ class ToolforgeJobsView:
         bp.add_url_rule("/", view_func=JobsView.as_view("jobs"))
         bp.add_url_rule("/<job_id>", view_func=JobDetailView.as_view("job_detail"))
         bp.add_url_rule("/<job_id>/logs", view_func=JobLogsView.as_view("job_logs"))
+
         # Endpoint to read error/log files like:
         #   - /data/project/mdwiki/backup.out (filelog_stdout)
         #   - /data/project/mdwiki/backup.err (filelog_stderr)
-        bp.add_url_rule("/<job_id>/logs/<filelog>", view_func=JobLogsFileView.as_view("job_logs_file"))
+        bp.add_url_rule(
+            "/<job_id>/logs/<any(stdout,stderr):filelog>",
+            view_func=JobLogsFileView.as_view("job_logs_file"),
+        )
 
         bp.add_url_rule("/<job_id>/restart", view_func=JobRestartView.as_view("job_restart"))
         bp.add_url_rule("/<job_id>/delete", view_func=JobDeleteView.as_view("job_delete"))
