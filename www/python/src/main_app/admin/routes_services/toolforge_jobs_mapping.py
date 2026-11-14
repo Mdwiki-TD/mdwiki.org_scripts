@@ -83,6 +83,16 @@ class JobLogsPage:
             "error": self.error,
         }
 
+    @classmethod
+    def read(cls, job_id: str, text: str, lines: int) -> JobLogsPage:
+        all_lines = text.splitlines()
+        return JobLogsPage(
+            job_id=job_id,
+            logs=all_lines[-lines:],
+            lines=lines,
+            total_lines=len(all_lines),
+        )
+
 
 @dataclass
 class JobActionResult:

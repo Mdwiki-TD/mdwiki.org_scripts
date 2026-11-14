@@ -8,6 +8,7 @@ Response shapes follow the Toolforge OpenAPI spec (see toolforge_jobs_types.py).
 from __future__ import annotations
 
 import logging
+from pathlib import Path
 import re
 from collections import Counter
 from collections.abc import Callable
@@ -185,13 +186,7 @@ class JobsPageService(JobsPageServiceHelpers):
                 error=True,
             )
 
-        all_lines = text.splitlines()
-        return JobLogsPage(
-            job_id=job_id,
-            logs=all_lines[-lines:],
-            lines=lines,
-            total_lines=len(all_lines),
-        )
+        return JobLogsPage.read(job_id, text, lines)
 
     # ------------------------------------------------------------------
     # Actions
@@ -270,12 +265,46 @@ class JobsPageService(JobsPageServiceHelpers):
         if is_dataclass(payload) and not isinstance(payload, type):
             inner = getattr(payload, "messages", payload)  # ResponseMessages has no `messages`
             raw = asdict(inner) if is_dataclass(inner) and not isinstance(inner, type) else {}
+
         elif isinstance(payload, dict):
             raw = payload.get("messages") or {}
             if not isinstance(raw, dict) or not raw:
-                raw = {level: payload[level] for level in ("info", "warning", "error") if payload.get(level)}
+                raw = {level: payload[level] for level in _LEVEL_TO_CATEGORY.keys() if payload.get(level)}
 
         return {level: texts for level, texts in raw.items() if texts}
+
+    def read_job_log_file(self, job_id: str, filelog: str, lines: int = DEFAULT_LOG_LINES) -> JobLogsPage:
+        """Fetch the logs (plain text) of one job and keep the last ``lines`` lines, never raising."""
+        lines = min(max(lines, 1), MAX_LOG_LINES)
+        invalid = self._invalid_name_message(job_id)
+        if invalid:
+            return JobLogsPage(job_id=job_id, lines=lines, messages=[invalid], error=True)
+
+        action = f"load logs of job '{job_id}'"
+        text = ""
+        try:
+            payload = self.toolforge.show_job(job_id)
+            job = payload.job
+            if job:
+                file_name = job.filelog_stdout if filelog == "stdout" else job.filelog_stderr
+                text = self.read_file(file_name)
+        except _API_ERRORS as exc:
+            return JobLogsPage(
+                job_id=job_id,
+                lines=lines,
+                messages=self._failure_messages(action, exc),
+                error=True,
+            )
+
+        return JobLogsPage.read(job_id, text, lines)
+
+    def read_file(self, file_path: str) -> str:
+        """Read a file from the filesystem and return its content."""
+        path = Path(file_path)
+        if not path.exists():
+            raise FileNotFoundError(file_path)
+
+        return path.read_text(encoding="utf-8")
 
 
 __all__ = [
