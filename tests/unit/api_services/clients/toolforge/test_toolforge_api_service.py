@@ -10,7 +10,7 @@ from urllib.parse import parse_qs, quote, quote_plus, urlsplit
 
 import pytest
 import requests
-from src.main_app.api_services.clients.toolforge_api_service import (
+from src.main_app.api_services.clients.toolforge.toolforge_api_service import (
     API_URL,
     EXTERNAL_API_URL,
     REQUEST_TIMEOUT,
@@ -18,7 +18,7 @@ from src.main_app.api_services.clients.toolforge_api_service import (
     ToolforgeApiService,
 )
 
-MODULE = "src.main_app.api_services.clients.toolforge_api_service"
+MODULE = "src.main_app.api_services.clients.toolforge.toolforge_api_service"
 
 HTTP_METHODS = ["get", "post", "put", "patch", "delete"]
 

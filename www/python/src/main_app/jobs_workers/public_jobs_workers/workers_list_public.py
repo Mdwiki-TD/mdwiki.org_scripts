@@ -3,7 +3,6 @@ from .add_r_column.worker import AddRColumnWorker
 from .add_rtt_template.worker import AddRttTemplateWorker
 from .add_unlinkedwikibase.worker import AddUnlinkedWikibaseWorker
 from .archive_today.worker import ArchiveTodayWorker
-from .webarchive_remover.worker import WebarchiveRemoverWorker
 from .create_redirects.worker import CreateRedirectsWorker
 from .duplicate_redirect.worker import DuplicateRedirectWorker
 from .find_and_replace.worker import FindAndReplaceWorker
@@ -14,6 +13,7 @@ from .fixref.worker import FixRefWorker
 from .import_history.worker import ImportHistoryWorker
 from .newupdater_all.worker import NewUpdaterAllWorker
 from .owidpopup_all.worker import OwidPopupAllWorker
+from .webarchive_remover.worker import WebarchiveRemoverWorker
 
 jobs_data_for_all_pages: dict[str, JobData] = {
     "archive_today": JobData(

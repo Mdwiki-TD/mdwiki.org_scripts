@@ -9,13 +9,13 @@ from urllib.parse import parse_qs, urlsplit
 
 import pytest
 import requests
-from src.main_app.api_services.clients.toolforge_api_service import (
+from src.main_app.api_services.clients.toolforge.toolforge_api_service import (
     API_URL,
     EXTERNAL_API_URL,
     REQUEST_TIMEOUT,
     TOKEN_ENV,
 )
-from src.main_app.api_services.clients.toolforge_jobs_api_service import (
+from src.main_app.api_services.clients.toolforge.toolforge_jobs_api_service import (
     ToolforgeJobsService,
 )
 

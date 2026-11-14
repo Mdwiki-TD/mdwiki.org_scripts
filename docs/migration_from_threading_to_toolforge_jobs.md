@@ -301,7 +301,7 @@ class DbCancelEvent:
 # src/main_app/jobs_workers/backends/toolforge_backend.py
 import re
 from pathlib import Path
-from ...api_services.clients.toolforge_jobs_api_service import ToolforgeJobsService
+from ...api_services.clients.toolforge.toolforge_jobs_api_service import ToolforgeJobsService
 
 IMAGE = "python3.13"  # مأخوذ من بيانات الاختبار في الملف، تحقق من الصور عبر svc.images()
 CMD = "bash ~/shs/flask_cmd.sh run-job-id {job_id}"  # تحقق من المسارات

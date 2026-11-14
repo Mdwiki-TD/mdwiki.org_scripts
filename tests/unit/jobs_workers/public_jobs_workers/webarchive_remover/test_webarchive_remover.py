@@ -2,8 +2,6 @@
 
 from __future__ import annotations
 
-from unittest.mock import MagicMock
-
 from src.main_app.jobs_workers.objects import JobsRunner
 from src.main_app.jobs_workers.public_jobs_workers.webarchive_remover.text_changer import (
     ArchiveUrl,
@@ -12,7 +10,6 @@ from src.main_app.jobs_workers.public_jobs_workers.webarchive_remover.text_chang
 )
 from src.main_app.jobs_workers.public_jobs_workers.webarchive_remover.worker import WebarchiveRemoverWorker
 from src.main_app.jobs_workers.shared_objects import SharedworkerObject
-
 
 # ======================================================================
 # Text transformation tests (pure function, no network)
