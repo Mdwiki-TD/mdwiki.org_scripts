@@ -13,6 +13,7 @@ from .fixref.worker import FixRefWorker
 from .import_history.worker import ImportHistoryWorker
 from .newupdater_all.worker import NewUpdaterAllWorker
 from .owidpopup_all.worker import OwidPopupAllWorker
+from .webarchive_remover.worker import WebarchiveRemoverWorker
 
 jobs_data_for_all_pages: dict[str, JobData] = {
     "archive_today": JobData(
@@ -110,6 +111,15 @@ jobs_data_for_all_pages: dict[str, JobData] = {
         job_class=OwidPopupAllWorker,
         job_args=[],
         start_confirm_message="Start task for `Category:Gadget:OWIDPopup` pages?",
+        ready=True,
+    ),
+    "webarchive_remover": JobData(
+        job_type="webarchive_remover",
+        job_name="Remove duplicate {{Webarchive}}",
+        job_list_template="jobs_templates/public/webarchive_remover/list.html",
+        job_class=WebarchiveRemoverWorker,
+        job_args=[],
+        start_confirm_message="Start removing duplicate {{Webarchive}} templates?",
         ready=True,
     ),
 }

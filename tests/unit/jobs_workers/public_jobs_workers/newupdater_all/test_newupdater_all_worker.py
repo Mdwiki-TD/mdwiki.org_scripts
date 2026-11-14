@@ -9,9 +9,9 @@ from src.main_app.jobs_workers.public_jobs_workers.newupdater_all.worker import 
 
 
 class TestNewUpdaterAllWorker:
-    def test_get_job_type(self):
+    def test_job_type(self):
         worker = NewUpdaterAllWorker(JobsRunner(job_id=1, args={}, user=None))
-        assert worker.get_job_type() == "newupdater_all"
+        assert worker.JOB_TYPE == "newupdater_all"
 
     def test_result_type(self):
         from src.main_app.jobs_workers.shared_objects import SharedworkerObject

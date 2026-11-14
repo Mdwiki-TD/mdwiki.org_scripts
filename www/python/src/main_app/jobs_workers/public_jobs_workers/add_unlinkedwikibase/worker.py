@@ -17,15 +17,14 @@ logger = logging.getLogger(__name__)
 class AddUnlinkedWikibaseWorker(BaseObjectsJobWorker):
     """Add unlinkedwikibase tag to pages."""
 
+    JOB_TYPE = "add_unlinkedwikibase"
+
     def __init__(self, data: JobsRunner) -> None:
         self.args = data.args or {}
 
         super().__init__(data)
 
         self.result: SharedworkerObject = SharedworkerObject()
-
-    def get_job_type(self) -> str:
-        return "add_unlinkedwikibase"
 
     def process(self) -> SharedworkerObject:
         """

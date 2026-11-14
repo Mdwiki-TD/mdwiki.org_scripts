@@ -10,7 +10,8 @@ from urllib.parse import parse_qs, quote, quote_plus, urlsplit
 
 import pytest
 import requests
-from src.main_app.api_services.clients.toolforge_api_service import (
+from src.main_app.api_services.clients.toolforge.toolforge_api_service import (
+    API_ROUTES,
     API_URL,
     EXTERNAL_API_URL,
     REQUEST_TIMEOUT,
@@ -18,7 +19,7 @@ from src.main_app.api_services.clients.toolforge_api_service import (
     ToolforgeApiService,
 )
 
-MODULE = "src.main_app.api_services.clients.toolforge_api_service"
+MODULE = "src.main_app.api_services.clients.toolforge.toolforge_api_service"
 
 HTTP_METHODS = ["get", "post", "put", "patch", "delete"]
 
@@ -73,7 +74,7 @@ def mock_http_client(make_response: Callable[..., MagicMock]) -> MagicMock:
 def make_service(mock_http_client: MagicMock) -> Callable[..., ToolforgeApiService]:
     """Return a factory that builds a service wired to the fake HttpClient."""
 
-    def _factory(api_route: str = "jobs", **kwargs: Any) -> ToolforgeApiService:
+    def _factory(api_route: API_ROUTES = "jobs", **kwargs: Any) -> ToolforgeApiService:
         kwargs.setdefault("tool_name", "mytool")
         kwargs.setdefault("home_dir", "/home/tester")
         kwargs.setdefault("http_client", mock_http_client)
@@ -149,8 +150,8 @@ class TestInit:
 
         assert make_service(tool_name=None).tool_name == "envtool"
 
-    def test_tool_name_falls_back_to_mdw(self, make_service) -> None:
-        assert make_service(tool_name=None).tool_name == "mdw"
+    def test_tool_name_falls_back_to_tool_name(self, make_service) -> None:
+        assert make_service(tool_name=None).tool_name == "tool_name"
 
     def test_home_dir_defaults_to_user_home(self, make_service) -> None:
         assert make_service(home_dir=None).home_dir == str(Path.home())
@@ -438,7 +439,12 @@ class TestHealthcheck:
 
         assert mock_http_client.request.call_args.kwargs["url"] == f"{API_URL}/{route}/v1/healthz"
 
-    def test_returns_decoded_payload(self, make_service, mock_http_client, make_response) -> None:
+    def test_returns_decoded_payload(
+        self,
+        make_service,
+        mock_http_client,
+        make_response,
+    ) -> None:
         mock_http_client.request.return_value = make_response(json_data={"status": "ok"})
         service = make_service()
 

@@ -7,9 +7,9 @@ from src.main_app.jobs_workers.public_jobs_workers.fixref.worker import FixRefWo
 
 
 class TestFixRefWorker:
-    def test_get_job_type(self):
+    def test_job_type(self):
         worker = FixRefWorker(JobsRunner(job_id=1, args={"titles": ["Test"]}, user=None))
-        assert worker.get_job_type() == "fixref"
+        assert worker.JOB_TYPE == "fixref"
 
     def test_result_type(self):
         from src.main_app.jobs_workers.shared_objects import SharedworkerObject

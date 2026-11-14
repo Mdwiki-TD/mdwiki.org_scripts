@@ -8,9 +8,9 @@ from src.main_app.jobs_workers.shared_objects import SharedworkerObject
 
 
 class TestArchiveTodayWorker:
-    def test_get_job_type(self):
+    def test_job_type(self):
         worker = ArchiveTodayWorker(JobsRunner(job_id=1, args={}, user=None))
-        assert worker.get_job_type() == "archive_today"
+        assert worker.JOB_TYPE == "archive_today"
 
     def test_result_type(self):
         worker = ArchiveTodayWorker(JobsRunner(job_id=1, args={}, user=None))

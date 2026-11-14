@@ -9,9 +9,9 @@ from src.main_app.jobs_workers.public_jobs_workers.add_unlinkedwikibase.worker i
 
 
 class TestAddUnlinkedWikibaseWorker:
-    def test_get_job_type(self):
+    def test_job_type(self):
         worker = AddUnlinkedWikibaseWorker(JobsRunner(job_id=1, args={}, user=None))
-        assert worker.get_job_type() == "add_unlinkedwikibase"
+        assert worker.JOB_TYPE == "add_unlinkedwikibase"
 
     def test_result_is_shared_worker_object(self):
         from src.main_app.jobs_workers.shared_objects import SharedworkerObject
