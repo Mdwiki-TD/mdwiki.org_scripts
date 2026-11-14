@@ -7,13 +7,13 @@ Response shapes follow the Toolforge OpenAPI spec (see toolforge_jobs_types.py).
 
 from __future__ import annotations
 
-import os
 import logging
-from pathlib import Path
+import os
 import re
 from collections import Counter
 from collections.abc import Callable
 from dataclasses import asdict, is_dataclass
+from pathlib import Path
 from typing import Any
 
 import requests
