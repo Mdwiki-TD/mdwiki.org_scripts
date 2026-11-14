@@ -11,6 +11,7 @@ from urllib.parse import parse_qs, quote, quote_plus, urlsplit
 import pytest
 import requests
 from src.main_app.api_services.clients.toolforge.toolforge_api_service import (
+    API_ROUTES,
     API_URL,
     EXTERNAL_API_URL,
     REQUEST_TIMEOUT,
@@ -73,7 +74,7 @@ def mock_http_client(make_response: Callable[..., MagicMock]) -> MagicMock:
 def make_service(mock_http_client: MagicMock) -> Callable[..., ToolforgeApiService]:
     """Return a factory that builds a service wired to the fake HttpClient."""
 
-    def _factory(api_route: str = "jobs", **kwargs: Any) -> ToolforgeApiService:
+    def _factory(api_route: API_ROUTES = "jobs", **kwargs: Any) -> ToolforgeApiService:
         kwargs.setdefault("tool_name", "mytool")
         kwargs.setdefault("home_dir", "/home/tester")
         kwargs.setdefault("http_client", mock_http_client)
