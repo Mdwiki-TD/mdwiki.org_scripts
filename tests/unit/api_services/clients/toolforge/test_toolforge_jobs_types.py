@@ -3,10 +3,10 @@
 from __future__ import annotations
 
 import dataclasses
+from dacite import DaciteError
 
 import pytest
 import src.main_app.api_services.clients.toolforge.toolforge_jobs_types as t
-from dacite import DaciteError
 
 ALL_CLASSES = [
     obj
@@ -107,7 +107,12 @@ def test_wrong_field_type_raises() -> None:
 
 
 def test_image() -> None:
-    obj = t.Image.load({"shortname": "python3.11", "image": "docker-registry/python:3.11"})
+    obj = t.Image.load(
+        {
+            "shortname": "python3.11",
+            "image": "docker-registry/python:3.11",
+        }
+    )
     assert obj.shortname == "python3.11"
     assert obj.image == "docker-registry/python:3.11"
 
@@ -207,7 +212,11 @@ def test_tool_forge_job_nullable_fields_accept_none() -> None:
 
 
 def test_tool_forge_job_invalid_enum_values() -> None:
-    for field, bad in [("job_type", "cron"), ("emails", "sometimes"), ("mount", "some")]:
+    for field, bad in [
+        ("job_type", "cron"),
+        ("emails", "sometimes"),
+        ("mount", "some"),
+    ]:
         with pytest.raises(DaciteError):
             t.ToolForgeJob.load({field: bad})
 
@@ -236,7 +245,10 @@ def test_new_job_webservice() -> None:
 def test_job_list_response() -> None:
     resp = t.JobListResponse.load(
         {
-            "jobs": [SCHEDULED_JOB, {"name": "other", "job_type": "one-off", "cmd": "ls"}],
+            "jobs": [
+                SCHEDULED_JOB,
+                {"name": "other", "job_type": "one-off", "cmd": "ls"},
+            ],
             "messages": {"warning": ["deprecated"]},
         }
     )
@@ -315,7 +327,10 @@ def test_quota_item_requires_string_values() -> None:
 
 def test_health_response() -> None:
     resp = t.HealthResponse.load(
-        {"health": {"status": "ERROR", "message": "db down"}, "messages": {"error": ["db down"]}}
+        {
+            "health": {"status": "ERROR", "message": "db down"},
+            "messages": {"error": ["db down"]},
+        }
     )
     assert isinstance(resp.health, t.Health)
     assert resp.health.status == "ERROR"

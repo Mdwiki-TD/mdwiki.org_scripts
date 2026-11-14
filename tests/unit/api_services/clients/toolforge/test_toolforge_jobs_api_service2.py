@@ -33,6 +33,7 @@ def test_json_handles_400_error_with_json_body():
     # service.api.request.assert_called_once_with("POST", "/jobs/some-job/restart", params=None, json=None, check=True)
 
     result2 = service.restart_job("some-job")
+    # assert result2.to_json() == error_payload
     assert result2 == error_payload
 
 
