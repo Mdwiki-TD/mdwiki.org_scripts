@@ -24,3 +24,4 @@ typing-extensions>=4.6.0
 Werkzeug>=3.1.8
 wikitextparser>=2.0.0
 wtforms
+dacite>=1.9.2
