@@ -98,6 +98,7 @@ class AuthUsersNewService:
             token = self.user_token_service.get_authenticated_user_token(user_id)
             if not token:
                 return None
+
             username = token.user.username
             return CurrentUser(
                 user_id=user_id,
