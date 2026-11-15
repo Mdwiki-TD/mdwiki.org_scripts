@@ -4,8 +4,9 @@ Unit tests for domain.models.user_token module.
 Tests for UserTokenRecord.
 """
 
-import pytest
 from datetime import datetime
+
+import pytest
 from src.main_app.database.models import UserRecord, UserTokenRecord
 
 
