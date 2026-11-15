@@ -7,7 +7,6 @@ Classes to test: BaseModel
 from __future__ import annotations
 
 from datetime import datetime
-from typing import Any
 from unittest.mock import MagicMock, patch
 
 from flask.app import Flask

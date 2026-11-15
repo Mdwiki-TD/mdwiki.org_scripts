@@ -99,7 +99,6 @@ def test_job_record_to_dict_handles_none() -> None:
     assert result["is_running"] is None
 
 
-
 def test_job_record_table_name() -> None:
     """Test that JobRecord points to the 'jobs' table."""
     assert JobRecord.__tablename__ == "jobs"
