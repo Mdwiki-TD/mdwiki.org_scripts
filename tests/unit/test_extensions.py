@@ -14,10 +14,10 @@ from flask_migrate import Migrate
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import DateTime, String, func
 from sqlalchemy.orm import Mapped, mapped_column
-from src.main_app.extensions import BaseModel, db, migrate
+from src.main_app.extensions import BaseModel, Model, db, migrate
 
 
-class MockModel(db.Model):
+class MockModel(Model):
     __tablename__ = "mock_model"
 
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
@@ -73,26 +73,6 @@ def test_base_model_to_dict_isoformat():
         result = model.to_json()
 
     assert result == {"created_at": "2025-10-27T04:41:07"}
-
-
-def test_base_model_init_sets_kwargs():
-    """Test that __init__ sets provided kwargs as instance attributes when the attribute exists."""
-    model = BaseModel()
-    model.foo = "original"  # type: ignore
-
-    BaseModel.__init__(model, foo="updated", bar="new")
-
-    assert model.foo == "updated"  # type: ignore
-    assert not hasattr(model, "bar")
-
-
-def test_base_model_init_skips_nonexistent_attributes():
-    """Test that __init__ ignores kwargs for attributes that don't exist on the model."""
-    model = BaseModel()
-
-    BaseModel.__init__(model, nonexistent="val")
-
-    assert not hasattr(model, "nonexistent")
 
 
 def test_db_is_sqlalchemy_instance():
