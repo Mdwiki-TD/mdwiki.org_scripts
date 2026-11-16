@@ -157,11 +157,12 @@ jobs_data_one_page = {
     "medicine_articles": JobData(
         job_type="medicine_articles",
         job_name="Update Medicine Articles Stats",
+        job_details_template="jobs_templates/public/medicine_articles/details.html",
         job_class=MedicineArticlesWorker,
         job_args=[],
         start_confirm_message="Start updating WikiProject Medicine article statistics?",
         ready=True,
-        description="""Generates a statistical report of medical articles by language for WikiProject Medicine and publishes it to mdwiki.org.""",
+        description="Generates a statistical report of medical articles by language for WikiProject Medicine and publishes it to mdwiki.org.",
     ),
 }
 
