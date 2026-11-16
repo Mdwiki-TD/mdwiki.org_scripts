@@ -4,19 +4,19 @@
 {% block job_summary %}
 <div class="row g-3 mb-4">
     <div class="col-md-3 col-sm-6">
-        {{ stats_card('Total Articles', result_data.summary.total_articles|default(0), "primary", "") }}
+        {{ stats_card('Total Articles', result_data.summary.total_articles| commas, "primary", "") }}
     </div>
     <div class="col-md-3 col-sm-6">
-        {{ stats_card('All Languages', result_data.summary.total_articles_all_langs|default(0), "success", "") }}
+        {{ stats_card('All Articles in All Languages', result_data.summary.total_articles_all_langs| commas, "success", "") }}
     </div>
     <div class="col-md-3 col-sm-6">
-        {{ stats_card('Languages', result_data.summary.total_languages|default(0), "info", "") }}
+        {{ stats_card('Languages', result_data.summary.total_languages| commas, "info", "") }}
     </div>
     <div class="col-md-3 col-sm-6">
         {% if result_data.summary.page_updated %}
-            {{ stats_card('Page Updated', 'Yes', "success", "") }}
+        {{ stats_card('Page Updated', 'Yes', "success", "") }}
         {% else %}
-            {{ stats_card('Page Updated', 'No', "warning", "") }}
+        {{ stats_card('Page Updated', 'No', "warning", "") }}
         {% endif %}
     </div>
 </div>
@@ -39,7 +39,7 @@
     </div>
     <div class="card-body">
         <div class="table-responsive">
-            <table class="table table-striped table-hover" id="table-languages">
+            <table class="table table-striped table-hover DataTable" id="table-languages">
                 <thead>
                     <tr>
                         <th>#</th>
@@ -63,19 +63,4 @@
     </div>
 </div>
 {% endif %}
-{% endblock %}
-
-{% block sub_extra_js %}
-<script>
-    $(document).ready(function () {
-        if ($('#table-languages').length) {
-            $('#table-languages').DataTable({
-                order: [[2, 'desc']],
-                columnDefs: [
-                    { orderable: false, targets: [0] },
-                ],
-            });
-        }
-    });
-</script>
 {% endblock %}

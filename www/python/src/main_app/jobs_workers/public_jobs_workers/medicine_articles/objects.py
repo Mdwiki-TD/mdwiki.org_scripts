@@ -6,7 +6,7 @@ import logging
 from dataclasses import asdict, dataclass, field
 from typing import Any
 
-from ...shared_objects import STATUS_LITERAL, WorkerMapping
+from ...shared_objects import STATUS_LITERAL, SharedworkerObject
 
 logger = logging.getLogger(__name__)
 
@@ -34,7 +34,7 @@ class MedicineArticlesSummary:
 
 
 @dataclass
-class MedicineArticlesWorkerObject(WorkerMapping):
+class MedicineArticlesWorkerObject(SharedworkerObject):
     summary: MedicineArticlesSummary = field(default_factory=MedicineArticlesSummary)
 
     languages: list[LangCount] = field(default_factory=list)

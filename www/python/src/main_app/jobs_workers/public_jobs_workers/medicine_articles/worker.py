@@ -16,6 +16,7 @@ from ....api_services.mwclient_page import MwClientPage
 from ....api_services.wikidb.analytics import WikiReplicaDB
 from ...base_worker import BaseObjectsJobWorker, JobsRunner
 from .objects import LangCount, MedicineArticlesWorkerObject
+from ...shared_objects import UpdaterOutcome
 
 logger = logging.getLogger(__name__)
 
@@ -60,21 +61,20 @@ class MedicineArticlesWorker(BaseObjectsJobWorker):
     # BaseObjectsJobWorker hooks
     # ------------------------------------------------------------------
 
-    def process(self) -> MedicineArticlesWorkerObject:
-        if not self._check_site():
-            return self.result
-
+    def _process_one(self, info: UpdaterOutcome) -> UpdaterOutcome:
         try:
             languages = self._fetch_lang_counts()
         except Exception as e:
             self.handle_error(e, "fetching language counts")
-            return self.result
+            info.status = "failed"
+            return info
 
         try:
             total_articles = self._fetch_total_articles()
         except Exception as e:
             self.handle_error(e, "fetching total articles")
-            return self.result
+            info.status = "failed"
+            return info
 
         if "en" not in languages:
             languages["en"] = total_articles
@@ -92,21 +92,49 @@ class MedicineArticlesWorker(BaseObjectsJobWorker):
         # Build wikitext
         text = self._build_wikitext(sorted_langs)
 
+        page = MwClientPage(info.title, self.site)
+
+        page_text = page.get_text()
+        if page_text == text:
+            info.status = "skipped"
+            self.result.status = "skipped"
+            logger.info(f"Job {self.job_id}: Page {info.title!r} is already up to date")
+            return info
+
+        # Save to wiki
+        try:
+            page.edit(text, "update")
+
+        except Exception as e:
+            self.handle_error(e, "saving page to wiki")
+            info.status = "failed"
+            return info
+
+        self.result.summary.page_updated = True
+        self.result.status = "completed"
+        logger.info(f"Job {self.job_id}: Updated page {info.title!r}")
+
+        return info
+
+    def process(self) -> MedicineArticlesWorkerObject:
+        if not self._check_site():
+            return self.result
+
         # Determine page title
         year = datetime.datetime.now().year
         title = f"WikiProjectMed:WikiProject Medicine/Stats/Number of articles by language {year}"
         self.result.page_title = title
 
-        # Save to wiki
-        try:
-            page = MwClientPage(title, self.site)
-            page.edit(text, "update")
-            self.result.summary.page_updated = True
-            self.result.status = "completed"
-            logger.info(f"Job {self.job_id}: Updated page {title!r}")
-        except Exception as e:
-            self.handle_error(e, "saving page to wiki")
+        info = UpdaterOutcome(title=title)
+
+        ok = self._process_one(info)
+        if not ok:
             return self.result
+
+        self.update_status(info)
+
+        if self.result.status in ("pending", "running"):
+            self.result.status = "completed"
 
         return self.result
 
