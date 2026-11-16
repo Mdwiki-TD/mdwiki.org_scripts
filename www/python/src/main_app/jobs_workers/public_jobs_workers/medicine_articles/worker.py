@@ -47,9 +47,14 @@ class MedicineArticlesWorker(BaseObjectsJobWorker):
 
     JOB_TYPE = "medicine_articles"
 
-    def __init__(self, data: JobsRunner) -> None:
+    def __init__(
+        self,
+        data: JobsRunner,
+        lang_db: WikiReplicaDB | None = None,
+    ) -> None:
         super().__init__(data)
         self.result: MedicineArticlesWorkerObject = MedicineArticlesWorkerObject()
+        self.lang_db = lang_db or WikiReplicaDB("enwiki")
 
     # ------------------------------------------------------------------
     # BaseObjectsJobWorker hooks
@@ -111,14 +116,12 @@ class MedicineArticlesWorker(BaseObjectsJobWorker):
 
     def _fetch_lang_counts(self) -> dict[str, int]:
         """Query wiki replica for article counts grouped by language."""
-        lang_db = WikiReplicaDB("enwiki")
-        rows = lang_db.select_safe(_SQL_LANG_COUNTS)
+        rows = self.lang_db.select_safe(_SQL_LANG_COUNTS)
         return {row["ll_lang"]: row["counts"] for row in rows}
 
     def _fetch_total_articles(self) -> int:
         """Query wiki replica for total medicine article count."""
-        lang_db = WikiReplicaDB("enwiki")
-        rows = lang_db.select_safe(_SQL_TOTAL_ARTICLES)
+        rows = self.lang_db.select_safe(_SQL_TOTAL_ARTICLES)
         if rows:
             return rows[0]["articles"]
         return 0

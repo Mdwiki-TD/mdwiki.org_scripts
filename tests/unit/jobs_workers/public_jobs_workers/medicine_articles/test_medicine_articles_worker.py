@@ -14,27 +14,31 @@ WORKER_PATH = "src.main_app.jobs_workers.public_jobs_workers.medicine_articles.w
 
 
 @pytest.fixture
-def worker():
-    return MedicineArticlesWorker(JobsRunner(job_id=1, user={"username": "test_user"}))
+def mock_lang_db():
+    return MagicMock()
+
+
+@pytest.fixture
+def worker(mock_lang_db):
+    return MedicineArticlesWorker(
+        JobsRunner(job_id=1, user={"username": "test_user"}),
+        lang_db=mock_lang_db,
+    )
 
 
 class TestMedicineArticlesWorker:
     @patch(f"{WORKER_PATH}.MwClientPage")
-    @patch(f"{WORKER_PATH}.WikiReplicaDB")
     @patch("src.main_app.jobs_workers.base_worker.WikiSiteClient.get_user_site")
-    def test_process_success(self, mock_get_user_site, mock_replica_db_cls, mock_page_cls, worker):
+    def test_process_success(self, mock_get_user_site, mock_page_cls, worker, mock_lang_db):
         mock_get_user_site.return_value = MagicMock()
 
-        # WikiReplicaDB("enwiki").select_safe returns different results per call
         lang_rows = [
             {"ll_lang": "ar", "counts": 200},
             {"ll_lang": "fr", "counts": 300},
         ]
         total_rows = [{"articles": 1000}]
 
-        mock_db_instance = MagicMock()
-        mock_replica_db_cls.return_value = mock_db_instance
-        mock_db_instance.select_safe.side_effect = [lang_rows, total_rows]
+        mock_lang_db.select_safe.side_effect = [lang_rows, total_rows]
 
         mock_page = MagicMock()
         mock_page_cls.return_value = mock_page
@@ -64,9 +68,8 @@ class TestMedicineArticlesWorker:
         assert "sortable wikitable" in wikitext
 
     @patch(f"{WORKER_PATH}.MwClientPage")
-    @patch(f"{WORKER_PATH}.WikiReplicaDB")
     @patch("src.main_app.jobs_workers.base_worker.WikiSiteClient.get_user_site")
-    def test_process_en_already_in_lang_counts(self, mock_get_user_site, mock_replica_db_cls, mock_page_cls, worker):
+    def test_process_en_already_in_lang_counts(self, mock_get_user_site, mock_page_cls, worker, mock_lang_db):
         """When 'en' is already in the language counts, it should NOT be overwritten."""
         mock_get_user_site.return_value = MagicMock()
 
@@ -76,9 +79,7 @@ class TestMedicineArticlesWorker:
         ]
         total_rows = [{"articles": 5000}]
 
-        mock_db_instance = MagicMock()
-        mock_replica_db_cls.return_value = mock_db_instance
-        mock_db_instance.select_safe.side_effect = [lang_rows, total_rows]
+        mock_lang_db.select_safe.side_effect = [lang_rows, total_rows]
 
         mock_page = MagicMock()
         mock_page_cls.return_value = mock_page
@@ -100,11 +101,10 @@ class TestMedicineArticlesWorker:
         result = worker.process()
         assert result.status == "failed"
 
-    @patch(f"{WORKER_PATH}.WikiReplicaDB")
     @patch("src.main_app.jobs_workers.base_worker.WikiSiteClient.get_user_site")
-    def test_process_fetch_lang_counts_error(self, mock_get_user_site, mock_replica_db_cls, worker):
+    def test_process_fetch_lang_counts_error(self, mock_get_user_site, worker, mock_lang_db):
         mock_get_user_site.return_value = MagicMock()
-        mock_replica_db_cls.side_effect = Exception("db connection failed")
+        mock_lang_db.select_safe.side_effect = Exception("db connection failed")
 
         result = worker.process()
 
@@ -112,15 +112,12 @@ class TestMedicineArticlesWorker:
         assert len(result.errors) > 0
         assert result.errors[0]["error_type"] == "Exception"
 
-    @patch(f"{WORKER_PATH}.WikiReplicaDB")
     @patch("src.main_app.jobs_workers.base_worker.WikiSiteClient.get_user_site")
-    def test_process_fetch_total_articles_error(self, mock_get_user_site, mock_replica_db_cls, worker):
+    def test_process_fetch_total_articles_error(self, mock_get_user_site, worker, mock_lang_db):
         mock_get_user_site.return_value = MagicMock()
 
         # First call (lang counts) succeeds, second call (total) raises
-        mock_db_instance = MagicMock()
-        mock_replica_db_cls.return_value = mock_db_instance
-        mock_db_instance.select_safe.side_effect = [
+        mock_lang_db.select_safe.side_effect = [
             [{"ll_lang": "ar", "counts": 10}],
             Exception("total query failed"),
         ]
@@ -131,17 +128,14 @@ class TestMedicineArticlesWorker:
         assert len(result.errors) > 0
 
     @patch(f"{WORKER_PATH}.MwClientPage")
-    @patch(f"{WORKER_PATH}.WikiReplicaDB")
     @patch("src.main_app.jobs_workers.base_worker.WikiSiteClient.get_user_site")
-    def test_process_page_edit_error(self, mock_get_user_site, mock_replica_db_cls, mock_page_cls, worker):
+    def test_process_page_edit_error(self, mock_get_user_site, mock_page_cls, worker, mock_lang_db):
         mock_get_user_site.return_value = MagicMock()
 
         lang_rows = [{"ll_lang": "en", "counts": 100}]
         total_rows = [{"articles": 100}]
 
-        mock_db_instance = MagicMock()
-        mock_replica_db_cls.return_value = mock_db_instance
-        mock_db_instance.select_safe.side_effect = [lang_rows, total_rows]
+        mock_lang_db.select_safe.side_effect = [lang_rows, total_rows]
 
         mock_page = MagicMock()
         mock_page_cls.return_value = mock_page
@@ -154,14 +148,11 @@ class TestMedicineArticlesWorker:
         assert len(result.errors) > 0
 
     @patch(f"{WORKER_PATH}.MwClientPage")
-    @patch(f"{WORKER_PATH}.WikiReplicaDB")
     @patch("src.main_app.jobs_workers.base_worker.WikiSiteClient.get_user_site")
-    def test_process_sets_page_title(self, mock_get_user_site, mock_replica_db_cls, mock_page_cls, worker):
+    def test_process_sets_page_title(self, mock_get_user_site, mock_page_cls, worker, mock_lang_db):
         mock_get_user_site.return_value = MagicMock()
 
-        mock_db_instance = MagicMock()
-        mock_replica_db_cls.return_value = mock_db_instance
-        mock_db_instance.select_safe.side_effect = [
+        mock_lang_db.select_safe.side_effect = [
             [{"ll_lang": "fr", "counts": 5}],
             [{"articles": 50}],
         ]
@@ -177,14 +168,11 @@ class TestMedicineArticlesWorker:
         expected_title = f"WikiProjectMed:WikiProject Medicine/Stats/Number of articles by language {year}"
         assert result.page_title == expected_title
 
-    @patch(f"{WORKER_PATH}.WikiReplicaDB")
     @patch("src.main_app.jobs_workers.base_worker.WikiSiteClient.get_user_site")
-    def test_fetch_total_articles_empty_result(self, mock_get_user_site, mock_replica_db_cls, worker):
+    def test_fetch_total_articles_empty_result(self, mock_get_user_site, worker, mock_lang_db):
         mock_get_user_site.return_value = MagicMock()
 
-        mock_db_instance = MagicMock()
-        mock_replica_db_cls.return_value = mock_db_instance
-        mock_db_instance.select_safe.return_value = []
+        mock_lang_db.select_safe.return_value = []
 
         # Call the helper directly
         total = worker._fetch_total_articles()
