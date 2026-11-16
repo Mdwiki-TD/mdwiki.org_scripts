@@ -1,0 +1,66 @@
+{% extends "jobs_templates/_help_templates/shared_details.html" %}
+{% from "_macros.html" import stats_card %}
+
+{% block job_summary %}
+<div class="row g-3 mb-4">
+    <div class="col-md-3 col-sm-6">
+        {{ stats_card('Total Articles', result_data.summary.total_articles| commas, "primary", "") }}
+    </div>
+    <div class="col-md-3 col-sm-6">
+        {{ stats_card('All Articles in All Languages', result_data.summary.total_articles_all_langs| commas, "success", "") }}
+    </div>
+    <div class="col-md-3 col-sm-6">
+        {{ stats_card('Languages', result_data.summary.total_languages| commas, "info", "") }}
+    </div>
+    <div class="col-md-3 col-sm-6">
+        {% if result_data.summary.page_updated %}
+        {{ stats_card('Page Updated', 'Yes', "success", "") }}
+        {% else %}
+        {{ stats_card('Page Updated', 'No', "warning", "") }}
+        {% endif %}
+    </div>
+</div>
+
+{% if result_data.page_title %}
+<div class="alert alert-info" role="alert">
+    <strong>Updated page:</strong>
+    <a href="https://mdwiki.org/wiki/{{ result_data.page_title|urlencode }}" target="_blank" rel="noopener">
+        {{ result_data.page_title }}
+    </a>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block sub_job_details_bottom %}
+{% if result_data and result_data.languages %}
+<div class="card mb-4">
+    <div class="card-header">
+        <h5 class="mb-0">Articles by Language</h5>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-striped table-hover DataTable" id="table-languages">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Language</th>
+                        <th>Articles</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in result_data.languages %}
+                    <tr>
+                        <td>{{ loop.index }}</td>
+                        <td>{{ item.lang }}</td>
+                        <td data-order="{{ item.count }}">{{ "{:,}".format(item.count) }}</td>
+                        <td>{{ item.status }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endif %}
+{% endblock %}
