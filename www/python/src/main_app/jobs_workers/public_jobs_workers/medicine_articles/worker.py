@@ -103,7 +103,9 @@ class MedicineArticlesWorker(BaseObjectsJobWorker):
 
         # Save to wiki
         try:
-            page.edit(text, "update")
+            result = page.edit(text, "update")
+            info.status = "updated"
+            info.newrevid = result.get("newrevid", 0)
 
         except Exception as e:
             self.handle_error(e, "saving page to wiki")
