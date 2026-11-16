@@ -11,6 +11,7 @@ from .fix_cs1_params.worker import FixCs1ParamsWorker
 from .fixred_all.worker import FixRedAllWorker
 from .fixref.worker import FixRefWorker
 from .import_history.worker import ImportHistoryWorker
+from .medicine_articles.worker import MedicineArticlesWorker
 from .newupdater_all.worker import NewUpdaterAllWorker
 from .owidpopup_all.worker import OwidPopupAllWorker
 from .webarchive_remover.worker import WebarchiveRemoverWorker
@@ -121,6 +122,15 @@ jobs_data_for_all_pages: dict[str, JobData] = {
         job_args=[],
         start_confirm_message="Start removing duplicate {{Webarchive}} templates?",
         ready=True,
+    ),
+    "medicine_articles": JobData(
+        job_type="medicine_articles",
+        job_name="Update Medicine Articles Stats",
+        job_class=MedicineArticlesWorker,
+        job_args=[],
+        start_confirm_message="Start updating WikiProject Medicine article statistics?",
+        ready=True,
+        description="""Generates a statistical report of medical articles by language for WikiProject Medicine and publishes it to mdwiki.org.""",
     ),
 }
 
