@@ -8,8 +8,8 @@ import logging
 from datetime import datetime
 
 from sqlalchemy import BigInteger, Index, Integer, SmallInteger, String, Text, func, text
-from sqlalchemy.orm import Mapped, mapped_column
 from sqlalchemy.dialects import mysql
+from sqlalchemy.orm import Mapped, mapped_column
 
 from ...extensions import Model
 
