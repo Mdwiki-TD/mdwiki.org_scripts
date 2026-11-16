@@ -89,7 +89,6 @@ class MedicineArticlesWorker(BaseObjectsJobWorker):
 
         # Determine page title
         year = datetime.datetime.now().year
-        month = datetime.datetime.now().month
         title = f"WikiProjectMed:WikiProject Medicine/Stats/Number of articles by language {year}"
         self.result.page_title = title
 
