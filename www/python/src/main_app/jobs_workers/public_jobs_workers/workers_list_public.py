@@ -123,15 +123,6 @@ jobs_data_for_all_pages: dict[str, JobData] = {
         start_confirm_message="Start removing duplicate {{Webarchive}} templates?",
         ready=True,
     ),
-    "medicine_articles": JobData(
-        job_type="medicine_articles",
-        job_name="Update Medicine Articles Stats",
-        job_class=MedicineArticlesWorker,
-        job_args=[],
-        start_confirm_message="Start updating WikiProject Medicine article statistics?",
-        ready=True,
-        description="""Generates a statistical report of medical articles by language for WikiProject Medicine and publishes it to mdwiki.org.""",
-    ),
 }
 
 jobs_data_one_page = {
@@ -162,6 +153,15 @@ jobs_data_one_page = {
         job_class=CreateRedirectsWorker,
         job_args=[],
         start_confirm_message="",
+    ),
+    "medicine_articles": JobData(
+        job_type="medicine_articles",
+        job_name="Update Medicine Articles Stats",
+        job_class=MedicineArticlesWorker,
+        job_args=[],
+        start_confirm_message="Start updating WikiProject Medicine article statistics?",
+        ready=True,
+        description="""Generates a statistical report of medical articles by language for WikiProject Medicine and publishes it to mdwiki.org.""",
     ),
 }
 
