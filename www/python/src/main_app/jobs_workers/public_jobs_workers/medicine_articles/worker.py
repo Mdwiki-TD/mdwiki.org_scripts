@@ -97,6 +97,7 @@ class MedicineArticlesWorker(BaseObjectsJobWorker):
         page_text = page.get_text()
         if page_text == text:
             info.status = "skipped"
+            info.msg = "Page already up to date"
             self.result.status = "skipped"
             logger.info(f"Job {self.job_id}: Page {info.title!r} is already up to date")
             return info
