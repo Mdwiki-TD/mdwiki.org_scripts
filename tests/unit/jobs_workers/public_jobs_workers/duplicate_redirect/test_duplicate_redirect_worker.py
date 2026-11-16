@@ -37,18 +37,20 @@ class TestDuplicateRedirectWorker:
         return DuplicateRedirectWorker(JobsRunner(job_id=1, args={}, user={"username": "test_user"}))
 
     @patch("src.main_app.jobs_workers.base_worker.WikiSiteClient.get_user_site")
-    @patch("src.main_app.jobs_workers.public_jobs_workers.duplicate_redirect.worker.get_double_redirects")
+    @patch("src.main_app.jobs_workers.public_jobs_workers.duplicate_redirect.worker.MediaWikiQueryService")
     @patch("src.main_app.jobs_workers.public_jobs_workers.duplicate_redirect.worker.MwClientPage")
     @patch(
         "src.main_app.jobs_workers.public_jobs_workers.duplicate_redirect.worker.WikilinkReplacer.replace_wikilink_destinations"
     )
     def test_process_success(
-        self, mock_replace, mock_mw_client_page, mock_get_double, mock_get_user_site, worker: DuplicateRedirectWorker
+        self, mock_replace, mock_mw_client_page, mock_query_service_cls, mock_get_user_site, worker: DuplicateRedirectWorker
     ):
         mock_site = MagicMock()
         mock_get_user_site.return_value = mock_site
 
-        mock_get_double.return_value = [
+        mock_query_service_instance = MagicMock()
+        mock_query_service_cls.return_value = mock_query_service_instance
+        mock_query_service_instance.get_double_redirects.return_value = [
             {"from": "A", "to": "B"},
             {"from": "B", "to": "C"},
         ]

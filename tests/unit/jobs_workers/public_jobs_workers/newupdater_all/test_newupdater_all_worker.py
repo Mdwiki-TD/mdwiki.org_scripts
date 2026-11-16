@@ -41,7 +41,7 @@ class TestNewUpdaterAllWorker:
         with (
             patch("src.main_app.jobs_workers.base_worker.WikiSiteClient.get_user_site") as mock_get_site,
             patch(
-                "src.main_app.jobs_workers.public_jobs_workers.newupdater_all.workerCategoryMembersService..get_category_members"
+                "src.main_app.jobs_workers.public_jobs_workers.newupdater_all.worker.CategoryMembersService.get_category_members"
             ) as mock_get_members,
             patch("src.main_app.jobs_workers.public_jobs_workers.newupdater_all.worker.MwClientPage") as mock_page_cls,
             patch(

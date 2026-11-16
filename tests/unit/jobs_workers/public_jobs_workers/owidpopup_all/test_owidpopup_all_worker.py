@@ -131,7 +131,6 @@ class TestOwidPopupAllWorker:
         ):
             worker.process()
             mock_get_cat.assert_called_once_with(
-                site=mock_site,
                 category_title="Category:Gadget:OWIDPopup",
                 namespace=0,
             )
@@ -149,7 +148,6 @@ class TestOwidPopupAllWorker:
         ):
             worker.process()
             mock_get_cat.assert_called_once_with(
-                site=mock_site,
                 category_title="Category:Gadget:OWIDPopup",
                 namespace=0,
             )
