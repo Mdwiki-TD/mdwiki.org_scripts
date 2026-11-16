@@ -4,19 +4,19 @@
 {% block job_summary %}
 <div class="row g-3 mb-4">
     <div class="col-md-3 col-sm-6">
-        {{ stats_card('Total Articles', result_data.summary.total_articles|default(0)|int, "primary", "") }}
+        {{ stats_card('Total Articles', result_data.summary.total_articles|default(0), "primary", "") }}
     </div>
     <div class="col-md-3 col-sm-6">
-        {{ stats_card('All Languages', result_data.summary.total_articles_all_langs|default(0)|int, "success", "") }}
+        {{ stats_card('All Languages', result_data.summary.total_articles_all_langs|default(0), "success", "") }}
     </div>
     <div class="col-md-3 col-sm-6">
-        {{ stats_card('Languages', result_data.summary.total_languages|default(0)|int, "info", "") }}
+        {{ stats_card('Languages', result_data.summary.total_languages|default(0), "info", "") }}
     </div>
     <div class="col-md-3 col-sm-6">
         {% if result_data.summary.page_updated %}
-        {{ stats_card('Page Updated', 'Yes', "success", "") }}
+            {{ stats_card('Page Updated', 'Yes', "success", "") }}
         {% else %}
-        {{ stats_card('Page Updated', 'No', "warning", "") }}
+            {{ stats_card('Page Updated', 'No', "warning", "") }}
         {% endif %}
     </div>
 </div>
@@ -49,6 +49,14 @@
                     </tr>
                 </thead>
                 <tbody>
+                    {% for item in result_data.languages %}
+                    <tr>
+                        <td>{{ loop.index }}</td>
+                        <td>{{ item.lang }}</td>
+                        <td data-order="{{ item.count }}">{{ "{:,}".format(item.count) }}</td>
+                        <td>{{ item.status }}</td>
+                    </tr>
+                    {% endfor %}
                 </tbody>
             </table>
         </div>
@@ -63,33 +71,8 @@
         if ($('#table-languages').length) {
             $('#table-languages').DataTable({
                 order: [[2, 'desc']],
-                columns: [
-                    {
-                        data: null,
-                        title: "#",
-                        render: function (data, type, row, meta) {
-                            return meta.row + 1;
-                        },
-                        orderable: false,
-                    },
-                    {
-                        data: 'lang',
-                        title: 'Language',
-                    },
-                    {
-                        data: 'count',
-                        title: 'Articles',
-                        render: function (data, type, row) {
-                            return data.toLocaleString();
-                        },
-                    },
-                    {
-                        data: 'status',
-                        title: 'Status',
-                        render: function (data, type, row) {
-                            return renderStatus(data) || data || '';
-                        },
-                    },
+                columnDefs: [
+                    { orderable: false, targets: [0] },
                 ],
             });
         }
