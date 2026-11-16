@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock
 
 import pytest
 from src.main_app.jobs_workers.objects import JobsRunner
@@ -14,12 +14,34 @@ WORKER_PATH = "src.main_app.jobs_workers.public_jobs_workers.medicine_articles.w
 
 
 @pytest.fixture
-def mock_lang_db():
+def mock_get_user_site(monkeypatch: pytest.MonkeyPatch) -> MagicMock:
+    _mock = MagicMock()
+    monkeypatch.setattr(
+        "src.main_app.jobs_workers.base_worker.WikiSiteClient.get_user_site",
+        _mock,
+    )
+    return _mock
+
+
+@pytest.fixture
+def mock_mw_client_page(monkeypatch: pytest.MonkeyPatch) -> MagicMock:
+    _mock_class = MagicMock()
+    _mock_instance = MagicMock()
+    _mock_class.return_value = _mock_instance
+    monkeypatch.setattr(
+        f"{WORKER_PATH}.MwClientPage",
+        _mock_class,
+    )
+    return _mock_class
+
+
+@pytest.fixture
+def mock_lang_db() -> MagicMock:
     return MagicMock()
 
 
 @pytest.fixture
-def worker(mock_lang_db):
+def worker(mock_lang_db, mock_get_user_site):
     return MedicineArticlesWorker(
         JobsRunner(job_id=1, user={"username": "test_user"}),
         lang_db=mock_lang_db,
@@ -27,11 +49,7 @@ def worker(mock_lang_db):
 
 
 class TestMedicineArticlesWorker:
-    @patch(f"{WORKER_PATH}.MwClientPage")
-    @patch("src.main_app.jobs_workers.base_worker.WikiSiteClient.get_user_site")
-    def test_process_success(self, mock_get_user_site, mock_page_cls, worker, mock_lang_db):
-        mock_get_user_site.return_value = MagicMock()
-
+    def test_process_success(self, worker, mock_lang_db, mock_mw_client_page):
         lang_rows = [
             {"ll_lang": "ar", "counts": 200},
             {"ll_lang": "fr", "counts": 300},
@@ -40,8 +58,7 @@ class TestMedicineArticlesWorker:
 
         mock_lang_db.select_safe.side_effect = [lang_rows, total_rows]
 
-        mock_page = MagicMock()
-        mock_page_cls.return_value = mock_page
+        mock_page = mock_mw_client_page.return_value
 
         result = worker.process()
 
@@ -67,12 +84,8 @@ class TestMedicineArticlesWorker:
         assert "WikiProject Medicine/Total medical articles" in wikitext
         assert "sortable wikitable" in wikitext
 
-    @patch(f"{WORKER_PATH}.MwClientPage")
-    @patch("src.main_app.jobs_workers.base_worker.WikiSiteClient.get_user_site")
-    def test_process_en_already_in_lang_counts(self, mock_get_user_site, mock_page_cls, worker, mock_lang_db):
+    def test_process_en_already_in_lang_counts(self, worker, mock_lang_db):
         """When 'en' is already in the language counts, it should NOT be overwritten."""
-        mock_get_user_site.return_value = MagicMock()
-
         lang_rows = [
             {"ll_lang": "en", "counts": 5000},
             {"ll_lang": "de", "counts": 100},
@@ -80,9 +93,6 @@ class TestMedicineArticlesWorker:
         total_rows = [{"articles": 5000}]
 
         mock_lang_db.select_safe.side_effect = [lang_rows, total_rows]
-
-        mock_page = MagicMock()
-        mock_page_cls.return_value = mock_page
 
         result = worker.process()
 
@@ -95,15 +105,12 @@ class TestMedicineArticlesWorker:
         assert len(en_entries) == 1
         assert en_entries[0].count == 5000
 
-    @patch("src.main_app.jobs_workers.base_worker.WikiSiteClient.get_user_site")
     def test_process_no_site(self, mock_get_user_site, worker):
         mock_get_user_site.return_value = None
         result = worker.process()
         assert result.status == "failed"
 
-    @patch("src.main_app.jobs_workers.base_worker.WikiSiteClient.get_user_site")
-    def test_process_fetch_lang_counts_error(self, mock_get_user_site, worker, mock_lang_db):
-        mock_get_user_site.return_value = MagicMock()
+    def test_process_fetch_lang_counts_error(self, worker, mock_lang_db):
         mock_lang_db.select_safe.side_effect = Exception("db connection failed")
 
         result = worker.process()
@@ -112,10 +119,7 @@ class TestMedicineArticlesWorker:
         assert len(result.errors) > 0
         assert result.errors[0]["error_type"] == "Exception"
 
-    @patch("src.main_app.jobs_workers.base_worker.WikiSiteClient.get_user_site")
-    def test_process_fetch_total_articles_error(self, mock_get_user_site, worker, mock_lang_db):
-        mock_get_user_site.return_value = MagicMock()
-
+    def test_process_fetch_total_articles_error(self, worker, mock_lang_db):
         # First call (lang counts) succeeds, second call (total) raises
         mock_lang_db.select_safe.side_effect = [
             [{"ll_lang": "ar", "counts": 10}],
@@ -127,18 +131,13 @@ class TestMedicineArticlesWorker:
         assert result.status == "failed"
         assert len(result.errors) > 0
 
-    @patch(f"{WORKER_PATH}.MwClientPage")
-    @patch("src.main_app.jobs_workers.base_worker.WikiSiteClient.get_user_site")
-    def test_process_page_edit_error(self, mock_get_user_site, mock_page_cls, worker, mock_lang_db):
-        mock_get_user_site.return_value = MagicMock()
-
+    def test_process_page_edit_error(self, worker, mock_lang_db, mock_mw_client_page):
         lang_rows = [{"ll_lang": "en", "counts": 100}]
         total_rows = [{"articles": 100}]
 
         mock_lang_db.select_safe.side_effect = [lang_rows, total_rows]
 
-        mock_page = MagicMock()
-        mock_page_cls.return_value = mock_page
+        mock_page = mock_mw_client_page.return_value
         mock_page.edit.side_effect = Exception("API edit failed")
 
         result = worker.process()
@@ -147,18 +146,11 @@ class TestMedicineArticlesWorker:
         assert result.summary.page_updated is False
         assert len(result.errors) > 0
 
-    @patch(f"{WORKER_PATH}.MwClientPage")
-    @patch("src.main_app.jobs_workers.base_worker.WikiSiteClient.get_user_site")
-    def test_process_sets_page_title(self, mock_get_user_site, mock_page_cls, worker, mock_lang_db):
-        mock_get_user_site.return_value = MagicMock()
-
+    def test_process_sets_page_title(self, worker, mock_lang_db):
         mock_lang_db.select_safe.side_effect = [
             [{"ll_lang": "fr", "counts": 5}],
             [{"articles": 50}],
         ]
-
-        mock_page = MagicMock()
-        mock_page_cls.return_value = mock_page
 
         import datetime
 
@@ -168,10 +160,7 @@ class TestMedicineArticlesWorker:
         expected_title = f"WikiProjectMed:WikiProject Medicine/Stats/Number of articles by language {year}"
         assert result.page_title == expected_title
 
-    @patch("src.main_app.jobs_workers.base_worker.WikiSiteClient.get_user_site")
-    def test_fetch_total_articles_empty_result(self, mock_get_user_site, worker, mock_lang_db):
-        mock_get_user_site.return_value = MagicMock()
-
+    def test_fetch_total_articles_empty_result(self, worker, mock_lang_db):
         mock_lang_db.select_safe.return_value = []
 
         # Call the helper directly
@@ -180,10 +169,7 @@ class TestMedicineArticlesWorker:
 
 
 class TestBuildWikitext:
-    @patch("src.main_app.jobs_workers.base_worker.WikiSiteClient.get_user_site")
-    def test_wikitext_structure(self, mock_get_user_site, worker):
-        mock_get_user_site.return_value = MagicMock()
-
+    def test_wikitext_structure(self, worker):
         languages = {"en": 1000, "ar": 200}
         worker.result.summary.total_articles_all_langs = 1200
 
@@ -199,18 +185,14 @@ class TestBuildWikitext:
         assert "|200" in text
         assert "|}" in text
 
-    @patch("src.main_app.jobs_workers.base_worker.WikiSiteClient.get_user_site")
-    def test_wikitext_contains_totals_transclusion(self, mock_get_user_site, worker):
-        mock_get_user_site.return_value = MagicMock()
+    def test_wikitext_contains_totals_transclusion(self, worker):
         worker.result.summary.total_articles_all_langs = 500
 
         text = worker._build_wikitext({"fr": 500})
 
         assert text.startswith("{{:WPM:WikiProject Medicine/Total medical articles}}")
 
-    @patch("src.main_app.jobs_workers.base_worker.WikiSiteClient.get_user_site")
-    def test_wikitext_numbers_are_comma_separated(self, mock_get_user_site, worker):
-        mock_get_user_site.return_value = MagicMock()
+    def test_wikitext_numbers_are_comma_separated(self, worker):
         worker.result.summary.total_articles_all_langs = 1234567
 
         text = worker._build_wikitext({"en": 1234567})
