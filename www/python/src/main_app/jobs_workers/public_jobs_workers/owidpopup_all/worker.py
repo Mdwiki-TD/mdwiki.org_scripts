@@ -11,7 +11,7 @@ import logging
 import wikitextparser as wtp
 from mwclient.client import Site
 
-from ....api_services import MwClientPage, get_category_members
+from ....api_services import CategoryMembersService, MwClientPage
 from ...base_worker import BaseObjectsJobWorker, JobsRunner
 from ...shared_objects import SharedworkerObject, UpdaterOutcome
 from .mapping import OWID_POPUP_RENAME, TemplateRename, _norm_template_name
@@ -66,8 +66,8 @@ class OwidPopupAllWorker(BaseObjectsJobWorker):
             if not category.lower().startswith("category:"):
                 category = f"Category:{category}"
 
-        titles: list[str] = get_category_members(
-            site=self.site,
+        service = CategoryMembersService(self.site)
+        titles: list[str] = service.get_category_members(
             category_title=category,
             namespace=0,
         )

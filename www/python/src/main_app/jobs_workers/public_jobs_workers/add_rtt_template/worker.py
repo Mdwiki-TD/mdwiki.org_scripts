@@ -11,8 +11,7 @@ import logging
 import wikitextparser as wtp
 from mwclient.client import Site
 
-from ....api_services import MwClientPage, get_template_pages
-from ....api_services.category import get_category_members
+from ....api_services import CategoryMembersService, MediaWikiQueryService, MwClientPage
 from ...base_worker import BaseObjectsJobWorker, JobsRunner
 from ...shared_objects import SharedworkerObject, UpdaterOutcome
 
@@ -77,8 +76,8 @@ class AddRttTemplateWorker(BaseObjectsJobWorker):
         if not self._check_site():
             return self.result
 
-        mdwiki_pages = get_category_members(
-            site=self.site,
+        service = CategoryMembersService(self.site)
+        mdwiki_pages = service.get_category_members(
             category_title="Category:RTT",
             namespace=0,
         )
@@ -91,9 +90,9 @@ class AddRttTemplateWorker(BaseObjectsJobWorker):
             return self.result
 
         logger.info(f"Job {self.job_id}: len of mdwiki_pages: {len(mdwiki_pages)}")
-        template_pages = get_template_pages(
+        service = MediaWikiQueryService(site=self.site)
+        template_pages = service.get_template_pages(
             title="Template:RTT",
-            site=self.site,
             namespace=0,
         )
 

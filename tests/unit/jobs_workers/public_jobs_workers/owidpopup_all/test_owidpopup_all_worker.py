@@ -125,7 +125,7 @@ class TestOwidPopupAllWorker:
         with (
             patch.object(worker, "_check_site", return_value=True),
             patch(
-                "src.main_app.jobs_workers.public_jobs_workers.owidpopup_all.worker.get_category_members",
+                "src.main_app.jobs_workers.public_jobs_workers.owidpopup_all.worker.CategoryMembersService.get_category_members",
                 return_value=[],
             ) as mock_get_cat,
         ):
@@ -143,7 +143,7 @@ class TestOwidPopupAllWorker:
         with (
             patch.object(worker, "_check_site", return_value=True),
             patch(
-                "src.main_app.jobs_workers.public_jobs_workers.owidpopup_all.worker.get_category_members",
+                "src.main_app.jobs_workers.public_jobs_workers.owidpopup_all.worker.CategoryMembersService.get_category_members",
                 return_value=[],
             ) as mock_get_cat,
         ):
@@ -256,7 +256,7 @@ class TestOwidPopupAllWorker:
         with (
             patch.object(worker, "_check_site", return_value=True),
             patch(
-                "src.main_app.jobs_workers.public_jobs_workers.owidpopup_all.worker.get_category_members",
+                "src.main_app.jobs_workers.public_jobs_workers.owidpopup_all.worker.CategoryMembersService.get_category_members",
                 return_value=["Page1", "Page2"],
             ),
             patch.object(worker, "is_cancelled", side_effect=[False, True]),

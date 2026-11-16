@@ -12,7 +12,7 @@ import logging
 
 from mwclient.client import Site
 
-from ....api_services import MwClientPage, get_category_members
+from ....api_services import CategoryMembersService, MwClientPage
 from ...base_worker import BaseObjectsJobWorker, JobsRunner
 from ...shared_objects import SharedworkerObject, UpdaterOutcome
 from .bot import OnePage, OnePageArchive
@@ -41,8 +41,8 @@ class FixCs1ParamsWorker(BaseObjectsJobWorker):
         if not self._check_site():
             return self.result
 
-        titles: list[str] = get_category_members(
-            site=self.site,
+        service = CategoryMembersService(self.site)
+        titles: list[str] = service.get_category_members(
             category_title="Category:CS1 errors: redundant parameter",
             namespace=0,
         )

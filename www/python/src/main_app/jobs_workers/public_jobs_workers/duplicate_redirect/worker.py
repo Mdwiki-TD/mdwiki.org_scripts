@@ -14,8 +14,7 @@ import logging
 
 from mwclient.client import Site
 
-from ....api_services import MwClientPage
-from ....api_services.query_api import get_double_redirects
+from ....api_services import MediaWikiQueryService, MwClientPage
 from ....services.replace_wikilink import WikilinkReplacer
 from ...base_worker import BaseObjectsJobWorker, JobsRunner
 from ...shared_objects import SharedworkerObject
@@ -83,8 +82,9 @@ class DuplicateRedirectWorker(BaseObjectsJobWorker):
         if not self._check_site():
             return self.result
 
+        service = MediaWikiQueryService(site=self.site)
         # Get all double redirects
-        redirects_data = get_double_redirects(self.site)
+        redirects_data = service.get_double_redirects()
         redirects = resolve_redirect_chains(redirects_data)
 
         total = len(redirects)

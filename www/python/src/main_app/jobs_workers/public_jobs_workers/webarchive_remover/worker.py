@@ -11,7 +11,7 @@ import logging
 
 from mwclient.client import Site
 
-from ....api_services import MwClientPage, get_template_pages
+from ....api_services import MediaWikiQueryService, MwClientPage
 from ...base_worker import BaseObjectsJobWorker, JobsRunner
 from ...shared_objects import SharedworkerObject, UpdaterOutcome
 from .text_changer import WebarchiveRemover
@@ -87,9 +87,9 @@ class WebarchiveRemoverWorker(BaseObjectsJobWorker):
 
     def _get_template_pages(self) -> list[str]:
         """Get all pages that transclude Template:Webarchive (namespace 0)."""
-        return get_template_pages(
+        service = MediaWikiQueryService(site=self.site)
+        return service.get_template_pages(
             title="Template:Webarchive",
-            site=self.site,
             namespace=0,
         )
 

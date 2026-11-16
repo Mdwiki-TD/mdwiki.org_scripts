@@ -16,8 +16,6 @@ from ...base_worker import BaseObjectsJobWorker, JobsRunner
 from ...shared_objects import UpdaterOutcome
 from .objects import FindAndReplaceWorkerObject
 
-# from ....api_services.query_api import search_pages
-
 logger = logging.getLogger(__name__)
 
 
@@ -110,7 +108,6 @@ class FindAndReplaceWorker(BaseObjectsJobWorker):
         """Pick the page list to walk based on *listtype*."""
         assert self.site is not None
         if listtype == "newlist":
-            # return search_pages(str_find, self.site, namespace=0, limit="max")
             search_data = self.site.search(
                 str_find,
                 namespace="0",

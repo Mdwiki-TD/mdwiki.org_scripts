@@ -10,8 +10,7 @@ import logging
 
 from mwclient.client import Site
 
-from ....api_services import MwClientPage
-from ....api_services.category import get_category_members
+from ....api_services import CategoryMembersService, MwClientPage
 from ....services.named_param import NamedParamEditor
 from ....services.new_updater import med_updater_one
 from ...base_worker import BaseObjectsJobWorker, JobsRunner
@@ -41,8 +40,8 @@ class NewUpdaterAllWorker(BaseObjectsJobWorker):
         if not self._check_site():
             return self.result
 
-        titles = get_category_members(
-            site=self.site,
+        service = CategoryMembersService(self.site)
+        titles = service.get_category_members(
             category_title="Category:RTT",
             namespace=0,
         )

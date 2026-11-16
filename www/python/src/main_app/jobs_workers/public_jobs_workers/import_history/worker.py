@@ -11,8 +11,7 @@ import logging
 
 from mwclient.client import Site
 
-from ....api_services import MwClientPage
-from ....api_services.query_api import import_page_from_wiki
+from ....api_services import MediaWikiQueryService, MwClientPage
 from ...base_worker import BaseObjectsJobWorker, JobsRunner
 from .objects import ImportHistoryWorkerObject, ImportUpdaterOutcome
 
@@ -95,7 +94,8 @@ class ImportHistoryWorker(BaseObjectsJobWorker):
             info.msg = "Page is empty"
             return info
 
-        result = import_page_from_wiki(self.site, title, family="wikipedia")
+        service = MediaWikiQueryService(site=self.site)
+        result = service.import_page_from_wiki(title, family="wikipedia")
         if result.get("error"):
             logger.warning(f"Job {self.job_id}: import_page failed for {title}: {result['error']}")
             info.status = "failed"
