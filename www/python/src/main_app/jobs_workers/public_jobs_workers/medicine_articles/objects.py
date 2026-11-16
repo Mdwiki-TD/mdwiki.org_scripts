@@ -6,7 +6,7 @@ import logging
 from dataclasses import asdict, dataclass, field
 from typing import Any
 
-from ...shared_objects import STATUS_LITERAL, SharedworkerObject
+from ...shared_objects import Summary, STATUS_LITERAL, SharedworkerObject
 
 logger = logging.getLogger(__name__)
 
@@ -23,7 +23,7 @@ class LangCount:
 
 
 @dataclass
-class MedicineArticlesSummary:
+class MedicineArticlesSummary(Summary):
     total_articles: int = 0
     total_articles_all_langs: int = 0
     total_languages: int = 0
