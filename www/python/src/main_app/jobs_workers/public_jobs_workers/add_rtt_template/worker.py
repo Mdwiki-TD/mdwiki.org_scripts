@@ -60,7 +60,10 @@ class AddRttTemplateWorker(BaseObjectsJobWorker):
 
     JOB_TYPE = "add_rtt_template"
 
-    def __init__(self, data: JobsRunner) -> None:
+    def __init__(
+        self,
+        data: JobsRunner,
+    ) -> None:
         self.args = data.args or {}
         self.site: Site | None = None
 

@@ -23,7 +23,10 @@ class ImportHistoryWorker(BaseObjectsJobWorker):
 
     JOB_TYPE = "import_history"
 
-    def __init__(self, data: JobsRunner) -> None:
+    def __init__(
+        self,
+        data: JobsRunner,
+    ) -> None:
         self.args = data.args or {}
         self.site: Site | None = None
 

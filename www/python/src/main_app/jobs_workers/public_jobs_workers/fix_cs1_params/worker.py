@@ -25,7 +25,10 @@ class FixCs1ParamsWorker(BaseObjectsJobWorker):
 
     JOB_TYPE = "fix_cs1_params"
 
-    def __init__(self, data: JobsRunner) -> None:
+    def __init__(
+        self,
+        data: JobsRunner,
+    ) -> None:
         self.args = data.args or {}
         self.site: Site | None = None
 

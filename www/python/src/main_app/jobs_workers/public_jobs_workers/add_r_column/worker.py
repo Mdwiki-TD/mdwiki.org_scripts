@@ -54,7 +54,10 @@ class AddRColumnWorker(BaseObjectsJobWorker):
 
     JOB_TYPE = "add_r_column"
 
-    def __init__(self, data: JobsRunner) -> None:
+    def __init__(
+        self,
+        data: JobsRunner,
+    ) -> None:
         self.args = data.args or {}
         self.page: MwClientPage | None = None
 

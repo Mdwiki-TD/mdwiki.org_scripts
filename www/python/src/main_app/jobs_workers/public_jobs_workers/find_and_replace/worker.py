@@ -24,7 +24,10 @@ class FindAndReplaceWorker(BaseObjectsJobWorker):
 
     JOB_TYPE = "find_and_replace"
 
-    def __init__(self, data: JobsRunner) -> None:
+    def __init__(
+        self,
+        data: JobsRunner,
+    ) -> None:
         self.args = data.args or {}
         self.site: Site | None = None
 
