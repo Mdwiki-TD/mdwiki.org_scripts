@@ -43,7 +43,7 @@ select count(pa_page_id) as articles
 """
 
 
-class MedicineArticlesWorker(BaseObjectsJobWorker):
+class MedicineArticlesWorker(BaseObjectsJobWorker[MedicineArticlesWorkerObject]):
     """Generate WikiProject Medicine article stats by language and publish to mdwiki."""
 
     JOB_TYPE = "medicine_articles"
@@ -54,12 +54,15 @@ class MedicineArticlesWorker(BaseObjectsJobWorker):
         lang_db: WikiReplicaDB | None = None,
     ) -> None:
         super().__init__(data)
-        self.result: MedicineArticlesWorkerObject = MedicineArticlesWorkerObject()
         self.lang_db = lang_db or WikiReplicaDB("enwiki")
 
     # ------------------------------------------------------------------
     # BaseObjectsJobWorker hooks
     # ------------------------------------------------------------------
+
+    def create_result(self) -> MedicineArticlesWorkerObject:
+        """Create and return the specific result object instance."""
+        return MedicineArticlesWorkerObject()
 
     def _process_one(self, info: UpdaterOutcome) -> UpdaterOutcome:
         try:

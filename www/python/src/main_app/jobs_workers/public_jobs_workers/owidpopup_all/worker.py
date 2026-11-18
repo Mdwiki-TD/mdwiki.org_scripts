@@ -36,7 +36,7 @@ def replace_templates(
     return parsed.string
 
 
-class OwidPopupAllWorker(BaseObjectsJobWorker):
+class OwidPopupAllWorker(BaseObjectsJobWorker[SharedworkerObject]):
     """Replace OWIDPopup templates with OWID templates in category pages."""
 
     JOB_TYPE = "owidpopup_all"
@@ -46,11 +46,14 @@ class OwidPopupAllWorker(BaseObjectsJobWorker):
         data: JobsRunner,
     ) -> None:
         super().__init__(data)
-        self.result: SharedworkerObject = SharedworkerObject()
 
     # ------------------------------------------------------------------
     # BaseObjectsJobWorker hooks
     # ------------------------------------------------------------------
+
+    def create_result(self) -> SharedworkerObject:
+        """Create and return the specific result object instance."""
+        return SharedworkerObject()
 
     def process(self) -> SharedworkerObject:
         if not self._check_site():

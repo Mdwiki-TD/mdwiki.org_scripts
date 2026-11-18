@@ -18,7 +18,7 @@ from .objects import FindAndReplaceWorkerObject
 logger = logging.getLogger(__name__)
 
 
-class FindAndReplaceWorker(BaseObjectsJobWorker):
+class FindAndReplaceWorker(BaseObjectsJobWorker[FindAndReplaceWorkerObject]):
     """Find-and-replace bot for mdwiki pages."""
 
     JOB_TYPE = "find_and_replace"
@@ -28,11 +28,14 @@ class FindAndReplaceWorker(BaseObjectsJobWorker):
         data: JobsRunner,
     ) -> None:
         super().__init__(data)
-        self.result: FindAndReplaceWorkerObject = FindAndReplaceWorkerObject()
 
     # ------------------------------------------------------------------
     # BaseObjectsJobWorker hooks
     # ------------------------------------------------------------------
+
+    def create_result(self) -> FindAndReplaceWorkerObject:
+        """Create and return the specific result object instance."""
+        return FindAndReplaceWorkerObject()
 
     def process(self) -> FindAndReplaceWorkerObject:
         if not self._check_site():

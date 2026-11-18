@@ -19,7 +19,7 @@ from .text_changer import fix_it
 logger = logging.getLogger(__name__)
 
 
-class FixCs1Worker(BaseObjectsJobWorker):
+class FixCs1Worker(BaseObjectsJobWorker[SharedworkerObject]):
     """Fix redirect links in all mdwiki pages."""
 
     JOB_TYPE = "fix_cs1"
@@ -29,11 +29,14 @@ class FixCs1Worker(BaseObjectsJobWorker):
         data: JobsRunner,
     ) -> None:
         super().__init__(data)
-        self.result: SharedworkerObject = SharedworkerObject()
 
     # ------------------------------------------------------------------
     # BaseObjectsJobWorker hooks
     # ------------------------------------------------------------------
+
+    def create_result(self) -> SharedworkerObject:
+        """Create and return the specific result object instance."""
+        return SharedworkerObject()
 
     def process(self) -> SharedworkerObject:
         if not self._check_site():

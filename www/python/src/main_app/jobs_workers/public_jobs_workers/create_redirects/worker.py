@@ -34,7 +34,7 @@ def _valid_title(title: str) -> bool:
     return not any(lower.startswith(p) for p in _FORBIDDEN_PREFIXES)
 
 
-class CreateRedirectsWorker(BaseObjectsJobWorker):
+class CreateRedirectsWorker(BaseObjectsJobWorker[CreateRedirectsWorkerObject]):
     """Copy redirects from enwiki to mdwiki."""
 
     JOB_TYPE = "create_redirects"
@@ -47,11 +47,13 @@ class CreateRedirectsWorker(BaseObjectsJobWorker):
         super().__init__(data)
         self.enwiki_api = enwiki_api or EnwikiApi()
 
-        self.result: CreateRedirectsWorkerObject = CreateRedirectsWorkerObject()
-
     # ------------------------------------------------------------------
     # BaseObjectsJobWorker hooks
     # ------------------------------------------------------------------
+
+    def create_result(self) -> CreateRedirectsWorkerObject:
+        """Create and return the specific result object instance."""
+        return CreateRedirectsWorkerObject()
 
     def process(self) -> CreateRedirectsWorkerObject:
         if not self._check_site():

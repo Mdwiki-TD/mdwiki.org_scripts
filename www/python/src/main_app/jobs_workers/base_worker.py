@@ -71,6 +71,13 @@ class BaseObjectsJobWorker[TResult: SharedworkerObject](ABC):
         self.app_settings = get_settings()
         self.wiki_domain = self.app_settings.other.wiki_domain
 
+        self.result: TResult = self.create_result()
+
+    # @abstractmethod
+    def create_result(self) -> TResult:
+        """Create and return the specific result object instance."""
+        return SharedworkerObject()
+
     @abstractmethod
     def process(self) -> TResult:
         """Execute the main processing logic.

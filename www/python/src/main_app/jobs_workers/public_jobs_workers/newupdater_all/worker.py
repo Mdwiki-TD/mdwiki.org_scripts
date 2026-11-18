@@ -18,7 +18,7 @@ from ...shared_objects import SharedworkerObject, UpdaterOutcome
 logger = logging.getLogger(__name__)
 
 
-class NewUpdaterAllWorker(BaseObjectsJobWorker):
+class NewUpdaterAllWorker(BaseObjectsJobWorker[SharedworkerObject]):
     """Run Medical content updater on all Category:RTT pages."""
 
     JOB_TYPE = "newupdater_all"
@@ -28,11 +28,14 @@ class NewUpdaterAllWorker(BaseObjectsJobWorker):
         data: JobsRunner,
     ) -> None:
         super().__init__(data)
-        self.result: SharedworkerObject = SharedworkerObject()
 
     # ------------------------------------------------------------------
     # BaseObjectsJobWorker hooks
     # ------------------------------------------------------------------
+
+    def create_result(self) -> SharedworkerObject:
+        """Create and return the specific result object instance."""
+        return SharedworkerObject()
 
     def process(self) -> SharedworkerObject:
         if not self._check_site():

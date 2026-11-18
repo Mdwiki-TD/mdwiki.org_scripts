@@ -14,7 +14,7 @@ from ...shared_objects import SharedworkerObject
 logger = logging.getLogger(__name__)
 
 
-class AddUnlinkedWikibaseWorker(BaseObjectsJobWorker):
+class AddUnlinkedWikibaseWorker(BaseObjectsJobWorker[SharedworkerObject]):
     """Add unlinkedwikibase tag to pages."""
 
     JOB_TYPE = "add_unlinkedwikibase"
@@ -24,7 +24,10 @@ class AddUnlinkedWikibaseWorker(BaseObjectsJobWorker):
         data: JobsRunner,
     ) -> None:
         super().__init__(data)
-        self.result: SharedworkerObject = SharedworkerObject()
+
+    def create_result(self) -> SharedworkerObject:
+        """Create and return the specific result object instance."""
+        return SharedworkerObject()
 
     def process(self) -> SharedworkerObject:
         """

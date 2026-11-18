@@ -17,7 +17,7 @@ from .objects import ImportHistoryWorkerObject, ImportUpdaterOutcome
 logger = logging.getLogger(__name__)
 
 
-class ImportHistoryWorker(BaseObjectsJobWorker):
+class ImportHistoryWorker(BaseObjectsJobWorker[ImportHistoryWorkerObject]):
     """Import revision history from enwiki to mdwiki."""
 
     JOB_TYPE = "import_history"
@@ -27,11 +27,14 @@ class ImportHistoryWorker(BaseObjectsJobWorker):
         data: JobsRunner,
     ) -> None:
         super().__init__(data)
-        self.result: ImportHistoryWorkerObject = ImportHistoryWorkerObject()
 
     # ------------------------------------------------------------------
     # BaseObjectsJobWorker hooks
     # ------------------------------------------------------------------
+
+    def create_result(self) -> ImportHistoryWorkerObject:
+        """Create and return the specific result object instance."""
+        return ImportHistoryWorkerObject()
 
     def process(self) -> ImportHistoryWorkerObject:
         if not self._check_site():

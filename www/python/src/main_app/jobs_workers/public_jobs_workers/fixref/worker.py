@@ -21,7 +21,7 @@ logger = logging.getLogger(__name__)
 MAX_PAGES_FIXREF = 20000
 
 
-class FixRefWorker(BaseObjectsJobWorker):
+class FixRefWorker(BaseObjectsJobWorker[SharedworkerObject]):
     """Normalize references on mdwiki pages."""
 
     JOB_TYPE = "fixref"
@@ -31,11 +31,14 @@ class FixRefWorker(BaseObjectsJobWorker):
         data: JobsRunner,
     ) -> None:
         super().__init__(data)
-        self.result: SharedworkerObject = SharedworkerObject()
 
     # ------------------------------------------------------------------
     # BaseObjectsJobWorker hooks
     # ------------------------------------------------------------------
+
+    def create_result(self) -> SharedworkerObject:
+        """Create and return the specific result object instance."""
+        return SharedworkerObject()
 
     def process(self) -> SharedworkerObject:
         if not self._check_site():
