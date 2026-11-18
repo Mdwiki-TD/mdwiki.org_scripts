@@ -63,32 +63,36 @@ class SharedMapToJson:
         return asdict(self)
 
 
+
+@dataclass
+class OneItem(SharedMapToJson):
+    title: str = ""
+    status: STATUS_LITERAL = "pending"
+
+
 @dataclass
 class UpdaterOutcome(SharedMapToJson):
     """Result of running the updater on one page."""
-
-    status: OUTCOME_STATUS = "pending"
     title: str = ""
+    status: OUTCOME_STATUS = "pending"
     msg: str = ""
     newrevid: int = 0
     error_data: dict[str, Any] = field(default_factory=dict)
 
 
 @dataclass
-class StandardAdminSummary(SharedMapToJson):
+class Summary(SharedMapToJson):
     total: int = 0
     processed: int = 0
-    success: int = 0
-    failed: int = 0
-    skipped: int = 0
+    changed: int = 0
+    errors: int = 0
 
 
 @dataclass
-class Summary(SharedMapToJson):
-    total: int = 0
-    changed: int = 0
-    errors: int = 0
-    processed: int = 0
+class StandardAdminSummary(Summary):
+    success: int = 0
+    failed: int = 0
+    skipped: int = 0
 
 
 @dataclass
@@ -109,13 +113,6 @@ class WorkerMapping(SharedMapToJson):
 
     error: str | None = None
     error_type: str | None = None
-
-
-@dataclass
-class OneItem(SharedMapToJson):
-    title: str = ""
-    status: STATUS_LITERAL = "pending"
-
 
 @dataclass
 class SharedworkerObject(WorkerMapping):
