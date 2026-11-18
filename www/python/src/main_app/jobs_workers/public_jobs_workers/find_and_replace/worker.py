@@ -9,7 +9,6 @@ from __future__ import annotations
 import logging
 from datetime import datetime
 
-
 from ....api_services import MwClientPage
 from ...base_worker import BaseObjectsJobWorker, JobsRunner
 from ...shared_objects import UpdaterOutcome

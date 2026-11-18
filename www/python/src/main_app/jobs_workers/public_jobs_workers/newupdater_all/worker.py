@@ -8,7 +8,6 @@ from __future__ import annotations
 
 import logging
 
-
 from ....api_services import CategoryMembersService, MwClientPage
 from ....services.named_param import NamedParamEditor
 from ....services.new_updater import med_updater_one

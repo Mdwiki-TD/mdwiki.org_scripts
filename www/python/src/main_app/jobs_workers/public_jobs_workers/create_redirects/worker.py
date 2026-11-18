@@ -9,7 +9,6 @@ from __future__ import annotations
 
 import logging
 
-
 from ....api_services import MediaWikiQueryService, MwClientPage
 from ....api_services.enwiki_api import EnwikiApi
 from ...base_worker import BaseObjectsJobWorker, JobsRunner

@@ -12,7 +12,6 @@ from __future__ import annotations
 
 import logging
 
-
 from ....api_services import MediaWikiQueryService, MwClientPage
 from ....services.replace_wikilink import WikilinkReplacer
 from ...base_worker import BaseObjectsJobWorker, JobsRunner

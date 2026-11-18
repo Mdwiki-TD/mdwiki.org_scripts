@@ -8,7 +8,6 @@ from __future__ import annotations
 
 import logging
 
-
 from ....api_services import MwClientPage
 from ....services.fixref_shared.fixred_worker import work_on_text
 from ....services.fixref_shared.objects import RunState

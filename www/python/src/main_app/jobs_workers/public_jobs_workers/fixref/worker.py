@@ -10,7 +10,6 @@ from __future__ import annotations
 import logging
 from datetime import datetime
 
-
 from ....api_services import CategoryMembersService, MwClientPage
 from ....services.fixref_shared.fixref_text_new import FixRefTextService
 from ...base_worker import BaseObjectsJobWorker, JobsRunner
