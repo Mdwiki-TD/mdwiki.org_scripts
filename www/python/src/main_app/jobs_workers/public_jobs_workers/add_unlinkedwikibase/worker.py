@@ -23,10 +23,7 @@ class AddUnlinkedWikibaseWorker(BaseObjectsJobWorker):
         self,
         data: JobsRunner,
     ) -> None:
-        self.args = data.args or {}
-
         super().__init__(data)
-
         self.result: SharedworkerObject = SharedworkerObject()
 
     def process(self) -> SharedworkerObject:

@@ -10,7 +10,6 @@ from __future__ import annotations
 import logging
 from datetime import datetime
 
-from mwclient.client import Site
 
 from ....api_services import CategoryMembersService, MwClientPage
 from ....services.fixref_shared.fixref_text_new import FixRefTextService
@@ -31,11 +30,7 @@ class FixRefWorker(BaseObjectsJobWorker):
         self,
         data: JobsRunner,
     ) -> None:
-        self.args = data.args or {}
-        self.site: Site | None = None
-
         super().__init__(data)
-
         self.result: SharedworkerObject = SharedworkerObject()
 
     # ------------------------------------------------------------------

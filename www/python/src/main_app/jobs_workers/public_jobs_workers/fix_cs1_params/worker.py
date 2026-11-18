@@ -10,7 +10,6 @@ from __future__ import annotations
 
 import logging
 
-from mwclient.client import Site
 
 from ....api_services import CategoryMembersService, MwClientPage
 from ...base_worker import BaseObjectsJobWorker, JobsRunner
@@ -29,11 +28,7 @@ class FixCs1ParamsWorker(BaseObjectsJobWorker):
         self,
         data: JobsRunner,
     ) -> None:
-        self.args = data.args or {}
-        self.site: Site | None = None
-
         super().__init__(data)
-
         self.result: SharedworkerObject = SharedworkerObject()
 
     # ------------------------------------------------------------------

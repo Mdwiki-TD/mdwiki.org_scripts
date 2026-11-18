@@ -9,7 +9,6 @@ from __future__ import annotations
 import logging
 from datetime import datetime
 
-from mwclient.client import Site
 
 from ....api_services import MwClientPage
 from ...base_worker import BaseObjectsJobWorker, JobsRunner
@@ -28,11 +27,7 @@ class FindAndReplaceWorker(BaseObjectsJobWorker):
         self,
         data: JobsRunner,
     ) -> None:
-        self.args = data.args or {}
-        self.site: Site | None = None
-
         super().__init__(data)
-
         self.result: FindAndReplaceWorkerObject = FindAndReplaceWorkerObject()
 
     # ------------------------------------------------------------------

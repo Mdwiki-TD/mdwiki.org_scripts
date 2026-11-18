@@ -58,11 +58,9 @@ class AddRColumnWorker(BaseObjectsJobWorker):
         self,
         data: JobsRunner,
     ) -> None:
-        self.args = data.args or {}
         self.page: MwClientPage | None = None
 
         super().__init__(data)
-
         self.result: AddRColumnWorkerObject = AddRColumnWorkerObject()
 
     def _set_step_status(self, step: str, status: str, message: str) -> None:

@@ -1,7 +1,7 @@
 """"""
 
-from .clients import CategoryMembersService
 from .clients import (
+    CategoryMembersService,
     CommonsSession,
     WikiSiteClient,
 )

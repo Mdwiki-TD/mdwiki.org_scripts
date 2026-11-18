@@ -43,7 +43,12 @@ class TestDuplicateRedirectWorker:
         "src.main_app.jobs_workers.public_jobs_workers.duplicate_redirect.worker.WikilinkReplacer.replace_wikilink_destinations"
     )
     def test_process_success(
-        self, mock_replace, mock_mw_client_page, mock_query_service_cls, mock_get_user_site, worker: DuplicateRedirectWorker
+        self,
+        mock_replace,
+        mock_mw_client_page,
+        mock_query_service_cls,
+        mock_get_user_site,
+        worker: DuplicateRedirectWorker,
     ):
         mock_site = MagicMock()
         mock_get_user_site.return_value = mock_site

@@ -9,7 +9,6 @@ from __future__ import annotations
 
 import logging
 
-from mwclient.client import Site
 
 from ....api_services import MediaWikiQueryService, MwClientPage
 from ....api_services.enwiki_api import EnwikiApi
@@ -45,9 +44,6 @@ class CreateRedirectsWorker(BaseObjectsJobWorker):
         data: JobsRunner,
         enwiki_api: EnwikiApi | None = None,
     ) -> None:
-        self.args = data.args or {}
-        self.site: Site | None = None
-
         super().__init__(data)
         self.enwiki_api = enwiki_api or EnwikiApi()
 

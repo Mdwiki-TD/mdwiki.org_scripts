@@ -29,7 +29,9 @@ class TestCreateRedirectsWorker:
     @patch("src.main_app.jobs_workers.base_worker.WikiSiteClient.get_user_site")
     @patch("src.main_app.jobs_workers.public_jobs_workers.create_redirects.worker.MwClientPage")
     @patch("src.main_app.jobs_workers.public_jobs_workers.create_redirects.worker.EnwikiApi.get_redirects_for")
-    @patch("src.main_app.jobs_workers.public_jobs_workers.create_redirects.worker.MediaWikiQueryService.is_pages_exists")
+    @patch(
+        "src.main_app.jobs_workers.public_jobs_workers.create_redirects.worker.MediaWikiQueryService.is_pages_exists"
+    )
     def test_process_success(
         self, mock_is_pages_exists, mock_get_redirects_for, mock_mw_client_page, mock_get_user_site, worker
     ):

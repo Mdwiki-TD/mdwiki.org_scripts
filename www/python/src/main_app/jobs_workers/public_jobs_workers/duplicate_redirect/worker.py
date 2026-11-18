@@ -12,7 +12,6 @@ from __future__ import annotations
 
 import logging
 
-from mwclient.client import Site
 
 from ....api_services import MediaWikiQueryService, MwClientPage
 from ....services.replace_wikilink import WikilinkReplacer
@@ -70,11 +69,7 @@ class DuplicateRedirectWorker(BaseObjectsJobWorker):
         self,
         data: JobsRunner,
     ) -> None:
-        self.args = data.args or {}
-        self.site: Site | None = None
-
         super().__init__(data)
-
         self.result: SharedworkerObject = SharedworkerObject()
 
     # ------------------------------------------------------------------

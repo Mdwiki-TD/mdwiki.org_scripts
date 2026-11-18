@@ -9,7 +9,6 @@ from __future__ import annotations
 
 import logging
 
-from mwclient.client import Site
 
 from ....api_services import MediaWikiQueryService, MwClientPage
 from ...base_worker import BaseObjectsJobWorker, JobsRunner
@@ -27,11 +26,7 @@ class ImportHistoryWorker(BaseObjectsJobWorker):
         self,
         data: JobsRunner,
     ) -> None:
-        self.args = data.args or {}
-        self.site: Site | None = None
-
         super().__init__(data)
-
         self.result: ImportHistoryWorkerObject = ImportHistoryWorkerObject()
 
     # ------------------------------------------------------------------
