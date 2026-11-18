@@ -8,10 +8,8 @@ from __future__ import annotations
 
 import logging
 
-from mwclient.client import Site
 
-from ....api_services import MwClientPage
-from ....api_services.category import get_category_members
+from ....api_services import CategoryMembersService, MwClientPage
 from ....services.named_param import NamedParamEditor
 from ....services.new_updater import med_updater_one
 from ...base_worker import BaseObjectsJobWorker, JobsRunner
@@ -25,12 +23,11 @@ class NewUpdaterAllWorker(BaseObjectsJobWorker):
 
     JOB_TYPE = "newupdater_all"
 
-    def __init__(self, data: JobsRunner) -> None:
-        self.args = data.args or {}
-        self.site: Site | None = None
-
+    def __init__(
+        self,
+        data: JobsRunner,
+    ) -> None:
         super().__init__(data)
-
         self.result: SharedworkerObject = SharedworkerObject()
 
     # ------------------------------------------------------------------
@@ -41,8 +38,8 @@ class NewUpdaterAllWorker(BaseObjectsJobWorker):
         if not self._check_site():
             return self.result
 
-        titles = get_category_members(
-            site=self.site,
+        service = CategoryMembersService(self.site)
+        titles = service.get_category_members(
             category_title="Category:RTT",
             namespace=0,
         )

@@ -9,11 +9,9 @@ from __future__ import annotations
 
 import logging
 
-from mwclient.client import Site
 
-from ....api_services import MwClientPage
+from ....api_services import MediaWikiQueryService, MwClientPage
 from ....api_services.enwiki_api import EnwikiApi
-from ....api_services.query_api import is_pages_exists
 from ...base_worker import BaseObjectsJobWorker, JobsRunner
 from .objects import CreateRedirectsWorkerObject, OneTitleInfo
 
@@ -46,9 +44,6 @@ class CreateRedirectsWorker(BaseObjectsJobWorker):
         data: JobsRunner,
         enwiki_api: EnwikiApi | None = None,
     ) -> None:
-        self.args = data.args or {}
-        self.site: Site | None = None
-
         super().__init__(data)
         self.enwiki_api = enwiki_api or EnwikiApi()
 
@@ -119,8 +114,10 @@ class CreateRedirectsWorker(BaseObjectsJobWorker):
             info.status = "skipped"
             return info
 
+        service = MediaWikiQueryService(site=self.site)
+
         try:
-            existing = is_pages_exists(redirect_titles, self.site)
+            existing = service.is_pages_exists(redirect_titles)
         except Exception as e:
             info.counts.errors += 1
             info.msg = f"error checking redirects: {e}"

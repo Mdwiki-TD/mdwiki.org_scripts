@@ -8,7 +8,6 @@ from __future__ import annotations
 
 import logging
 
-from mwclient.client import Site
 
 from ....api_services import MwClientPage
 from ....services.fixref_shared.fixred_worker import work_on_text
@@ -24,12 +23,11 @@ class FixRedAllWorker(BaseObjectsJobWorker):
 
     JOB_TYPE = "fixred_all"
 
-    def __init__(self, data: JobsRunner) -> None:
-        self.args = data.args or {}
-        self.site: Site | None = None
-
+    def __init__(
+        self,
+        data: JobsRunner,
+    ) -> None:
         super().__init__(data)
-
         self.result: SharedworkerObject = SharedworkerObject()
 
     # ------------------------------------------------------------------

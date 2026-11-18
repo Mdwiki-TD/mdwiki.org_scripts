@@ -14,8 +14,7 @@ from typing import Any
 from mwclient.client import Site
 from mwclient.page import Page
 
-from ....api_services import MwClientPage
-from ....api_services.query_api import get_template_pages
+from ....api_services import MediaWikiQueryService, MwClientPage
 from ...base_worker import BaseObjectsJobWorker, JobsRunner
 from .add_rtt import count_r_rows, inject_r_column_into_tables
 from .objects import AddRColumnWorkerObject
@@ -55,12 +54,13 @@ class AddRColumnWorker(BaseObjectsJobWorker):
 
     JOB_TYPE = "add_r_column"
 
-    def __init__(self, data: JobsRunner) -> None:
-        self.args = data.args or {}
+    def __init__(
+        self,
+        data: JobsRunner,
+    ) -> None:
         self.page: MwClientPage | None = None
 
         super().__init__(data)
-
         self.result: AddRColumnWorkerObject = AddRColumnWorkerObject()
 
     def _set_step_status(self, step: str, status: str, message: str) -> None:
@@ -226,9 +226,9 @@ class AddRColumnWorker(BaseObjectsJobWorker):
 
     def _newtext_step(self, text: str) -> str:
         # pages = CatDepth("Category:RTT", sitecode="www", family="mdwiki", depth=0, ns=0)
-        template_pages = get_template_pages(
+        service = MediaWikiQueryService(site=self.site)
+        template_pages = service.get_template_pages(
             title="Template:RTT",
-            site=self.site,
             namespace=0,
         )
 

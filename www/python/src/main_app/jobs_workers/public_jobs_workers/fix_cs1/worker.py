@@ -10,9 +10,8 @@ from __future__ import annotations
 
 import logging
 
-from mwclient.client import Site
 
-from ....api_services import MwClientPage, get_category_members
+from ....api_services import CategoryMembersService, MwClientPage
 from ...base_worker import BaseObjectsJobWorker, JobsRunner
 from ...shared_objects import SharedworkerObject, UpdaterOutcome
 from .text_changer import fix_it
@@ -25,12 +24,11 @@ class FixCs1Worker(BaseObjectsJobWorker):
 
     JOB_TYPE = "fix_cs1"
 
-    def __init__(self, data: JobsRunner) -> None:
-        self.args = data.args or {}
-        self.site: Site | None = None
-
+    def __init__(
+        self,
+        data: JobsRunner,
+    ) -> None:
         super().__init__(data)
-
         self.result: SharedworkerObject = SharedworkerObject()
 
     # ------------------------------------------------------------------
@@ -41,8 +39,8 @@ class FixCs1Worker(BaseObjectsJobWorker):
         if not self._check_site():
             return self.result
 
-        titles: list[str] = get_category_members(
-            site=self.site,
+        service = CategoryMembersService(self.site)
+        titles: list[str] = service.get_category_members(
             category_title="Category:CS1 errors: missing periodical",
             namespace=0,
         )

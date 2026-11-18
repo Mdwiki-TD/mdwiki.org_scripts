@@ -10,9 +10,8 @@ from __future__ import annotations
 import logging
 from datetime import datetime
 
-from mwclient.client import Site
 
-from ....api_services import MwClientPage, get_category_members
+from ....api_services import CategoryMembersService, MwClientPage
 from ....services.fixref_shared.fixref_text_new import FixRefTextService
 from ...base_worker import BaseObjectsJobWorker, JobsRunner
 from ...shared_objects import SharedworkerObject, UpdaterOutcome
@@ -27,12 +26,11 @@ class FixRefWorker(BaseObjectsJobWorker):
 
     JOB_TYPE = "fixref"
 
-    def __init__(self, data: JobsRunner) -> None:
-        self.args = data.args or {}
-        self.site: Site | None = None
-
+    def __init__(
+        self,
+        data: JobsRunner,
+    ) -> None:
         super().__init__(data)
-
         self.result: SharedworkerObject = SharedworkerObject()
 
     # ------------------------------------------------------------------
@@ -97,8 +95,8 @@ class FixRefWorker(BaseObjectsJobWorker):
         if not cat.lower().startswith("category:"):
             cat = f"Category:{cat}"
 
-        members = get_category_members(
-            site=self.site,
+        service = CategoryMembersService(self.site)
+        members = service.get_category_members(
             category_title=cat,
             limit=500,
         )

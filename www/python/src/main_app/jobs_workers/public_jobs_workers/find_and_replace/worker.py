@@ -9,14 +9,11 @@ from __future__ import annotations
 import logging
 from datetime import datetime
 
-from mwclient.client import Site
 
 from ....api_services import MwClientPage
 from ...base_worker import BaseObjectsJobWorker, JobsRunner
 from ...shared_objects import UpdaterOutcome
 from .objects import FindAndReplaceWorkerObject
-
-# from ....api_services.query_api import search_pages
 
 logger = logging.getLogger(__name__)
 
@@ -26,12 +23,11 @@ class FindAndReplaceWorker(BaseObjectsJobWorker):
 
     JOB_TYPE = "find_and_replace"
 
-    def __init__(self, data: JobsRunner) -> None:
-        self.args = data.args or {}
-        self.site: Site | None = None
-
+    def __init__(
+        self,
+        data: JobsRunner,
+    ) -> None:
         super().__init__(data)
-
         self.result: FindAndReplaceWorkerObject = FindAndReplaceWorkerObject()
 
     # ------------------------------------------------------------------
@@ -110,7 +106,6 @@ class FindAndReplaceWorker(BaseObjectsJobWorker):
         """Pick the page list to walk based on *listtype*."""
         assert self.site is not None
         if listtype == "newlist":
-            # return search_pages(str_find, self.site, namespace=0, limit="max")
             search_data = self.site.search(
                 str_find,
                 namespace="0",

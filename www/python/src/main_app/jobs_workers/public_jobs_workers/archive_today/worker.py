@@ -8,7 +8,6 @@ from __future__ import annotations
 
 import logging
 
-from mwclient.client import Site
 
 from ....api_services import MwClientPage
 from ...base_worker import BaseObjectsJobWorker, JobsRunner
@@ -23,12 +22,11 @@ class ArchiveTodayWorker(BaseObjectsJobWorker):
 
     JOB_TYPE = "archive_today"
 
-    def __init__(self, data: JobsRunner) -> None:
-        self.args = data.args or {}
-        self.site: Site | None = None
-
+    def __init__(
+        self,
+        data: JobsRunner,
+    ) -> None:
         super().__init__(data)
-
         self.result: SharedworkerObject = SharedworkerObject()
         self.cs2_remover = Cs2ArchiveTodayRemover()
         self.webarchive_remover = ArchiveTodayRemover()

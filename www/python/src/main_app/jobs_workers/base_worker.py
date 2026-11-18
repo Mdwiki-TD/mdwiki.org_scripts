@@ -26,7 +26,7 @@ logger = logging.getLogger(__name__)
 TResult = TypeVar("TResult", bound=SharedworkerObject)
 
 
-class BaseObjectsJobWorker(ABC):
+class BaseObjectsJobWorker[TResult: SharedworkerObject](ABC):
     """Abstract base class for job workers with standardized lifecycle.
 
     This base class provides:
@@ -48,8 +48,13 @@ class BaseObjectsJobWorker(ABC):
 
     JOB_TYPE: str = ""
 
-    def __init__(self, data: JobsRunner) -> None:
+    def __init__(
+        self,
+        data: JobsRunner,
+    ) -> None:
         self.job_id: Final[int] = data.job_id
+        self.args: dict[str, Any] = data.args or {}
+
         self.user: Final[dict[str, Any]] = data.user
         self.cancel_event: Final[threading.Event | None] = data.cancel_event
         self.job_type: str = self.JOB_TYPE
@@ -60,7 +65,6 @@ class BaseObjectsJobWorker(ABC):
 
         self._edit_count: int = 0
         self.site: Site | None = None
-        self.result: SharedworkerObject
         self.jobs_service = JobsService()
         self.wikisite_client = WikiSiteClient()
 
@@ -68,7 +72,7 @@ class BaseObjectsJobWorker(ABC):
         self.wiki_domain = self.app_settings.other.wiki_domain
 
     @abstractmethod
-    def process(self) -> TResult | type[TResult]:
+    def process(self) -> TResult:
         """Execute the main processing logic.
 
         This method should contain the actual work of the job.
