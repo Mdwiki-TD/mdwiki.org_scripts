@@ -113,18 +113,6 @@ def get_jobs_data_dir() -> Path:
     return JobFilesService().jobs_dir
 
 
-svc = JobFilesService()
-save_data = svc._save_data
-save_result = svc.save_result
-load_job_result = svc.load_result
-create_cancel_file = svc.create_cancel_file
-is_cancel_file_exist = svc.is_cancel_file_exist
-
 __all__ = [
     "JobFilesService",
-    "get_jobs_data_dir",
-    "create_cancel_file",
-    "is_cancel_file_exist",
-    "save_result",
-    "load_job_result",
 ]
