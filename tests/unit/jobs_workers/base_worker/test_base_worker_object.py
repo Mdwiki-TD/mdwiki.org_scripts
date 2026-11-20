@@ -1,4 +1,4 @@
-"""Unit tests for BaseObjectsJobWorker and WorkerMapping."""
+"""Unit tests for BaseObjectsJobWorker and SharedworkerObject."""
 
 from __future__ import annotations
 
@@ -9,7 +9,7 @@ import pytest
 from src.main_app.database.services import JobsService
 from src.main_app.jobs_workers.base_worker import BaseObjectsJobWorker
 from src.main_app.jobs_workers.objects import JobsRunner
-from src.main_app.jobs_workers.shared_objects import WorkerMapping
+from src.main_app.jobs_workers.shared_objects import SharedworkerObject
 
 
 @pytest.fixture
@@ -21,20 +21,23 @@ def mock_base_worker(monkeypatch: pytest.MonkeyPatch):
     """
     mocks = {
         "get_user_site": MagicMock(return_value=MagicMock(name="mw_site")),
-        "save_job_result_by_name": MagicMock(),
+        "save_result": MagicMock(),
     }
     monkeypatch.setattr("src.main_app.jobs_workers.base_worker.WikiSiteClient.get_user_site", mocks["get_user_site"])
     monkeypatch.setattr(
-        "src.main_app.jobs_workers.base_worker.save_job_result_by_name",
-        mocks["save_job_result_by_name"],
+        "src.main_app.jobs_workers.base_worker.JobFilesService.save_result",
+        mocks["save_result"],
     )
     return mocks
 
 
-class MockWorker(BaseObjectsJobWorker):
+class MockWorker(BaseObjectsJobWorker[SharedworkerObject]):
     JOB_TYPE = "mock_job"
 
-    def process(self) -> WorkerMapping:
+    def create_result(self):
+        return SharedworkerObject()
+
+    def process(self) -> SharedworkerObject:
         return self.result
 
 
@@ -46,7 +49,7 @@ def mock_base_is_cancelled(
         "is_cancel_file_exist": MagicMock(),
     }
     monkeypatch.setattr(
-        "src.main_app.jobs_workers.base_worker.is_cancel_file_exist",
+        "src.main_app.jobs_workers.base_worker.JobFilesService.is_cancel_file_exist",
         mocks["is_cancel_file_exist"],
     )
     return mocks
@@ -69,7 +72,7 @@ def worker(seeded_job):
             user=user,
         )
     )
-    worker.result = WorkerMapping()
+    worker.result = SharedworkerObject()
     return worker
 
 
@@ -83,12 +86,12 @@ def worker_no_job():
             user=user,
         )
     )
-    worker.result = WorkerMapping()
+    worker.result = SharedworkerObject()
     return worker
 
 
 def test_worker_object_to_json():
-    obj = WorkerMapping(status="running", error="some error")
+    obj = SharedworkerObject(status="running", error="some error")
     data = obj.to_json()
     assert data["status"] == "running"
     assert data["error"] == "some error"

@@ -49,7 +49,7 @@ def get_titles_redirects(
     return from_to
 
 
-class AddRColumnWorker(BaseObjectsJobWorker):
+class AddRColumnWorker(BaseObjectsJobWorker[AddRColumnWorkerObject]):
     """Add R column to tables."""
 
     JOB_TYPE = "add_r_column"
@@ -61,7 +61,10 @@ class AddRColumnWorker(BaseObjectsJobWorker):
         self.page: MwClientPage | None = None
 
         super().__init__(data)
-        self.result: AddRColumnWorkerObject = AddRColumnWorkerObject()
+
+    def create_result(self) -> AddRColumnWorkerObject:
+        """Create and return the specific result object instance."""
+        return AddRColumnWorkerObject()
 
     def _set_step_status(self, step: str, status: str, message: str) -> None:
         self.result.set_step_status(step, status, message)

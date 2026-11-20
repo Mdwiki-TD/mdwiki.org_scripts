@@ -8,7 +8,6 @@ from __future__ import annotations
 
 import logging
 
-
 from ....api_services import MwClientPage
 from ....services.fixref_shared.fixred_worker import work_on_text
 from ....services.fixref_shared.objects import RunState
@@ -18,7 +17,7 @@ from ...shared_objects import SharedworkerObject, UpdaterOutcome
 logger = logging.getLogger(__name__)
 
 
-class FixRedAllWorker(BaseObjectsJobWorker):
+class FixRedAllWorker(BaseObjectsJobWorker[SharedworkerObject]):
     """Fix redirect links in all mdwiki pages."""
 
     JOB_TYPE = "fixred_all"
@@ -28,11 +27,14 @@ class FixRedAllWorker(BaseObjectsJobWorker):
         data: JobsRunner,
     ) -> None:
         super().__init__(data)
-        self.result: SharedworkerObject = SharedworkerObject()
 
     # ------------------------------------------------------------------
     # BaseObjectsJobWorker hooks
     # ------------------------------------------------------------------
+
+    def create_result(self) -> SharedworkerObject:
+        """Create and return the specific result object instance."""
+        return SharedworkerObject()
 
     def process(self) -> SharedworkerObject:
         if not self._check_site():

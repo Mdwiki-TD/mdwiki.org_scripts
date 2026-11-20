@@ -12,7 +12,6 @@ from __future__ import annotations
 
 import logging
 
-
 from ....api_services import MediaWikiQueryService, MwClientPage
 from ....services.replace_wikilink import WikilinkReplacer
 from ...base_worker import BaseObjectsJobWorker, JobsRunner
@@ -60,7 +59,7 @@ def resolve_redirect_chains(redirects: list[dict[str, str]]) -> list[dict[str, s
     return resolved_dict
 
 
-class DuplicateRedirectWorker(BaseObjectsJobWorker):
+class DuplicateRedirectWorker(BaseObjectsJobWorker[SharedworkerObject]):
     """Fix double redirects on mdwiki."""
 
     JOB_TYPE = "duplicate_redirect"
@@ -70,11 +69,14 @@ class DuplicateRedirectWorker(BaseObjectsJobWorker):
         data: JobsRunner,
     ) -> None:
         super().__init__(data)
-        self.result: SharedworkerObject = SharedworkerObject()
 
     # ------------------------------------------------------------------
     # BaseObjectsJobWorker hooks
     # ------------------------------------------------------------------
+
+    def create_result(self) -> SharedworkerObject:
+        """Create and return the specific result object instance."""
+        return SharedworkerObject()
 
     def process(self) -> SharedworkerObject:
         if not self._check_site():

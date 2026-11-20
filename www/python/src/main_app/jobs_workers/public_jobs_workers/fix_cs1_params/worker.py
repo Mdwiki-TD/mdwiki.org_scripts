@@ -10,7 +10,6 @@ from __future__ import annotations
 
 import logging
 
-
 from ....api_services import CategoryMembersService, MwClientPage
 from ...base_worker import BaseObjectsJobWorker, JobsRunner
 from ...shared_objects import SharedworkerObject, UpdaterOutcome
@@ -19,7 +18,7 @@ from .bot import OnePage, OnePageArchive
 logger = logging.getLogger(__name__)
 
 
-class FixCs1ParamsWorker(BaseObjectsJobWorker):
+class FixCs1ParamsWorker(BaseObjectsJobWorker[SharedworkerObject]):
     """Fix redirect links in all mdwiki pages."""
 
     JOB_TYPE = "fix_cs1_params"
@@ -29,11 +28,14 @@ class FixCs1ParamsWorker(BaseObjectsJobWorker):
         data: JobsRunner,
     ) -> None:
         super().__init__(data)
-        self.result: SharedworkerObject = SharedworkerObject()
 
     # ------------------------------------------------------------------
     # BaseObjectsJobWorker hooks
     # ------------------------------------------------------------------
+
+    def create_result(self) -> SharedworkerObject:
+        """Create and return the specific result object instance."""
+        return SharedworkerObject()
 
     def process(self) -> SharedworkerObject:
         if not self._check_site():

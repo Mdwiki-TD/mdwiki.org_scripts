@@ -9,7 +9,6 @@ from __future__ import annotations
 
 import logging
 
-
 from ....api_services import MediaWikiQueryService, MwClientPage
 from ...base_worker import BaseObjectsJobWorker, JobsRunner
 from ...shared_objects import SharedworkerObject, UpdaterOutcome
@@ -18,7 +17,7 @@ from .text_changer import WebarchiveRemover
 logger = logging.getLogger(__name__)
 
 
-class WebarchiveRemoverWorker(BaseObjectsJobWorker):
+class WebarchiveRemoverWorker(BaseObjectsJobWorker[SharedworkerObject]):
     """Remove duplicate {{Webarchive}} templates from mdwiki pages."""
 
     JOB_TYPE = "webarchive_remover"
@@ -28,12 +27,15 @@ class WebarchiveRemoverWorker(BaseObjectsJobWorker):
         data: JobsRunner,
     ) -> None:
         super().__init__(data)
-        self.result: SharedworkerObject = SharedworkerObject()
         self.remover = WebarchiveRemover(merge=True)
 
     # ------------------------------------------------------------------
     # BaseObjectsJobWorker hooks
     # ------------------------------------------------------------------
+
+    def create_result(self) -> SharedworkerObject:
+        """Create and return the specific result object instance."""
+        return SharedworkerObject()
 
     def process(self) -> SharedworkerObject:
         if not self._check_site():

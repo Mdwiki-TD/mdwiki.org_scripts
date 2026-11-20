@@ -8,7 +8,6 @@ from __future__ import annotations
 
 import logging
 
-
 from ....api_services import MwClientPage
 from ...base_worker import BaseObjectsJobWorker, JobsRunner
 from ...shared_objects import SharedworkerObject, UpdaterOutcome
@@ -17,7 +16,7 @@ from .removers import ArchiveTodayRemover, Cs2ArchiveTodayRemover
 logger = logging.getLogger(__name__)
 
 
-class ArchiveTodayWorker(BaseObjectsJobWorker):
+class ArchiveTodayWorker(BaseObjectsJobWorker[SharedworkerObject]):
     """Remove archive.today links from all mdwiki pages."""
 
     JOB_TYPE = "archive_today"
@@ -27,13 +26,16 @@ class ArchiveTodayWorker(BaseObjectsJobWorker):
         data: JobsRunner,
     ) -> None:
         super().__init__(data)
-        self.result: SharedworkerObject = SharedworkerObject()
         self.cs2_remover = Cs2ArchiveTodayRemover()
         self.webarchive_remover = ArchiveTodayRemover()
 
     # ------------------------------------------------------------------
     # BaseObjectsJobWorker hooks
     # ------------------------------------------------------------------
+
+    def create_result(self) -> SharedworkerObject:
+        """Create and return the specific result object instance."""
+        return SharedworkerObject()
 
     def process(self) -> SharedworkerObject:
         if not self._check_site():

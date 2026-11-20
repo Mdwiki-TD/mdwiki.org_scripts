@@ -54,7 +54,7 @@ def add_rtt_to_text(text: str, title: str) -> str:
     return newtext
 
 
-class AddRttTemplateWorker(BaseObjectsJobWorker):
+class AddRttTemplateWorker(BaseObjectsJobWorker[SharedworkerObject]):
     """Add {{RTT}} template to pages in Category:RTT."""
 
     JOB_TYPE = "add_rtt_template"
@@ -64,11 +64,14 @@ class AddRttTemplateWorker(BaseObjectsJobWorker):
         data: JobsRunner,
     ) -> None:
         super().__init__(data)
-        self.result: SharedworkerObject = SharedworkerObject()
 
     # ------------------------------------------------------------------
     # BaseObjectsJobWorker hooks
     # ------------------------------------------------------------------
+
+    def create_result(self) -> SharedworkerObject:
+        """Create and return the specific result object instance."""
+        return SharedworkerObject()
 
     def process(self) -> SharedworkerObject:
         if not self._check_site():
