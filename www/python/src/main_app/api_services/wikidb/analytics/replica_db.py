@@ -23,7 +23,7 @@ def decode_value(value) -> str:
 
 def resolve_bytes(rows) -> list[Any]:
     decoded_rows: list = []
-    # ---
+
     for row in rows:
         decoded_row = {}
         for key, value in row.items():
@@ -31,7 +31,7 @@ def resolve_bytes(rows) -> list[Any]:
                 value = decode_value(value)
             decoded_row[key] = value
         decoded_rows.append(decoded_row)
-    # ---
+
     return decoded_rows
 
 

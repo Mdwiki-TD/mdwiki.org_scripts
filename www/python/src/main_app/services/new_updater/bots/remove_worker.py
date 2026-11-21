@@ -8,9 +8,9 @@ import re
 def remove_cite_web(text: str, resources_get_nlm: str, line: str, title: str) -> str:
     new_text = text
     External2 = re.search(r"(\=\=\s*External links\s*\=\=)", new_text)
-    # ---
+
     title2 = re.escape(title)
-    # ---
+
     ioireg = rf"\s*cite web\s*\|\s*url\s*=\s*https\:\/\/druginfo\.nlm\.nih\.gov\/drugportal\/(?:name|category)\/{title2}\s*\|\s*publisher\s*=\s*U\.S\. National Library of Medicine\s*\|\s*work\s*=\s*Drug Information Portal\s*\|\s*title\s*=\s*{title2}\s*"
     ioireg = r"(\*\s*{{" + ioireg + "}})"
     if vavo := re.search(ioireg, new_text, flags=re.IGNORECASE):
@@ -39,7 +39,7 @@ def remove_cite_web(text: str, resources_get_nlm: str, line: str, title: str) ->
                 new_text = new_text.replace(ttuy, ttuy + drug_Line)
                 if new_text.find(drug_Line.strip()) != -1:
                     new_text = new_text.replace(vas, "")  # حذف قالب الاستشهاد
-    # ---
+
     return new_text
 
 
@@ -47,7 +47,7 @@ def portal_remove(text: str) -> str:
     # par = "{{portal bar|Medicine}}"
     new_text = text
     new_text = re.sub(r"\{\{\s*portal bar\s*\|\s*Medicine\s*\}\}", "", new_text, flags=re.IGNORECASE)
-    # ---
+
     return new_text
 
 

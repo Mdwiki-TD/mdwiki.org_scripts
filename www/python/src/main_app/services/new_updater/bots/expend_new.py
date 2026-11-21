@@ -6,18 +6,18 @@ import logging
 
 import wikitextparser as wtp
 
-from ..lists.expend_lists import main_temps_list
+from ..lists.expend_lists import main_temps_lower_list
 
 logger = logging.getLogger(__name__)
 
 
 def expend_new(template: wtp.Template | None, min_len: int = 1) -> wtp.Template | None:
-    # ---
+
     logger.debug("expend_new")
-    # ---
+
     if not template:
         return template
-    # ---
+
     template_name = str(template.normal_name()).strip()
     template.name = f"{template_name}\n"
 
@@ -34,9 +34,9 @@ def expend_new(template: wtp.Template | None, min_len: int = 1) -> wtp.Template 
 
 
 def expend_infoboxs(new_text: str) -> str:
-    # ---
+
     logger.debug("expend_infoboxs")
-    # ---
+
     parsed = wtp.parse(new_text)
     for temp in parsed.templates:
         temp_str = temp.string
@@ -48,7 +48,7 @@ def expend_infoboxs(new_text: str) -> str:
 
         isvalid = name.startswith("infobox") or name.endswith(("infobox", "box"))
 
-        if name not in main_temps_list and not isvalid:
+        if name not in main_temps_lower_list and not isvalid:
             continue
 
         temp = expend_new(temp)

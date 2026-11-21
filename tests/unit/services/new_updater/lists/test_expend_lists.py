@@ -5,29 +5,29 @@ from __future__ import annotations
 from src.main_app.services.new_updater.lists.expend_lists import (
     IMC_params,
     dup_params,
-    main_temps_list,
+    main_temps_lower_list,
 )
 
 
 class TestMainTempsList:
     def test_is_list(self):
-        assert isinstance(main_temps_list, list)
+        assert isinstance(main_temps_lower_list, list)
 
     def test_all_lowercase(self):
-        for item in main_temps_list:
+        for item in main_temps_lower_list:
             assert item == item.lower(), f"Not lowercase: {item!r}"
 
     def test_contains_drugbox(self):
-        assert "drugbox" in main_temps_list
+        assert "drugbox" in main_temps_lower_list
 
     def test_contains_infobox_drug(self):
-        assert "infobox drug" in main_temps_list
+        assert "infobox drug" in main_temps_lower_list
 
     def test_contains_infobox_medical_condition(self):
-        assert "infobox medical condition" in main_temps_list
+        assert "infobox medical condition" in main_temps_lower_list
 
     def test_no_duplicates(self):
-        assert len(main_temps_list) == len(set(main_temps_list))
+        assert len(main_temps_lower_list) == len(set(main_temps_lower_list))
 
 
 class TestIMCParams:
