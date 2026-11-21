@@ -25,51 +25,50 @@ matches = [
 
 
 def make_archive_date(archiveurl):
-    # ---
+
     archivedate = ""
-    # ---
+
     # logger.info(f"make_archive_date: {archiveurl=}")
-    # ---
+
     # http://archive.today/2024.05.23-204959/
-    # ---
+
     if not archiveurl:
         return archivedate
-    # ---
+
     for x in matches:
         matche = re.match(x, archiveurl.strip(), flags=re.IGNORECASE)
-        # ---
+
         if matche:
             archivedate = matche.group(1) + "-" + matche.group(2) + "-" + matche.group(3)
             break
-    # ---
+
     return archivedate
 
 
 def make_archive_date_and_url(archiveurl):
-    # ---
+
     archivedate = ""
     url = ""
-    # ---
-    # ---
+
     # logger.info(f"make_archive_date: {archiveurl=}")
-    # ---
+
     # http://archive.today/2024.05.23-204959/
-    # ---
+
     found_it = False
-    # ---
+
     if not archiveurl:
         return found_it, archivedate, url, archiveurl
-    # ---
+
     for x in matches:
         matche = re.match(x, archiveurl.strip(), flags=re.IGNORECASE)
-        # ---
+
         if matche:
             found_it = True
             # logger.info("found_it = True")
             archivedate = matche.group(1) + "-" + matche.group(2) + "-" + matche.group(3)
             url = matche.group(4)
             break
-    # ---
+
     return found_it, archivedate, url, archiveurl
 
 
