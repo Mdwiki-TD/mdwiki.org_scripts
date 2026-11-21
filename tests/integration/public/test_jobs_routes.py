@@ -52,7 +52,7 @@ def _clean_db(mock_app: Flask):
     """Clean all tables after each test to prevent state leaking."""
     yield
     with mock_app.app_context():
-        from src.main_app.extensions import db
+        from src.main_app.database import db
 
         meta = db.metadata
         with db.engine.begin() as conn:
@@ -194,7 +194,7 @@ class TestStartJob(TestSetup):
                 return_value={"id": uid, "username": "JobUser"},
             ),
             patch(
-                "src.main_app.public.shared_jobs_routes.JobStarter.start_form",
+                "src.main_app.public.shared_jobs_routes.JobStarter.submit_form",
                 return_value=1,
             ),
         ):
@@ -216,7 +216,7 @@ class TestStartJob(TestSetup):
                 return_value={"id": uid, "username": "JobUser"},
             ),
             patch(
-                "src.main_app.public.shared_jobs_routes.JobStarter.start_form",
+                "src.main_app.public.shared_jobs_routes.JobStarter.submit_form",
                 return_value=1,
             ),
         ):
@@ -247,7 +247,7 @@ class TestStartJob(TestSetup):
                 return_value={"id": uid, "username": "JobUser"},
             ),
             patch(
-                "src.main_app.public.shared_jobs_routes.JobStarter.start_form",
+                "src.main_app.public.shared_jobs_routes.JobStarter.submit_form",
                 side_effect=DuplicateRecordError("A job of type 'fixref' is already active"),
             ),
         ):
