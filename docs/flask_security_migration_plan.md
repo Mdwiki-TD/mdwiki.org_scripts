@@ -330,7 +330,7 @@ Maps existing custom authentication and authorization decorators directly to the
 
 ##### Case 1: Custom `@admin_required` Refactoring
 
-###### Before (`src/main_app/admin/decorators.py`):
+###### Before (`src/main_app/routes/admin/decorators.py`):
 
 ```python
 def admin_required(view: FuncType) -> FuncType:
@@ -365,7 +365,7 @@ _Why this replacement is correct:_ By leveraging `@roles_required("admin")`, we 
 
 ##### Case 2: `@oauth_required` Refactoring
 
-###### Before (`src/main_app/public/auth/utils.py`):
+###### Before (`src/main_app/routes/public/auth/utils.py`):
 
 ```python
 def oauth_required(func: FuncType) -> FuncType:
@@ -405,13 +405,13 @@ Since we use MediaWiki OAuth, registration and initial verification happen exter
 #### Files that need modification
 
 -   `src/main_app/shared/auth/auth_users_service.py`
--   `src/main_app/public/auth/routes.py`
+-   `src/main_app/routes/public/auth/routes.py`
 
 #### Expected code changes
 
 When the OAuth callback finishes successfully, register the logged-in state with Flask-Security using `login_user()`:
 
-##### Before (`src/main_app/public/auth/routes.py`):
+##### Before (`src/main_app/routes/public/auth/routes.py`):
 
 ```python
             # Set sessions
@@ -466,8 +466,8 @@ Removes redundant files, legacy decorators, obsolete cookie verifiers, and unnec
 
 #### Files that need deletion
 
--   `src/main_app/admin/decorators.py` (Fully replaced by `@roles_required`)
--   Legacy references to `load_logged_in_user` and `oauth_required` in `src/main_app/public/auth/utils.py`
+-   `src/main_app/routes/admin/decorators.py` (Fully replaced by `@roles_required`)
+-   Legacy references to `load_logged_in_user` and `oauth_required` in `src/main_app/routes/public/auth/utils.py`
 
 ---
 

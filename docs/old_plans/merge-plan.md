@@ -11,7 +11,7 @@
 
 Replace the existing PHP entry points (`php/*.php`) and CLI-shaped Python
 scripts (`python/*.py`) with **first-class Flask blueprints** under
-`src/main_app/public/<tool>/` that:
+`src/main_app/routes/public/<tool>/` that:
 
 -   accept the same form parameters the PHP files used;
 -   call backend logic **in-process** (no `shell_exec`, no `toolforge jobs run`,
@@ -449,7 +449,7 @@ wins after the auth + service pattern is set).
 -   `src/main_app/jobs/runner.py`
 -   `src/main_app/services/__init__.py`
 -   `src/main_app/services/fix_duplicate.py`
--   `src/main_app/public/jobs/__init__.py` (status + json endpoints)
+-   `src/main_app/routes/public/jobs/__init__.py` (status + json endpoints)
 -   `src/templates/base.html`
 -   `src/templates/_macros.html`
 -   `src/templates/jobs/status.html`
@@ -459,10 +459,10 @@ wins after the auth + service pattern is set).
 -   `src/main_app/__init__.py` — register `bp_jobs`, expose
     `current_user` to templates via context processor.
 -   `src/main_app/config.py` — add new settings, soften OAuth check.
--   `src/main_app/public/__init__.py` — register `bp_jobs`; verify
+-   `src/main_app/routes/public/__init__.py` — register `bp_jobs`; verify
     unique blueprint names.
--   `src/main_app/public/dup/__init__.py` — wire to service + jobs.
--   `src/main_app/public/<other>/__init__.py` — rename Blueprint
+-   `src/main_app/routes/public/dup/__init__.py` — wire to service + jobs.
+-   `src/main_app/routes/public/<other>/__init__.py` — rename Blueprint
     name from `"main"` to something unique (no behaviour change yet).
 -   `src/templates/dup.html` — extend `base.html`, use `url_for`, csrf,
     flash.
