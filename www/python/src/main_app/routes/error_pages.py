@@ -13,7 +13,7 @@ from urllib.parse import parse_qsl, urlencode
 from flask import Flask, Response, flash, jsonify, render_template, request
 from flask_wtf.csrf import CSRFError
 
-from .database.services.error_log_service import ErrorLogService
+from ..database.services.error_log_service import ErrorLogService
 
 _logger = logging.getLogger("request_debug")
 _logger.propagate = False  # not linked to root handlers
