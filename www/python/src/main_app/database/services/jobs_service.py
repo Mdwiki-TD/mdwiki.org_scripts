@@ -198,7 +198,7 @@ class JobsService(CRUDService[JobRecord]):
                 .filter(
                     JobRecord.job_type == job_type,
                     JobRecord.status.in_([self.RUNNING_STATUS]),
-                    JobRecord.is_running is True,
+                    JobRecord.is_running.is_(True),
                 )
                 .first()
             )
@@ -308,7 +308,7 @@ class JobsService(CRUDService[JobRecord]):
 
             query = query.filter(
                 JobRecord.status.in_([self.PENDING_STATUS, self.RUNNING_STATUS]),
-                JobRecord.is_running == 1,
+                JobRecord.is_running.is_(True),
             )
             job = query.first()
 
