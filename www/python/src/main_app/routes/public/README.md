@@ -86,7 +86,7 @@ pytest tests/unit/public
 pytest tests/integration/public
 
 # with coverage
-pytest tests/integration/public tests/unit/public --cov=src/main_app/public
+pytest tests/integration/public tests/unit/public --cov=src/main_app/routes/public
 ```
 
 ## Strengths
