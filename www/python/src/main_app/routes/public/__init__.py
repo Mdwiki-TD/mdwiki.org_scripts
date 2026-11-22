@@ -9,7 +9,6 @@ from flask import Blueprint, Flask
 from ...jobs_workers.public_jobs_workers.workers_list_public import jobs_data_public
 from ...models import RouteModule
 from ...templates_markups import NavigationBar, main_nav_list
-from .shared_jobs_registrar import SharedJobRoutesRegistrar
 from .newupdater.route import NewUpdaterRoutes
 from .routes import (
     AuthView,
@@ -17,6 +16,7 @@ from .routes import (
     ProfileView,
 )
 from .routes.fixred import FixRedView
+from .shared_jobs_registrar import SharedJobRoutesRegistrar
 
 PUBLIC_ROUTE_MODULES: list[RouteModule] = [
     RouteModule(route_cls=MainView, name="main", url_prefix=""),
