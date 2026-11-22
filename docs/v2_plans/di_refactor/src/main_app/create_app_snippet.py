@@ -74,7 +74,7 @@ def create_app(config_class: type) -> Flask:
     # )
 
     # ----- rest of existing create_app (blueprints, error pages, …) -----
-    # register_error_pages(app)
+    # register_error_handlers(app)
     # ...
 
     return app
