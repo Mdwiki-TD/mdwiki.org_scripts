@@ -8,19 +8,17 @@ import logging
 from typing import Any
 
 from flask import Flask, render_template, request
+from flask_sqlalchemy import SQLAlchemy
 
-from .admin import AdminsRouteRegister
+from .cli import CliFactory
 from .config import Config, ConfigLoader, get_settings
-from .database import init_db
-from .database.exceptions import DatabaseInitError
-from .error_pages import register_cache_headers, register_error_pages
-from .extensions import csrf_init_app
-from .extensions import db as _db
-from .extensions import migrate
-from .jobs_workers.cli_jobs import register_cli_jobs
+from .database import DatabaseBuilder
+from .database import db as _db
+from .error_pages import register_error_handlers
+from .extensions import csrf_init_app, migrate
 from .logger_config import LoggingConfigurator
-from .public import PublicRouteRegister
-from .public.routes_utils import RequestContextHelper
+from .routes import RoutesFactory
+from .routes.public.routes_utils import RequestContextHelper
 from .services.core import CookieHeaderClient, filters, init_rate_limiter
 
 logger = logging.getLogger(__name__)
@@ -28,6 +26,11 @@ logger = logging.getLogger(__name__)
 
 class AppFactory:
     """Builds and configures the Flask application."""
+
+    @staticmethod
+    def init_app_and_db(app, db: SQLAlchemy) -> bool:
+        db.init_app(app)
+        return DatabaseBuilder.build(db, app)
 
     @classmethod
     def create(cls, config_class: type[Config] | None = None) -> Flask:
@@ -50,11 +53,12 @@ class AppFactory:
         db_is_ok = True
         # Initialize Flask-SQLAlchemy and Flask-Migrate
         if app.config.get("SQLALCHEMY_DATABASE_URI"):
+            migrate.init_app(app, _db)
             db_is_ok = cls.init_app_and_db(app, _db)
 
         init_rate_limiter(app)
         if db_is_ok:
-            cls._register_routes(app)
+            RoutesFactory.register(app, _db)
         else:
             app.before_request(cls.db_error_fallback)
         return app
@@ -76,36 +80,11 @@ class AppFactory:
     def _init_extensions(app: Flask):
         # Initialize CSRF protection
         csrf_init_app(app)
+        register_error_handlers(app)
+        CliFactory.register(app)
 
         app.jinja_env.filters.update(filters)
-
-        app_settings = get_settings()
-        app_settings.ensure_directories()
-        register_error_pages(app)
-        register_cache_headers(app)
-
-    @staticmethod
-    def init_app_and_db(app, _db) -> bool:
-        _db.init_app(app)
-        migrate.init_app(app, _db)
-
-        try:
-            with app.app_context():
-                # Create database tables and views if they don't exist
-                init_db(_db)
-            return True
-        except DatabaseInitError as exc:
-            logger.error("%s", exc)
-        except Exception as e:
-            logger.error("Failed to create tables: %s", e)
-
-        return False
-
-    @staticmethod
-    def _register_routes(app: Flask) -> None:
-        PublicRouteRegister.register(app)
-        AdminsRouteRegister.register(app, _db)
-        register_cli_jobs(app)
+        get_settings().ensure_directories()
 
     @staticmethod
     def db_error_fallback():
