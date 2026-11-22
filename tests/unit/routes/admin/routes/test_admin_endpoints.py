@@ -117,9 +117,9 @@ class TestAdminBlueprintGuard:
         assert resp.status_code == 200
 
 
-@pytest.fixture(autouse=True)
+@pytest.fixture()
 def _fake_admin_user(monkeypatch):
-    """Fake an authenticated admin user for all tests in this module."""
+    """Fake an authenticated admin user for tests that need it."""
     admin_user = SimpleNamespace(username="test_admin", is_active_admin=True)
     monkeypatch.setattr(
         "src.main_app.decorators.admin_decorators.CurrentUserResolver.get_current_user", lambda: admin_user
@@ -138,6 +138,7 @@ def client(mock_app):
     return mock_app.test_client()
 
 
+@pytest.mark.usefixtures("_fake_admin_user")
 class TestAdminDashboard:
     """Tests for the admin dashboard."""
 
@@ -179,6 +180,7 @@ class TestAdminDashboard:
         assert resp.status_code == 200
 
 
+@pytest.mark.usefixtures("_fake_admin_user")
 class TestAddAdmin:
     """Tests for adding an admin."""
 
@@ -232,6 +234,7 @@ class TestAddAdmin:
         assert any(c.username == "new_coord" for c in admins)
 
 
+@pytest.mark.usefixtures("_fake_admin_user")
 class TestSetRecordActiveStatus:
     """Tests for activating/deactivating admins."""
 
@@ -268,6 +271,7 @@ class TestSetRecordActiveStatus:
         assert resp.status_code == 302
 
 
+@pytest.mark.usefixtures("_fake_admin_user")
 class TestDeleteAdmin:
     """Tests for deleting an admin."""
 
