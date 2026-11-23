@@ -13,7 +13,7 @@ from __future__ import annotations
 import logging
 
 from ....api_services import MediaWikiQueryService, MwClientPage
-from ....services.replace_wikilink import WikilinkReplacer
+from ....app_services.replace_wikilink import WikilinkReplacer
 from ...base_worker import BaseObjectsJobWorker, JobsRunner
 from ...shared_objects import SharedworkerObject
 from .objects import RedirectUpdaterOutcome

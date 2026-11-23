@@ -9,8 +9,8 @@ from __future__ import annotations
 import logging
 
 from ....api_services import CategoryMembersService, MwClientPage
-from ....services.named_param import NamedParamEditor
-from ....services.new_updater import med_updater_one
+from ....app_services.named_param import NamedParamEditor
+from ....app_services.new_updater import med_updater_one
 from ...base_worker import BaseObjectsJobWorker, JobsRunner
 from ...shared_objects import SharedworkerObject, UpdaterOutcome
 

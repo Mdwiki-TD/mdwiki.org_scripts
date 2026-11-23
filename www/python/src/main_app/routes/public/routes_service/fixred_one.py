@@ -13,9 +13,9 @@ from ....api_services import MwClientPage
 from ....api_services.clients.wikisite_client import WikiSiteClient
 from ....config import get_settings
 from ....services.auth.current_user import CurrentUser
-from ....services.fixref_shared.fixred_worker import FixRedirectWorker
-from ....services.fixref_shared.objects import RunState
-from ....services.shared_classes import UpdaterTextOutcome
+from ....app_services.fixref_shared.fixred_worker import FixRedirectWorker
+from ....app_services.fixref_shared.objects import RunState
+from ....app_services.shared_classes import UpdaterTextOutcome
 
 logger = logging.getLogger(__name__)
 

@@ -9,8 +9,8 @@ from __future__ import annotations
 import logging
 
 from ....api_services import MwClientPage
-from ....services.fixref_shared.fixred_worker import work_on_text
-from ....services.fixref_shared.objects import RunState
+from ....app_services.fixref_shared.fixred_worker import work_on_text
+from ....app_services.fixref_shared.objects import RunState
 from ...base_worker import BaseObjectsJobWorker, JobsRunner
 from ...shared_objects import SharedworkerObject, UpdaterOutcome
 

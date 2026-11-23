@@ -10,7 +10,7 @@ from flask.typing import ResponseReturnValue
 from flask.views import MethodView
 
 from ....decorators import oauth_required
-from ....services.newupdater_service import NewUpdaterService
+from ....app_services.newupdater_service import NewUpdaterService
 
 logger = logging.getLogger(__name__)
 
