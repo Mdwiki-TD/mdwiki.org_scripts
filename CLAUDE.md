@@ -51,7 +51,7 @@ Environment-based via frozen dataclasses in `src/main_app/config/`. Settings loa
 
 ### Blueprint Structure
 
-Routes registered in `src/main_app/public/__init__.py`:
+Routes registered in `src/main_app/routes/public/__init__.py`:
 
 - `bp_main` — Index page
 - `bp_auth` — OAuth login/callback/logout, rate limiting

@@ -4,8 +4,8 @@ from __future__ import annotations
 
 from unittest.mock import MagicMock
 
+from src.main_app.app_services.shared_classes import UpdaterTextOutcome
 from src.main_app.routes.public.routes_service.fixred_one import work_on_title
-from src.main_app.services.shared_classes import UpdaterTextOutcome
 
 
 class TestWorkOnTitle:
