@@ -11,11 +11,11 @@ import logging
 
 from ....api_services import MwClientPage
 from ....api_services.clients.wikisite_client import WikiSiteClient
-from ....config import get_settings
-from ....services.auth.current_user import CurrentUser
 from ....app_services.fixref_shared.fixred_worker import FixRedirectWorker
 from ....app_services.fixref_shared.objects import RunState
 from ....app_services.shared_classes import UpdaterTextOutcome
+from ....config import get_settings
+from ....services.auth.current_user import CurrentUser
 
 logger = logging.getLogger(__name__)
 

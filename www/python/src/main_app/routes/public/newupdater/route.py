@@ -9,8 +9,8 @@ from flask import Blueprint, flash, g, redirect, render_template, request, url_f
 from flask.typing import ResponseReturnValue
 from flask.views import MethodView
 
-from ....decorators import oauth_required
 from ....app_services.newupdater_service import NewUpdaterService
+from ....decorators import oauth_required
 
 logger = logging.getLogger(__name__)
 

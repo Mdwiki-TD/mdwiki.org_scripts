@@ -19,7 +19,9 @@ def clear_make_title_cache():
 def mock_get_citation(monkeypatch):
     _mock = MagicMock()
     _mock.get_citation_title = MagicMock()
-    monkeypatch.setattr("src.main_app.app_services.fixref_shared.make_title_bot.CitationApi", MagicMock(return_value=_mock))
+    monkeypatch.setattr(
+        "src.main_app.app_services.fixref_shared.make_title_bot.CitationApi", MagicMock(return_value=_mock)
+    )
     return _mock.get_citation_title
 
 
