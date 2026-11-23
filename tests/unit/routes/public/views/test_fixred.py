@@ -34,11 +34,11 @@ class TestNormalizeTitle:
 class TestFixRedView:
     """Tests for the fixred blueprint routes."""
 
-    def test_get_index_requires_auth(self, mock_client):
-        resp = mock_client.get("/fixred/")
+    def test_get_index_requires_auth(self, test_client):
+        resp = test_client.get("/fixred/")
         # oauth_required redirects unauthenticated users to login
         assert resp.status_code == 302
 
-    def test_post_index_requires_auth(self, mock_client):
-        resp = mock_client.post("/fixred/", data={"title": "Test"})
+    def test_post_index_requires_auth(self, test_client):
+        resp = test_client.post("/fixred/", data={"title": "Test"})
         assert resp.status_code == 302

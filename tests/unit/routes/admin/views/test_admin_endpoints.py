@@ -47,28 +47,28 @@ class TestAdminEndpointNames:
 class TestAdminEndpointGuards:
     """The refactored views must still be behind ``admin_required``."""
 
-    def test_admin_dashboard_requires_login(self, mock_client):
-        resp = mock_client.get("/admin_panel/")
+    def test_admin_dashboard_requires_login(self, test_client):
+        resp = test_client.get("/admin_panel/")
         assert resp.status_code == 302
         assert "login" in resp.headers["Location"]
 
-    def test_users_dashboard_requires_login(self, mock_client):
-        resp = mock_client.get("/admin_panel/users/")
+    def test_users_dashboard_requires_login(self, test_client):
+        resp = test_client.get("/admin_panel/users/")
         assert resp.status_code == 302
         assert "login" in resp.headers["Location"]
 
-    def test_settings_dashboard_requires_login(self, mock_client):
-        resp = mock_client.get("/admin_panel/settings/")
+    def test_settings_dashboard_requires_login(self, test_client):
+        resp = test_client.get("/admin_panel/settings/")
         assert resp.status_code == 302
         assert "login" in resp.headers["Location"]
 
-    def test_settings_create_requires_login(self, mock_client):
-        resp = mock_client.post("/admin_panel/settings/create", data={})
+    def test_settings_create_requires_login(self, test_client):
+        resp = test_client.post("/admin_panel/settings/create", data={})
         assert resp.status_code == 302
         assert "login" in resp.headers["Location"]
 
-    def test_user_permission_toggle_requires_login(self, mock_client):
-        resp = mock_client.post("/admin_panel/users/1/can_run_jobs", data={"can_run_jobs": "1"})
+    def test_user_permission_toggle_requires_login(self, test_client):
+        resp = test_client.post("/admin_panel/users/1/can_run_jobs", data={"can_run_jobs": "1"})
         assert resp.status_code == 302
         assert "login" in resp.headers["Location"]
 
@@ -82,7 +82,7 @@ class TestAdminBlueprintGuard:
     sub-blueprints (users, settings, admins, jobs, errors) too.
     """
 
-    def test_guard_lets_active_admin_through(self, mock_client, monkeypatch):
+    def test_guard_lets_active_admin_through(self, test_client, monkeypatch):
         from types import SimpleNamespace
 
         admin_user = SimpleNamespace(username="test_admin", is_active_admin=True)
@@ -90,10 +90,10 @@ class TestAdminBlueprintGuard:
             "src.main_app.decorators.admin_decorators.CurrentUserResolver.get_current_user", lambda: admin_user
         )
 
-        resp = mock_client.get("/admin_panel/")
+        resp = test_client.get("/admin_panel/")
         assert resp.status_code == 200
 
-    def test_guard_blocks_non_admin(self, mock_client, monkeypatch):
+    def test_guard_blocks_non_admin(self, test_client, monkeypatch):
         from types import SimpleNamespace
 
         regular_user = SimpleNamespace(username="regular", is_active_admin=False)
@@ -102,18 +102,18 @@ class TestAdminBlueprintGuard:
         )
 
         for url in ("/admin_panel/", "/admin_panel/users/", "/admin_panel/settings/", "/admin_panel/admins/"):
-            resp = mock_client.get(url)
+            resp = test_client.get(url)
             assert resp.status_code == 403, f"{url} should be 403 for a non-admin, got {resp.status_code}"
 
-    def test_guard_redirects_anonymous_user(self, mock_client):
+    def test_guard_redirects_anonymous_user(self, test_client):
         for url in ("/admin_panel/", "/admin_panel/users/", "/admin_panel/settings/", "/admin_panel/admins/"):
-            resp = mock_client.get(url)
+            resp = test_client.get(url)
             assert resp.status_code == 302, f"{url} should redirect anonymous users, got {resp.status_code}"
             assert "login" in resp.headers["Location"]
 
-    def test_guard_leaves_public_routes_untouched(self, mock_client):
+    def test_guard_leaves_public_routes_untouched(self, test_client):
         # The guard is scoped to the admin blueprint and must not leak elsewhere.
-        resp = mock_client.get("/")
+        resp = test_client.get("/")
         assert resp.status_code == 200
 
 

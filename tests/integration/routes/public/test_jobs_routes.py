@@ -78,9 +78,9 @@ def _seed_user(mock_app, username="JobUser", *, can_run_bg_jobs=False) -> int:
         return user.user_id
 
 
-def _login_user(mock_client, user_id, username="JobUser"):
+def _login_user(test_client, user_id, username="JobUser"):
     """Set session to a specific user."""
-    with mock_client.session_transaction() as sess:
+    with test_client.session_transaction() as sess:
         sess["uid"] = user_id
         sess["username"] = username
 
@@ -101,14 +101,14 @@ class TestSetup:
 class TestAllJobsList(TestSetup):
     """GET /jobs/list — public listing of all jobs."""
 
-    def test_all_jobs_list_loads(self, mock_client):
+    def test_all_jobs_list_loads(self, test_client):
         """The all-jobs page should load successfully."""
-        resp = mock_client.get("/jobs/list")
+        resp = test_client.get("/jobs/list")
         assert resp.status_code == 200
 
-    def test_all_jobs_list_empty(self, mock_client):
+    def test_all_jobs_list_empty(self, test_client):
         """With no jobs, the page should still render."""
-        resp = mock_client.get("/jobs/list")
+        resp = test_client.get("/jobs/list")
         assert resp.status_code == 200
 
 
@@ -116,22 +116,22 @@ class TestAllJobsList(TestSetup):
 class TestJobsListByType(TestSetup):
     """GET /jobs/<job_type> — jobs list filtered by type."""
 
-    def test_valid_job_type_loads(self, mock_client):
+    def test_valid_job_type_loads(self, test_client):
         """A valid job type should return 200."""
-        resp = mock_client.get(f"/jobs/{VALID_JOB_TYPE}")
+        resp = test_client.get(f"/jobs/{VALID_JOB_TYPE}")
         assert resp.status_code == 200
 
-    def test_invalid_job_type_returns_404(self, mock_client):
+    def test_invalid_job_type_returns_404(self, test_client):
         """An unknown job type should return 404."""
-        resp = mock_client.get("/jobs/nonexistent_type")
+        resp = test_client.get("/jobs/nonexistent_type")
         assert resp.status_code == 404
 
-    def test_all_valid_job_types_load(self, mock_client):
+    def test_all_valid_job_types_load(self, test_client):
         """Every registered job type should return 200."""
         from src.main_app.jobs_workers.workers_lists import jobs_data_public
 
         for job_type in jobs_data_public:
-            resp = mock_client.get(f"/jobs/{job_type}")
+            resp = test_client.get(f"/jobs/{job_type}")
             assert resp.status_code == 200, f"Job type {job_type} failed"
 
 
@@ -139,30 +139,30 @@ class TestJobsListByType(TestSetup):
 class TestJobDetail(TestSetup):
     """GET /jobs/<job_type>/<job_id> — single job detail page."""
 
-    def test_job_detail_loads(self, mock_app, mock_client):
+    def test_job_detail_loads(self, mock_app, test_client):
         """A valid job ID should load the detail page."""
         _seed_user(mock_app)
         job_id = self._seed_job(mock_app, VALID_JOB_TYPE)
-        resp = mock_client.get(f"/jobs/{VALID_JOB_TYPE}/{job_id}")
+        resp = test_client.get(f"/jobs/{VALID_JOB_TYPE}/{job_id}")
         assert resp.status_code == 200
 
-    def test_job_detail_nonexistent_redirects(self, mock_app, mock_client):
+    def test_job_detail_nonexistent_redirects(self, mock_app, test_client):
         """A non-existent job should redirect to the jobs list."""
-        resp = mock_client.get(f"/jobs/{VALID_JOB_TYPE}/99999")
+        resp = test_client.get(f"/jobs/{VALID_JOB_TYPE}/99999")
         assert resp.status_code == 302
 
-    def test_job_detail_wrong_type_redirects(self, mock_app, mock_client):
+    def test_job_detail_wrong_type_redirects(self, mock_app, test_client):
         """Looking up a job with the wrong type should redirect."""
         _seed_user(mock_app)
         job_id = self._seed_job(mock_app, VALID_JOB_TYPE)
-        resp = mock_client.get(f"/jobs/{ANOTHER_VALID_JOB_TYPE}/{job_id}")
+        resp = test_client.get(f"/jobs/{ANOTHER_VALID_JOB_TYPE}/{job_id}")
         assert resp.status_code == 302
 
-    def test_job_detail_invalid_type_returns_404_or_redirect(self, mock_app, mock_client):
+    def test_job_detail_invalid_type_returns_404_or_redirect(self, mock_app, test_client):
         """An invalid job type should return 404 or redirect."""
         _seed_user(mock_app)
         job_id = self._seed_job(mock_app, VALID_JOB_TYPE)
-        resp = mock_client.get(f"/jobs/nonexistent/{job_id}")
+        resp = test_client.get(f"/jobs/nonexistent/{job_id}")
         # The route may 404 or redirect depending on abort handler
         assert resp.status_code in (302, 404)
 
@@ -171,22 +171,22 @@ class TestJobDetail(TestSetup):
 class TestStartJob(TestSetup):
     """POST /jobs/<job_type>/start — start a new background job."""
 
-    def test_start_requires_login(self, mock_app, mock_client):
+    def test_start_requires_login(self, mock_app, test_client):
         """Unauthenticated user should be redirected."""
-        resp = mock_client.post(f"/jobs/{VALID_JOB_TYPE}/start")
+        resp = test_client.post(f"/jobs/{VALID_JOB_TYPE}/start")
         assert resp.status_code == 302
 
-    def test_start_invalid_job_type_404(self, mock_app, mock_client):
+    def test_start_invalid_job_type_404(self, mock_app, test_client):
         """Starting a job with invalid type should return 404."""
         uid = _seed_user(mock_app)
-        _login_user(mock_client, uid)
-        resp = mock_client.post("/jobs/nonexistent_type/start")
+        _login_user(test_client, uid)
+        resp = test_client.post("/jobs/nonexistent_type/start")
         assert resp.status_code == 404
 
-    def test_start_creates_job_and_redirects(self, mock_app, mock_client):
+    def test_start_creates_job_and_redirects(self, mock_app, test_client):
         """Starting a valid job should create a DB record and redirect."""
         uid = _seed_user(mock_app, can_run_bg_jobs=True)
-        _login_user(mock_client, uid)
+        _login_user(test_client, uid)
 
         with (
             patch(
@@ -198,17 +198,17 @@ class TestStartJob(TestSetup):
                 return_value=1,
             ),
         ):
-            resp = mock_client.post(
+            resp = test_client.post(
                 f"/jobs/{VALID_JOB_TYPE}/start",
                 follow_redirects=False,
             )
 
         assert resp.status_code == 302
 
-    def test_start_creates_job(self, mock_app, mock_client):
+    def test_start_creates_job(self, mock_app, test_client):
         """Starting a job with args should succeed."""
         uid = _seed_user(mock_app, can_run_bg_jobs=True)
-        _login_user(mock_client, uid)
+        _login_user(test_client, uid)
 
         with (
             patch(
@@ -220,7 +220,7 @@ class TestStartJob(TestSetup):
                 return_value=1,
             ),
         ):
-            resp = mock_client.post(
+            resp = test_client.post(
                 f"/jobs/{VALID_JOB_TYPE}/start",
                 data={"key": "value"},
                 follow_redirects=False,
@@ -228,14 +228,14 @@ class TestStartJob(TestSetup):
 
         assert resp.status_code == 302
 
-    def test_start_duplicate_job_flashes_warning(self, mock_app, mock_client, monkeypatch):
+    def test_start_duplicate_job_flashes_warning(self, mock_app, test_client, monkeypatch):
         """Starting a duplicate job should flash a warning and redirect."""
 
         mock_flash = Mock()
         # monkeypatch.setattr("src.main_app.routes.public.shared_jobs_routes.flash", mock_flash)
 
         uid = _seed_user(mock_app, can_run_bg_jobs=True)
-        _login_user(mock_client, uid)
+        _login_user(test_client, uid)
 
         with (
             patch(
@@ -251,7 +251,7 @@ class TestStartJob(TestSetup):
                 side_effect=DuplicateRecordError("A job of type 'fixref' is already active"),
             ),
         ):
-            _resp = mock_client.post(
+            _resp = test_client.post(
                 f"/jobs/{VALID_JOB_TYPE}/start",
                 follow_redirects=True,
             )
@@ -265,49 +265,49 @@ class TestStartJob(TestSetup):
 class TestCancelJob(TestSetup):
     """POST /jobs/<job_type>/<job_id>/cancel — cancel a running job."""
 
-    def test_cancel_requires_login(self, mock_app, mock_client):
+    def test_cancel_requires_login(self, mock_app, test_client):
         """Unauthenticated user should be redirected."""
         _seed_user(mock_app)
         job_id = self._seed_job(mock_app, VALID_JOB_TYPE)
-        resp = mock_client.post(f"/jobs/{VALID_JOB_TYPE}/{job_id}/cancel")
+        resp = test_client.post(f"/jobs/{VALID_JOB_TYPE}/{job_id}/cancel")
         assert resp.status_code == 302
 
-    def test_cancel_invalid_job_type_404(self, mock_app, mock_client):
+    def test_cancel_invalid_job_type_404(self, mock_app, test_client):
         """Cancelling with invalid job type should return 404."""
         uid = _seed_user(mock_app)
-        _login_user(mock_client, uid)
+        _login_user(test_client, uid)
         job_id = self._seed_job(mock_app, VALID_JOB_TYPE)
-        resp = mock_client.post(f"/jobs/nonexistent/{job_id}/cancel")
+        resp = test_client.post(f"/jobs/nonexistent/{job_id}/cancel")
         assert resp.status_code == 404
 
-    def test_cancel_nonexistent_job_redirects(self, mock_app, mock_client):
+    def test_cancel_nonexistent_job_redirects(self, mock_app, test_client):
         """Cancelling a non-existent job should redirect."""
         uid = _seed_user(mock_app)
-        _login_user(mock_client, uid)
-        resp = mock_client.post(
+        _login_user(test_client, uid)
+        resp = test_client.post(
             f"/jobs/{VALID_JOB_TYPE}/99999/cancel",
             follow_redirects=False,
         )
         assert resp.status_code == 302
 
-    def test_cancel_own_job(self, mock_app, mock_client):
+    def test_cancel_own_job(self, mock_app, test_client):
         """Job owner should be able to cancel their own job."""
         owner_uid = _seed_user(mock_app, username="Owner")
-        _login_user(mock_client, owner_uid, username="Owner")
+        _login_user(test_client, owner_uid, username="Owner")
         job_id = self._seed_job(mock_app, VALID_JOB_TYPE, username="Owner")
 
         with patch(
             "src.main_app.routes.public.shared_jobs_routes.JobCanceller.cancel",
             return_value=True,
         ):
-            resp = mock_client.post(
+            resp = test_client.post(
                 f"/jobs/{VALID_JOB_TYPE}/{job_id}/cancel",
                 follow_redirects=True,
             )
 
         assert resp.status_code == 200
 
-    def test_cancel_other_user_job_blocked(self, mock_app, mock_client, monkeypatch):
+    def test_cancel_other_user_job_blocked(self, mock_app, test_client, monkeypatch):
         """Non-owner, non-admin should not be able to cancel another user's job."""
         mock_flash = Mock()
         monkeypatch.setattr("src.main_app.routes.public.shared_jobs_routes.flash", mock_flash)
@@ -315,16 +315,16 @@ class TestCancelJob(TestSetup):
         _seed_user(mock_app, username="Owner")
         other_uid = _seed_user(mock_app, username="Other")
         job_id = self._seed_job(mock_app, VALID_JOB_TYPE, username="Owner")
-        _login_user(mock_client, other_uid, username="Other")
+        _login_user(test_client, other_uid, username="Other")
 
-        resp = mock_client.post(
+        resp = test_client.post(
             f"/jobs/{VALID_JOB_TYPE}/{job_id}/cancel",
             follow_redirects=True,
         )
         assert resp.status_code == 200
         mock_flash.assert_called_once_with("You don't have permission to cancel this job.", "danger")
 
-    def test_admin_can_cancel_any_job(self, mock_app, mock_client):
+    def test_admin_can_cancel_any_job(self, mock_app, test_client):
         """An admin (admin) should be able to cancel any job."""
         _seed_user(mock_app, username="Owner")
         admin_uid = _seed_user(mock_app, username="AdminCancel")
@@ -332,13 +332,13 @@ class TestCancelJob(TestSetup):
             AdminService().add_admin("AdminCancel")
 
         job_id = self._seed_job(mock_app, VALID_JOB_TYPE, username="Owner")
-        _login_user(mock_client, admin_uid, username="AdminCancel")
+        _login_user(test_client, admin_uid, username="AdminCancel")
 
         with patch(
             "src.main_app.routes.public.shared_jobs_routes.JobCanceller.cancel",
             return_value=True,
         ):
-            resp = mock_client.post(
+            resp = test_client.post(
                 f"/jobs/{VALID_JOB_TYPE}/{job_id}/cancel",
                 follow_redirects=True,
             )
@@ -350,24 +350,24 @@ class TestCancelJob(TestSetup):
 class TestDeleteJob(TestSetup):
     """POST /jobs/<job_type>/<job_id>/delete — delete a job."""
 
-    def test_delete_invalid_job_type_404(self, mock_app, mock_client):
+    def test_delete_invalid_job_type_404(self, mock_app, test_client):
         """Deleting with invalid job type should return 404."""
         uid = _seed_user(mock_app)
-        _login_user(mock_client, uid)
-        resp = mock_client.post("/jobs/nonexistent/1/delete")
+        _login_user(test_client, uid)
+        resp = test_client.post("/jobs/nonexistent/1/delete")
         assert resp.status_code == 404
 
-    def test_delete_own_job(self, mock_app, mock_client):
+    def test_delete_own_job(self, mock_app, test_client):
         """Job owner should be able to delete their own job."""
         owner_uid = _seed_user(mock_app, username="Owner")
-        _login_user(mock_client, owner_uid, username="Owner")
+        _login_user(test_client, owner_uid, username="Owner")
         job_id = self._seed_job(mock_app, VALID_JOB_TYPE, username="Owner")
 
         with patch(
             "src.main_app.routes.public.shared_jobs_routes.JobCanceller.cancel",
             return_value=False,
         ):
-            resp = mock_client.post(
+            resp = test_client.post(
                 f"/jobs/{VALID_JOB_TYPE}/{job_id}/delete",
                 follow_redirects=True,
             )
@@ -378,16 +378,16 @@ class TestDeleteJob(TestSetup):
             with pytest.raises(LookupError):
                 self.job_service.get_job(job_id, VALID_JOB_TYPE)
 
-    def test_delete_nonexistent_job(self, mock_app, mock_client):
+    def test_delete_nonexistent_job(self, mock_app, test_client):
         """Deleting a non-existent job should not error."""
         uid = _seed_user(mock_app)
-        _login_user(mock_client, uid)
+        _login_user(test_client, uid)
 
         with patch(
             "src.main_app.routes.public.shared_jobs_routes.JobCanceller.cancel",
             return_value=False,
         ):
-            resp = mock_client.post(
+            resp = test_client.post(
                 f"/jobs/{VALID_JOB_TYPE}/99999/delete",
                 follow_redirects=True,
             )
@@ -399,10 +399,10 @@ class TestDeleteJob(TestSetup):
 class TestJobsRouteIntegration(TestSetup):
     """End-to-end integration scenarios for job routes."""
 
-    def test_job_lifecycle_through_routes(self, mock_app, mock_client):
+    def test_job_lifecycle_through_routes(self, mock_app, test_client):
         """Full lifecycle: create -> view detail -> cancel."""
         uid = _seed_user(mock_app, username="LifecycleUser")
-        _login_user(mock_client, uid, username="LifecycleUser")
+        _login_user(test_client, uid, username="LifecycleUser")
 
         # Create job in DB
         with mock_app.app_context():
@@ -410,11 +410,11 @@ class TestJobsRouteIntegration(TestSetup):
             job_id = job.id
 
         # View detail
-        resp = mock_client.get(f"/jobs/{VALID_JOB_TYPE}/{job_id}")
+        resp = test_client.get(f"/jobs/{VALID_JOB_TYPE}/{job_id}")
         assert resp.status_code == 200
 
         # Cancel (no mock — let the real cancel_job_db update the DB)
-        resp = mock_client.post(
+        resp = test_client.post(
             f"/jobs/{VALID_JOB_TYPE}/{job_id}/cancel",
             follow_redirects=True,
         )
@@ -425,7 +425,7 @@ class TestJobsRouteIntegration(TestSetup):
         with mock_app.app_context():
             assert self.job_service.is_job_cancelled(job_id) is True
 
-    def test_multiple_jobs_listed_by_type(self, mock_app, mock_client):
+    def test_multiple_jobs_listed_by_type(self, mock_app, test_client):
         """Multiple jobs of the same type should all appear in the list."""
 
         _seed_user(mock_app)
@@ -446,11 +446,11 @@ class TestJobsRouteIntegration(TestSetup):
         assert len(all_jobs) == 3
 
     @pytest.mark.usefixtures("_unwrap_delete_job")
-    def test_delete_then_list_shows_remaining(self, mock_app, mock_client):
+    def test_delete_then_list_shows_remaining(self, mock_app, test_client):
         """After deleting one job, the list should show remaining jobs."""
 
         owner_uid = _seed_user(mock_app, username="Owner")
-        _login_user(mock_client, owner_uid, username="Owner")
+        _login_user(test_client, owner_uid, username="Owner")
 
         with mock_app.app_context():
             job1 = self.job_service.create_job(VALID_JOB_TYPE, "Owner")
@@ -464,7 +464,7 @@ class TestJobsRouteIntegration(TestSetup):
             "src.main_app.routes.public.shared_jobs_routes.JobCanceller.cancel",
             return_value=False,
         ):
-            mock_client.post(
+            test_client.post(
                 f"/jobs/{VALID_JOB_TYPE}/{job1_id}/delete",
                 follow_redirects=True,
             )
