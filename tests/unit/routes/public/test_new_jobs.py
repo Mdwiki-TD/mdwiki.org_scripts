@@ -7,10 +7,10 @@ import pytest
 
 @pytest.mark.usefixtures("mock_app")
 class TestNewJobsRoutes:
-    def test_jobs_list_requires_valid_type(self, mock_client):
-        resp = mock_client.get("/jobs/invalid_type")
+    def test_jobs_list_requires_valid_type(self, test_client):
+        resp = test_client.get("/jobs/invalid_type")
         assert resp.status_code == 404
 
-    def test_all_jobs_list_page(self, mock_client):
-        resp = mock_client.get("/jobs/list")
+    def test_all_jobs_list_page(self, test_client):
+        resp = test_client.get("/jobs/list")
         assert resp.status_code == 200

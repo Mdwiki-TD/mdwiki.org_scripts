@@ -53,8 +53,8 @@ class TestEndpointNames:
 class TestLegacyAliasBehaviour:
     """The legacy ``fixred.fixred_post`` alias must behave like the unified POST."""
 
-    def test_legacy_post_alias_requires_auth(self, mock_client):
-        resp = mock_client.post("/fixred/", data={"title": "Test"})
+    def test_legacy_post_alias_requires_auth(self, test_client):
+        resp = test_client.post("/fixred/", data={"title": "Test"})
         assert resp.status_code == 302
         assert "login" in resp.headers["Location"]
 
@@ -64,12 +64,12 @@ class TestLegacyAliasBehaviour:
         with mock_app.test_request_context():
             assert url_for("fixred.index") == url_for("fixred.fixred_post")
 
-    def test_newupdater_index_is_public(self, mock_client):
+    def test_newupdater_index_is_public(self, test_client):
         # index has no oauth_required, unlike worker/auto_save
-        resp = mock_client.get("/newupdater/")
+        resp = test_client.get("/newupdater/")
         assert resp.status_code == 200
 
-    def test_newupdater_worker_requires_auth(self, mock_client):
-        resp = mock_client.get("/newupdater/save/Some_Page")
+    def test_newupdater_worker_requires_auth(self, test_client):
+        resp = test_client.get("/newupdater/save/Some_Page")
         assert resp.status_code == 302
         assert "login" in resp.headers["Location"]
