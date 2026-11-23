@@ -15,7 +15,7 @@ import logging
 
 from ..api_services import MwClientPage
 from ..api_services.clients.wikisite_client import WikiSiteClient
-from ..config import get_settings
+from ..config import Settings, get_settings
 from ..services.auth.current_user import CurrentUser
 from .named_param import NamedParamEditor
 from .new_updater import med_updater_one
@@ -33,11 +33,13 @@ class NewUpdaterService:
     def __init__(
         self,
         named_param_editor: NamedParamEditor | None = None,
-        wiki_site_client_cls: type[WikiSiteClient] | None = None,
+        wiki_site_client: WikiSiteClient | None = None,
         mw_client_page_cls: type[MwClientPage] | None = None,
+        app_settings: Settings | None = None,
     ) -> None:
+        self.app_settings = app_settings or get_settings()
         self.named_param_editor = named_param_editor or NamedParamEditor()
-        self.wiki_site_client_cls = wiki_site_client_cls or WikiSiteClient
+        self.wiki_site_client = wiki_site_client or WikiSiteClient()
         self.mw_client_page_cls = mw_client_page_cls or MwClientPage
 
     def update_one(
@@ -55,9 +57,8 @@ class NewUpdaterService:
         if user is None:
             return UpdaterTextOutcome(status="skipped", msg="No user")
 
-        app_settings = get_settings()
-        site = self.wiki_site_client_cls.get_user_site(
-            app_settings.other.wiki_domain,
+        site = self.wiki_site_client.get_user_site(
+            self.app_settings.other.wiki_domain,
             user.to_auth_payload(),
         )
         if site is None:

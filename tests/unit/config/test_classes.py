@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from pathlib import Path
+
 import pytest
 from src.main_app.config.classes import (
     CookieConfig,
@@ -89,19 +91,21 @@ class TestPaths:
     def test_fields(self, tmp_path):
         _tmp_path = str(tmp_path)
         p = Paths(
-            log_dir=f"/{_tmp_path}/logs",
-            admin_jobs_path=f"/{_tmp_path}/jobs",
-            jobs_path=f"/{_tmp_path}/public_jobs",
+            flask_data_dir=tmp_path,
+            log_dir=tmp_path / "logs",
+            admin_jobs_path=tmp_path / "jobs",
+            jobs_path=tmp_path / "public_jobs",
         )
-        assert str(p.log_dir) == f"/{_tmp_path}/logs"
+        assert p.log_dir == tmp_path / "logs"
 
 
 class TestSettings:
     def test_fields(self):
         paths = Paths(
-            log_dir="/l",
-            admin_jobs_path="/j",
-            jobs_path="/n",
+            flask_data_dir=Path("/"),
+            log_dir=Path("/l"),
+            admin_jobs_path=Path("/j"),
+            jobs_path=Path("/n"),
         )
         cookie = CookieConfig(
             name="c",
@@ -123,11 +127,11 @@ class TestSettings:
             max_form_parts=1,
             secret_key_fallbacks=(),
         )
-        other = OtherConfig(
-            csrf_time_limit=1,
-            user_agent="t",
-            wiki_domain="w",
-            static_server="s",
+        other_config = OtherConfig(
+            user_agent="user_agent",
+            csrf_time_limit=3600,
+            static_server="static_server",
+            wiki_domain="upload.example.com",
             tool_title="tool_title",
         )
         jobs = JobsConfig(
@@ -140,7 +144,7 @@ class TestSettings:
             sessions=sessions,
             oauth=None,
             security=security,
-            other=other,
+            other=other_config,
             jobs=jobs,
         )
         assert s.oauth is None

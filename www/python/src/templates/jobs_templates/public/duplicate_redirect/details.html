@@ -15,6 +15,7 @@
     job_id=job.id,
     job_type=template_data.job_type,
     list_name="pages_processed",
+    bp_name='public_jobs',
 ) }}
 
 {% endif %}
@@ -26,6 +27,7 @@
     job_id=job.id,
     job_type=template_data.job_type,
     list_name="pages_updated",
+    bp_name='public_jobs',
 ) }}
 
 {% endif %}
@@ -37,6 +39,7 @@
     job_id=job.id,
     job_type=template_data.job_type,
     list_name="pages_failed",
+    bp_name='public_jobs',
 ) }}
 
 {% endif %}
@@ -48,6 +51,7 @@
     job_id=job.id,
     job_type=template_data.job_type,
     list_name="pages_skipped",
+    bp_name='public_jobs',
 ) }}
 
 {% endif %}
@@ -59,6 +63,7 @@
     job_id=job.id,
     job_type=template_data.job_type,
     list_name="pages_missing",
+    bp_name='public_jobs',
 ) }}
 
 {% endif %}

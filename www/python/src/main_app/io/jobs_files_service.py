@@ -115,4 +115,5 @@ def get_jobs_data_dir() -> Path:
 
 __all__ = [
     "JobFilesService",
+    "get_jobs_data_dir",
 ]

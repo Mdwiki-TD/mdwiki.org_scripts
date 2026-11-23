@@ -13,10 +13,10 @@ from .newupdater.route import NewUpdaterRoutes
 from .shared_jobs_registrar import SharedJobRoutesRegistrar
 from .views import (
     AuthView,
+    FixRedView,
     MainView,
     ProfileView,
 )
-from .views.fixred import FixRedView
 
 PUBLIC_ROUTE_MODULES: list[RouteModule] = [
     RouteModule(route_cls=MainView, name="main", url_prefix=""),

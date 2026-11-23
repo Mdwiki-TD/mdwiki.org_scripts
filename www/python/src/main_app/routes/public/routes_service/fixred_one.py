@@ -15,6 +15,7 @@ from ....app_services.fixref_shared.fixred_worker import FixRedirectWorker
 from ....app_services.fixref_shared.objects import RunState
 from ....app_services.shared_classes import UpdaterTextOutcome
 from ....config import get_settings
+from ....config.classes import Settings
 from ....services.auth.current_user import CurrentUser
 
 logger = logging.getLogger(__name__)
@@ -30,11 +31,13 @@ class FixRedOneService:
     def __init__(
         self,
         fix_redirect_worker_cls: type[FixRedirectWorker] | None = None,
-        wiki_site_client_cls: type[WikiSiteClient] | None = None,
+        wiki_site_client: WikiSiteClient | None = None,
         mw_client_page_cls: type[MwClientPage] | None = None,
+        app_settings: Settings | None = None,
     ) -> None:
+        self.app_settings = app_settings or get_settings()
         self.fix_redirect_worker_cls = fix_redirect_worker_cls or FixRedirectWorker
-        self.wiki_site_client_cls = wiki_site_client_cls or WikiSiteClient
+        self.wiki_site_client = wiki_site_client or WikiSiteClient()
         self.mw_client_page_cls = mw_client_page_cls or MwClientPage
 
     def work_on_title(
@@ -52,9 +55,8 @@ class FixRedOneService:
         if user is None:
             return UpdaterTextOutcome(status="skipped", msg="No user")
 
-        app_settings = get_settings()
-        site = self.wiki_site_client_cls.get_user_site(
-            app_settings.other.wiki_domain,
+        site = self.wiki_site_client.get_user_site(
+            self.app_settings.other.wiki_domain,
             user.to_auth_payload(),
         )
 

@@ -8,8 +8,7 @@ from .commons_client import (
     GetWithRetryData,
 )
 from .http_client import ApiRequestError, HttpClient
-from .toolforge.toolforge_api_service import ToolforgeApiService
-from .toolforge.toolforge_jobs_api_service import ToolforgeJobsService
+from .toolforge import ToolforgeApiService, ToolforgeJobsService
 from .wikisite_client import WikiSiteClient
 
 __all__ = [
