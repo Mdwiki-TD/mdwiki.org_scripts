@@ -14,7 +14,14 @@ from ..public.shared_jobs_registrar import SharedJobRoutesRegistrar
 from .admin_panel import AdminPanel
 from .admin_sidebar import create_admin_sidebar
 from .flask_admin_panel import add_admin_dashboard
-from .views import AdminView, CheckErrorLogsView, CheckErrorsView, SettingsRoutes, ToolforgeJobsView, UsersRoutes
+from .views import (
+    AdminView,
+    CheckErrorLogsView,
+    CheckErrorsView,
+    SettingsRoutes,
+    ToolforgeJobsView,
+    UsersRoutes,
+)
 
 ADMIN_ROUTE_MODULES: list[RouteModule] = [
     RouteModule(route_cls=AdminView, name="admins", url_prefix="/admins"),

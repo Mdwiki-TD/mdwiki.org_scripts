@@ -94,7 +94,7 @@ function renderCommonsLink(title, _type, _row) {
  * }} step
  * @param {string} wiki_domain
  */
-function renderStep(step, wiki_domain) {
+function renderStep(step, wiki_domain="commons.wikimedia.org") {
     if (!step) return '<span class="text-muted">-</span>';
     const title = step.msg || step.message || step.new_value || step.value || '';
     // some steps keep the revision id inside `details`
