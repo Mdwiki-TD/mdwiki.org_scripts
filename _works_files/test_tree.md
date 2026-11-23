@@ -3,44 +3,49 @@ tests/
 │
 ├── integration/
 │   │
-│   ├── admin/
-│   │   │
-│   │   ├── routes/
-│   │   │   └── test_settings_integration.py
-│   │   │
-│   │   └── test_admin_routes.py
+│   ├── database/
+│   │   └── test_connection_reuse.py
 │   │
-│   └── public/
+│   └── routes/
 │       │
-│       ├── auth/
-│       │   └── test_auth_routes.py
+│       ├── admin/
+│       │   │
+│       │   ├── views/
+│       │   │   └── test_settings_integration.py
+│       │   │
+│       │   └── test_admin_routes.py
 │       │
-│       └── test_jobs_routes.py
+│       └── public/
+│           │
+│           ├── views/
+│           │   ├── test_auth_routes.py
+│           │   └── test_main_route.py
+│           │
+│           └── test_jobs_routes.py
+│
+├── js/
+│   │
+│   └── data_table_ajax/
 │
 ├── unit/
-│   │
-│   ├── admin/
-│   │   │
-│   │   ├── routes/
-│   │   │   ├── test_admin_endpoints.py
-│   │   │   ├── test_coordinators.py
-│   │   │   └── test_settings.py
-│   │   │
-│   │   └── test_admins_required.py
 │   │
 │   ├── api_services/
 │   │   │
 │   │   ├── clients/
-│   │   │   ├── test_toolforge_api_service.py
-│   │   │   ├── test_toolforge_jobs_api_service.py
-│   │   │   ├── test_toolforge_jobs_api_service2.py
-│   │   │   └── test_wiki_client.py
+│   │   │   │
+│   │   │   ├── toolforge/
+│   │   │   │   ├── test_toolforge_api_service.py
+│   │   │   │   ├── test_toolforge_jobs_api_service.py
+│   │   │   │   ├── test_toolforge_jobs_api_service2.py
+│   │   │   │   └── test_toolforge_jobs_types.py
+│   │   │   │
+│   │   │   ├── test_category_members_api.py
+│   │   │   └── test_wikisite_client.py
 │   │   │
 │   │   ├── mwclient_page/
 │   │   │
 │   │   ├── utils/
 │   │   │
-│   │   ├── test_category.py
 │   │   ├── test_mwclient_page.py
 │   │   └── test_query_api.py
 │   │
@@ -52,37 +57,56 @@ tests/
 │   ├── core/
 │   │   │
 │   │   ├── cookies/
-│   │   │   ├── test_cookie.py
-│   │   │   └── test_cookie_header_client.py
+│   │   │   ├── test_cookie_header_client.py
+│   │   │   └── test_signing.py
 │   │   │
 │   │   ├── test_crypto.py
-│   │   └── test_jinja_filters.py
+│   │   ├── test_extensions.py
+│   │   ├── test_jinja_filters.py
+│   │   └── test_rate_limit.py
 │   │
 │   ├── database/
 │   │   │
 │   │   ├── models/
-│   │   │   ├── test_jobs.py
+│   │   │   │
+│   │   │   ├── users/
+│   │   │   │   └── test_user_token_model.py
+│   │   │   │
+│   │   │   ├── test_jobs_model.py
 │   │   │   └── test_users.py
 │   │   │
 │   │   ├── services/
+│   │   │   │
+│   │   │   ├── users/
+│   │   │   │   ├── test_admin_service.py
+│   │   │   │   ├── test_user_token_service.py
+│   │   │   │   └── test_users_service.py
 │   │   │   │
 │   │   │   ├── utils/
 │   │   │   │   ├── test_detachedinstanceerror.py
 │   │   │   │   └── test_retry_on_disconnect.py
 │   │   │   │
-│   │   │   ├── test_admin_service.py
 │   │   │   ├── test_jobs_service.py
-│   │   │   ├── test_settings_service.py
-│   │   │   ├── test_user_token_service.py
-│   │   │   └── test_users_service.py
+│   │   │   └── test_settings_service.py
 │   │   │
-│   │   ├── test_db_init.py
 │   │   └── test_exceptions.py
+│   │
+│   ├── decorators/
+│   │   ├── test_admin_decorators.py
+│   │   ├── test_admins_required.py
+│   │   └── test_auth_decorators.py
 │   │
 │   ├── io/
 │   │   └── test_jobs_files_service.py
 │   │
 │   ├── jobs_workers/
+│   │   │
+│   │   ├── admin_jobs_workers/
+│   │   │
+│   │   ├── base_worker/
+│   │   │   ├── test_base_worker.py
+│   │   │   ├── test_base_worker_object.py
+│   │   │   └── test_job_lifecycle_updates.py
 │   │   │
 │   │   ├── public_jobs_workers/
 │   │   │   │
@@ -124,50 +148,79 @@ tests/
 │   │   │   │   ├── test_import_history_objects.py
 │   │   │   │   └── test_import_history_worker.py
 │   │   │   │
+│   │   │   ├── medicine_articles/
+│   │   │   │   ├── __init__.py
+│   │   │   │   ├── test_medicine_articles_objects.py
+│   │   │   │   └── test_medicine_articles_worker.py
+│   │   │   │
 │   │   │   ├── newupdater_all/
 │   │   │   │   └── test_newupdater_all_worker.py
 │   │   │   │
-│   │   │   └── owidpopup_all/
-│   │   │       └── test_owidpopup_all_worker.py
+│   │   │   ├── owidpopup_all/
+│   │   │   │   └── test_owidpopup_all_worker.py
+│   │   │   │
+│   │   │   └── webarchive_remover/
+│   │   │       ├── __init__.py
+│   │   │       └── test_webarchive_remover.py
 │   │   │
-│   │   ├── test_base_worker.py
-│   │   ├── test_base_worker_object.py
-│   │   ├── test_job_lifecycle_updates.py
+│   │   ├── utils/
+│   │   │   └── test_utils_init.py
+│   │   │
 │   │   ├── test_jobs_worker.py
 │   │   ├── test_new_jobs_utils.py
 │   │   ├── test_shared_objects.py
 │   │   ├── test_utils.py
 │   │   └── test_workers_list.py
 │   │
-│   ├── public/
+│   ├── parsers/
 │   │   │
-│   │   ├── auth/
-│   │   │   ├── test_rate_limit.py
-│   │   │   └── test_routes.py
+│   │   └── wtp_mapping/
+│   │       │
+│   │       ├── data/
+│   │       │   └── source-1.wiki
+│   │       │
+│   │       ├── test_wtp_refs.py
+│   │       ├── test_wtp_refs_temps.py
+│   │       └── test_wtp_temps.py
+│   │
+│   ├── routes/
 │   │   │
-│   │   ├── main_routes/
-│   │   │   └── test_main_init.py
+│   │   ├── admin/
+│   │   │   │
+│   │   │   ├── views/
+│   │   │   │   ├── test_admin_endpoints.py
+│   │   │   │   └── test_settings.py
+│   │   │   │
+│   │   │   └── test_admin_sidebar.py
 │   │   │
-│   │   ├── newupdater/
-│   │   │   ├── test_newupdater_worker.py
-│   │   │   └── test_route.py
-│   │   │
-│   │   ├── utils/
-│   │   │   └── test_routes_utils.py
-│   │   │
-│   │   ├── test_fixred.py
-│   │   ├── test_legacy_endpoints.py
-│   │   ├── test_new_jobs.py
-│   │   ├── test_profile.py
-│   │   ├── test_public_init.py
-│   │   └── test_shared_jobs_routes.py
+│   │   └── public/
+│   │       │
+│   │       ├── newupdater/
+│   │       │   ├── test_newupdater_worker.py
+│   │       │   └── test_route.py
+│   │       │
+│   │       ├── routes_service/
+│   │       │   └── test_fixred_one.py
+│   │       │
+│   │       ├── utils/
+│   │       │
+│   │       ├── views/
+│   │       │   ├── test_fixred.py
+│   │       │   └── test_profile.py
+│   │       │
+│   │       ├── test_legacy_endpoints.py
+│   │       ├── test_new_jobs.py
+│   │       ├── test_public_init.py
+│   │       ├── test_routes_utils.py
+│   │       └── test_shared_jobs_routes.py
 │   │
 │   ├── services/
 │   │   │
 │   │   ├── auth/
-│   │   │   ├── test_auth_decorators.py
 │   │   │   ├── test_auth_service.py
-│   │   │   ├── test_auth_utils.py
+│   │   │   ├── test_current_user.py
+│   │   │   ├── test_current_user_resolver.py
+│   │   │   ├── test_flow.py
 │   │   │   └── test_token_manager.py
 │   │   │
 │   │   ├── fixref_shared/
@@ -233,19 +286,20 @@ tests/
 │   │   ├── utils/
 │   │   │   └── test_decode_bytes.py
 │   │   │
-│   │   ├── test_fixred_one.py
 │   │   ├── test_newupdater_service.py
 │   │   └── test_shared_classes.py
 │   │
 │   ├── templates_markups/
-│   │   └── test_admin_sidebar.py
+│   │   └── test_sidebar.py
 │   │
 │   ├── utils/
 │   │   └── test_verify.py
 │   │
 │   ├── conftest.py
-│   └── test_extensions.py
+│   ├── test_app_factory.py
+│   └── test_logging_setup.py
 │
+├── __init__.py
 ├── conftest.py
 └── README.md
 
