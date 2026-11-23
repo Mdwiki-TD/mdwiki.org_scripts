@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from flask import Blueprint
 
-from ....jobs_workers.admin_jobs_workers.workers_list import jobs_data_admins
+from ....jobs_workers.workers_lists import jobs_data_admins
 from ...models import RouteModule
 from ...public.shared_jobs_registrar import SharedJobRoutesRegistrar
 from .admins import AdminView

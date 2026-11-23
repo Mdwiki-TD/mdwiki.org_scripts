@@ -128,7 +128,7 @@ class TestJobsListByType(TestSetup):
 
     def test_all_valid_job_types_load(self, mock_client):
         """Every registered job type should return 200."""
-        from src.main_app.jobs_workers.public_jobs_workers.workers_list_public import jobs_data_public
+        from src.main_app.jobs_workers.workers_lists import jobs_data_public
 
         for job_type in jobs_data_public:
             resp = mock_client.get(f"/jobs/{job_type}")
