@@ -10,13 +10,13 @@ from ...jobs_workers.public_jobs_workers.workers_list_public import jobs_data_pu
 from ...templates_markups import NavigationBar, main_nav_list
 from ..models import RouteModule
 from .newupdater.route import NewUpdaterRoutes
+from .shared_jobs_registrar import SharedJobRoutesRegistrar
 from .views import (
     AuthView,
     MainView,
     ProfileView,
 )
 from .views.fixred import FixRedView
-from .shared_jobs_registrar import SharedJobRoutesRegistrar
 
 PUBLIC_ROUTE_MODULES: list[RouteModule] = [
     RouteModule(route_cls=MainView, name="main", url_prefix=""),
