@@ -85,6 +85,14 @@ class UsersService(CRUDService[UserRecord]):
         )
         return [x.username for x in rows]
 
+    def update_can_run_jobs(self, user_id: int, desired: bool) -> UserRecord:
+        """Toggle the can_run_jobs column for a user."""
+        return self.update_by_id(user_id, {"can_run_jobs": desired})
+
+    def update_can_run_bg_jobs(self, user_id: int, desired: bool) -> UserRecord:
+        """Toggle the can_run_bg_jobs column for a user."""
+        return self.update_by_id(user_id, {"can_run_bg_jobs": desired})
+
 
 __all__ = [
     "UsersService",
