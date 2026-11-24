@@ -1,4 +1,8 @@
-"""Utility modules for the main application."""
+"""
+Services for external API integration.
+
+Used in both admin and public blueprints.
+"""
 
 from __future__ import annotations
 
@@ -8,16 +12,17 @@ from .commons_client import (
     GetWithRetryData,
 )
 from .http_client import ApiRequestError, HttpClient
-from .toolforge import ToolforgeApiService, ToolforgeJobsService
+from .toolforge import ToolforgeApiService, ToolForgeJob, ToolforgeJobsService
 from .wikisite_client import WikiSiteClient
 
 __all__ = [
-    "CategoryMembersService",
+    "ToolForgeJob",
     "HttpClient",
+    "CategoryMembersService",
     "ApiRequestError",
+    "WikiSiteClient",
     "GetWithRetryData",
     "CommonsSession",
-    "WikiSiteClient",
     "ToolforgeApiService",
     "ToolforgeJobsService",
 ]
