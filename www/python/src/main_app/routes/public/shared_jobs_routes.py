@@ -19,6 +19,8 @@ from flask.views import MethodView
 from flask.wrappers import Response
 from flask_wtf import FlaskForm
 
+from ...config import get_settings
+
 from ...database.exceptions import DuplicateRecordError
 from ...database.services import JobsService, SettingsService
 from ...decorators import admin_required, oauth_required
@@ -39,8 +41,14 @@ class SharedJobRoutes:
         self.bp_name = bp_name
         self.job_service = JobsService()
         self.settings_service = SettingsService()
+        self.app_settings = get_settings()
 
-        self.jobs_files_service = JobFilesService(bp_name=self.bp_name)
+        if self.bp_name == "admin_panel.jobs":
+            jobs_dir = self.app_settings.paths.admin_jobs_path
+        else:
+            jobs_dir = self.app_settings.paths.jobs_path
+
+        self.jobs_files_service = JobFilesService(jobs_dir=jobs_dir)
         self.jobs_canceller = JobCanceller(
             jobs_files_service=self.jobs_files_service,
         )
