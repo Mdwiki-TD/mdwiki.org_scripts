@@ -89,7 +89,7 @@ class ToolforgeBackend(JobBackend):
     def status(self, job: JobRecord) -> dict[str, Any] | None:
         name = tf_job_name(job.job_type, job.id)
         try:
-            tf_job = self.svc.show_job(name)["job"]
+            tf_job = self.svc.show_job(name).job
         except HTTPError as exc:
             if exc.response is not None and exc.response.status_code == 404:
                 return None
