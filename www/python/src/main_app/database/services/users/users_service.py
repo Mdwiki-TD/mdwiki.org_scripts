@@ -9,9 +9,8 @@ import logging
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
-from ...exceptions import DuplicateRecordError
-
 from ...db_base import db
+from ...exceptions import DuplicateRecordError
 from ...models import UserRecord
 from ..crud_service import CRUDService
 
