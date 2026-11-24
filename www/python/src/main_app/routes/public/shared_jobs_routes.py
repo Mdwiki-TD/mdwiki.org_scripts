@@ -22,6 +22,7 @@ from flask_wtf import FlaskForm
 
 from ...config import get_settings
 from ...database.exceptions import DuplicateRecordError
+from ...database.models import JobRecord
 from ...database.services import JobsService, SettingsService
 from ...decorators import admin_required, oauth_required
 from ...io.jobs_files_service import JobFilesService
@@ -45,17 +46,6 @@ class SharedJobRoutes:
         self.jobs_canceller = JobCanceller(
             jobs_files_service=self.jobs_files_service,
         )
-
-    def can_manage_job(self, job: Any, user: Any) -> bool:
-        """Check if the current user can manage (cancel/delete) a job."""
-        if not user:
-            return False
-        if getattr(user, "is_active_admin", False):
-            return True
-        job_username = getattr(job, "username", None)
-        if job_username and job_username == user.username:
-            return True
-        return False
 
     def cancel_job_handler(self, job_id: int, job_type: str) -> str:
         """Cancel a running job."""
@@ -84,6 +74,17 @@ class SharedJobRoutes:
             flash(f"Failed to cancel job {job_id}", "danger")
 
         return "job_detail"
+
+    def can_manage_job(self, job: JobRecord, user: Any) -> bool:
+        """Check if the current user can manage (cancel/delete) a job."""
+        if not user:
+            return False
+        if getattr(user, "is_active_admin", False):
+            return True
+        job_username = job.username
+        if job_username and job_username == user.username:
+            return True
+        return False
 
     def start_job_handler(
         self,

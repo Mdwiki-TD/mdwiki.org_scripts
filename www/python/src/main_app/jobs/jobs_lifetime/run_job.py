@@ -1,4 +1,4 @@
-# src/main_app/jobs_workers/jobs_lifetime/run_job.py
+# src/main_app/jobs/jobs_lifetime/run_job.py
 """
 Entry point for running a single job by its database ID.
 
@@ -69,7 +69,9 @@ def run_job_by_id(job_id: int) -> int:
         return 3
 
     payload = json.loads(job.payload) if job.payload else {}
-    svc.update_job_status(job_id, "running", job_type=job.job_type)
+
+    # BaseObjectsJobWorker.before_run will update_job_status
+    # svc.update_job_status(job_id, "running", job_type=job.job_type)
 
     cancel_event = DbCancelEvent(job_id)
     signal.signal(signal.SIGTERM, lambda *_: cancel_event.set())
@@ -80,6 +82,7 @@ def run_job_by_id(job_id: int) -> int:
         cancel_event=cancel_event,
         args=payload.get("args") or {},
         form_data=payload.get("form_data"),
+        job_type=job.job_type,
         job_for_admin=job_data.job_for_admin,
     )
 
