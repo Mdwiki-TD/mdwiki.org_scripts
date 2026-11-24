@@ -152,9 +152,9 @@ class OtherConfig:
             "USER_AGENT",
             "mytool/1.0 (https://mytool.toolforge.org; tools.mytool@toolforge.org)",
         )
-        wiki_domain = os.getenv("WIKI_DOMAIN") or "mdwiki.org"
+        wiki_domain = os.getenv("WIKI_DOMAIN") or "commons.wikimedia.org"
 
-        tool_title = os.getenv("TOOL_TITLE") or "Mdwiki.org Tools"
+        tool_title = os.getenv("TOOL_TITLE") or "Copy SVG Translations"
 
         return OtherConfig(
             csrf_time_limit=csrf_time_limit,
@@ -234,8 +234,8 @@ class Paths:
         return Paths(
             flask_data_dir=flask_data_dir,
             log_dir=flask_data_dir / "logs",
-            jobs_path=flask_data_dir / "public_jobs",
-            admin_jobs_path=flask_data_dir / "jobs",
+            jobs_path=flask_data_dir / "public_jobs",  # svg_jobs
+            admin_jobs_path=flask_data_dir / "admin_jobs",  # svg_jobs
         )
 
     def all_paths(self) -> list[Path]:
@@ -300,7 +300,7 @@ class SecurityConfig:
         secret_key_fallbacks_str = os.getenv("SECRET_KEY_FALLBACKS", "")
         secret_key_fallbacks = tuple(key.strip() for key in secret_key_fallbacks_str.split(",") if key.strip())
 
-        secret_salt = os.getenv("SECRET_SALT", "mdwiki")
+        secret_salt = os.getenv("SECRET_SALT", "svg-translate")
 
         security_config = SecurityConfig(
             salt=secret_salt,
