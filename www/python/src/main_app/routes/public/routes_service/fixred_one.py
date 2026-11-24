@@ -9,7 +9,7 @@ from __future__ import annotations
 
 import logging
 
-from ....api_services import MwClientPage
+from ....api_services import MediaWikiQueryService, MwClientPage
 from ....api_services.clients.wikisite_client import WikiSiteClient
 from ....app_services.fixref_shared.fixred_worker import FixRedirectWorker
 from ....app_services.fixref_shared.objects import RunState
@@ -59,6 +59,8 @@ class FixRedOneService:
             self.app_settings.other.wiki_domain,
             user.to_auth_payload(),
         )
+        if not site:
+            return UpdaterTextOutcome(status="skipped", msg="No site")
 
         page = self.mw_client_page_cls(title, site)
         old_text = page.get_text()
@@ -67,7 +69,10 @@ class FixRedOneService:
             return UpdaterTextOutcome(status="notext", old_text=old_text)
 
         state = RunState()
-        worker = self.fix_redirect_worker_cls(site=site)
+
+        query_service = MediaWikiQueryService(site=site)
+        worker = self.fix_redirect_worker_cls(query_service=query_service)
+
         try:
             new_text = worker.work_on_text(title, old_text, state)
         except Exception:

@@ -9,7 +9,7 @@ from __future__ import annotations
 import logging
 
 from ....api_services import MwClientPage
-from ....app_services.fixref_shared.fixred_worker import work_on_text
+from ....app_services.fixref_shared.fixred_worker import FixRedirectWorker
 from ....app_services.fixref_shared.objects import RunState
 from ...base_worker import BaseObjectsJobWorker, JobsRunner
 from ...shared_objects import SharedworkerObject, UpdaterOutcome
@@ -86,6 +86,10 @@ class FixRedAllWorker(BaseObjectsJobWorker[SharedworkerObject]):
 
     def _process_one(self, info: UpdaterOutcome, state: RunState) -> UpdaterOutcome:
         title = info.title
+        if not self.site:
+            info.status = "failed"
+            info.msg = "Site is not available"
+            return info
 
         page = MwClientPage(title, self.site)
         if not page.exists():
@@ -124,7 +128,8 @@ class FixRedAllWorker(BaseObjectsJobWorker[SharedworkerObject]):
         return info
 
     def _make_new_text(self, title: str, state: RunState, text: str) -> tuple[str, str]:
-        new_text = work_on_text(title, text, self.site, state)
+        redirect_fixer = FixRedirectWorker(self.site)  # pyright: ignore[reportArgumentType]
+        new_text = redirect_fixer.work_on_text(title, text, state)
         summary = "Fix redirects"
         return new_text, summary
 
