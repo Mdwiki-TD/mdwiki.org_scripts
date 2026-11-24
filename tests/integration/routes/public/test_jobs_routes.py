@@ -68,7 +68,7 @@ def _seed_user(mock_app, username="JobUser", *, can_run_bg_jobs=False) -> int:
         assert user is not None
 
         if can_run_bg_jobs:
-            UsersService().toggle_can_run_bg_jobs(user.user_id, True)
+            UsersService().update_by_id(user.user_id, {"can_run_bg_jobs": True})
 
         UserTokenService().upsert_user_token(
             user_id=user.user_id,
