@@ -1,4 +1,7 @@
-"""Worker module for managing background jobs."""
+# src/main_app/jobs_workers/jobs_lifetime/jobs_starter.py
+"""
+Worker module for managing background jobs.
+"""
 
 from __future__ import annotations
 
@@ -106,10 +109,11 @@ class JobStarter:
             "user": {},
         }
 
+        self.jobs_service.save_payload(job.id, backend_name, payload)
+
+        # update payload with user info for thread backend after payload is saved to DB
         if backend_name == "thread":
             payload["user"] = auth_payload or {}
-
-        self.jobs_service.save_payload(job.id, backend_name, payload)
 
         backend = self.backend_registry.get_backend(backend_name)
         backend.start(job, job_data, payload)
@@ -123,7 +127,7 @@ class JobStarter:
 
         return job.id
 
-    def submit_form(
+    def start(
         self,
         auth_payload: dict[str, Any] | None,
         job_type: str,
@@ -142,23 +146,6 @@ class JobStarter:
             flask_app=flask_app,
         )
 
-    def start(
-        self,
-        auth_payload: dict[str, Any] | None,
-        job_type: str,
-        args: dict[str, Any] | None = None,
-        app: Flask | None = None,
-    ) -> int:
-        """Start a background job as a daemon thread."""
-        flask_app = app or current_app._get_current_object()  # type: ignore[attr-defined]
-        return self._start_impl(
-            auth_payload,
-            job_type,
-            args,
-            daemon=True,
-            flask_app=flask_app,
-        )
-
     def start_cli(
         self,
         auth_payload: dict[str, Any] | None,
@@ -172,6 +159,7 @@ class JobStarter:
             auth_payload,
             job_type,
             args,
+            daemon=False,
             flask_app=flask_app,
         )
 
