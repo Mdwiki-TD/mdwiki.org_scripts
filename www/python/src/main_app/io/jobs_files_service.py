@@ -31,8 +31,8 @@ class JobFilesService:
         bp_name: str | None = None,
     ) -> None:
         self.settings = settings or get_settings()
-        self.jobs_dir = base_dir or self._load_jobs_dir()
         self.bp_name = bp_name or "admin_panel.jobs"
+        self.jobs_dir = base_dir or self._load_jobs_dir()
 
     def _load_jobs_dir(self) -> Path:
         """Resolve and cache the jobs data directory."""
