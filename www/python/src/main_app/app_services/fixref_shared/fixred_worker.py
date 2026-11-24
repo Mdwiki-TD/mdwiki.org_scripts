@@ -9,7 +9,6 @@ from __future__ import annotations
 import logging
 
 import wikitextparser as wtp
-from mwclient.client import Site
 
 from ...api_services.query_api import MediaWikiQueryService
 from ..replace_wikilink import WikilinkReplacer
@@ -27,14 +26,9 @@ class FixRedirectWorker:
 
     def __init__(
         self,
-        query_service: MediaWikiQueryService | None = None,
-        site: Site | None = None,
+        query_service: MediaWikiQueryService,
     ) -> None:
-        # Accept either a pre-built query_service or a raw site
-        if query_service is not None and site is None:
-            raise ValueError("Either query_service or site must be provided")
-
-        self.query_service = query_service or MediaWikiQueryService(site=site)
+        self.query_service = query_service
 
     @staticmethod
     def _replace_links(text: str, oldlink: str, newlink: str) -> str:
@@ -84,6 +78,7 @@ class FixRedirectWorker:
 
         newtext = self.replace_in_text(text, new_targets)
         return newtext
+
 
 __all__ = [
     "FixRedirectWorker",
