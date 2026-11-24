@@ -9,12 +9,13 @@ from __future__ import annotations
 
 import logging
 
-from ....api_services import MwClientPage
+from ....api_services import MediaWikiQueryService, MwClientPage
 from ....api_services.clients.wikisite_client import WikiSiteClient
 from ....app_services.fixref_shared.fixred_worker import FixRedirectWorker
 from ....app_services.fixref_shared.objects import RunState
 from ....app_services.shared_classes import UpdaterTextOutcome
 from ....config import get_settings
+from ....config.classes import Settings
 from ....services.auth.current_user import CurrentUser
 
 logger = logging.getLogger(__name__)
@@ -30,11 +31,13 @@ class FixRedOneService:
     def __init__(
         self,
         fix_redirect_worker_cls: type[FixRedirectWorker] | None = None,
-        wiki_site_client_cls: type[WikiSiteClient] | None = None,
+        wiki_site_client: WikiSiteClient | None = None,
         mw_client_page_cls: type[MwClientPage] | None = None,
+        app_settings: Settings | None = None,
     ) -> None:
+        self.app_settings = app_settings or get_settings()
         self.fix_redirect_worker_cls = fix_redirect_worker_cls or FixRedirectWorker
-        self.wiki_site_client_cls = wiki_site_client_cls or WikiSiteClient
+        self.wiki_site_client = wiki_site_client or WikiSiteClient()
         self.mw_client_page_cls = mw_client_page_cls or MwClientPage
 
     def work_on_title(
@@ -52,11 +55,12 @@ class FixRedOneService:
         if user is None:
             return UpdaterTextOutcome(status="skipped", msg="No user")
 
-        app_settings = get_settings()
-        site = self.wiki_site_client_cls.get_user_site(
-            app_settings.other.wiki_domain,
+        site = self.wiki_site_client.get_user_site(
+            self.app_settings.other.wiki_domain,
             user.to_auth_payload(),
         )
+        if not site:
+            return UpdaterTextOutcome(status="skipped", msg="No site")
 
         page = self.mw_client_page_cls(title, site)
         old_text = page.get_text()
@@ -65,7 +69,10 @@ class FixRedOneService:
             return UpdaterTextOutcome(status="notext", old_text=old_text)
 
         state = RunState()
-        worker = self.fix_redirect_worker_cls(site=site)
+
+        query_service = MediaWikiQueryService(site=site)
+        worker = self.fix_redirect_worker_cls(query_service=query_service)
+
         try:
             new_text = worker.work_on_text(title, old_text, state)
         except Exception:

@@ -25,13 +25,11 @@ COMMONS_API_ENDPOINT = "https://commons.wikimedia.org/w/api.php"
 class CommonsSession:
     def __init__(
         self,
-        session: requests.Session | None = None,
-        user_agent: str | None = None,
         timeout: int = 60,
         http_client: HttpClient | None = None,
     ) -> None:
         self.timeout = timeout
-        self.http_client = http_client or HttpClient(use_session=True)
+        self.http_client = http_client or HttpClient(use_session=True, default_timeout=self.timeout)
 
     def get(self, params: dict[str, Any]) -> dict[str, Any]:
         try:
@@ -75,7 +73,6 @@ class CommonsSession:
             url=url,
             params=params,
             data=data,
-            timeout=self.timeout,
             allow_redirects=True,
         )
         return response
@@ -157,17 +154,6 @@ class CommonsSession:
             wait_time=wait_time,
             attempts=attempts,
         )
-
-    def get_with_retry(
-        self,
-        url: str,
-        max_attempts: int = 5,
-    ) -> requests.Response | None:
-        """
-        Get a URL with retry logic for handling rate limiting and network errors.
-        """
-        result = self.get_with_retry_obj(url, max_attempts)
-        return result.content if result.success else None
 
 
 __all__ = [

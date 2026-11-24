@@ -1,0 +1,10 @@
+# sed -i 's/\r$//' ~/shs/*.sh && chmod +x ~/shs/*.sh
+# sed -i 's/\r$//' ~/jobs/*.sh && chmod +x ~/jobs/*.sh
+
+# ===== Weekly jobs =====
+
+- name: purge-error-logs
+  command: "flask --app $HOME/www/python/src/app.py error-logs purge"
+  schedule: "0 3 * * 0"
+  image: python3.13
+  emails: none

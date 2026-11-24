@@ -13,8 +13,7 @@ from flask_sqlalchemy import SQLAlchemy
 from .cli import CliFactory
 from .config import Config, ConfigLoader, get_settings
 from .core import CookieHeaderClient, csrf_init_app, filters, init_rate_limiter, migrate
-from .database import DatabaseBuilder
-from .database import db as _db
+from .database import DatabaseBuilder, db
 from .routes import RequestContextHelper, RoutesFactory
 
 logger = logging.getLogger(__name__)
@@ -24,9 +23,9 @@ class AppFactory:
     """Builds and configures the Flask application."""
 
     @staticmethod
-    def init_app_and_db(app, db: SQLAlchemy) -> bool:
-        db.init_app(app)
-        return DatabaseBuilder.build(db, app)
+    def init_app_and_db(app, _db: SQLAlchemy) -> bool:
+        _db.init_app(app)
+        return DatabaseBuilder.build(_db, app)
 
     @classmethod
     def create(cls, config_class: type[Config] | None = None) -> Flask:
@@ -48,19 +47,19 @@ class AppFactory:
         db_is_ok = True
         # Initialize Flask-SQLAlchemy and Flask-Migrate
         if app.config.get("SQLALCHEMY_DATABASE_URI"):
-            migrate.init_app(app, _db)
-            db_is_ok = cls.init_app_and_db(app, _db)
+            migrate.init_app(app, db)
+            db_is_ok = cls.init_app_and_db(app, db)
 
         RoutesFactory.register_error_handlers(app)
         init_rate_limiter(app)
         if db_is_ok:
-            RoutesFactory.register(app, _db)
+            RoutesFactory.register(app, db)
         else:
             app.before_request(cls.db_error_fallback)
         return app
 
     @staticmethod
-    def _init_extensions(app: Flask):
+    def _init_extensions(app: Flask) -> None:
         # Initialize CSRF protection
         csrf_init_app(app)
         CliFactory.register(app)

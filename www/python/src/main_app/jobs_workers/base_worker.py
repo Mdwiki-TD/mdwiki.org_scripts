@@ -12,7 +12,7 @@ from mwclient.client import Site
 from sqlalchemy.orm.exc import StaleDataError
 
 from ..api_services import WikiSiteClient
-from ..config import get_settings
+from ..config import Settings, get_settings
 from ..database.services import JobsService
 from ..io.jobs_files_service import JobFilesService
 from .objects import DbCancelEvent, JobsRunner
@@ -51,28 +51,40 @@ class BaseObjectsJobWorker[TResult: SharedworkerObject](ABC):
     def __init__(
         self,
         data: JobsRunner,
+        *,
+        wikisite_client: WikiSiteClient | None = None,
+        jobs_service: JobsService | None = None,
+        jobs_files_service: JobFilesService | None = None,
+        app_settings: Settings | None = None,
     ) -> None:
+        self.wikisite_client = wikisite_client or WikiSiteClient()
+        self.jobs_service = jobs_service or JobsService()
+        self.app_settings = app_settings or get_settings()
+
+        if data.job_for_admin:
+            jobs_dir = self.app_settings.paths.admin_jobs_path
+        else:
+            jobs_dir = self.app_settings.paths.jobs_path
+
+        self.jobs_files_service = jobs_files_service or JobFilesService(jobs_dir=jobs_dir)
+
         self.job_id: Final[int] = data.job_id
         self.args: dict[str, Any] = data.args or {}
 
         self.user: Final[dict[str, Any]] = data.user
         self.cancel_event: Final[DbCancelEvent | threading.Event | None] = data.cancel_event
-        self.job_type: str = self.JOB_TYPE
         self._status: str = "pending"
 
-        self.result_file: str = generate_result_file_name(data.job_id, self.job_type)
+        self.result_file: str = generate_result_file_name(data.job_id, self.JOB_TYPE)
         self.result_file_cancelled: str = f"{self.result_file}.cancelled"
 
         self._edit_count: int = 0
         self.site: Site | None = None
-        self.jobs_service = JobsService()
-        self.wikisite_client = WikiSiteClient()
 
-        self.app_settings = get_settings()
         self.wiki_domain = self.app_settings.other.wiki_domain
 
         self.result: TResult = self.create_result()
-        self.jobs_files_service = JobFilesService()
+        self.job_type = self.JOB_TYPE
 
     @abstractmethod
     def create_result(self) -> TResult:
@@ -102,7 +114,7 @@ class BaseObjectsJobWorker[TResult: SharedworkerObject](ABC):
                 self.job_id,
                 "running",
                 self.result_file,
-                job_type=self.job_type,
+                job_type=self.JOB_TYPE,
             )
             self.result.status = "running"
             self.save_progress()
@@ -139,7 +151,7 @@ class BaseObjectsJobWorker[TResult: SharedworkerObject](ABC):
                 self.job_id,
                 final_status,
                 self.result_file,
-                job_type=self.job_type,
+                job_type=self.JOB_TYPE,
             )
             return True
         except (StaleDataError, LookupError) as exc:

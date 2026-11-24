@@ -8,10 +8,48 @@ from flask import Blueprint, Flask
 from flask_sqlalchemy import SQLAlchemy
 
 from ...decorators.admin_decorators import admin_guard
+from ...jobs_workers.workers_lists import jobs_data_admins
+from ..objects import RouteModule
+from ..public.shared_jobs_registrar import SharedJobRoutesRegistrar
 from .admin_panel import AdminPanel
 from .admin_sidebar import create_admin_sidebar
 from .flask_admin_panel import add_admin_dashboard
-from .views import AdminSubRoutesRegister
+from .views import (
+    AdminView,
+    CheckErrorLogsView,
+    CheckErrorsView,
+    SettingsRoutes,
+    ToolforgeJobsView,
+    UsersRoutes,
+)
+
+ADMIN_ROUTE_MODULES: list[RouteModule] = [
+    RouteModule(route_cls=AdminView, name="admins", url_prefix="/admins"),
+    RouteModule(route_cls=UsersRoutes, name="users", url_prefix="/users"),
+    RouteModule(route_cls=SettingsRoutes, name="settings", url_prefix="/settings"),
+    RouteModule(
+        route_cls=SharedJobRoutesRegistrar,
+        name="jobs",
+        url_prefix="/jobs",
+        extra_kwargs={
+            "jobs_data_infos": jobs_data_admins,
+            "bp_name": "admin_panel.jobs",
+        },
+    ),
+    RouteModule(route_cls=CheckErrorsView, name="errors", url_prefix="/errors"),
+    RouteModule(route_cls=CheckErrorLogsView, name="error_logs", url_prefix="/error-logs"),
+    RouteModule(route_cls=ToolforgeJobsView, name="tfj", url_prefix="/tfj"),
+]
+
+
+class AdminSubRoutesRegister:
+    @staticmethod
+    def register(bp_admin: Blueprint) -> None:
+        for module in ADMIN_ROUTE_MODULES:
+            bp = Blueprint(module.name, __name__, url_prefix=module.url_prefix)
+            instance = module.route_cls()
+            instance.register(bp, **module.extra_kwargs)
+            bp_admin.register_blueprint(bp)
 
 
 class AdminsRouteRegister:

@@ -29,3 +29,4 @@ www/python/src/main_app/jobs_workers/_shared_objects.py
 **/__pycache__/**
 .claude/skills/flask-methodview-refactoring/SKILL.md
 state/**
+/MagicMock

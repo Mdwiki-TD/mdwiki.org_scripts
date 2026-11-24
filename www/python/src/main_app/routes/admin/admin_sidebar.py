@@ -9,7 +9,7 @@ from ...templates_markups.sidebar import Sidebar, SidebarGroup, SidebarItem
 logger = logging.getLogger(__name__)
 
 
-def load_admin_tools() -> list[SidebarGroup]:
+def _load_admin_tools() -> list[SidebarGroup]:
     """Build the static sidebar menu structure.
 
     No Flask request/app context is touched here — URLs are resolved lazily
@@ -122,7 +122,7 @@ def create_admin_sidebar(
 
     This is the public entry point used by the Jinja template.
     """
-    main_menu = list_items or load_admin_tools()
+    main_menu = list_items or _load_admin_tools()
     sidebar = Sidebar(main_menu)
     return sidebar.render(path, is_admin=is_admin)
 

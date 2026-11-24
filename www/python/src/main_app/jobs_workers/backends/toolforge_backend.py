@@ -10,7 +10,7 @@ from typing import Any
 from requests import HTTPError
 
 from ...api_services.clients.toolforge import ToolforgeJobsService
-from ...config import get_settings
+from ...config import Settings, get_settings
 from ...database.models import JobRecord
 from ..objects import JobData
 from .base import JobBackend
@@ -30,12 +30,21 @@ def tf_job_name(job_type: str, job_id: int) -> str:
 class ToolforgeBackend(JobBackend):
     """Runs jobs as one-off Kubernetes pods via the Toolforge Jobs API."""
 
-    def __init__(self, svc: ToolforgeJobsService | None = None) -> None:
+    def __init__(
+        self,
+        svc: ToolforgeJobsService | None = None,
+        app_settings: Settings | None = None,
+    ) -> None:
+        self.app_settings = app_settings or get_settings()
         self.svc = svc or ToolforgeJobsService()
 
-    def start(self, job: JobRecord, job_data: JobData, payload: dict[str, Any]) -> str:
-        app_settings = get_settings()
-        jobs_cfg = app_settings.jobs
+    def start(
+        self,
+        job: JobRecord,
+        job_data: JobData,
+        payload: dict[str, Any],
+    ) -> str:
+        jobs_cfg = self.app_settings.jobs
 
         name = tf_job_name(job.job_type, job.id)
         image = job_data.image or jobs_cfg.toolforge_job_image
@@ -80,18 +89,16 @@ class ToolforgeBackend(JobBackend):
     def status(self, job: JobRecord) -> dict[str, Any] | None:
         name = tf_job_name(job.job_type, job.id)
         try:
-            tf_job = self.svc.show_job(name)["job"]
+            tf_job = self.svc.show_job(name).job
         except HTTPError as exc:
             if exc.response is not None and exc.response.status_code == 404:
                 return None
             raise
-        status = tf_job.get("status", {})
-        return {
-            "short": status.get("short", "unknown"),
-            "duration": status.get("duration"),
-            "messages": status.get("messages", []),
-            "detail": tf_job.get("status_long"),
-        }
+
+        if not tf_job:
+            raise Exception(f"Toolforge job {name} does not exist")
+
+        return tf_job.live_status()
 
     def logs(self, job: JobRecord, tail: int = 200) -> str:
         name = tf_job_name(job.job_type, job.id)

@@ -4,7 +4,6 @@ from __future__ import annotations
 
 from src.main_app.app_services.fixref_shared.fixred_worker import (
     FixRedirectWorker,
-    replace_in_text,
 )
 
 
@@ -91,16 +90,16 @@ class TestReplaceLinks:
 class TestReplaceInText:
     def test_basic_replacement(self):
         text = "see [[Old]] page"
-        result = replace_in_text(text, {"Old": "New"})
+        result = FixRedirectWorker.replace_in_text(text, {"Old": "New"})
         assert "[[New|Old]]" in result
 
     def test_multiple_targets(self):
         text = "[[A]] and [[B]]"
-        result = replace_in_text(text, {"A": "X", "B": "Y"})
+        result = FixRedirectWorker.replace_in_text(text, {"A": "X", "B": "Y"})
         assert "[[X|A]]" in result
         assert "[[Y|B]]" in result
 
     def test_no_targets(self):
         text = "no changes"
-        result = replace_in_text(text, {})
+        result = FixRedirectWorker.replace_in_text(text, {})
         assert result == text

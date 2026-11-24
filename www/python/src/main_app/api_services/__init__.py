@@ -10,8 +10,8 @@ from .query_api import MediaWikiQueryService
 
 __all__ = [
     "CategoryMembersService",
+    "MediaWikiQueryService",
     "WikiSiteClient",
     "CommonsSession",
     "MwClientPage",
-    "MediaWikiQueryService",
 ]
