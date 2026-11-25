@@ -15,7 +15,7 @@ from mwclient.client import Site
 from mwclient.page import Page
 
 from ....api_services import MediaWikiQueryService, MwClientPage
-from ...base_worker import BaseObjectsJobWorker, JobsRunner
+from ....jobs.base_worker import BaseObjectsJobWorker, JobsRunner
 from .add_rtt import count_r_rows, inject_r_column_into_tables
 from .objects import AddRColumnWorkerObject
 from .utils import fix_title

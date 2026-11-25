@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from src.main_app.jobs_workers.objects import JobsRunner
+from src.main_app.jobs.objects import JobsRunner
 from src.main_app.jobs_workers.public_jobs_workers.add_unlinkedwikibase.worker import (
     AddUnlinkedWikibaseWorker,
 )
@@ -14,7 +14,7 @@ class TestAddUnlinkedWikibaseWorker:
         assert worker.JOB_TYPE == "add_unlinkedwikibase"
 
     def test_result_is_shared_worker_object(self):
-        from src.main_app.jobs_workers.shared_objects import SharedworkerObject
+        from src.main_app.jobs.shared_objects import SharedworkerObject
 
         worker = AddUnlinkedWikibaseWorker(JobsRunner(job_id=1, args={}, user=None))
         assert isinstance(worker.result, SharedworkerObject)

@@ -126,7 +126,7 @@ class SharedworkerObject(WorkerMapping):
 
 __all__ = [
     "OneStep",
-    "Summary",
     "UpdaterOutcome",
     "SharedworkerObject",
+    "Summary",
 ]

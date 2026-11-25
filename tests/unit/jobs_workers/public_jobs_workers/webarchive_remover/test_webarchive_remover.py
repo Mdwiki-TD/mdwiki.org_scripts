@@ -2,14 +2,14 @@
 
 from __future__ import annotations
 
-from src.main_app.jobs_workers.objects import JobsRunner
+from src.main_app.jobs.objects import JobsRunner
+from src.main_app.jobs.shared_objects import SharedworkerObject
 from src.main_app.jobs_workers.public_jobs_workers.webarchive_remover.text_changer import (
     ArchiveUrl,
     WebarchiveRemover,
     remove_webarchive,
 )
 from src.main_app.jobs_workers.public_jobs_workers.webarchive_remover.worker import WebarchiveRemoverWorker
-from src.main_app.jobs_workers.shared_objects import SharedworkerObject
 
 # ======================================================================
 # Text transformation tests (pure function, no network)

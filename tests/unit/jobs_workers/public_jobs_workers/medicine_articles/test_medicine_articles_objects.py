@@ -2,12 +2,12 @@
 
 from __future__ import annotations
 
+from src.main_app.jobs.shared_objects import WorkerMapping
 from src.main_app.jobs_workers.public_jobs_workers.medicine_articles.objects import (
     LangCount,
     MedicineArticlesSummary,
     MedicineArticlesWorkerObject,
 )
-from src.main_app.jobs_workers.shared_objects import WorkerMapping
 
 
 class TestLangCount:

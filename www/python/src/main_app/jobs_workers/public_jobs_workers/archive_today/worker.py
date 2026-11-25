@@ -9,8 +9,8 @@ from __future__ import annotations
 import logging
 
 from ....api_services import MwClientPage
-from ...base_worker import BaseObjectsJobWorker, JobsRunner
-from ...shared_objects import SharedworkerObject, UpdaterOutcome
+from ....jobs.base_worker import BaseObjectsJobWorker, JobsRunner
+from ....jobs.shared_objects import SharedworkerObject, UpdaterOutcome
 from .removers import ArchiveTodayRemover, Cs2ArchiveTodayRemover
 
 logger = logging.getLogger(__name__)

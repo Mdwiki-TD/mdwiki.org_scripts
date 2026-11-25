@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from unittest.mock import MagicMock, patch
 
-from src.main_app.jobs_workers.objects import JobsRunner
+from src.main_app.jobs.objects import JobsRunner
 from src.main_app.jobs_workers.public_jobs_workers.newupdater_all.worker import NewUpdaterAllWorker
 
 
@@ -14,7 +14,7 @@ class TestNewUpdaterAllWorker:
         assert worker.JOB_TYPE == "newupdater_all"
 
     def test_result_type(self):
-        from src.main_app.jobs_workers.shared_objects import SharedworkerObject
+        from src.main_app.jobs.shared_objects import SharedworkerObject
 
         worker = NewUpdaterAllWorker(JobsRunner(job_id=1, args={}, user=None))
         assert isinstance(worker.result, SharedworkerObject)
@@ -39,7 +39,7 @@ class TestNewUpdaterAllWorker:
 
     def test_process_success(self):
         with (
-            patch("src.main_app.jobs_workers.base_worker.WikiSiteClient.get_user_site") as mock_get_site,
+            patch("src.main_app.jobs.base_worker.WikiSiteClient.get_user_site") as mock_get_site,
             patch(
                 "src.main_app.jobs_workers.public_jobs_workers.newupdater_all.worker.CategoryMembersService.get_category_members"
             ) as mock_get_members,

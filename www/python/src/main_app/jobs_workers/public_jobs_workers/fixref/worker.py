@@ -12,8 +12,8 @@ from datetime import datetime
 
 from ....api_services import CategoryMembersService, MwClientPage
 from ....app_services.fixref_shared.fixref_text_new import FixRefTextService
-from ...base_worker import BaseObjectsJobWorker, JobsRunner
-from ...shared_objects import SharedworkerObject, UpdaterOutcome
+from ....jobs.base_worker import BaseObjectsJobWorker, JobsRunner
+from ....jobs.shared_objects import SharedworkerObject, UpdaterOutcome
 
 logger = logging.getLogger(__name__)
 

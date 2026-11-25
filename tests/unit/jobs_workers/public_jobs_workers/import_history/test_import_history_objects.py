@@ -2,10 +2,10 @@
 
 from __future__ import annotations
 
+from src.main_app.jobs.shared_objects import UpdaterOutcome, WorkerMapping
 from src.main_app.jobs_workers.public_jobs_workers.import_history.objects import (
     ImportHistoryWorkerObject,
 )
-from src.main_app.jobs_workers.shared_objects import UpdaterOutcome, WorkerMapping
 
 
 class TestUpdaterOutcome:

@@ -11,8 +11,8 @@ import logging
 import wikitextparser as wtp
 
 from ....api_services import CategoryMembersService, MediaWikiQueryService, MwClientPage
-from ...base_worker import BaseObjectsJobWorker, JobsRunner
-from ...shared_objects import SharedworkerObject, UpdaterOutcome
+from ....jobs.base_worker import BaseObjectsJobWorker, JobsRunner
+from ....jobs.shared_objects import SharedworkerObject, UpdaterOutcome
 
 logger = logging.getLogger(__name__)
 

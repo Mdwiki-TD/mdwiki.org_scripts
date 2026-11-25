@@ -5,7 +5,7 @@ from __future__ import annotations
 import logging
 from dataclasses import dataclass, field, fields
 
-from ...shared_objects import SharedworkerObject
+from ....jobs.shared_objects import SharedworkerObject
 
 logger = logging.getLogger(__name__)
 

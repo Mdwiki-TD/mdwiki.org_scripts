@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from src.main_app.jobs_workers.objects import JobsRunner
+from src.main_app.jobs.objects import JobsRunner
 from src.main_app.jobs_workers.public_jobs_workers.fixref.worker import FixRefWorker
 
 
@@ -12,7 +12,7 @@ class TestFixRefWorker:
         assert worker.JOB_TYPE == "fixref"
 
     def test_result_type(self):
-        from src.main_app.jobs_workers.shared_objects import SharedworkerObject
+        from src.main_app.jobs.shared_objects import SharedworkerObject
 
         worker = FixRefWorker(JobsRunner(job_id=1, args={"titles": ["Test"]}, user=None))
         assert isinstance(worker.result, SharedworkerObject)

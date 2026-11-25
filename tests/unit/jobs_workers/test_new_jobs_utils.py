@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from src.main_app.jobs_workers.utils import generate_result_file_name
+from src.main_app.jobs.utils import generate_result_file_name
 
 
 class TestGenerateResultFileName:
