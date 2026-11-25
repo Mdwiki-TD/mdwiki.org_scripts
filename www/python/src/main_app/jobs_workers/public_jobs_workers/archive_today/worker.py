@@ -41,7 +41,9 @@ class ArchiveTodayWorker(BaseObjectsJobWorker[SharedworkerObject]):
         if not self._check_site():
             return self.result
 
-        assert self.site is not None
+        if self.site is None:
+            raise ValueError("site is None")
+
         titles = list(
             self.site.allpages(
                 start="!",

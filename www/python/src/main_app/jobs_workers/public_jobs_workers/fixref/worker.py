@@ -106,7 +106,10 @@ class FixRefWorker(BaseObjectsJobWorker[SharedworkerObject]):
         return [m for m in members if not m.startswith("Category:")][:MAX_PAGES_FIXREF]
 
     def _resolve_targets_number(self, number: int) -> list[str]:
-        assert self.site is not None
+
+        if self.site is None:
+            raise ValueError("site is None")
+
         try:
             capped = min(int(number), MAX_PAGES_FIXREF)
         except ValueError:

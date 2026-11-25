@@ -41,7 +41,8 @@ class WebarchiveRemoverWorker(BaseObjectsJobWorker[SharedworkerObject]):
         if not self._check_site():
             return self.result
 
-        assert self.site is not None
+        if self.site is None:
+            raise ValueError("site is None")
 
         mode = self.args.get("mode", "template")
         limit = int(self.args.get("limit") or 0) or None
@@ -95,7 +96,9 @@ class WebarchiveRemoverWorker(BaseObjectsJobWorker[SharedworkerObject]):
 
     def _get_all_pages(self) -> list[str]:
         """Get all pages in the main namespace via allpages (lazy pagination)."""
-        assert self.site is not None
+        if self.site is None:
+            raise ValueError("site is None")
+
         titles = list(
             self.site.allpages(
                 start="!",

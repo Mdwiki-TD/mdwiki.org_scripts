@@ -92,7 +92,10 @@ class WikiReplicaBaseDB:
         Executes query and returns all results as a list of dictionaries.
         """
         self._ensure_connection()
-        assert self.connection is not None
+
+        if self.connection is None:
+            raise pymysql.err.OperationalError("Connection is not established")
+
         try:
             with self.connection.cursor() as cursor:
                 cursor.execute(query, params)

@@ -106,7 +106,10 @@ class FindAndReplaceWorker(BaseObjectsJobWorker[FindAndReplaceWorkerObject]):
         listtype: str,
     ) -> list[str]:
         """Pick the page list to walk based on *listtype*."""
-        assert self.site is not None
+
+        if self.site is None:
+            raise ValueError("site is None")
+
         if listtype == "newlist":
             search_data = self.site.search(
                 str_find,
