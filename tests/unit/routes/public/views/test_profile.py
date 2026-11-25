@@ -12,8 +12,10 @@ class TestProfileRoutes:
         # Should either show login prompt or redirect
         assert resp.status_code == 200
 
-    def test_profile_page_with_login(self, test_client, mock_login):
-        mock_login("TestUser")
+    def test_profile_page_with_login(self, test_client):
+        with test_client.session_transaction() as session:
+            session["username"] = "TestUser"
+
         resp = test_client.get("/profile/")
         assert resp.status_code == 200
 
