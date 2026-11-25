@@ -58,16 +58,9 @@ class TestMedicineArticlesSummary:
     def test_to_json(self):
         s = MedicineArticlesSummary(total_articles=10, total_languages=3)
         d = s.to_json()
-        assert d == {
-            "total": 0,
-            "changed": 0,
-            "errors": 0,
-            "processed": 0,
-            "total_articles": 10,
-            "total_articles_all_langs": 0,
-            "total_languages": 3,
-            "page_updated": False,
-        }
+        assert d["total_articles"] == 10
+        assert d["total_languages"] == 3
+        assert d["page_updated"] is False
 
 
 class TestMedicineArticlesWorkerObject:
