@@ -6,7 +6,7 @@ import logging
 from dataclasses import asdict, dataclass, field
 from typing import Any
 
-from ...shared_objects import STATUS_LITERAL, WorkerMapping
+from ...shared_objects import STATUS_LITERAL, SharedworkerObject
 
 logger = logging.getLogger(__name__)
 
@@ -53,7 +53,7 @@ class RedirectsSummary:
 
 
 @dataclass
-class CreateRedirectsWorkerObject(WorkerMapping):
+class CreateRedirectsWorkerObject(SharedworkerObject):
     summary: RedirectsSummary = field(default_factory=RedirectsSummary)
 
     pages_processed: list[OneTitleInfo] = field(default_factory=list)

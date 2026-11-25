@@ -99,7 +99,7 @@ class WebarchiveRemoverWorker(BaseObjectsJobWorker[SharedworkerObject]):
         titles = list(
             self.site.allpages(
                 start="!",
-                namespace=0,
+                namespace="0",
                 filterredir="nonredirects",
                 dir="ascending",
                 generator=True,

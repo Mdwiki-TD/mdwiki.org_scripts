@@ -12,16 +12,9 @@ from typing import Any
 
 import wikitextparser as wtp
 
+from ...parsers.shared_wtp import WtpUtils
+
 logger = logging.getLogger(__name__)
-
-
-def gt_arg(temp: wtp.Template, name: str) -> str | bool:
-    """Return the stripped value of template parameter *name*, or ``False``."""
-    if temp.has_arg(name):
-        va = temp.get_arg(name)
-        if va and va.value and va.value.strip():
-            return va.value.strip()
-    return False
 
 
 class NamedParamEditor:
@@ -66,7 +59,7 @@ class NamedParamEditor:
 
                 # Has one of the false params with a value — skip
                 for x in false_params:
-                    value = gt_arg(temp, x)
+                    value = WtpUtils.get_arg_value(temp, [x])
                     if value:
                         logger.info(f"page already had temp {name} with (|{x}={value}). ")
                         return text
@@ -74,8 +67,8 @@ class NamedParamEditor:
                 # Migrate eponym → named after
                 t_value = ""
                 if temp.has_arg("eponym"):
-                    if gt_arg(temp, "eponym"):
-                        t_value = gt_arg(temp, "eponym")
+                    if WtpUtils.get_arg_value(temp, ["eponym"]):
+                        t_value = WtpUtils.get_arg_value(temp, ["eponym"])
                     temp.del_arg("eponym")
                 temp.set_arg(f" {param} ", f" {t_value}\n")
 

@@ -275,7 +275,7 @@ src/
 │   │   │   │   ├── __init__.py
 │   │   │   │   └── route.py
 │   │   │   │
-│   │   │   ├── routes_service/
+│   │   │   ├── routes_services/
 │   │   │   │   ├── __init__.py
 │   │   │   │   └── fixred_one.py
 │   │   │   │

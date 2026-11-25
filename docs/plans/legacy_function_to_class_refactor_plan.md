@@ -191,14 +191,14 @@ These modules are already well-structured as classes and need no changes:
 
 ---
 
-### Group 9: `public/routes_service/fixred_one.py` → `FixRedOneService` class
+### Group 9: `public/routes_services/fixred_one.py` → `FixRedOneService` class
 
 **Current state:** 1 standalone function `work_on_title(title, save, summary, user)`.
 
 **Target:** `FixRedOneService` class wrapping `FixRedirectWorker` (from Group 6).
 
 **Files to modify:**
-- `public/routes_service/fixred_one.py` — refactor into class, add legacy wrapper
+- `public/routes_services/fixred_one.py` — refactor into class, add legacy wrapper
 
 **Complexity:** Low. Thin orchestration layer.
 
@@ -299,7 +299,7 @@ The groups have dependencies. The recommended execution order is:
 | 6 | `services/fixref_shared/fixred_worker.py` | 3 functions → `FixRedirectWorker` class + legacy wrappers |
 | 7 | `services/named_param/__init__.py` | 2 functions → `NamedParamEditor` class + legacy wrappers |
 | 8 | `services/newupdater_service.py` | 1 function → `NewUpdaterService` class + legacy wrapper |
-| 9 | `public/routes_service/fixred_one.py` | 1 function → `FixRedOneService` class + legacy wrapper |
+| 9 | `public/routes_services/fixred_one.py` | 1 function → `FixRedOneService` class + legacy wrapper |
 | 10 | `io/jobs_files_service.py` | 6 functions → `JobFilesService` class + legacy wrappers |
 | 11 | `io/__init__.py` | Update re-exports to include new class |
 | 12 | `services/core/jinja_filters.py` | Group standalone functions into `JinjaFilters` class |

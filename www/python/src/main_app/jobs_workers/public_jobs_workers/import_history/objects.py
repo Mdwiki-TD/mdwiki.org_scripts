@@ -6,7 +6,7 @@ import logging
 from dataclasses import asdict, dataclass, field
 from typing import Any, Literal
 
-from ...shared_objects import Summary, WorkerMapping
+from ...shared_objects import SharedworkerObject, Summary
 
 logger = logging.getLogger(__name__)
 
@@ -26,7 +26,7 @@ class ImportUpdaterOutcome:
 
 
 @dataclass
-class ImportHistoryWorkerObject(WorkerMapping):
+class ImportHistoryWorkerObject(SharedworkerObject):
     from_lang: str = "en"
 
     summary: Summary = field(default_factory=Summary)

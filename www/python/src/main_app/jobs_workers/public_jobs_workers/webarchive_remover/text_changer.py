@@ -19,7 +19,7 @@ from typing import ClassVar, NamedTuple
 
 import wikitextparser as wtp
 
-from ..archive_today.shared_wtp import WtpUtils
+from ....parsers.shared_wtp import WtpUtils
 
 logger = logging.getLogger(__name__)
 
