@@ -2,9 +2,9 @@ from __future__ import annotations
 
 from unittest.mock import MagicMock, patch
 
-from src.main_app.jobs_workers.objects import JobsRunner
+from src.main_app.jobs.objects import JobsRunner
+from src.main_app.jobs.shared_objects import SharedworkerObject
 from src.main_app.jobs_workers.public_jobs_workers.archive_today.worker import ArchiveTodayWorker
-from src.main_app.jobs_workers.shared_objects import SharedworkerObject
 
 
 class TestArchiveTodayWorker:

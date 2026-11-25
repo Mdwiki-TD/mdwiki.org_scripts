@@ -7,8 +7,8 @@ import logging
 from ...database.models import JobRecord
 from ...database.services import JobsService
 from ...io.jobs_files_service import JobFilesService
-from ...jobs_workers.utils import generate_cancelled_file_name
 from ..backends import BackendRegistry
+from ..utils import generate_cancelled_file_name
 
 logger = logging.getLogger(__name__)
 

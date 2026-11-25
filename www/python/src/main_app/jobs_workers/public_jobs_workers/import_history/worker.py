@@ -10,7 +10,7 @@ from __future__ import annotations
 import logging
 
 from ....api_services import MediaWikiQueryService, MwClientPage
-from ...base_worker import BaseObjectsJobWorker, JobsRunner
+from ....jobs.base_worker import BaseObjectsJobWorker, JobsRunner
 from .objects import ImportHistoryWorkerObject, ImportUpdaterOutcome
 
 logger = logging.getLogger(__name__)

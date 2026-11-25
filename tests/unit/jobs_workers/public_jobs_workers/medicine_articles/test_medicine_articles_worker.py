@@ -5,7 +5,7 @@ from __future__ import annotations
 from unittest.mock import MagicMock
 
 import pytest
-from src.main_app.jobs_workers.objects import JobsRunner
+from src.main_app.jobs.objects import JobsRunner
 from src.main_app.jobs_workers.public_jobs_workers.medicine_articles.worker import (
     MedicineArticlesWorker,
 )
@@ -17,7 +17,7 @@ WORKER_PATH = "src.main_app.jobs_workers.public_jobs_workers.medicine_articles.w
 def mock_get_user_site(monkeypatch: pytest.MonkeyPatch) -> MagicMock:
     _mock = MagicMock()
     monkeypatch.setattr(
-        "src.main_app.jobs_workers.base_worker.WikiSiteClient.get_user_site",
+        "src.main_app.jobs.base_worker.WikiSiteClient.get_user_site",
         _mock,
     )
     return _mock

@@ -11,7 +11,7 @@ import logging
 
 from ....api_services import MediaWikiQueryService, MwClientPage
 from ....api_services.enwiki_api import EnwikiApi
-from ...base_worker import BaseObjectsJobWorker, JobsRunner
+from ....jobs.base_worker import BaseObjectsJobWorker, JobsRunner
 from .objects import CreateRedirectsWorkerObject, OneTitleInfo
 
 logger = logging.getLogger(__name__)

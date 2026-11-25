@@ -11,8 +11,8 @@ import logging
 from ....api_services import MwClientPage
 from ....app_services.fixref_shared.fixred_worker import FixRedirectWorker
 from ....app_services.fixref_shared.objects import RunState
-from ...base_worker import BaseObjectsJobWorker, JobsRunner
-from ...shared_objects import SharedworkerObject, UpdaterOutcome
+from ....jobs.base_worker import BaseObjectsJobWorker, JobsRunner
+from ....jobs.shared_objects import SharedworkerObject, UpdaterOutcome
 
 logger = logging.getLogger(__name__)
 

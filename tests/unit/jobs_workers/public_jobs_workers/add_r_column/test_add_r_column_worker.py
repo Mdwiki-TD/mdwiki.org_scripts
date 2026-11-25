@@ -5,7 +5,7 @@ from __future__ import annotations
 from unittest.mock import MagicMock, patch
 
 import pytest
-from src.main_app.jobs_workers.objects import JobsRunner
+from src.main_app.jobs.objects import JobsRunner
 from src.main_app.jobs_workers.public_jobs_workers.add_r_column.worker import (
     AddRColumnWorker,
     get_titles_redirects,
@@ -33,14 +33,14 @@ class TestAddRColumnWorker:
     def worker(self):
         return AddRColumnWorker(JobsRunner(job_id=1, args={}, user={"username": "test_user"}))
 
-    @patch("src.main_app.jobs_workers.base_worker.WikiSiteClient.get_user_site")
+    @patch("src.main_app.jobs.base_worker.WikiSiteClient.get_user_site")
     def test_process_no_site(self, mock_get_user_site, worker):
         mock_get_user_site.return_value = None
         # When no site, BaseObjectsJobWorker.log_no_site_error sets status to failed
         result = worker.process()
         assert result.status == "failed"
 
-    @patch("src.main_app.jobs_workers.base_worker.WikiSiteClient.get_user_site")
+    @patch("src.main_app.jobs.base_worker.WikiSiteClient.get_user_site")
     @patch("src.main_app.jobs_workers.public_jobs_workers.add_r_column.worker.MwClientPage")
     @patch("src.main_app.jobs_workers.public_jobs_workers.add_r_column.worker.MediaWikiQueryService.get_template_pages")
     def test_process_success(

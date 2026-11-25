@@ -1,4 +1,4 @@
-from ..objects import JobData
+from ...jobs.objects import JobData
 from .add_r_column.worker import AddRColumnWorker
 from .add_rtt_template.worker import AddRttTemplateWorker
 from .add_unlinkedwikibase.worker import AddUnlinkedWikibaseWorker

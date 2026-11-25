@@ -5,7 +5,8 @@ from __future__ import annotations
 from unittest.mock import MagicMock, patch
 
 import pytest
-from src.main_app.jobs_workers.objects import JobsRunner
+from src.main_app.jobs.objects import JobsRunner
+from src.main_app.jobs.shared_objects import SharedworkerObject, UpdaterOutcome
 from src.main_app.jobs_workers.public_jobs_workers.owidpopup_all.mapping import (
     OWID_POPUP_RENAME,
     TemplateRename,
@@ -15,7 +16,6 @@ from src.main_app.jobs_workers.public_jobs_workers.owidpopup_all.worker import (
     OwidPopupAllWorker,
     replace_templates,
 )
-from src.main_app.jobs_workers.shared_objects import SharedworkerObject, UpdaterOutcome
 
 
 class TestTemplateRenameConfig:

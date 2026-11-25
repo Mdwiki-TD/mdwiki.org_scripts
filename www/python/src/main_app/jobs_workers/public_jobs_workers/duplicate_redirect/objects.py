@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
-from ...shared_objects import UpdaterOutcome
+from ....jobs.shared_objects import UpdaterOutcome
 
 
 @dataclass

@@ -5,7 +5,7 @@ from __future__ import annotations
 from unittest.mock import MagicMock, patch
 
 import pytest
-from src.main_app.jobs_workers.objects import JobsRunner
+from src.main_app.jobs.objects import JobsRunner
 from src.main_app.jobs_workers.public_jobs_workers.duplicate_redirect.worker import (
     DuplicateRedirectWorker,
     resolve_redirect_chains,
@@ -36,7 +36,7 @@ class TestDuplicateRedirectWorker:
     def worker(self) -> DuplicateRedirectWorker:
         return DuplicateRedirectWorker(JobsRunner(job_id=1, args={}, user={"username": "test_user"}))
 
-    @patch("src.main_app.jobs_workers.base_worker.WikiSiteClient.get_user_site")
+    @patch("src.main_app.jobs.base_worker.WikiSiteClient.get_user_site")
     @patch("src.main_app.jobs_workers.public_jobs_workers.duplicate_redirect.worker.MediaWikiQueryService")
     @patch("src.main_app.jobs_workers.public_jobs_workers.duplicate_redirect.worker.MwClientPage")
     @patch(
@@ -75,7 +75,7 @@ class TestDuplicateRedirectWorker:
         assert result.pages_updated[0].title == "A"
         assert result.pages_updated[0].newrevid == 456
 
-    @patch("src.main_app.jobs_workers.base_worker.WikiSiteClient.get_user_site")
+    @patch("src.main_app.jobs.base_worker.WikiSiteClient.get_user_site")
     def test_process_no_site(self, mock_get_user_site, worker: DuplicateRedirectWorker):
         mock_get_user_site.return_value = None
         result = worker.process()

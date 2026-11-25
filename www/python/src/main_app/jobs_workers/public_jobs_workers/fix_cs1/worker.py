@@ -11,8 +11,8 @@ from __future__ import annotations
 import logging
 
 from ....api_services import CategoryMembersService, MwClientPage
-from ...base_worker import BaseObjectsJobWorker, JobsRunner
-from ...shared_objects import SharedworkerObject, UpdaterOutcome
+from ....jobs.base_worker import BaseObjectsJobWorker, JobsRunner
+from ....jobs.shared_objects import SharedworkerObject, UpdaterOutcome
 from .text_changer import fix_it
 
 logger = logging.getLogger(__name__)

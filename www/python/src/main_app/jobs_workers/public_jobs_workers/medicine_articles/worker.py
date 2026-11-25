@@ -14,8 +14,8 @@ import logging
 
 from ....api_services.mwclient_page import MwClientPage
 from ....api_services.wikidb.analytics import WikiReplicaDB
-from ...base_worker import BaseObjectsJobWorker, JobsRunner
-from ...shared_objects import UpdaterOutcome
+from ....jobs.base_worker import BaseObjectsJobWorker, JobsRunner
+from ....jobs.shared_objects import UpdaterOutcome
 from .objects import LangCount, MedicineArticlesWorkerObject
 
 logger = logging.getLogger(__name__)
