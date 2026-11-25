@@ -79,7 +79,7 @@ class BaseObjectsJobWorker[TResult: SharedworkerObject](ABC):
         self.result_file_cancelled: str = generate_cancelled_file_name(result_file=self.result_file)
 
         self._edit_count: int = 0
-        self.site: Site | None = None
+        self.site: Site  # | None = None
 
         self.wiki_domain = self.app_settings.other.wiki_domain
 
