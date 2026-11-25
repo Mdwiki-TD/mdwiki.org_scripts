@@ -122,20 +122,9 @@ class SharedworkerObject(WorkerMapping):
     pages_failed: list[UpdaterOutcome] = field(default_factory=list)
 
 
-@dataclass
-class StandardAdminWorkerObject(WorkerMapping):
-    summary: Summary = field(default_factory=Summary)
-    pages_processed: list[OneItem] = field(default_factory=list)
-    pages_success: list[OneItem] = field(default_factory=list)
-    pages_skipped: list[OneItem] = field(default_factory=list)
-    pages_failed: list[OneItem] = field(default_factory=list)
-    args: dict[str, Any] = field(default_factory=dict)
-
-
 __all__ = [
     "OneStep",
     "Summary",
     "UpdaterOutcome",
     "SharedworkerObject",
-    "StandardAdminWorkerObject",
 ]
