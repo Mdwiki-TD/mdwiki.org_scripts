@@ -120,6 +120,8 @@ class SharedworkerObject(WorkerMapping):
     pages_skipped: list[UpdaterOutcome] = field(default_factory=list)
     pages_updated: list[UpdaterOutcome] = field(default_factory=list)
     pages_failed: list[UpdaterOutcome] = field(default_factory=list)
+    pages_success: list[UpdaterOutcome] = field(default_factory=list)
+    args: dict[str, Any] = field(default_factory=dict)
 
 
 __all__ = [

@@ -61,7 +61,7 @@ class TestValidateUserPermissions:
         assert any("autopatrol" in e["error"] for e in worker.result.errors)
         assert worker.result.errors[-1]["error_type"] == "AutopatrolPermissionError"
 
-    def test_returns_false_when_site_is_none(self, monkeypatch) -> None:
+    def test_returns_false_when_site_is_none(self) -> None:
         worker = self._make_worker()
         worker._site = False  # pyright: ignore[reportAttributeAccessIssue]
 
