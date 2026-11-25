@@ -12,7 +12,7 @@ from requests import HTTPError
 from ...api_services.clients.toolforge import ToolforgeJobsService
 from ...config import Settings, get_settings
 from ...database.models import JobRecord
-from ..objects import JobData
+from ...jobs_workers.objects import JobData
 from .base import JobBackend
 
 logger = logging.getLogger(__name__)
@@ -42,8 +42,9 @@ class ToolforgeBackend(JobBackend):
         self,
         job: JobRecord,
         job_data: JobData,
-        payload: dict[str, Any],
+        user: dict[str, Any] | None = None,
     ) -> str:
+        # ``user`` is intentionally ignored: the pod rebuilds the identity from ``job.username``.
         jobs_cfg = self.app_settings.jobs
 
         name = tf_job_name(job.job_type, job.id)
@@ -87,6 +88,7 @@ class ToolforgeBackend(JobBackend):
             return False
 
     def status(self, job: JobRecord) -> dict[str, Any] | None:
+        """Query Toolforge for the live status of a single job."""
         name = tf_job_name(job.job_type, job.id)
         try:
             tf_job = self.svc.show_job(name).job
@@ -96,7 +98,7 @@ class ToolforgeBackend(JobBackend):
             raise
 
         if not tf_job:
-            raise Exception(f"Toolforge job {name} does not exist")
+            raise RuntimeError(f"Toolforge job {name} does not exist")
 
         return tf_job.live_status()
 

@@ -134,7 +134,7 @@ class ImportHistoryWorker(BaseObjectsJobWorker[ImportHistoryWorkerObject]):
             info.newrevid = saved.get("newrevid", 0)
             return info
 
-        # assert self.site is not None
+        # if self.site is None: raise ValueError("site is None")
 
         username = "Mr._Ibrahem"
         if self.site and self.site.username:

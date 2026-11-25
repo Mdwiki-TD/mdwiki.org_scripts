@@ -28,7 +28,7 @@ class WikiTableColumnManager:
         cell grid, not the flattened grid produced by colspan/rowspan duplication.
         """
         try:
-            return table.cells(span=span)
+            return table.cells(span=span)  # pyright: ignore[reportReturnType]
         except Exception as exc:
             logger.error(f"Error getting table cells: {exc}")
             return None

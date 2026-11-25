@@ -5,6 +5,7 @@ import logging
 
 import wikitextparser as wtp
 
+from ....parsers.shared_wtp import WtpUtils
 from .archive_date_maker import make_archive_date, make_archive_date_and_url
 
 logger = logging.getLogger(__name__)
@@ -56,14 +57,6 @@ for new, old in dup_args.items():
         old_to_new_params[x] = new
 
 
-def gt_arg(temp: wtp.Template, name: str) -> str | bool:
-    if temp.has_arg(name):
-        va = temp.get_arg(name)
-        if va and va.value and va.value.strip():
-            return va.value.strip()
-    return ""
-
-
 class OnePageArchive:
     def __init__(self, title: str, text: str) -> None:
         self.title = title
@@ -99,10 +92,10 @@ class OnePageArchive:
 
     def archive_param(self, temp: wtp.Template) -> wtp.Template:
 
-        url = gt_arg(temp, "url")
-        archiveurl = gt_arg(temp, "archive-url")
+        url = WtpUtils.get_arg_value(temp, ["url"])
+        archiveurl = WtpUtils.get_arg_value(temp, ["archive-url"])
 
-        archive_date = gt_arg(temp, "archive-date") or gt_arg(temp, "archivedate")
+        archive_date = WtpUtils.get_arg_value(temp, ["archive-date", "archivedate"])
 
         if archiveurl and not archive_date:
             archive_date = make_archive_date(archiveurl)
@@ -112,7 +105,7 @@ class OnePageArchive:
 
                 self.param_added_plus("archive-date")
 
-        chapterurl = gt_arg(temp, "chapter-url") or gt_arg(temp, "chapterurl")
+        chapterurl = WtpUtils.get_arg_value(temp, ["chapter-url", "chapterurl"])
 
         if not url and archiveurl and not chapterurl:
             found_it, archivedate, n_url, archiveurl = make_archive_date_and_url(archiveurl)
@@ -161,8 +154,8 @@ class OnePage:
 
     def one_fix(self, temp: wtp.Template, old_p: str, new_p: str) -> None:
         if temp.has_arg(old_p) and temp.has_arg(new_p):
-            p1_value = gt_arg(temp, old_p)
-            p2_value = gt_arg(temp, new_p)
+            p1_value = WtpUtils.get_arg_value(temp, [old_p])
+            p2_value = WtpUtils.get_arg_value(temp, [new_p])
 
             if not p2_value:
                 temp.set_arg(new_p, p1_value)

@@ -147,6 +147,16 @@ class DuplicateRedirectWorker(BaseObjectsJobWorker[SharedworkerObject]):
             info.msg = "Page is empty"
             return info
 
+        if redirect_to is None:
+            info.status = "skipped"
+            info.msg = "redirect_to is None"
+            return info
+
+        if final_target is None:
+            info.status = "skipped"
+            info.msg = "final_target is None"
+            return info
+
         new_text, summary = self._make_new_text(text, redirect_to, final_target)
 
         if new_text == text:

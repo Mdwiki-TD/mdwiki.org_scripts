@@ -4,7 +4,8 @@ import logging
 
 import wikitextparser as wtp
 
-from .shared_wtp import ArchiveParamsUrlsData, WtpUtils
+from ....parsers.shared_wtp import WtpUtils
+from .archive_params_data import ArchiveParamsUrlsData
 
 logger = logging.getLogger(__name__)
 

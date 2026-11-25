@@ -197,7 +197,9 @@ class AddRColumnWorker(BaseObjectsJobWorker[AddRColumnWorkerObject]):
         return True
 
     def _save_text(self, new_text: str, summary: str, step) -> bool:
-        assert self.page is not None
+        if self.page is None:
+            raise Exception("Page is None")
+
         saved = self.page.edit_page(text=new_text, summary=summary, nocreate=True)
 
         if saved.get("success"):

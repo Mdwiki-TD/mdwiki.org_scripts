@@ -199,7 +199,7 @@ tests/
 │   │       │   ├── test_newupdater_worker.py
 │   │       │   └── test_route.py
 │   │       │
-│   │       ├── routes_service/
+│   │       ├── routes_services/
 │   │       │   └── test_fixred_one.py
 │   │       │
 │   │       ├── utils/
