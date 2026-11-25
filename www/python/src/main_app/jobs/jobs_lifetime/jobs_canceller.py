@@ -91,6 +91,25 @@ class JobCanceller:
 
         return backend_cancelled or cancelled_file is not None or db_cancelled
 
+    def is_cancelled(
+        self,
+        job_id: int,
+        result_file_cancelled: str,
+        check_db: bool = False,
+    ) -> bool:
+        """Check if a job is cancelled."""
+
+        if self.jobs_files_service.is_cancel_file_exist(result_file_cancelled):
+            logger.info("Job %s: Cancelled file detected, stopping.", job_id)
+            return True
+
+        # Optimize is_cancelled DB check frequency, by reducing the check frequency (to occur every N cycles).
+        if check_db and self.jobs_service.is_job_cancelled(job_id):
+            logger.info("Job %s: Global cancellation detected, stopping.", job_id)
+            return True
+
+        return False
+
 
 __all__ = [
     "JobCanceller",
