@@ -123,6 +123,7 @@ def test_client(mock_app: Flask) -> FlaskClient:
     """
     return mock_app.test_client()
 
+
 # ── db fixtures ───────────────────────────────────────────────────────────────────
 
 
@@ -226,7 +227,6 @@ def mock_get_current_user(monkeypatch):
     return mock_user
 
 
-
 @pytest.fixture
 def mock_admin_required(mock_get_current_user):
     """Mock admin_required decorator to bypass authentication checks.
@@ -299,6 +299,10 @@ def mock_base_worker(monkeypatch: pytest.MonkeyPatch):
         "update_job_status": MagicMock(),
         "update_job_status_with_retry": MagicMock(),
     }
+    monkeypatch.setattr(
+        "src.main_app.jobs.base_worker.WikiSiteClient.get_user_site",
+        mocks["get_user_site"],
+    )
     monkeypatch.setattr("src.main_app.jobs.base_worker.JobsService.update_job_status", mocks["update_job_status"])
     monkeypatch.setattr(
         "src.main_app.jobs.base_worker.JobsService.update_job_status_with_retry",
@@ -308,9 +312,4 @@ def mock_base_worker(monkeypatch: pytest.MonkeyPatch):
         "src.main_app.jobs.base_worker.JobFilesService.save_result",
         mocks["save_result"],
     )
-    monkeypatch.setattr(
-        "src.main_app.jobs.base_worker.WikiSiteClient.get_user_site",
-        mocks["get_user_site"],
-    )
-
     return mocks

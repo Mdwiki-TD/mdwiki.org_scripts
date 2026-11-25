@@ -10,7 +10,7 @@
     When the citation has no archive parameters but a <code>{{ 'Webarchive' | template_markup }}</code> follows it,
     the data is merged into the citation template instead.
 </p>
-<form method="post" action="{{ url_for('public_jobs.start_job', job_type=template_data.job_type) }}"
+<form method="post" action="{{ url_for(bp_name ~ '.start_job', job_type=template_data.job_type) }}"
     class="row gy-2 gx-3 align-items-center mb-4">
     {{ csrf() }}
     <div class="row g-3 mb-3">
