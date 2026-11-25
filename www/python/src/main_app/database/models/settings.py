@@ -21,13 +21,13 @@ class ValueType(StrEnum):
 class SettingRecord(Model):
     """
     CREATE TABLE `settings` (
-        `id` int NOT NULL AUTO_INCREMENT,
+        `id` int(11) NOT NULL AUTO_INCREMENT,
         `key` varchar(190) NOT NULL,
         `title` varchar(500) NOT NULL,
+        `value` text DEFAULT NULL,
         `value_type` enum('boolean','string','integer') NOT NULL DEFAULT 'boolean',
-        `value` text,
         PRIMARY KEY (`id`),
-        UNIQUE KEY `key` (`key`)
+        UNIQUE KEY `unique_key` (`key`)
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
     """
 

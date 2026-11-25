@@ -152,8 +152,8 @@ jobs_data_one_page = {
     "import_history": JobData(
         job_type=ImportHistoryWorker.JOB_TYPE,
         job_name="Import History from Enwiki",
-        job_details_template="jobs_templates/public/import_history/details.html",
-        job_list_template="jobs_templates/public/import_history/list.html",
+        job_details_template="one_page_templates/import_history/details.html",
+        job_list_template="one_page_templates/import_history/list.html",
         job_class=ImportHistoryWorker,
         job_args=[],
         start_confirm_message="",
@@ -162,8 +162,8 @@ jobs_data_one_page = {
     "create_redirects": JobData(
         job_type=CreateRedirectsWorker.JOB_TYPE,
         job_name="Copy Redirects from Enwiki",
-        job_details_template="jobs_templates/public/create_redirects/details.html",
-        job_list_template="jobs_templates/public/create_redirects/list.html",
+        job_details_template="one_page_templates/create_redirects/details.html",
+        job_list_template="one_page_templates/create_redirects/list.html",
         job_class=CreateRedirectsWorker,
         job_args=[],
         start_confirm_message="",
@@ -172,7 +172,7 @@ jobs_data_one_page = {
     "medicine_articles": JobData(
         job_type=MedicineArticlesWorker.JOB_TYPE,
         job_name="Update Medicine Articles Stats",
-        job_details_template="jobs_templates/public/medicine_articles/details.html",
+        job_details_template="one_page_templates/medicine_articles/details.html",
         job_class=MedicineArticlesWorker,
         job_args=[],
         start_confirm_message="Start updating WikiProject Medicine article statistics?",
