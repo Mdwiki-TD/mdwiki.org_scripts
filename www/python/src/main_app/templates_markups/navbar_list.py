@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from .mapping import NavLink
+from .navbar.mapping import NavLink
 
 main_nav_list = [
     NavLink(

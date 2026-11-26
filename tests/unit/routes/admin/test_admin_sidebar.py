@@ -8,7 +8,7 @@ from __future__ import annotations
 
 import pytest
 from src.main_app.routes.admin.admin_sidebar import create_admin_sidebar
-from src.main_app.templates_markups.sidebar import SidebarGroup, SidebarItem, AdminSidebarItem
+from src.main_app.templates_markups.sidebar import AdminSidebarItem, SidebarGroup, SidebarItem
 
 
 @pytest.fixture
@@ -184,8 +184,16 @@ class TestCreateAdminSidebarActive:
             title="G",
             icon="bi-g",
             items=[
-                SidebarItem(id="short", title="Short", fallback_href="/test", requires_admin=False),
-                SidebarItem(id="long", title="Long", fallback_href="/test/long", requires_admin=False),
+                SidebarItem(
+                    id="short",
+                    title="Short",
+                    fallback_href="/test",
+                ),
+                SidebarItem(
+                    id="long",
+                    title="Long",
+                    fallback_href="/test/long",
+                ),
             ],
         )
         html = create_admin_sidebar("/test/long", is_admin=True, list_items=[group])
@@ -226,7 +234,13 @@ class TestCreateAdminSidebarIsAdmin:
             id="locked",
             title="Locked",
             icon="bi-lock",
-            items=[SidebarItem(id="secret", title="Secret", fallback_href="/s", requires_admin=True)],
+            items=[
+                AdminSidebarItem(
+                    id="secret",
+                    title="Secret",
+                    fallback_href="/s",
+                )
+            ],
         )
         html = create_admin_sidebar("/s", is_admin=False, list_items=[group])
         assert isinstance(html, str)
