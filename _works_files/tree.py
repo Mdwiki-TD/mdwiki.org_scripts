@@ -38,7 +38,6 @@ paths = [
     (main_project_path / "tests", Path(__file__).parent / "test_tree.md"),
 ]
 
-
 for work_path, save_path in paths:
     create_tree_view(skip_list, work_path, save_path)
 

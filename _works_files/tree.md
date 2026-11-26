@@ -42,9 +42,52 @@ src/
 │   │   ├── query_api.py
 │   │   └── README.md
 │   │
+│   ├── app_services/
+│   │   │
+│   │   ├── fixref_shared/
+│   │   │   ├── __init__.py
+│   │   │   ├── fixred_worker.py
+│   │   │   ├── fixref_text_new.py
+│   │   │   ├── make_title_bot.py
+│   │   │   └── objects.py
+│   │   │
+│   │   ├── named_param/
+│   │   │   └── __init__.py
+│   │   │
+│   │   ├── new_updater/
+│   │   │   │
+│   │   │   ├── bots/
+│   │   │   │   ├── __init__.py
+│   │   │   │   ├── expend.py
+│   │   │   │   ├── expend_new.py
+│   │   │   │   ├── old_params.py
+│   │   │   │   └── remove_worker.py
+│   │   │   │
+│   │   │   ├── lists/
+│   │   │   │   ├── __init__.py
+│   │   │   │   ├── bot_params.py
+│   │   │   │   ├── chem_params.py
+│   │   │   │   ├── expend_lists.py
+│   │   │   │   └── identifier_params.py
+│   │   │   │
+│   │   │   ├── __init__.py
+│   │   │   ├── chembox.py
+│   │   │   ├── drugbox.py
+│   │   │   ├── med_work_new.py
+│   │   │   ├── mv_section.py
+│   │   │   └── resources_new.py
+│   │   │
+│   │   ├── replace_wikilink/
+│   │   │   └── __init__.py
+│   │   │
+│   │   ├── __init__.py
+│   │   ├── newupdater_service.py
+│   │   ├── README.md
+│   │   └── shared_classes.py
+│   │
 │   ├── cli/
 │   │   ├── __init__.py
-│   │   └── cli_jobs.py
+│   │   └── errors_cli.py
 │   │
 │   ├── config/
 │   │   ├── __init__.py
@@ -81,6 +124,10 @@ src/
 │   │   │
 │   │   ├── services/
 │   │   │   │
+│   │   │   ├── config/
+│   │   │   │   ├── __init__.py
+│   │   │   │   └── settings_service.py
+│   │   │   │
 │   │   │   ├── users/
 │   │   │   │   ├── __init__.py
 │   │   │   │   ├── admin_service.py
@@ -94,8 +141,7 @@ src/
 │   │   │   ├── __init__.py
 │   │   │   ├── crud_service.py
 │   │   │   ├── error_log_service.py
-│   │   │   ├── jobs_service.py
-│   │   │   └── settings_service.py
+│   │   │   └── jobs_service.py
 │   │   │
 │   │   ├── __init__.py
 │   │   ├── create_helper.py
@@ -114,24 +160,34 @@ src/
 │   │   ├── jobs_files_service.py
 │   │   └── README.md
 │   │
-│   ├── jobs_workers/
-│   │   │
-│   │   ├── admin_jobs_workers/
-│   │   │   ├── __init__.py
-│   │   │   └── workers_list.py
+│   ├── jobs/
 │   │   │
 │   │   ├── backends/
 │   │   │   ├── __init__.py
+│   │   │   ├── backend_registry.py
 │   │   │   ├── base.py
-│   │   │   ├── registry.py
 │   │   │   ├── thread_backend.py
+│   │   │   ├── thread_cancel_registry.py
 │   │   │   └── toolforge_backend.py
 │   │   │
 │   │   ├── jobs_lifetime/
 │   │   │   ├── __init__.py
-│   │   │   ├── cancel_registry.py
+│   │   │   ├── job_creator.py
 │   │   │   ├── jobs_canceller.py
-│   │   │   └── jobs_starter.py
+│   │   │   ├── jobs_starter.py
+│   │   │   └── reconcile.py
+│   │   │
+│   │   ├── __init__.py
+│   │   ├── base_worker.py
+│   │   ├── cli_jobs.py
+│   │   ├── job_executor.py
+│   │   ├── job_user.py
+│   │   ├── objects.py
+│   │   ├── registry.py
+│   │   ├── shared_objects.py
+│   │   └── utils.py
+│   │
+│   ├── jobs_workers/
 │   │   │
 │   │   ├── public_jobs_workers/
 │   │   │   │
@@ -153,8 +209,8 @@ src/
 │   │   │   │
 │   │   │   ├── archive_today/
 │   │   │   │   ├── __init__.py
+│   │   │   │   ├── archive_params_data.py
 │   │   │   │   ├── removers.py
-│   │   │   │   ├── shared_wtp.py
 │   │   │   │   └── worker.py
 │   │   │   │
 │   │   │   ├── create_redirects/
@@ -223,25 +279,18 @@ src/
 │   │   │   ├── README.md
 │   │   │   └── workers_list_public.py
 │   │   │
-│   │   ├── utils/
-│   │   │   └── __init__.py
-│   │   │
 │   │   ├── __init__.py
-│   │   ├── base_worker.py
-│   │   ├── cancel.py
-│   │   ├── objects.py
-│   │   ├── reconcile.py
-│   │   ├── run_job.py
-│   │   ├── shared_objects.py
-│   │   └── utils.py
+│   │   └── workers_lists.py
 │   │
 │   ├── parsers/
 │   │   │
-│   │   └── wtp_mapping/
-│   │       ├── __init__.py
-│   │       ├── wtp_refs.py
-│   │       ├── wtp_refs_temps.py
-│   │       └── wtp_temps.py
+│   │   ├── wtp_mapping/
+│   │   │   ├── __init__.py
+│   │   │   ├── wtp_refs.py
+│   │   │   ├── wtp_refs_temps.py
+│   │   │   └── wtp_temps.py
+│   │   │
+│   │   └── shared_wtp.py
 │   │
 │   ├── routes/
 │   │   │
@@ -279,8 +328,6 @@ src/
 │   │   │   │   ├── __init__.py
 │   │   │   │   └── fixred_one.py
 │   │   │   │
-│   │   │   ├── utils/
-│   │   │   │
 │   │   │   ├── views/
 │   │   │   │   ├── __init__.py
 │   │   │   │   ├── auth_route.py
@@ -297,7 +344,7 @@ src/
 │   │   │
 │   │   ├── __init__.py
 │   │   ├── error_pages.py
-│   │   ├── models.py
+│   │   ├── objects.py
 │   │   └── routes_factory.py
 │   │
 │   ├── services/
@@ -312,54 +359,13 @@ src/
 │   │   │   ├── mapping.py
 │   │   │   └── token_manager.py
 │   │   │
-│   │   ├── fixref_shared/
-│   │   │   ├── __init__.py
-│   │   │   ├── fixred_worker.py
-│   │   │   ├── fixref_text_new.py
-│   │   │   ├── make_title_bot.py
-│   │   │   └── objects.py
-│   │   │
-│   │   ├── named_param/
-│   │   │   └── __init__.py
-│   │   │
-│   │   ├── new_updater/
-│   │   │   │
-│   │   │   ├── bots/
-│   │   │   │   ├── __init__.py
-│   │   │   │   ├── expend.py
-│   │   │   │   ├── expend_new.py
-│   │   │   │   ├── old_params.py
-│   │   │   │   └── remove_worker.py
-│   │   │   │
-│   │   │   ├── lists/
-│   │   │   │   ├── __init__.py
-│   │   │   │   ├── bot_params.py
-│   │   │   │   ├── chem_params.py
-│   │   │   │   ├── expend_lists.py
-│   │   │   │   └── identifier_params.py
-│   │   │   │
-│   │   │   ├── __init__.py
-│   │   │   ├── chembox.py
-│   │   │   ├── drugbox.py
-│   │   │   ├── med_work_new.py
-│   │   │   ├── mv_section.py
-│   │   │   └── resources_new.py
-│   │   │
-│   │   ├── replace_wikilink/
-│   │   │   └── __init__.py
-│   │   │
 │   │   ├── utils/
 │   │   │   ├── __init__.py
 │   │   │   └── decode_bytes.py
 │   │   │
-│   │   ├── __init__.py
-│   │   ├── newupdater_service.py
-│   │   ├── README.md
-│   │   └── shared_classes.py
+│   │   └── __init__.py
 │   │
 │   ├── templates_markups/
-│   │   │
-│   │   ├── admin_sidebar/
 │   │   │
 │   │   ├── navbar/
 │   │   │   ├── __init__.py
@@ -462,12 +468,15 @@ src/
 │   │   │   ├── job_details.html
 │   │   │   └── job_logs.html
 │   │   │
+│   │   ├── _error_logs_tabs.html
 │   │   ├── _sidebar.html
-│   │   ├── admin.html
 │   │   ├── admins.html
 │   │   ├── base1.html
+│   │   ├── error_log_path.html
 │   │   ├── error_logs.html
+│   │   ├── error_logs_statistics.html
 │   │   ├── errors.html
+│   │   ├── index.html
 │   │   ├── popup_action.html
 │   │   ├── settings.html
 │   │   └── users.html
@@ -482,9 +491,6 @@ src/
 │   │   │   ├── _jobs_actions.html
 │   │   │   └── shared_details.html
 │   │   │
-│   │   ├── admin_templates/
-│   │   │   └── base_list_admin.html
-│   │   │
 │   │   ├── public/
 │   │   │   │
 │   │   │   ├── add_rtt_template/
@@ -494,10 +500,6 @@ src/
 │   │   │   │   └── list.html
 │   │   │   │
 │   │   │   ├── archive_today/
-│   │   │   │   └── list.html
-│   │   │   │
-│   │   │   ├── create_redirects/
-│   │   │   │   ├── details.html
 │   │   │   │   └── list.html
 │   │   │   │
 │   │   │   ├── duplicate_redirect/
@@ -519,13 +521,6 @@ src/
 │   │   │   ├── fixref/
 │   │   │   │   └── list.html
 │   │   │   │
-│   │   │   ├── import_history/
-│   │   │   │   ├── details.html
-│   │   │   │   └── list.html
-│   │   │   │
-│   │   │   ├── medicine_articles/
-│   │   │   │   └── details.html
-│   │   │   │
 │   │   │   ├── newupdater_all/
 │   │   │   │   └── list.html
 │   │   │   │
@@ -537,14 +532,25 @@ src/
 │   │   │
 │   │   ├── _list_table.html
 │   │   ├── all_jobs_list.html
-│   │   ├── base_details_public.html
+│   │   ├── base_details.html
 │   │   └── base_list_public.html
 │   │
 │   ├── one_page_templates/
 │   │   │
-│   │   └── add_r_column/
-│   │       ├── details.html
-│   │       └── list.html
+│   │   ├── add_r_column/
+│   │   │   ├── details.html
+│   │   │   └── list.html
+│   │   │
+│   │   ├── create_redirects/
+│   │   │   ├── details.html
+│   │   │   └── list.html
+│   │   │
+│   │   ├── import_history/
+│   │   │   ├── details.html
+│   │   │   └── list.html
+│   │   │
+│   │   └── medicine_articles/
+│   │       └── details.html
 │   │
 │   ├── _macros.html
 │   ├── _navbar.html
