@@ -533,7 +533,7 @@ src/
 │   │   ├── _list_table.html
 │   │   ├── all_jobs_list.html
 │   │   ├── base_details.html
-│   │   └── base_list_public.html
+│   │   └── base_list.html
 │   │
 │   ├── one_page_templates/
 │   │   │
