@@ -10,13 +10,11 @@ from __future__ import annotations
 import logging
 
 from ....api_services import MediaWikiQueryService, MwClientPage
-from ....api_services.clients.wikisite_client import WikiSiteClient
-from ....app_services.fixref_shared.fixred_worker import FixRedirectWorker
-from ....app_services.fixref_shared.objects import RunState
+from ....api_services.wiki_clients import WikiSiteClient
+from ....app_services.fixref_shared import FixRedirectWorker, RunState
 from ....app_services.shared_classes import UpdaterTextOutcome
-from ....config import get_settings
-from ....config.classes import Settings
-from ....services.auth.current_user import CurrentUser
+from ....config import Settings, get_settings
+from ....services.auth import CurrentUser
 
 logger = logging.getLogger(__name__)
 

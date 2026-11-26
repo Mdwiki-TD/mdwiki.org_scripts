@@ -3,23 +3,19 @@
 from __future__ import annotations
 
 import logging
-from dataclasses import asdict, dataclass, field
-from typing import Any
+from dataclasses import dataclass, field
 
-from ....jobs.shared_objects import STATUS_LITERAL, SharedworkerObject, Summary
+from ....jobs.shared_objects import STATUS_LITERAL, SharedMapToJson, SharedworkerObject, Summary
 
 logger = logging.getLogger(__name__)
 
 
 @dataclass
-class LangCount:
+class LangCount(SharedMapToJson):
     lang: str
     count: int = 0
     status: STATUS_LITERAL = "pending"
     error: str | None = None
-
-    def to_json(self) -> dict[str, Any]:
-        return asdict(self)
 
 
 @dataclass
@@ -28,9 +24,6 @@ class MedicineArticlesSummary(Summary):
     total_articles_all_langs: int = 0
     total_languages: int = 0
     page_updated: bool = False
-
-    def to_json(self) -> dict[str, Any]:
-        return asdict(self)
 
 
 @dataclass
@@ -41,9 +34,6 @@ class MedicineArticlesWorkerObject(SharedworkerObject):
 
     page_title: str = ""
     page_url: str = ""
-
-    def to_json(self) -> dict[str, Any]:
-        return asdict(self)
 
 
 __all__ = [

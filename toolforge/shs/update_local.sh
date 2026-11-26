@@ -23,6 +23,7 @@ export COMPILE_PYTHON_FILES=1
 export COPY_TO_TARGET="requirements.txt"
 
 export REPO_NAME="mdwiki.org_scripts"
+
 TARGET_DIR="$HOME/www/python/src"
 
 # Execute the local deployment script directly without cloning from GitHub

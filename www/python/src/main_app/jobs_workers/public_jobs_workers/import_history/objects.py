@@ -3,16 +3,16 @@
 from __future__ import annotations
 
 import logging
-from dataclasses import asdict, dataclass, field
-from typing import Any, Literal
+from dataclasses import dataclass, field
+from typing import Literal
 
-from ....jobs.shared_objects import SharedworkerObject, Summary
+from ....jobs.shared_objects import SharedMapToJson, SharedworkerObject, Summary
 
 logger = logging.getLogger(__name__)
 
 
 @dataclass
-class ImportUpdaterOutcome:
+class ImportUpdaterOutcome(SharedMapToJson):
     """Result of running the updater on one page."""
 
     status: Literal["missing", "imported", "imported_fallback", "failed", "skipped", "completed", "pending"] = "pending"
@@ -20,9 +20,6 @@ class ImportUpdaterOutcome:
     title: str = ""
     msg: str = ""
     newrevid: int = 0
-
-    def to_json(self) -> dict[str, Any]:
-        return asdict(self)
 
 
 @dataclass

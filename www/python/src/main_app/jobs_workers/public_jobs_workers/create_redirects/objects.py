@@ -3,10 +3,9 @@
 from __future__ import annotations
 
 import logging
-from dataclasses import asdict, dataclass, field
-from typing import Any
+from dataclasses import dataclass, field
 
-from ....jobs.shared_objects import STATUS_LITERAL, SharedworkerObject
+from ....jobs.shared_objects import STATUS_LITERAL, SharedMapToJson, SharedworkerObject
 
 logger = logging.getLogger(__name__)
 
@@ -21,15 +20,12 @@ class TitleCounts:
 
 
 @dataclass
-class OneTitleInfo:
+class OneTitleInfo(SharedMapToJson):
     title: str
     status: STATUS_LITERAL = "pending"
     error: str | None = None
     msg: str | None = None
     counts: TitleCounts = field(default_factory=TitleCounts)
-
-    def to_json(self) -> dict[str, Any]:
-        return asdict(self)
 
 
 @dataclass

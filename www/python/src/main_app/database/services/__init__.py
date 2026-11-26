@@ -5,6 +5,7 @@ Shared db services, used in both admin and public blueprints
 from __future__ import annotations
 
 from .config.settings_service import SettingsService
+from .crud_service import CRUDService
 from .jobs_service import JobsService, JobStats, UserJobsStats
 from .users.admin_service import AdminService
 from .users.user_token_service import UserTokenService
@@ -18,4 +19,5 @@ __all__ = [
     "SettingsService",
     "UsersService",
     "UserTokenService",
+    "CRUDService",
 ]
