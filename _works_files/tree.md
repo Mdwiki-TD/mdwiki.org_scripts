@@ -18,13 +18,16 @@ src/
 │   │   │   ├── commons_client.py
 │   │   │   ├── http_client.py
 │   │   │   ├── http_client_helper.py
-│   │   │   ├── objects.py
-│   │   │   └── wikisite_client.py
+│   │   │   └── objects.py
 │   │   │
 │   │   ├── mwclient_page/
 │   │   │   ├── __init__.py
 │   │   │   ├── mwclient_error.py
 │   │   │   └── mwclient_wraper.py
+│   │   │
+│   │   ├── wiki_clients/
+│   │   │   ├── __init__.py
+│   │   │   └── wikisite_client.py
 │   │   │
 │   │   ├── wikidb/
 │   │   │   │
@@ -370,15 +373,15 @@ src/
 │   │   ├── navbar/
 │   │   │   ├── __init__.py
 │   │   │   ├── mapping.py
-│   │   │   ├── nav_bar.py
-│   │   │   └── navbar_list.py
+│   │   │   └── nav_bar.py
 │   │   │
 │   │   ├── sidebar/
 │   │   │   ├── __init__.py
 │   │   │   ├── mapping.py
 │   │   │   └── sidebar.py
 │   │   │
-│   │   └── __init__.py
+│   │   ├── __init__.py
+│   │   └── navbar_list.py
 │   │
 │   ├── utils/
 │   │   ├── README.md

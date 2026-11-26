@@ -36,9 +36,13 @@ tests/
 │   │   │   │   └── test_toolforge_jobs_types.py
 │   │   │   │
 │   │   │   ├── test_category_members_api.py
-│   │   │   └── test_wikisite_client.py
+│   │   │   ├── test_http_client.py
+│   │   │   └── test_http_client_helper.py
 │   │   │
 │   │   ├── utils/
+│   │   │
+│   │   ├── wiki_clients/
+│   │   │   └── test_wikisite_client.py
 │   │   │
 │   │   ├── test_mwclient_page.py
 │   │   └── test_query_api.py
