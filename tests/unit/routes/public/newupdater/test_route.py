@@ -17,8 +17,11 @@ class TestNewupdaterRoute:
         resp = test_client.get("/newupdater/save/test")
         assert resp.status_code == 302
 
-    def test_get_with_login(self, test_client, mock_login, monkeypatch):
-        mock_login("TestUser")
+    def test_get_with_login(self, test_client, monkeypatch):
+
+        with test_client.session_transaction() as session:
+            session["username"] = "TestUser"
+
         from src.main_app.services.auth.current_user import CurrentUser
 
         monkeypatch.setattr(
