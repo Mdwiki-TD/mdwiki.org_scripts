@@ -13,14 +13,12 @@ from .commons_client import (
 )
 from .http_client import ApiRequestError, HttpClient
 from .toolforge import ToolforgeApiService, ToolForgeJob, ToolforgeJobsService
-from .wikisite_client import WikiSiteClient
 
 __all__ = [
     "ToolForgeJob",
     "HttpClient",
     "CategoryMembersService",
     "ApiRequestError",
-    "WikiSiteClient",
     "GetWithRetryData",
     "CommonsSession",
     "ToolforgeApiService",

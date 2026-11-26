@@ -13,8 +13,7 @@ from __future__ import annotations
 
 import logging
 
-from ..api_services import MwClientPage
-from ..api_services.clients.wikisite_client import WikiSiteClient
+from ..api_services import MwClientPage, WikiSiteClient
 from ..config import Settings, get_settings
 from ..services.auth.current_user import CurrentUser
 from .named_param import NamedParamEditor
