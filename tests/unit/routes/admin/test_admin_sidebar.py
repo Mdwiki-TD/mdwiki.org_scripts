@@ -8,7 +8,7 @@ from __future__ import annotations
 
 import pytest
 from src.main_app.routes.admin.admin_sidebar import create_admin_sidebar
-from src.main_app.templates_markups.sidebar import SidebarGroup, SidebarItem
+from src.main_app.templates_markups.sidebar import SidebarGroup, SidebarItem, AdminSidebarItem
 
 
 @pytest.fixture
@@ -25,14 +25,12 @@ def menu() -> list[SidebarGroup]:
                     title="Item One",
                     icon="bi-one",
                     fallback_href="/test/one",
-                    requires_admin=False,
                 ),
-                SidebarItem(
+                AdminSidebarItem(
                     id="item_two",
                     title="Item Two",
                     icon="bi-two",
                     fallback_href="/test/two",
-                    requires_admin=True,
                 ),
                 SidebarItem(
                     id="item_disabled",
@@ -52,14 +50,12 @@ def menu() -> list[SidebarGroup]:
                     title="Item Three",
                     icon="bi-three",
                     fallback_href="/test/three",
-                    requires_admin=False,
                 ),
                 SidebarItem(
                     id="item_external",
                     title="Item External",
                     fallback_href="https://example.org/",
                     link_target="_blank",
-                    requires_admin=False,
                 ),
             ],
         ),
@@ -68,11 +64,10 @@ def menu() -> list[SidebarGroup]:
             title="Admin Only Group",
             icon="bi-lock",
             items=[
-                SidebarItem(
+                AdminSidebarItem(
                     id="item_secret",
                     title="Item Secret",
                     fallback_href="/test/secret",
-                    requires_admin=True,
                 ),
             ],
         ),
@@ -86,7 +81,6 @@ def menu() -> list[SidebarGroup]:
                     id="item_in_disabled",
                     title="Item In Disabled",
                     fallback_href="/test/in-disabled",
-                    requires_admin=False,
                 ),
             ],
         ),
@@ -150,7 +144,6 @@ class TestCreateAdminSidebarContent:
                     id="esc_item",
                     title="<script>alert(1)</script>",
                     fallback_href="/test/esc",
-                    requires_admin=False,
                 )
             ],
         )
@@ -263,7 +256,6 @@ class TestCreateAdminSidebarUrlResolution:
                     title="Broken",
                     endpoint="nonexistent.endpoint",
                     fallback_href="/fallback/broken",
-                    requires_admin=False,
                 )
             ],
         )

@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import logging
 
-from ...templates_markups.sidebar import Sidebar, SidebarGroup, SidebarItem
+from ...templates_markups.sidebar import Sidebar, SidebarGroup, AdminSidebarItem
 
 logger = logging.getLogger(__name__)
 
@@ -13,7 +13,7 @@ def _load_admin_tools() -> list[SidebarGroup]:
     """Build the static sidebar menu structure.
 
     No Flask request/app context is touched here — URLs are resolved lazily
-    by `SidebarItem.resolve_href()` at render time — so this result is safe
+    by `AdminSidebarItem.resolve_href()` at render time — so this result is safe
     to cache for the lifetime of the process.
     """
     main_group = SidebarGroup(
@@ -28,14 +28,14 @@ def _load_admin_tools() -> list[SidebarGroup]:
         title="Users",
         icon="bi-person",
         items=[
-            SidebarItem.dashboard_item(
+            AdminSidebarItem.dashboard_item(
                 "admins",
                 "Admins",
                 "bi-person-gear",
                 "admin_panel.admins.dashboard",
                 "/admin_panel/admins/",
             ),
-            SidebarItem.dashboard_item(
+            AdminSidebarItem.dashboard_item(
                 "users",
                 "Users",
                 "bi-person",
@@ -49,16 +49,15 @@ def _load_admin_tools() -> list[SidebarGroup]:
         title="Settings",
         icon="bi-sliders",
         items=[
-            SidebarItem.dashboard_item(
+            AdminSidebarItem.dashboard_item(
                 "settings",
                 "Settings",
                 "bi-gear",
                 "admin_panel.settings.dashboard",
                 "/admin_panel/settings/",
             ),
-            SidebarItem(
+            AdminSidebarItem(
                 id="db_admin",
-                requires_admin=True,
                 fallback_href="/admin_panel/db_admin",
                 title="DB admin",
                 icon="bi-database",
@@ -71,16 +70,15 @@ def _load_admin_tools() -> list[SidebarGroup]:
         title="Errors",
         icon="bi-exclamation-triangle",
         items=[
-            SidebarItem.dashboard_item(
+            AdminSidebarItem.dashboard_item(
                 "errors",
                 "App Errors",
                 "bi-exclamation-triangle",
                 "admin_panel.errors.dashboard",
                 "/admin_panel/errors/",
             ),
-            SidebarItem(
+            AdminSidebarItem(
                 id="error_logs",
-                requires_admin=True,
                 fallback_href="/admin_panel/error-logs",
                 title="Request Errors logs",
                 icon="bi-exclamation-triangle",
@@ -93,9 +91,8 @@ def _load_admin_tools() -> list[SidebarGroup]:
         title="Other",
         icon="bi-exclamation-triangle",
         items=[
-            SidebarItem(
+            AdminSidebarItem(
                 id="tf_jobs",
-                requires_admin=True,
                 fallback_href="/admin_panel/tfj",
                 title="ToolForge Jobs",
                 icon="bi-hdd-network",

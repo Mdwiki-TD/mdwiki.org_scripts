@@ -53,7 +53,7 @@ class SidebarItem:
         disabled: bool = False,
     ) -> SidebarItem:
         """Build a SidebarItem pointing at the job-list page for the given job type."""
-        return SidebarItem(
+        return cls(
             id=job_type,
             title=title,
             icon=icon,
@@ -73,13 +73,23 @@ class SidebarItem:
         fallback_href: str,
     ) -> SidebarItem:
         """Build a SidebarItem pointing at a regular admin-panel dashboard endpoint."""
-        return SidebarItem(
+        return cls(
             id=id_,
             title=title,
             icon=icon,
             endpoint=endpoint,
             fallback_href=fallback_href,
         )
+
+
+@dataclass
+class AdminSidebarItem(SidebarItem):
+    requires_admin: bool = True
+
+
+@dataclass
+class CoordinatorSidebarItem(SidebarItem):
+    requires_coordinator: bool = True
 
 
 @dataclass
@@ -94,6 +104,8 @@ class SidebarGroup:
 
 
 __all__ = [
+    "AdminSidebarItem",
+    "CoordinatorSidebarItem",
     "SidebarItem",
     "SidebarGroup",
 ]
